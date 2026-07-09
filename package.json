@@ -1,0 +1,56 @@
+{
+  "name": "atlas-internal-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portal interno ATLAS fase 1: Systems Ops, QA, catálogo de datos y auditoría conectado al backend real.",
+  "scripts": {
+    "dev": "next dev -p 5273",
+    "build": "node scripts/next-build.mjs",
+    "start": "next start -p 5273",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"scripts/**/*.mjs\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"scripts/**/*.mjs\"",
+    "clean": "node -e \"const fs=require('node:fs'); for (const p of ['.next','out','dist','coverage','tsconfig.tsbuildinfo']) fs.rmSync(p,{recursive:true,force:true})\"",
+    "validate": "npm run max-lines && npm run source-boundaries && npm run format:check && npm run type-check && npm run lint",
+    "validate:full": "npm run validate && npm run build && npm run audit:high",
+    "build:raw": "next build",
+    "audit:high": "npm audit --audit-level=high",
+    "build:portable": "node scripts/next-build.mjs",
+    "build:stable": "cross-env NEXT_TELEMETRY_DISABLED=1 NEXT_PRIVATE_BUILD_WORKER=1 next build",
+    "max-lines": "node scripts/check-max-lines.mjs 300",
+    "source-boundaries": "node scripts/check-source-boundaries.mjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-table": "^8.21.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "next": "15.5.20",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.60.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.31.0",
+    "eslint-config-next": "15.5.20",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=20.11 <23",
+    "yarn": ">=1.22.22 <2"
+  }
+}

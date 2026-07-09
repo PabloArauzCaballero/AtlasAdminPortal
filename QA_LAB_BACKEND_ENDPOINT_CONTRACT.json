@@ -1,0 +1,1378 @@
+{
+  "apiPrefix": "/api/v1",
+  "source": "atlas backend.zip / AtlasBackend-FASE5-COMPLETO/src/modules/**/*.controller.ts",
+  "totalEndpoints": 195,
+  "methods": {
+    "DELETE": 1,
+    "GET": 92,
+    "PATCH": 18,
+    "POST": 84
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/audit/customer/:customerId",
+      "controller": "AuditController",
+      "handler": "getCustomerAudit",
+      "file": "src/modules/audit/audit.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/audit/customer/:customerId/feed",
+      "controller": "AuditController",
+      "handler": "getCustomerAuditFeed",
+      "file": "src/modules/audit/audit.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "controller": "AuthController",
+      "handler": "login",
+      "file": "src/modules/auth/auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "controller": "AuthController",
+      "handler": "refresh",
+      "file": "src/modules/auth/auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "controller": "AuthController",
+      "handler": "logout",
+      "file": "src/modules/auth/auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/provision-credentials",
+      "controller": "AuthController",
+      "handler": "provisionCredentials",
+      "file": "src/modules/auth/auth.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/catalogs",
+      "controller": "CatalogManagementController",
+      "handler": "listCatalogs",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/catalogs/:catalogCode/versions/:versionId",
+      "controller": "CatalogManagementController",
+      "handler": "getCatalogVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/catalogs/:catalogCode/versions",
+      "controller": "CatalogManagementController",
+      "handler": "createCatalogVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/catalogs/:catalogCode/versions/:versionId/submit-for-approval",
+      "controller": "CatalogManagementController",
+      "handler": "submitCatalogVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/catalogs/:catalogCode/versions/:versionId/decision",
+      "controller": "CatalogManagementController",
+      "handler": "decideCatalogVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/catalog-ingestions",
+      "controller": "CatalogManagementController",
+      "handler": "ingestCatalog",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/catalog-staging-items/decision-batch",
+      "controller": "CatalogManagementController",
+      "handler": "decideStagingItems",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/definitions",
+      "controller": "CatalogManagementController",
+      "handler": "listDefinitions",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/definitions/package",
+      "controller": "CatalogManagementController",
+      "handler": "upsertDefinitionsPackage",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/risk-policy/current",
+      "controller": "CatalogManagementController",
+      "handler": "getCurrentRiskPolicy",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/risk-policy/ruleset-versions",
+      "controller": "CatalogManagementController",
+      "handler": "createRiskRulesetVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/risk-policy/ruleset-versions/:rulesetVersionId/activate",
+      "controller": "CatalogManagementController",
+      "handler": "activateRiskRulesetVersion",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/data-governance/policies",
+      "controller": "CatalogManagementController",
+      "handler": "getDataGovernancePolicies",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/data-governance/policy-package",
+      "controller": "CatalogManagementController",
+      "handler": "upsertDataGovernancePackage",
+      "file": "src/modules/catalog-management/catalog-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/consent-documents/active",
+      "controller": "ConsentsController",
+      "handler": "listActiveDocuments",
+      "file": "src/modules/consents/consents.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/publications",
+      "controller": "AdminContentController",
+      "handler": "listPublications",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/publications",
+      "controller": "AdminContentController",
+      "handler": "createPublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/publications/:id",
+      "controller": "AdminContentController",
+      "handler": "getPublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/content/publications/:id",
+      "controller": "AdminContentController",
+      "handler": "updatePublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/publications/:id/publish",
+      "controller": "AdminContentController",
+      "handler": "publishPublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/publications/:id/schedule",
+      "controller": "AdminContentController",
+      "handler": "schedulePublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/publications/:id/archive",
+      "controller": "AdminContentController",
+      "handler": "archivePublication",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/subscribers",
+      "controller": "AdminContentController",
+      "handler": "listSubscribers",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/subscribers",
+      "controller": "AdminContentController",
+      "handler": "createSubscriber",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/content/subscribers/:id",
+      "controller": "AdminContentController",
+      "handler": "updateSubscriber",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/categories",
+      "controller": "AdminContentController",
+      "handler": "listCategories",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/categories",
+      "controller": "AdminContentController",
+      "handler": "createCategory",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/content/categories/:id",
+      "controller": "AdminContentController",
+      "handler": "updateCategory",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/tags",
+      "controller": "AdminContentController",
+      "handler": "listTags",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/tags",
+      "controller": "AdminContentController",
+      "handler": "createTag",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/content/authors",
+      "controller": "AdminContentController",
+      "handler": "listAuthors",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/content/authors",
+      "controller": "AdminContentController",
+      "handler": "createAuthor",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/content/authors/:id",
+      "controller": "AdminContentController",
+      "handler": "updateAuthor",
+      "file": "src/modules/content/admin-content.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/publications/subscribers",
+      "controller": "ContentSubscriptionsController",
+      "handler": "subscribe",
+      "file": "src/modules/content/content-subscriptions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/news-subscription",
+      "controller": "ContentSubscriptionsController",
+      "handler": "getMyNewsSubscription",
+      "file": "src/modules/content/content-subscriptions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/premium/publications/news/:slug",
+      "controller": "ContentSubscriptionsController",
+      "handler": "getPremiumNews",
+      "file": "src/modules/content/content-subscriptions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/premium/publications/columns/:slug",
+      "controller": "ContentSubscriptionsController",
+      "handler": "getPremiumColumn",
+      "file": "src/modules/content/content-subscriptions.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customer-onboarding/start",
+      "controller": "CustomerOnboardingController",
+      "handler": "startOnboarding",
+      "file": "src/modules/customer-onboarding/customer-onboarding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customer-onboarding/:customerId/contact-verification/request",
+      "controller": "CustomerOnboardingController",
+      "handler": "requestContactVerification",
+      "file": "src/modules/customer-onboarding/customer-onboarding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customer-onboarding/:customerId/contact-verification/submit",
+      "controller": "CustomerOnboardingController",
+      "handler": "submitContactVerification",
+      "file": "src/modules/customer-onboarding/customer-onboarding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customer-onboarding/:customerId/identity-package",
+      "controller": "CustomerOnboardingController",
+      "handler": "submitIdentityPackage",
+      "file": "src/modules/customer-onboarding/customer-onboarding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customer-onboarding/:customerId/address-package",
+      "controller": "CustomerOnboardingController",
+      "handler": "submitAddressPackage",
+      "file": "src/modules/customer-onboarding/customer-onboarding.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/privacy/consent-decisions",
+      "controller": "CustomerPrivacyController",
+      "handler": "registerConsentDecisions",
+      "file": "src/modules/customer-privacy/customer-privacy.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/privacy/data-subject-requests",
+      "controller": "CustomerPrivacyController",
+      "handler": "createDataSubjectRequest",
+      "file": "src/modules/customer-privacy/customer-privacy.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/telemetry/batch",
+      "controller": "CustomerTelemetryController",
+      "handler": "ingestBatch",
+      "file": "src/modules/customer-telemetry/customer-telemetry.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/:customerId/me",
+      "controller": "CustomersController",
+      "handler": "getCustomerMe",
+      "file": "src/modules/customers/customers.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/data-quality/issues",
+      "controller": "DataQualityController",
+      "handler": "listIssues",
+      "file": "src/modules/data-quality/data-quality.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/data-quality/issues/:issueId/resolve",
+      "controller": "DataQualityController",
+      "handler": "resolveIssue",
+      "file": "src/modules/data-quality/data-quality.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/events/catalog",
+      "controller": "EventsController",
+      "handler": "listCatalog",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/events",
+      "controller": "EventsController",
+      "handler": "listEvents",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/events/:eventId",
+      "controller": "EventsController",
+      "handler": "getEvent",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/events",
+      "controller": "EventsController",
+      "handler": "createEvent",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/events/:eventId/retry",
+      "controller": "EventsController",
+      "handler": "retryEvent",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/events/:eventId/cancel",
+      "controller": "EventsController",
+      "handler": "cancelEvent",
+      "file": "src/modules/events/events.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/external-data/consents",
+      "controller": "ExternalDataController",
+      "handler": "createConsent",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/consents/user/:customerId",
+      "controller": "ExternalDataController",
+      "handler": "listConsents",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/external-data/consents/:consentId/revoke",
+      "controller": "ExternalDataController",
+      "handler": "revokeConsent",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/external-data/requests/preview",
+      "controller": "ExternalDataController",
+      "handler": "previewRequest",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/external-data/requests",
+      "controller": "ExternalDataController",
+      "handler": "executeRequest",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/requests/:requestId",
+      "controller": "ExternalDataController",
+      "handler": "getRequest",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/providers/health",
+      "controller": "ExternalDataController",
+      "handler": "getProviderHealth",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/users/:customerId/features",
+      "controller": "ExternalDataController",
+      "handler": "getUserFeatures",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/users/:customerId/scoring-input",
+      "controller": "ExternalDataController",
+      "handler": "getUserScoringInput",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/users/:customerId/decision-package",
+      "controller": "ExternalDataController",
+      "handler": "getDecisionPackage",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/external-data/users/:customerId/observations",
+      "controller": "ExternalDataController",
+      "handler": "getUserObservations",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers",
+      "controller": "AdminExternalProvidersController",
+      "handler": "listProviders",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/health",
+      "controller": "AdminExternalProvidersController",
+      "handler": "health",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/readiness",
+      "controller": "AdminExternalProvidersController",
+      "handler": "readiness",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/quality-audit",
+      "controller": "AdminExternalProvidersController",
+      "handler": "qualityAudit",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/production-gate",
+      "controller": "AdminExternalProvidersController",
+      "handler": "productionGate",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/sla",
+      "controller": "AdminExternalProvidersController",
+      "handler": "sla",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/usage",
+      "controller": "AdminExternalProvidersController",
+      "handler": "usage",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/idempotency-audit",
+      "controller": "AdminExternalProvidersController",
+      "handler": "idempotencyAudit",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/retention/preview",
+      "controller": "AdminExternalProvidersController",
+      "handler": "retentionPreview",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/sanitization-audit",
+      "controller": "AdminExternalProvidersController",
+      "handler": "sanitizationAudit",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/policy/preview",
+      "controller": "AdminExternalProvidersController",
+      "handler": "previewPolicy",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/external-providers/:providerCode/runtime",
+      "controller": "AdminExternalProvidersController",
+      "handler": "patchRuntime",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/:providerCode/kill-switch",
+      "controller": "AdminExternalProvidersController",
+      "handler": "killSwitch",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/external-providers/:providerCode/cost-policy",
+      "controller": "AdminExternalProvidersController",
+      "handler": "getCostPolicy",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/admin/external-providers/:providerCode/cost-policy/:queryType",
+      "controller": "AdminExternalProvidersController",
+      "handler": "updateCostPolicy",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/:providerCode/test",
+      "controller": "AdminExternalProvidersController",
+      "handler": "testProvider",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/requests/:requestId/approve",
+      "controller": "AdminExternalProvidersController",
+      "handler": "approveRequest",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/requests/:requestId/retry",
+      "controller": "AdminExternalProvidersController",
+      "handler": "retryRequest",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/external-providers/requests/:requestId/rebuild-features",
+      "controller": "AdminExternalProvidersController",
+      "handler": "rebuildFeatures",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/kyc/segip/verify",
+      "controller": "KycExternalDataController",
+      "handler": "verifySegip",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bureau/infocenter/check",
+      "controller": "BureauExternalDataController",
+      "handler": "checkInfocenter",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/payments/qr/verify",
+      "controller": "PaymentsExternalDataController",
+      "handler": "verifyQr",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/payments/bank-transfer/verify",
+      "controller": "PaymentsExternalDataController",
+      "handler": "verifyBankTransfer",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telco/phone-trust/verify",
+      "controller": "TelcoExternalDataController",
+      "handler": "verifyPhoneTrust",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/telco/phone-trust/:customerId",
+      "controller": "TelcoExternalDataController",
+      "handler": "getPhoneTrust",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/social/facebook/connect-url",
+      "controller": "FacebookExternalDataController",
+      "handler": "getConnectUrl",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/social/facebook/callback",
+      "controller": "FacebookExternalDataController",
+      "handler": "callback",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/social/facebook/status/:customerId",
+      "controller": "FacebookExternalDataController",
+      "handler": "status",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/whatsapp/verification/start",
+      "controller": "WhatsappExternalDataController",
+      "handler": "start",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/whatsapp/verification/confirm",
+      "controller": "WhatsappExternalDataController",
+      "handler": "confirm",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/whatsapp/status/:customerId",
+      "controller": "WhatsappExternalDataController",
+      "handler": "status",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/digital-trust/check",
+      "controller": "DigitalTrustExternalDataController",
+      "handler": "check",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/digital-trust/profile/:customerId",
+      "controller": "DigitalTrustExternalDataController",
+      "handler": "profile",
+      "file": "src/modules/external-data/external-data.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health",
+      "controller": "HealthController",
+      "handler": "check",
+      "file": "src/modules/health/health.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/roles",
+      "controller": "InternalAccessCatalogController",
+      "handler": "listRoles",
+      "file": "src/modules/internal-users/internal-access-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/roles/:roleId",
+      "controller": "InternalAccessCatalogController",
+      "handler": "getRole",
+      "file": "src/modules/internal-users/internal-access-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/permissions",
+      "controller": "InternalAccessCatalogController",
+      "handler": "listPermissions",
+      "file": "src/modules/internal-users/internal-access-catalog.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/internal/auth/login",
+      "controller": "InternalAuthController",
+      "handler": "login",
+      "file": "src/modules/internal-users/internal-auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/internal/auth/refresh",
+      "controller": "InternalAuthController",
+      "handler": "refresh",
+      "file": "src/modules/internal-users/internal-auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/internal/auth/logout",
+      "controller": "InternalAuthController",
+      "handler": "logout",
+      "file": "src/modules/internal-users/internal-auth.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/auth/me",
+      "controller": "InternalAuthController",
+      "handler": "me",
+      "file": "src/modules/internal-users/internal-auth.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/internal/auth/signup",
+      "controller": "InternalAuthController",
+      "handler": "signup",
+      "file": "src/modules/internal-users/internal-auth.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/users",
+      "controller": "InternalUsersController",
+      "handler": "list",
+      "file": "src/modules/internal-users/internal-users.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/internal/users/:internalUserId",
+      "controller": "InternalUsersController",
+      "handler": "get",
+      "file": "src/modules/internal-users/internal-users.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/internal/users/:internalUserId",
+      "controller": "InternalUsersController",
+      "handler": "update",
+      "file": "src/modules/internal-users/internal-users.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/internal/users/:internalUserId/roles",
+      "controller": "InternalUsersController",
+      "handler": "replaceRoles",
+      "file": "src/modules/internal-users/internal-users.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/notifications/messages",
+      "controller": "NotificationsController",
+      "handler": "listMessages",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/notifications/messages/:messageId",
+      "controller": "NotificationsController",
+      "handler": "getMessage",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/notifications/messages/:messageId/retry",
+      "controller": "NotificationsController",
+      "handler": "retryMessage",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/notifications/messages/:messageId/cancel",
+      "controller": "NotificationsController",
+      "handler": "cancelMessage",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/notifications/templates",
+      "controller": "NotificationsController",
+      "handler": "listTemplates",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/notifications/templates",
+      "controller": "NotificationsController",
+      "handler": "createTemplate",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/operations/notifications/templates/:templateId",
+      "controller": "NotificationsController",
+      "handler": "updateTemplate",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/notifications/preferences/:customerId",
+      "controller": "NotificationsController",
+      "handler": "getPreferences",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/operations/notifications/preferences/:customerId",
+      "controller": "NotificationsController",
+      "handler": "updatePreferences",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/:customerId/notifications",
+      "controller": "NotificationsController",
+      "handler": "listCustomerNotifications",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/:customerId/notifications/unread-count",
+      "controller": "NotificationsController",
+      "handler": "unreadCount",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/notifications/:notificationId/read",
+      "controller": "NotificationsController",
+      "handler": "markRead",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/notifications/read-all",
+      "controller": "NotificationsController",
+      "handler": "markAllRead",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/device-tokens",
+      "controller": "NotificationsController",
+      "handler": "upsertDeviceToken",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/customers/:customerId/device-tokens/:deviceTokenId",
+      "controller": "NotificationsController",
+      "handler": "deactivateDeviceToken",
+      "file": "src/modules/notifications/notifications.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/work-queue",
+      "controller": "OperationsController",
+      "handler": "getWorkQueue",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/manual-review-cases",
+      "controller": "OperationsController",
+      "handler": "getManualReviewCasesCursorPage",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/fraud-cases",
+      "controller": "OperationsController",
+      "handler": "getFraudCasesCursorPage",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/customers/:customerId/investigation-summary",
+      "controller": "OperationsController",
+      "handler": "getInvestigationSummary",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/manual-review-cases/:caseId/decision",
+      "controller": "OperationsController",
+      "handler": "decideManualReviewCase",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/fraud-cases/:caseId/decision",
+      "controller": "OperationsController",
+      "handler": "decideFraudCase",
+      "file": "src/modules/operations/operations.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/risk-assessments",
+      "controller": "RiskController",
+      "handler": "createRiskAssessment",
+      "file": "src/modules/risk/risk.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/risk-assessments/:riskAssessmentRunId",
+      "controller": "RiskController",
+      "handler": "getRiskAssessmentDetail",
+      "file": "src/modules/risk/risk.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/risk-assessments/:riskAssessmentRunId/explanation",
+      "controller": "RiskController",
+      "handler": "getRiskAssessmentExplanation",
+      "file": "src/modules/risk/risk.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/jobs/process-outbox",
+      "controller": "RuntimeJobsController",
+      "handler": "processOutbox",
+      "file": "src/modules/runtime-jobs/runtime-jobs.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/jobs/process-events",
+      "controller": "RuntimeJobsController",
+      "handler": "processEvents",
+      "file": "src/modules/runtime-jobs/runtime-jobs.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/jobs/expire-stale-sessions",
+      "controller": "RuntimeJobsController",
+      "handler": "expireStaleSessions",
+      "file": "src/modules/runtime-jobs/runtime-jobs.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/jobs/apply-retention-policies",
+      "controller": "RuntimeJobsController",
+      "handler": "applyRetentionPolicies",
+      "file": "src/modules/runtime-jobs/runtime-jobs.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/jobs/recalculate-data-quality",
+      "controller": "RuntimeJobsController",
+      "handler": "recalculateDataQuality",
+      "file": "src/modules/runtime-jobs/runtime-jobs.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/schema/versions",
+      "controller": "SchemaManagementController",
+      "handler": "listVersions",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/schema/versions/:versionId",
+      "controller": "SchemaManagementController",
+      "handler": "getVersion",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/schema/tables",
+      "controller": "SchemaManagementController",
+      "handler": "listTables",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/schema/tables/:tableId",
+      "controller": "SchemaManagementController",
+      "handler": "getTable",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/operations/schema/tables",
+      "controller": "SchemaManagementController",
+      "handler": "proposeTable",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/schema/change-log",
+      "controller": "SchemaManagementController",
+      "handler": "listChangeLog",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/operations/schema/change-log/:changeId/approve",
+      "controller": "SchemaManagementController",
+      "handler": "approveChange",
+      "file": "src/modules/schema-management/schema-management.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/sessions/start",
+      "controller": "CustomerSessionsController",
+      "handler": "startSession",
+      "file": "src/modules/sessions/sessions.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/sessions/:sessionId/heartbeat",
+      "controller": "CustomerSessionsController",
+      "handler": "heartbeat",
+      "file": "src/modules/sessions/sessions.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers/:customerId/sessions/:sessionId/end",
+      "controller": "CustomerSessionsController",
+      "handler": "endSession",
+      "file": "src/modules/sessions/sessions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/:customerId/session-state",
+      "controller": "CustomerSessionsController",
+      "handler": "getSessionState",
+      "file": "src/modules/sessions/sessions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/operations/sessions/:sessionId/investigation-summary",
+      "controller": "OperationsSessionsController",
+      "handler": "getInvestigationSummary",
+      "file": "src/modules/sessions/sessions.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/action-logs",
+      "controller": "SystemsActionLogController",
+      "handler": "listActionLogs",
+      "file": "src/modules/systems-ops/systems-action-log.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/action-logs/by-request/:requestId",
+      "controller": "SystemsActionLogController",
+      "handler": "getActionLogsByRequest",
+      "file": "src/modules/systems-ops/systems-action-log.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/dashboard",
+      "controller": "SystemsCatalogController",
+      "handler": "getDashboard",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/endpoints",
+      "controller": "SystemsCatalogController",
+      "handler": "listEndpoints",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/endpoints/:endpointId",
+      "controller": "SystemsCatalogController",
+      "handler": "getEndpoint",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/endpoints/discover",
+      "controller": "SystemsCatalogController",
+      "handler": "discoverEndpoints",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/endpoints/catalog-seed/refresh",
+      "controller": "SystemsCatalogController",
+      "handler": "refreshCatalogSeed",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/tools",
+      "controller": "SystemsCatalogController",
+      "handler": "listTools",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/tools/:toolId",
+      "controller": "SystemsCatalogController",
+      "handler": "getTool",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/tools/infer-requirements",
+      "controller": "SystemsCatalogController",
+      "handler": "inferToolRequirements",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/data-entities",
+      "controller": "SystemsCatalogController",
+      "handler": "listDataEntities",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/data-entities/:entityId",
+      "controller": "SystemsCatalogController",
+      "handler": "getDataEntity",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/impact/by-endpoint/:endpointId",
+      "controller": "SystemsCatalogController",
+      "handler": "getImpactByEndpoint",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/impact/by-table/:schemaName/:tableName",
+      "controller": "SystemsCatalogController",
+      "handler": "getImpactByTable",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/health/tools",
+      "controller": "SystemsCatalogController",
+      "handler": "getToolsHealth",
+      "file": "src/modules/systems-ops/systems-catalog.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/review-queue",
+      "controller": "SystemsReviewController",
+      "handler": "getReviewQueue",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/endpoints/:endpointId/review",
+      "controller": "SystemsReviewController",
+      "handler": "reviewEndpoint",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/tools/requirements/:requirementId/review",
+      "controller": "SystemsReviewController",
+      "handler": "reviewToolRequirement",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/data-entities/:entityId/review",
+      "controller": "SystemsReviewController",
+      "handler": "reviewDataEntity",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/impact/data/:impactId/review",
+      "controller": "SystemsReviewController",
+      "handler": "reviewDataImpact",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/impact/fields/:fieldImpactId/review",
+      "controller": "SystemsReviewController",
+      "handler": "reviewFieldImpact",
+      "file": "src/modules/systems-ops/systems-review.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/stress-profiles",
+      "controller": "SystemsStressController",
+      "handler": "listStressProfiles",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/stress-profiles/:profileId",
+      "controller": "SystemsStressController",
+      "handler": "getStressProfile",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/stress-profiles/:profileId/queue-run",
+      "controller": "SystemsStressController",
+      "handler": "queueStressRun",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/stress-profiles",
+      "controller": "SystemsStressController",
+      "handler": "upsertStressProfile",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/stress-matrix",
+      "controller": "SystemsStressController",
+      "handler": "getStressMatrix",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/stress-runs",
+      "controller": "SystemsStressController",
+      "handler": "listStressRuns",
+      "file": "src/modules/systems-ops/systems-stress.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/test-suites",
+      "controller": "SystemsTestController",
+      "handler": "createTestSuite",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/test-suites",
+      "controller": "SystemsTestController",
+      "handler": "listTestSuites",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/test-suites/:suiteId",
+      "controller": "SystemsTestController",
+      "handler": "getTestSuite",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/test-suites/:suiteId",
+      "controller": "SystemsTestController",
+      "handler": "updateTestSuite",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/test-suites/:suiteId/steps",
+      "controller": "SystemsTestController",
+      "handler": "createTestStep",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/systems/test-suites/:suiteId/steps/:stepId",
+      "controller": "SystemsTestController",
+      "handler": "updateTestStep",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/test-suites/:suiteId/steps/reorder",
+      "controller": "SystemsTestController",
+      "handler": "reorderTestSteps",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/systems/test-suites/:suiteId/run",
+      "controller": "SystemsTestController",
+      "handler": "runTestSuite",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/test-runs",
+      "controller": "SystemsTestController",
+      "handler": "listTestRuns",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/systems/test-runs/:runId",
+      "controller": "SystemsTestController",
+      "handler": "getTestRun",
+      "file": "src/modules/systems-ops/systems-test.controller.ts"
+    }
+  ]
+}
