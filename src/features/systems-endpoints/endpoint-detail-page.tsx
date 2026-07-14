@@ -93,8 +93,8 @@ export function EndpointDetailPage({
               retry={impact.refetch}
               data={impact.data?.tables ?? data.dataEntityImpacts}
               columns={columns.dataImpact}
-              emptyTitle="Tabla de impactos pendiente."
-              emptyDescription="El backend aún no devolvió impactos de tablas para este endpoint. Revisa endpoint_table_impacts o el seed de catalogación."
+              emptyTitle="NO IMPACTA NINGUNA TABLA"
+              emptyDescription="Este endpoint no escribe ni lee ninguna tabla catalogada."
             />
           ) : null}
           {activeTab === "Campos impactados" ? (
@@ -104,8 +104,12 @@ export function EndpointDetailPage({
               retry={impact.refetch}
               data={impact.data?.fields ?? data.fieldImpacts}
               columns={columns.fields}
-              emptyTitle="Campos impactados pendientes."
-              emptyDescription="El backend aún no devolvió campos impactados. Revisa field_impacts o el proceso de descubrimiento."
+              emptyTitle="NO IMPACTA NINGÚN CAMPO"
+              emptyDescription={
+                (impact.data?.tables ?? data.dataEntityImpacts).length > 0
+                  ? "Este endpoint impacta tablas a nivel de registro (INSERT/DELETE de filas completas), pero no hay columnas individuales catalogadas para este endpoint."
+                  : "Este endpoint no impacta ningún campo catalogado."
+              }
             />
           ) : null}
           {activeTab === "Herramientas" ? (
@@ -115,8 +119,8 @@ export function EndpointDetailPage({
               retry={impact.refetch}
               data={impact.data?.tools ?? data.toolRequirements}
               columns={columns.tools}
-              emptyTitle="Herramientas requeridas pendientes."
-              emptyDescription="El backend aún no devolvió herramientas asociadas. Revisa tool_requirements o systems_tools."
+              emptyTitle="NO REQUIERE HERRAMIENTAS"
+              emptyDescription="Este endpoint no depende de herramientas externas (buró, WhatsApp, storage, etc.)."
             />
           ) : null}
           {activeTab === "QA Lab" ? (

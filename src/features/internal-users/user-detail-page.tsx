@@ -1,6 +1,8 @@
 "use client";
 
 import { useInternalUser } from "./hooks";
+import { UserEditForm } from "./user-edit-form";
+import { UserRolesForm } from "./user-roles-form";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -78,6 +80,13 @@ export function UserDetailPage({
                 />
               </CardContent>
             </Card>
+            <PermissionGate
+              permissions={["internal.users.manage"]}
+              fallback={null}
+            >
+              <UserRolesForm user={user.data.user} />
+              <UserEditForm user={user.data.user} />
+            </PermissionGate>
           </div>
         </>
       ) : null}

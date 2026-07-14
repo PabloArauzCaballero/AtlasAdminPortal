@@ -19,13 +19,40 @@ export type ToolHealth = {
   name?: string;
   status?: string;
   isCritical?: boolean;
+  isWorker?: boolean;
+  isConfigured?: boolean;
+  missingEnvVars?: string[];
+  /** Estado vivo: true = operativa, false = caída, null = sin probe activo (solo configuración). */
+  isHealthy?: boolean | null;
+  healthMessage?: string | null;
+  checkType?: "LIVE" | "CONFIGURATION" | string;
   [key: string]: unknown;
+};
+
+export type Domain = {
+  domainId: string;
+  domainCode: string;
+  domainName: string;
+  description: string;
+  businessDefinition: string;
+  technicalScope: string;
+  dataNature: string;
+  ownerTeam: string;
+  countriesApplicable: string[];
+  regulatoryNotes: string | null;
+  exampleTables: string[];
+  decisionUseCases: string[];
+  auditRelevance: string | null;
+  status: string;
 };
 
 export type EndpointItem = {
   endpointId: string;
   code: string;
   module: string;
+  /** Backend/servicio dueño del endpoint (ej. atlas-backend); soporta catálogos multi-backend. */
+  backendService?: string;
+  backendBaseUrl?: string | null;
   controllerName: string;
   handlerName: string;
   method: string;
@@ -255,3 +282,4 @@ export type ToolItem = {
 export type EndpointListResponse = PaginatedResponse<EndpointItem>;
 export type DataEntityListResponse = PaginatedResponse<DataEntity>;
 export type ToolListResponse = PaginatedResponse<ToolItem>;
+export type DomainListResponse = PaginatedResponse<Domain>;

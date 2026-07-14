@@ -35,8 +35,26 @@ export function parseOptionalJsonValue(
 }
 
 export function jsonText(value: unknown): string {
-  if (!value || typeof value !== "object") return "{}";
-  return JSON.stringify(value, null, 2);
+  const resolved =
+    typeof value === "string" ? tryParseJsonString(value) : value;
+  if (!resolved || typeof resolved !== "object") return "{}";
+  return JSON.stringify(resolved, null, 2);
+}
+
+/**
+ * Some backend responses serialize JSONB schema columns (minPayloadSchema,
+ * queryParamsSchema, etc.) as a JSON-encoded string instead of a parsed
+ * object depending on the query path. Without this, the payload/query
+ * textareas silently render "{}" even though real schema data exists.
+ */
+function tryParseJsonString(value: string): unknown {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return undefined;
+  }
 }
 
 export function toStringRecord(value: JsonRecord): Record<string, string> {

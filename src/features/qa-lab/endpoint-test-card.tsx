@@ -3,30 +3,26 @@
 import { useEffect, useState } from "react";
 import type { EndpointItem } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
-import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input, Select } from "@/shared/components/ui/input";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
-import { isAtlasApiError } from "@/shared/api/errors";
-import { normalizeExpectedStatuses } from "./assertions";
+import {
+  EndpointRunFormState,
+  EndpointSafetyHints,
+  MutationError,
+  RunControls,
+  requiresDoubleConfirmation,
+} from "./endpoint-run-controls";
 import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
 import { expectedStatusesText, parseEndpointRunForm } from "./qa-form";
-import {
-  CheckBox,
-  NumberField,
-  QaExpectationsControls,
-  QaTargetControls,
-  type CommonLabFormState,
-} from "./qa-controls";
 import { jsonText } from "./json-utils";
+import { findPayloadPreset } from "./payload-presets";
 import { QaJsonFields } from "./qa-json-fields";
 import { QaLogDownload } from "./qa-log-download";
 import { RunResultSummary } from "./qa-result-summary";
-import { isMutatingMethod } from "./qa-safety";
 import { useEndpointRunMutation } from "./hooks";
 
 export function EndpointTestCard({
@@ -44,6 +40,20 @@ export function EndpointTestCard({
 
   function patchForm(value: Partial<EndpointRunFormState>) {
     setForm((current) => ({ ...current, ...value }));
+  }
+
+  const preset = findPayloadPreset(
+    endpoint?.method ?? "GET",
+    endpoint?.fullPath ?? endpoint?.routePath,
+  );
+
+  function applyPreset() {
+    if (!preset) return;
+    patchForm({
+      payload: jsonText(preset.payload ?? {}),
+      queryParams: jsonText(preset.queryParams ?? {}),
+      pathParams: jsonText(preset.pathParams ?? {}),
+    });
   }
 
   function submit() {
@@ -70,6 +80,14 @@ export function EndpointTestCard({
       <CardContent className="space-y-4">
         <EndpointSafetyHints endpoint={endpoint} />
         <RunControls form={form} endpoint={endpoint} onChange={patchForm} />
+        {preset ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+            <Button variant="secondary" onClick={applyPreset}>
+              Usar payload de ejemplo: {preset.label}
+            </Button>
+            <p className="text-xs text-blue-900">{preset.notes}</p>
+          </div>
+        ) : null}
         <QaJsonFields
           fields={[
             {
@@ -135,84 +153,13 @@ export function EndpointTestCard({
         description={`Se ${form.dryRun ? "previsualizara" : "ejecutara"} el endpoint #${endpointId} en ${form.environment}.`}
         confirmText={form.dryRun ? "Previsualizar" : "Ejecutar"}
         isLoading={runMutation.isPending}
+        typedConfirmationPhrase={
+          requiresDoubleConfirmation(form) ? "EJECUTAR" : undefined
+        }
         onCancel={() => setConfirmOpen(false)}
         onConfirm={submit}
       />
     </Card>
-  );
-}
-
-function RunControls({ form, endpoint, onChange }: Readonly<RunControlsProps>) {
-  const method = endpoint?.method ?? "GET";
-  const requiresMutationGuard =
-    isMutatingMethod(method) || Boolean(endpoint?.isDestructive);
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Ambiente">
-          <Select
-            value={form.environment}
-            onChange={(event) => onChange({ environment: event.target.value })}
-          >
-            <option value="LOCAL">LOCAL</option>
-            <option value="STAGING">STAGING</option>
-            <option value="PRODUCTION_READONLY">PRODUCTION_READONLY</option>
-          </Select>
-        </Field>
-        <NumberField
-          label="Timeout ms"
-          value={form.timeoutMs}
-          min={1000}
-          max={120000}
-          onChange={(value) => onChange({ timeoutMs: value })}
-        />
-        <Field label="Metodo">
-          <Input value={method} readOnly className="font-mono" />
-        </Field>
-      </div>
-      <QaTargetControls form={form} endpoint={endpoint} onChange={onChange} />
-      <QaExpectationsControls form={form} onChange={onChange} />
-      <div className="flex flex-wrap gap-3">
-        <CheckBox
-          label="Dry-run / modo seguro"
-          checked={form.dryRun}
-          onChange={(value) => onChange({ dryRun: value })}
-        />
-        {requiresMutationGuard ? (
-          <CheckBox
-            label="Permitir mutacion real"
-            checked={form.allowMutations}
-            onChange={(value) => onChange({ allowMutations: value })}
-          />
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function EndpointSafetyHints({
-  endpoint,
-}: Readonly<{ endpoint?: EndpointItem }>) {
-  if (!endpoint) return null;
-  const expectedStatuses = normalizeExpectedStatuses(
-    endpoint.expectedStatusCodes,
-  );
-  return (
-    <div className="flex flex-wrap gap-2 rounded-xl border border-atlas-border bg-atlas-soft p-3 text-xs">
-      <Badge tone="default">esperado: {expectedStatuses.join(", ")}</Badge>
-      <Badge tone={endpoint.requiresAuth ? "warning" : "success"}>
-        {endpoint.requiresAuth ? "requiere sesion" : "sin auth"}
-      </Badge>
-      <Badge tone={endpoint.isReadonly ? "success" : "warning"}>
-        {endpoint.isReadonly ? "readonly" : "cambia estado"}
-      </Badge>
-      {endpoint.isDestructive ? (
-        <Badge tone="critical">destructivo</Badge>
-      ) : null}
-      {endpoint.testEnvironmentOnly ? (
-        <Badge tone="warning">solo testing</Badge>
-      ) : null}
-    </div>
   );
 }
 
@@ -235,37 +182,11 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     expectedBodyContains: "",
     maxLatencyMs: 20000,
     maxResponseSizeBytes: 0,
+    scenario: "valid_payload",
+    authMode: "session",
+    customAuthToken: "",
+    includeTenantHeader: true,
+    includeIdempotencyKey: true,
+    deviceProfile: "none",
   };
-}
-
-type EndpointRunFormState = CommonLabFormState & {
-  environment: string;
-  dryRun: boolean;
-  timeoutMs: number;
-  allowMutations: boolean;
-  payload: string;
-  queryParams: string;
-  pathParams: string;
-  headers: string;
-  expectedHeaders: string;
-  expectedJsonSubset: string;
-};
-
-type RunControlsProps = {
-  form: EndpointRunFormState;
-  endpoint?: EndpointItem;
-  onChange: (value: Partial<EndpointRunFormState>) => void;
-};
-
-function MutationError({ error }: Readonly<{ error: unknown }>) {
-  return (
-    <ErrorState
-      description={
-        isAtlasApiError(error)
-          ? error.message
-          : "No se pudo ejecutar el endpoint."
-      }
-      requestId={isAtlasApiError(error) ? error.requestId : undefined}
-    />
-  );
 }

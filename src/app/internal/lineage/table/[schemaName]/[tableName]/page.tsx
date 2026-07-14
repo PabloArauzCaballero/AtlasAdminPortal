@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { TableLineagePage } from "@/features/lineage/table-lineage-page";
 
 export default async function Page({

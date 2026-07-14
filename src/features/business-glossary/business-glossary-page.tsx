@@ -7,6 +7,7 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -29,10 +30,17 @@ export function BusinessGlossaryPage() {
   return (
     <PermissionGate permissions={["businessMetadata.read"]}>
       <PageHeader
-        eyebrow="Fase 8"
+        eyebrow="Glosario de negocio"
         title="Glosario de negocio"
         description="Términos funcionales administrados desde el servicio interno; no hay diccionario hardcodeado en la interfaz."
       />
+      <BusinessContextNote>
+        Un mismo concepto (por ejemplo, &quot;cliente activo&quot; o
+        &quot;riesgo alto&quot;) puede significar cosas distintas para producto,
+        riesgo y soporte si cada equipo lo interpreta a su manera. Este glosario
+        existe para fijar una única definición oficial por dominio, tabla y
+        columna, y así evitar decisiones tomadas sobre datos mal entendidos.
+      </BusinessContextNote>
       <FilterBar
         search={q}
         searchPlaceholder="Buscar término, dominio o definición…"

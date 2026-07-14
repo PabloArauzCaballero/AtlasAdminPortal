@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { useAuth } from "./auth-context";
 import { sanitizeInternalReturnTo } from "./return-to";
@@ -12,7 +12,6 @@ export function InternalProtectedShell({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { session, isHydrated, refreshProfile, restoreSessionFromServer } =
     useAuth();
   const refreshedRef = useRef(false);
@@ -25,13 +24,13 @@ export function InternalProtectedShell({
     if (!session && !restoredRef.current) {
       restoredRef.current = true;
       void restoreSessionFromServer().then((restored) => {
-        if (!restored) redirectToLogin(pathname, searchParams, router);
+        if (!restored) redirectToLogin(pathname, router);
       });
       return;
     }
 
     if (!session && restoredRef.current) {
-      redirectToLogin(pathname, searchParams, router);
+      redirectToLogin(pathname, router);
       return;
     }
 
@@ -48,7 +47,6 @@ export function InternalProtectedShell({
     refreshProfile,
     restoreSessionFromServer,
     router,
-    searchParams,
     session,
   ]);
 
@@ -59,11 +57,12 @@ export function InternalProtectedShell({
 
 function redirectToLogin(
   pathname: string,
-  searchParams: URLSearchParams,
   router: ReturnType<typeof useRouter>,
 ) {
-  const query = searchParams.toString();
-  const current = `${pathname}${query ? `?${query}` : ""}`;
+  // Read the query string client-side (this only runs inside an effect) so the
+  // shell no longer depends on useSearchParams during render/SSR.
+  const query = typeof window !== "undefined" ? window.location.search : "";
+  const current = `${pathname}${query}`;
   router.replace(
     `/internal/login?returnTo=${encodeURIComponent(sanitizeInternalReturnTo(current))}`,
   );

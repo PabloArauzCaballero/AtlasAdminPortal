@@ -6,6 +6,7 @@ export type DomainNode = {
   dataEntities: number;
   riskyEndpoints: number;
   sensitiveTables: number;
+  pendingReviews: number;
 };
 
 function isRiskyEndpoint(endpoint: EndpointItem) {
@@ -41,6 +42,7 @@ export function buildDomainNodes(
       dataEntities: 0,
       riskyEndpoints: 0,
       sensitiveTables: 0,
+      pendingReviews: 0,
     };
     map.set(key, current);
     return current;
@@ -50,12 +52,16 @@ export function buildDomainNodes(
     const node = ensure(endpoint.module);
     node.endpoints += 1;
     if (isRiskyEndpoint(endpoint)) node.riskyEndpoints += 1;
+    if (["NEEDS_REVIEW", "AUTO_DETECTED"].includes(endpoint.reviewStatus ?? ""))
+      node.pendingReviews += 1;
   });
 
   entities.forEach((entity) => {
     const node = ensure(entity.module);
     node.dataEntities += 1;
     if (isSensitiveEntity(entity)) node.sensitiveTables += 1;
+    if (["NEEDS_REVIEW", "AUTO_DETECTED"].includes(entity.reviewStatus ?? ""))
+      node.pendingReviews += 1;
   });
 
   return Array.from(map.values()).sort(

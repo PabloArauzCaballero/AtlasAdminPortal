@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { TestSuiteDetailPage } from "@/features/qa-console/test-suite-detail-page";
 
 export default async function TestSuiteDetailRoute({

@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { UserDetailPage } from "@/features/internal-users/user-detail-page";
 
 export default async function UserDetailRoute({

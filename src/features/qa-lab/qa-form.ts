@@ -7,6 +7,7 @@ import {
 import type {
   EndpointRunInput,
   EndpointStressRunInput,
+  QaAuthMode,
   QaExpectedResponse,
 } from "./types";
 
@@ -77,6 +78,12 @@ export type CommonFormInput = {
   expectedBodyContains: string;
   maxLatencyMs: number;
   maxResponseSizeBytes: number;
+  scenario?: string;
+  authMode: QaAuthMode;
+  customAuthToken?: string;
+  includeTenantHeader: boolean;
+  includeIdempotencyKey: boolean;
+  deviceProfile?: string;
 };
 
 type RunFormInput = CommonFormInput & {
@@ -124,6 +131,12 @@ function parseCommonForm(
       pathParams: parsed.value.pathParams,
       headers: toStringRecord(parsed.value.headers),
       expectedResponse: expected.value,
+      scenario: input.scenario,
+      authMode: input.authMode,
+      customAuthToken: emptyToUndefined(input.customAuthToken ?? ""),
+      includeTenantHeader: input.includeTenantHeader,
+      includeIdempotencyKey: input.includeIdempotencyKey,
+      deviceProfile: input.deviceProfile,
     },
   };
 }

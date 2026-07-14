@@ -7,12 +7,11 @@ export function LoadingSkeleton({ rows = 6 }: Readonly<{ rows?: number }>) {
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="h-12 overflow-hidden rounded-xl border border-atlas-border bg-slate-100"
+          className="relative h-12 overflow-hidden rounded-xl border border-atlas-border bg-slate-100"
           style={{ animationDelay: `${index * 60}ms` }}
         >
-          <div
-            className="h-full w-full animate-shimmer bg-gradient-to-r from-slate-100 via-slate-200/80 to-slate-100 bg-[length:400px_100%]"
-          />
+          {/* transform-based sweep (compositor-only) instead of animating background-position, which forces a repaint every frame and used to run simultaneously across every row */}
+          <div className="absolute inset-y-0 left-0 w-1/2 animate-shimmer bg-gradient-to-r from-transparent via-slate-200/80 to-transparent" />
         </div>
       ))}
     </div>

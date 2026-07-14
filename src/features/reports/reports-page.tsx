@@ -37,7 +37,7 @@ export function ReportsPage() {
   return (
     <PermissionGate permissions={["reporting.read"]}>
       <PageHeader
-        eyebrow="Fase 7"
+        eyebrow="Reportería"
         title="Reportería dinámica"
         description="Inventario real de `report_definitions`, widgets y fuentes autorizadas del servicio interno."
       />

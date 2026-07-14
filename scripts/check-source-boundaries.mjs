@@ -12,7 +12,10 @@ const checks = [
   {
     label: "storage del navegador",
     pattern: /\b(?:localStorage|sessionStorage)\b/,
-    allowed: new Set(["src/shared/auth/session-storage.ts"]),
+    allowed: new Set([
+      "src/shared/auth/session-storage.ts",
+      "src/shared/lib/local-search-history.ts",
+    ]),
   },
   {
     label: "dangerouslySetInnerHTML",

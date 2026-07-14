@@ -28,12 +28,7 @@ export function CardHeader({
   children,
 }: Readonly<{ className?: string; children: React.ReactNode }>) {
   return (
-    <div
-      className={cn(
-        "border-b border-atlas-border px-5 py-4",
-        className,
-      )}
-    >
+    <div className={cn("border-b border-atlas-border px-5 py-4", className)}>
       {children}
     </div>
   );

@@ -8,6 +8,7 @@ import type { TestRun } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { Button } from "@/shared/components/ui/button";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -86,8 +87,13 @@ export function TestRunsPage() {
   return (
     <PermissionGate permissions={["systems.qa.read"]}>
       <PageHeader
-        title="Ejecuciones QA"
-        description="Historial dinámico desde `/systems/test-runs`."
+        title="Runs QA registrados en backend"
+        description="Historial dinámico desde `/systems/test-runs`. ¿Quieres ejecutar requests directos contra otra URL?"
+        actions={
+          <Link href="/internal/qa/lab">
+            <Button>Abrir QA Live Lab</Button>
+          </Link>
+        }
       />
       <FilterBar
         search=""

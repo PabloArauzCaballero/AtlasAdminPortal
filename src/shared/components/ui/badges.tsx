@@ -43,16 +43,48 @@ export function Badge({
       )}
     >
       {dot ? (
-        <span
-          className={cn(
-            "h-1.5 w-1.5 shrink-0 rounded-full",
-            dotClasses[tone],
-            tone === "success" && "animate-pulse-ring",
-          )}
-        />
+        tone === "success" ? (
+          <LiveDot tone={tone} />
+        ) : (
+          <StaticDot tone={tone} />
+        )
       ) : null}
       {children}
     </span>
+  );
+}
+
+/**
+ * Uses Tailwind's built-in `animate-ping` (transform/opacity, compositor-only)
+ * instead of a box-shadow ripple. The previous box-shadow keyframe forced a
+ * repaint every animation frame on every badge with `dot` — multiplied across
+ * every row of a table, that was a real, continuous (not just load-time)
+ * source of jank on any list with several success-tone badges.
+ */
+export function LiveDot({ tone }: Readonly<{ tone: Tone }>) {
+  return (
+    <span className="relative inline-flex h-1.5 w-1.5 shrink-0">
+      <span
+        className={cn(
+          "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+          dotClasses[tone],
+        )}
+      />
+      <span
+        className={cn(
+          "relative inline-flex h-1.5 w-1.5 rounded-full",
+          dotClasses[tone],
+        )}
+      />
+    </span>
+  );
+}
+
+function StaticDot({ tone }: Readonly<{ tone: Tone }>) {
+  return (
+    <span
+      className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dotClasses[tone])}
+    />
   );
 }
 
@@ -85,7 +117,17 @@ export function ReviewStatusBadge({
         : normalized === "NEEDS_REVIEW"
           ? "warning"
           : "info";
-  return <Badge tone={value ? tone : "muted"}>{value ?? "Sin revisión"}</Badge>;
+  const labels: Record<string, string> = {
+    APPROVED: "Revisado",
+    REJECTED: "Rechazado",
+    NEEDS_REVIEW: "Revisión pendiente",
+    AUTO_DETECTED: "Detectado automáticamente",
+  };
+  return (
+    <Badge tone={value ? tone : "muted"}>
+      {normalized ? (labels[normalized] ?? value) : "Sin revisión"}
+    </Badge>
+  );
 }
 
 export function StatusBadge({ value }: Readonly<{ value?: string | null }>) {

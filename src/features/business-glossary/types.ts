@@ -10,6 +10,7 @@ export type BusinessTerm = {
   status: string;
   relatedTables?: string[];
   relatedColumns?: string[];
+  relatedEndpoints?: string[];
   relatedReports?: string[];
   metadata?: JsonRecord | null;
   updatedAt?: string | null;
@@ -25,6 +26,10 @@ export type BusinessTermDetail = BusinessTerm & {
     targetType: string;
     targetId: string;
     targetLabel: string;
+    sourceTable?: string;
+    sourceColumn?: string | null;
+    targetTable?: string;
+    targetColumn?: string | null;
   }>;
   audit?: Array<{
     auditId: string;

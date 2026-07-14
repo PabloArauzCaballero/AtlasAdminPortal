@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE_URL = "http://localhost:3005/api/v1";
-const DEFAULT_API_TIMEOUT_MS = 20_000;
+const DEFAULT_API_TIMEOUT_MS = 12_000;
 
 export function getApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();

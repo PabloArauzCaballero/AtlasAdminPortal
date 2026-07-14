@@ -7,6 +7,8 @@ import {
 import { extractData, parseJsonSafely, toAtlasApiError } from "./response";
 import { fetchWithTimeout } from "./transport";
 import { getStoredInternalSession } from "@/shared/auth/session-storage";
+import { clearStoredInternalSession } from "@/shared/auth/session-storage";
+import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 
 export async function apiRequest<T>(
   path: string,
@@ -26,6 +28,7 @@ export async function apiRequest<T>(
     if (refreshed) return retryRequest<T>(path, options, refreshed);
   }
 
+  handleUnauthorized(response.status, options);
   throw toAtlasApiError(response, payload);
 }
 
@@ -51,5 +54,18 @@ async function retryRequest<T>(
   );
   const payload = await parseJsonSafely(response);
   if (response.ok) return extractData<T>(payload);
+  handleUnauthorized(response.status, options);
   throw toAtlasApiError(response, payload);
+}
+
+function handleUnauthorized(status: number, options: ApiRequestOptions) {
+  if (status !== 401 || options.skipAuth || typeof window === "undefined")
+    return;
+  clearStoredInternalSession();
+  if (window.location.pathname === "/internal/login") return;
+  const current = `${window.location.pathname}${window.location.search}`;
+  const returnTo = sanitizeInternalReturnTo(current);
+  window.location.replace(
+    `/internal/login?reason=session_expired&returnTo=${encodeURIComponent(returnTo)}`,
+  );
 }

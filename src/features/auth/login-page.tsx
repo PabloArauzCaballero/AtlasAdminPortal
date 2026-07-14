@@ -123,11 +123,7 @@ export function LoginPage() {
               <Input {...register("tenantId")} autoComplete="organization" />
             </Field>
             <Field label="Correo interno" error={errors.email?.message}>
-              <Input
-                {...register("email")}
-                type="email"
-                autoComplete="email"
-              />
+              <Input {...register("email")} type="email" autoComplete="email" />
             </Field>
             <Field label="Contraseña" error={errors.password?.message}>
               <Input

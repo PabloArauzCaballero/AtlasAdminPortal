@@ -10,6 +10,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
@@ -26,6 +27,10 @@ type DefinitionRow = {
   riskDimension: string | null;
   flags: string;
   isActive: boolean;
+  ownerTeam: string | null;
+  domainCode: string | null;
+  reviewStatus: string;
+  relatedTables: string[];
 };
 function toRows(data: DefinitionListResponse): DefinitionRow[] {
   return [
@@ -39,6 +44,10 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
       riskDimension: i.riskDimension,
       flags: i.isHighVolume ? "Alto volumen" : "—",
       isActive: i.isActive,
+      ownerTeam: i.ownerTeam,
+      domainCode: i.domainCode,
+      reviewStatus: i.reviewStatus,
+      relatedTables: i.relatedTables,
     })),
     ...data.observations.map((i) => ({
       id: i.observationDefinitionId,
@@ -50,6 +59,10 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
       riskDimension: i.riskDimension,
       flags: "—",
       isActive: i.isActive,
+      ownerTeam: i.ownerTeam,
+      domainCode: i.domainCode,
+      reviewStatus: i.reviewStatus,
+      relatedTables: [],
     })),
     ...data.attributes.map((i) => ({
       id: i.attributeDefinitionId,
@@ -61,6 +74,10 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
       riskDimension: i.riskDimension,
       flags: i.isSensitive ? "Sensible" : "—",
       isActive: i.isActive,
+      ownerTeam: i.ownerTeam,
+      domainCode: i.domainCode,
+      reviewStatus: i.reviewStatus,
+      relatedTables: [],
     })),
     ...data.features.map((i) => ({
       id: i.featureDefinitionId,
@@ -75,6 +92,10 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
           .filter(Boolean)
           .join(", ") || "—",
       isActive: i.isActive,
+      ownerTeam: i.ownerTeam,
+      domainCode: i.domainCode,
+      reviewStatus: i.reviewStatus,
+      relatedTables: [],
     })),
   ];
 }
@@ -123,6 +144,29 @@ export function DefinitionsPage() {
       },
       { header: "Flags", accessorKey: "flags" },
       {
+        header: "Dominio",
+        accessorKey: "domainCode",
+        cell: ({ row }) => safeText(row.original.domainCode),
+      },
+      {
+        header: "Dueño",
+        accessorKey: "ownerTeam",
+        cell: ({ row }) => safeText(row.original.ownerTeam),
+      },
+      {
+        header: "Tablas",
+        accessorKey: "relatedTables",
+        cell: ({ row }) =>
+          row.original.relatedTables.length
+            ? row.original.relatedTables.join(", ")
+            : "—",
+      },
+      {
+        header: "Revisión",
+        accessorKey: "reviewStatus",
+        cell: ({ row }) => <StatusBadge value={row.original.reviewStatus} />,
+      },
+      {
         header: "Activo",
         accessorKey: "isActive",
         cell: ({ row }) => (
@@ -135,10 +179,20 @@ export function DefinitionsPage() {
   return (
     <PermissionGate permissions={["operations.definitions.read"]}>
       <PageHeader
-        eyebrow="Fase 4"
+        eyebrow="Definiciones"
         title="Definiciones de negocio"
         description="Eventos, observaciones, atributos y features reales desde `/operations/definitions`."
       />
+      <BusinessContextNote>
+        Antes de que el modelo de riesgo o un reporte pueda usar una señal (un
+        evento, un atributo, una feature calculada), esa señal tiene que estar
+        definida en algún lugar: qué significa, de dónde sale y qué tipo de dato
+        es. Esta pantalla es ese diccionario técnico-de-negocio para las señales
+        que alimentan decisiones automatizadas. El dominio de cada fila fue
+        inferido automáticamente desde su dimensión de riesgo (columna
+        &quot;Revisión&quot; = NEEDS_REVIEW), no es información confirmada por
+        una persona todavía.
+      </BusinessContextNote>
       <FilterBar
         search={domain}
         searchPlaceholder="Filtrar por dominio…"

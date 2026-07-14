@@ -17,8 +17,13 @@ import {
 } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { MongoLogsSection } from "./mongo-logs-section";
+
+const tabs = ["Terminal backend", "Auditoría SQL"];
 
 const methodOptions = ["GET", "POST", "PUT", "PATCH", "DELETE"].map(
   (value) => ({ label: value, value }),
@@ -29,6 +34,7 @@ const riskOptions = ["LOW", "MEDIUM", "HIGH", "CRITICAL"].map((value) => ({
 }));
 
 export function AuditPage() {
+  const [activeTab, setActiveTab] = useState(tabs[0]);
   const [page, setPage] = useState(1);
   const [requestId, setRequestId] = useState("");
   const [method, setMethod] = useState("");
@@ -116,63 +122,75 @@ export function AuditPage() {
   return (
     <PermissionGate permissions={["audit.events.read"]}>
       <PageHeader
-        title="Auditoría de acciones internas"
-        description="Eventos registrados por Systems Ops desde `/systems/action-logs`."
+        title="Terminal y auditoría del backend"
+        description="Eventos registrados por Systems Ops desde `/systems/action-logs`, más el tail crudo de `Archivo.log` sincronizado a MongoDB."
       />
-      <FilterBar
-        search={requestId}
-        searchPlaceholder="Filtrar por Request ID…"
-        onSearchChange={(value) => {
-          setRequestId(value);
-          setPage(1);
-        }}
-        onFilterChange={(name, value) => {
-          if (name === "method") setMethod(value);
-          if (name === "riskLevel") setRiskLevel(value);
-          setPage(1);
-        }}
-        onClear={() => {
-          setRequestId("");
-          setMethod("");
-          setRiskLevel("");
-          setPage(1);
-        }}
-        filters={[
-          {
-            name: "method",
-            label: "Método",
-            value: method,
-            options: methodOptions,
-          },
-          {
-            name: "riskLevel",
-            label: "Riesgo",
-            value: riskLevel,
-            options: riskOptions,
-          },
-        ]}
-      />
-      {logs.isLoading ? <LoadingSkeleton rows={8} /> : null}
-      {logs.error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(logs.error)
-              ? logs.error.message
-              : "No se pudo cargar auditoría."
-          }
-          requestId={
-            isAtlasApiError(logs.error) ? logs.error.requestId : undefined
-          }
-          onRetry={() => void logs.refetch()}
-        />
-      ) : null}
-      {logs.data ? (
-        <DataTable
-          data={logs.data.items}
-          columns={columns}
-          meta={logs.data.meta}
-          onPageChange={setPage}
-        />
+      <BusinessContextNote>
+        Cuando algo sale mal para un cliente — un pago rechazado, una decisión
+        de riesgo incorrecta, un dato que cambió sin explicación — alguien
+        necesita reconstruir exactamente qué pasó, cuándo y quién lo hizo. Esta
+        auditoría existe para eso: es el registro forense de la plataforma.
+      </BusinessContextNote>
+      <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      {activeTab === "Terminal backend" ? <MongoLogsSection /> : null}
+      {activeTab === "Auditoría SQL" ? (
+        <>
+          <FilterBar
+            search={requestId}
+            searchPlaceholder="Filtrar por Request ID…"
+            onSearchChange={(value) => {
+              setRequestId(value);
+              setPage(1);
+            }}
+            onFilterChange={(name, value) => {
+              if (name === "method") setMethod(value);
+              if (name === "riskLevel") setRiskLevel(value);
+              setPage(1);
+            }}
+            onClear={() => {
+              setRequestId("");
+              setMethod("");
+              setRiskLevel("");
+              setPage(1);
+            }}
+            filters={[
+              {
+                name: "method",
+                label: "Método",
+                value: method,
+                options: methodOptions,
+              },
+              {
+                name: "riskLevel",
+                label: "Riesgo",
+                value: riskLevel,
+                options: riskOptions,
+              },
+            ]}
+          />
+          {logs.isLoading ? <LoadingSkeleton rows={8} /> : null}
+          {logs.error ? (
+            <ErrorState
+              description={
+                isAtlasApiError(logs.error)
+                  ? logs.error.message
+                  : "No se pudo cargar auditoría."
+              }
+              requestId={
+                isAtlasApiError(logs.error) ? logs.error.requestId : undefined
+              }
+              onRetry={() => void logs.refetch()}
+            />
+          ) : null}
+          {logs.data ? (
+            <DataTable
+              data={logs.data.items}
+              columns={columns}
+              meta={logs.data.meta}
+              onPageChange={setPage}
+            />
+          ) : null}
+        </>
       ) : null}
     </PermissionGate>
   );

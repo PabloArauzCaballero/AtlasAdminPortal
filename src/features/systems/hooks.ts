@@ -6,50 +6,67 @@ import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
   getActionLogsByRequest,
-  getStressProfile,
+  getDomain,
   getTool,
+  inferDataImpacts,
   inferToolRequirements,
   getDashboard,
   getDataEntity,
   getEndpoint,
   getImpactByEndpoint,
   getImpactByTable,
-  getTestRun,
-  getTestSuite,
   getToolsHealth,
+  getTrafficLatencyReport,
+  getTrafficLatencyTimeseries,
   listActionLogs,
+  listDomains,
+  listMongoLogs,
   listReviewQueue,
-  listStressMatrix,
-  listStressProfiles,
-  listStressRuns,
   listTools,
   listDataEntities,
   listEndpoints,
-  listTestRuns,
-  listTestSuites,
-  queueStressRun,
   refreshCatalogSeed,
   reviewCatalogTarget,
-  runTestSuite,
   updateDataEntityMetadata,
 } from "./services";
 import type {
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
-  QueueStressRunInput,
   ReviewDecisionInput,
   ReviewTargetType,
   DataEntityMetadataInput,
 } from "./types";
 
 export { useEndpointsByIds } from "./endpoint-reference-hooks";
+export {
+  useStressProfiles,
+  useStressProfile,
+  useStressMatrix,
+  useQueueStressRunMutation,
+  useStressRuns,
+} from "./stress-hooks";
+export {
+  useTestSuites,
+  useTestSuite,
+  useRunTestSuiteMutation,
+  useTestRuns,
+  useTestRun,
+} from "./qa-hooks";
 
 export function useDashboard() {
   return useQuery({ queryKey: queryKeys.dashboard, queryFn: getDashboard });
 }
 
 export function useToolsHealth() {
-  return useQuery({ queryKey: queryKeys.toolsHealth, queryFn: getToolsHealth });
+  return useQuery({
+    queryKey: queryKeys.toolsHealth,
+    queryFn: getToolsHealth,
+    // Mantiene la vista sincronizada con el monitor del backend que dispara las
+    // notificaciones de "servicio caído/recuperado": sin esto la página puede
+    // mostrar un estado viejo mientras la campana ya avisó el incidente.
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
 }
 
 export function useEndpoints(query: QueryParams) {
@@ -115,57 +132,6 @@ export function useTableImpact(
   });
 }
 
-export function useTestSuites(query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.testSuites(query),
-    queryFn: () => listTestSuites(query),
-  });
-}
-
-export function useTestSuite(suiteId: string) {
-  return useQuery({
-    queryKey: queryKeys.testSuite(suiteId),
-    queryFn: () => getTestSuite(suiteId),
-    enabled: Boolean(suiteId),
-  });
-}
-
-export function useRunTestSuiteMutation(suiteId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: {
-      environment: string;
-      dryRun: boolean;
-      timeoutMs: number;
-      config: Record<string, unknown>;
-      headers: Record<string, string>;
-    }) => runTestSuite(suiteId, body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["systems", "test-runs"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.testSuite(suiteId),
-      });
-    },
-  });
-}
-
-export function useTestRuns(query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.testRuns(query),
-    queryFn: () => listTestRuns(query),
-  });
-}
-
-export function useTestRun(runId: string) {
-  return useQuery({
-    queryKey: queryKeys.testRun(runId),
-    queryFn: () => getTestRun(runId),
-    enabled: Boolean(runId),
-  });
-}
-
 export function useActionLogs(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.actionLogs(query),
@@ -178,6 +144,36 @@ export function useActionLogsByRequest(requestId: string) {
     queryKey: queryKeys.actionLogsByRequest(requestId),
     queryFn: () => getActionLogsByRequest(requestId),
     enabled: Boolean(requestId),
+  });
+}
+
+export function useMongoLogs(query: QueryParams, options?: { live?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.mongoLogs(query),
+    queryFn: () => listMongoLogs(query),
+    refetchInterval: options?.live ? 10_000 : false,
+  });
+}
+
+export function useTrafficLatencyReport(
+  windowHours: number,
+  options?: { live?: boolean },
+) {
+  return useQuery({
+    queryKey: ["systems", "traffic-latency", windowHours] as const,
+    queryFn: () => getTrafficLatencyReport(windowHours),
+    refetchInterval: options?.live ? 5_000 : false,
+  });
+}
+
+export function useTrafficLatencyTimeseries(
+  windowHours: number,
+  options?: { live?: boolean },
+) {
+  return useQuery({
+    queryKey: ["systems", "traffic-latency-timeseries", windowHours] as const,
+    queryFn: () => getTrafficLatencyTimeseries(windowHours),
+    refetchInterval: options?.live ? 5_000 : false,
   });
 }
 
@@ -196,10 +192,35 @@ export function useTool(toolId: string) {
   });
 }
 
+export function useDomains(query: QueryParams) {
+  return useQuery({
+    queryKey: queryKeys.domains(query),
+    queryFn: () => listDomains(query),
+  });
+}
+
+export function useDomain(domainCode: string) {
+  return useQuery({
+    queryKey: queryKeys.domain(domainCode),
+    queryFn: () => getDomain(domainCode),
+    enabled: Boolean(domainCode),
+  });
+}
+
 export function useInferToolRequirementsMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: { persist: boolean }) => inferToolRequirements(body),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["systems"] });
+    },
+  });
+}
+
+export function useInferDataImpactsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { persist: boolean }) => inferDataImpacts(body),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["systems"] });
     },
@@ -244,49 +265,5 @@ export function useReviewTargetMutation() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["systems"] });
     },
-  });
-}
-
-export function useStressProfiles(query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.stressProfiles(query),
-    queryFn: () => listStressProfiles(query),
-  });
-}
-
-export function useStressProfile(profileId: string) {
-  return useQuery({
-    queryKey: queryKeys.stressProfile(profileId),
-    queryFn: () => getStressProfile(profileId),
-    enabled: Boolean(profileId),
-  });
-}
-
-export function useStressMatrix(query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.stressMatrix(query),
-    queryFn: () => listStressMatrix(query),
-  });
-}
-
-export function useQueueStressRunMutation(profileId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: QueueStressRunInput) => queueStressRun(profileId, body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["systems", "stress-runs"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.stressProfile(profileId),
-      });
-    },
-  });
-}
-
-export function useStressRuns(query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.stressRuns(query),
-    queryFn: () => listStressRuns(query),
   });
 }

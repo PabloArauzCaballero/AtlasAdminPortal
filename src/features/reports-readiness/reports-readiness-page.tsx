@@ -20,7 +20,9 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function ReportsReadinessPage() {
+export function ReportsReadinessPage({
+  embedded = false,
+}: Readonly<{ embedded?: boolean }>) {
   const dashboard = useDashboard();
   const endpoints = useEndpoints({ page: 1, limit: 100 });
   const entities = useDataEntities({ page: 1, limit: 100 });
@@ -66,13 +68,20 @@ export function ReportsReadinessPage() {
     };
   }, [endpoints.data?.items, entities.data?.items, suites.data?.items]);
 
-  return (
-    <PermissionGate permissions={["reporting.read"]}>
-      <PageHeader
-        eyebrow="Reporterías"
-        title="Preparación para reportería dinámica"
-        description="Fase 3 no crea métricas ficticias. Mide si catálogo, endpoints y QA ya tienen suficiente metadata para construir `report_definitions` y widgets reales."
-      />
+  const content = (
+    <>
+      {!embedded ? (
+        <PageHeader
+          eyebrow="Reporterías"
+          title="Readiness Release"
+          description="Esta vista mide si el catálogo, los endpoints y QA ya tienen suficiente metadata para construir reportes y widgets reales, sin inventar métricas."
+        />
+      ) : (
+        <SectionHeader
+          title="Readiness de metadata para reportes"
+          description="Cobertura complementaria para confirmar que el release cuenta con metadata y QA suficientes."
+        />
+      )}
       {dashboard.isLoading ||
       endpoints.isLoading ||
       entities.isLoading ||
@@ -183,17 +192,12 @@ export function ReportsReadinessPage() {
           <Card>
             <CardHeader>
               <SectionHeader
-                title="Siguiente paso correcto"
-                description="Evitar dashboards falsos. Primero cerrar contratos de reportería dinámica."
+                title="Accesos rápidos"
+                description="Completa la metadata que falta directamente en cada módulo."
                 className="mb-0"
               />
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-atlas-muted">
-              <p>
-                Para convertir esta pantalla en reportería ejecutiva real, el
-                servicio interno debe exponer `report_definitions`,
-                `report_widgets`, filtros, fuentes y permisos por reporte.
-              </p>
+            <CardContent>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Link
                   className="rounded-md border border-atlas-border p-4 font-medium text-atlas-text hover:bg-atlas-soft"
@@ -224,6 +228,11 @@ export function ReportsReadinessPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
+  );
+  return embedded ? (
+    content
+  ) : (
+    <PermissionGate permissions={["reporting.read"]}>{content}</PermissionGate>
   );
 }

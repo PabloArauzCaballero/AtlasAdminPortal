@@ -20,6 +20,7 @@ import {
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatDateTime } from "@/shared/lib/format";
+import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 const riskOptions = [
@@ -43,8 +44,18 @@ export function EndpointsPage() {
   const [q, setQ] = useState(initialQ);
   const [riskLevel, setRiskLevel] = useState("");
   const [reviewStatus, setReviewStatus] = useState("");
-  const query = { page, limit: 20, q, riskLevel, reviewStatus };
+  const [backendService, setBackendService] = useState("");
+  const query = { page, limit: 20, q, riskLevel, reviewStatus, backendService };
   const endpoints = useEndpoints(query);
+  const backendOptions = useMemo(
+    () =>
+      uniqueTextOptions(
+        (endpoints.data?.items ?? []).map(
+          (item) => item.backendService ?? "atlas-backend",
+        ),
+      ),
+    [endpoints.data?.items],
+  );
 
   const columns = useMemo<ColumnDef<EndpointItem>[]>(
     () => [
@@ -74,6 +85,15 @@ export function EndpointsPage() {
         header: "Módulo",
         accessorKey: "module",
         cell: ({ row }) => <ModuleBadge value={row.original.module} />,
+      },
+      {
+        header: "Backend",
+        accessorKey: "backendService",
+        cell: ({ row }) => (
+          <span className="rounded-full border border-atlas-border bg-atlas-soft px-2 py-0.5 font-mono text-[11px] text-atlas-muted">
+            {row.original.backendService ?? "atlas-backend"}
+          </span>
+        ),
       },
       {
         header: "QA",
@@ -152,15 +172,23 @@ export function EndpointsPage() {
         onFilterChange={(name, value) => {
           if (name === "riskLevel") setRiskLevel(value);
           if (name === "reviewStatus") setReviewStatus(value);
+          if (name === "backendService") setBackendService(value);
           setPage(1);
         }}
         onClear={() => {
           setQ("");
           setRiskLevel("");
           setReviewStatus("");
+          setBackendService("");
           setPage(1);
         }}
         filters={[
+          {
+            name: "backendService",
+            label: "Backend",
+            value: backendService,
+            options: backendOptions,
+          },
           {
             name: "riskLevel",
             label: "Riesgo",

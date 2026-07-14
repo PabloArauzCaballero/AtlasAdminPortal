@@ -35,6 +35,7 @@ type AuthContextValue = {
   restoreSessionFromServer: () => Promise<InternalSession | null>;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -136,6 +137,8 @@ export function AuthProvider({
       hasAnyPermission: (required: string[]) =>
         required.length === 0 ||
         required.some((permission) => permissions.includes(permission)),
+      hasAnyRole: (required: string[]) =>
+        required.length === 0 || required.some((role) => roles.includes(role)),
     };
   }, [
     session,

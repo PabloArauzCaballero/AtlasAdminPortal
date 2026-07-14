@@ -31,13 +31,13 @@
 Confirmado con requests reales contra `http://localhost:3005/api/v1` con un
 usuario `SUPER_ADMIN`:
 
-| Endpoint | Campo esperado por frontend | Realidad backend |
-|---|---|---|
-| `GET /systems/data-entities/:id` | `columns[]` | **No existe la clave.** |
-| `GET /systems/impact/by-table/:schema/:table` | `columns[]` | **No existe la clave.** |
-| `GET /systems/impact/by-table/:schema/:table` | `endpointImpacts[]` | **Sí existe y trae datos reales** (ej. 14 impactos en `attribute_definitions`), pero solo con `endpointId` — sin `fullPath`/`method` embebido (ya mitigado en frontend con `useEndpointsByIds`, ver commit de este mismo hilo). |
-| `GET /internal/business-metadata/glossary` | `relatedTables`, `relatedColumns` | Existen como claves pero **siempre `[]`**. |
-| `GET /internal/business-metadata/terms/:id` | `relations` | Existe como clave pero **siempre `[]`**. `audit[]` sí trae datos reales. |
+| Endpoint                                      | Campo esperado por frontend       | Realidad backend                                                                                                                                                                                                                |
+| --------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /systems/data-entities/:id`              | `columns[]`                       | **No existe la clave.**                                                                                                                                                                                                         |
+| `GET /systems/impact/by-table/:schema/:table` | `columns[]`                       | **No existe la clave.**                                                                                                                                                                                                         |
+| `GET /systems/impact/by-table/:schema/:table` | `endpointImpacts[]`               | **Sí existe y trae datos reales** (ej. 14 impactos en `attribute_definitions`), pero solo con `endpointId` — sin `fullPath`/`method` embebido (ya mitigado en frontend con `useEndpointsByIds`, ver commit de este mismo hilo). |
+| `GET /internal/business-metadata/glossary`    | `relatedTables`, `relatedColumns` | Existen como claves pero **siempre `[]`**.                                                                                                                                                                                      |
+| `GET /internal/business-metadata/terms/:id`   | `relations`                       | Existe como clave pero **siempre `[]`**. `audit[]` sí trae datos reales.                                                                                                                                                        |
 
 Conclusión: el contrato (forma/nombres de campo) ya está bien diseñado y
 alineado con lo que el frontend consume. Lo que falta es **población de
@@ -150,13 +150,13 @@ están preparados con los alias correctos.
 Esto es lo que distingue un catálogo técnico de uno realmente útil para
 negocio. Para cada **tabla** y cada **columna**, capturar:
 
-- `system_purpose`: rol técnico en el sistema — ej. *"Tabla transaccional que
+- `system_purpose`: rol técnico en el sistema — ej. _"Tabla transaccional que
   registra cada decisión de scoring; se escribe desde
   `POST /operations/risk-policy/ruleset-versions/:id/activate` y se lee para
-  auditoría regulatoria."*
-- `business_purpose`: impacto de negocio — ej. *"Si esta columna se corrompe,
+  auditoría regulatoria."_
+- `business_purpose`: impacto de negocio — ej. _"Si esta columna se corrompe,
   el motor de riesgo puede aprobar créditos con reglas obsoletas; afecta
-  directamente pérdida esperada y cumplimiento normativo."*
+  directamente pérdida esperada y cumplimiento normativo."_
 
 Proceso propuesto (evita bloquear el seed automático con trabajo manual):
 
@@ -223,8 +223,8 @@ join, no falta el campo). Una vez que exista `data_catalog_columns` con
 ## 7. Fuera de alcance de este plan
 
 - No se reemplaza `fieldImpacts` (impacto de campo por endpoint) — es
-  complementario: `fieldImpacts` describe *qué endpoint toca qué campo*,
-  `data_catalog_columns` describe *qué es y para qué sirve el campo en sí*.
+  complementario: `fieldImpacts` describe _qué endpoint toca qué campo_,
+  `data_catalog_columns` describe _qué es y para qué sirve el campo en sí_.
   Ambos deben coexistir y, cuando aplique, referenciarse por
   `(data_entity_id, column_name)`.
 - No se define aquí el masking/exportación de columnas sensibles (ya

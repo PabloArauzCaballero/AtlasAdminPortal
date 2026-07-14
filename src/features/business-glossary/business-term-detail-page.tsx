@@ -1,8 +1,11 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
 import { useBusinessTerm } from "./hooks";
+import type { BusinessTermDetail } from "./types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import { DataTable } from "@/shared/components/data-table/data-table";
 import {
   PageHeader,
   SectionHeader,
@@ -13,6 +16,37 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+
+type Relation = NonNullable<BusinessTermDetail["relations"]>[number];
+type AuditEntry = NonNullable<BusinessTermDetail["audit"]>[number];
+
+const relationColumns: ColumnDef<Relation>[] = [
+  { header: "Tipo", accessorKey: "relationType" },
+  {
+    header: "Origen",
+    accessorFn: (row) =>
+      row.sourceTable
+        ? `${row.sourceTable}${row.sourceColumn ? `.${row.sourceColumn}` : ""}`
+        : "—",
+  },
+  { header: "Destino tipo", accessorKey: "targetType" },
+  {
+    header: "Destino",
+    accessorFn: (row) =>
+      row.targetTable
+        ? `${row.targetTable}${row.targetColumn ? `.${row.targetColumn}` : ""}`
+        : row.targetLabel,
+  },
+];
+
+const auditColumns: ColumnDef<AuditEntry>[] = [
+  { header: "Acción", accessorKey: "action" },
+  { header: "Actor", accessorFn: (row) => row.actor ?? "—" },
+  {
+    header: "Fecha",
+    accessorFn: (row) => formatDateTime(row.createdAt),
+  },
+];
 
 export function BusinessTermDetailPage({
   termId,
@@ -52,6 +86,7 @@ export function BusinessTermDetailPage({
               { label: "Actualizado", value: formatDateTime(data.updatedAt) },
               { label: "Tablas", value: data.relatedTables?.join(", ") },
               { label: "Columnas", value: data.relatedColumns?.join(", ") },
+              { label: "Endpoints", value: data.relatedEndpoints?.join(", ") },
             ]}
           />
           <Card>
@@ -63,10 +98,34 @@ export function BusinessTermDetailPage({
               <JsonViewer title="Metadata" value={data.metadata} />
             </CardContent>
           </Card>
-          <JsonViewer
-            title="Relaciones y auditoría"
-            value={{ relations: data.relations ?? [], audit: data.audit ?? [] }}
-          />
+          <Card>
+            <CardHeader>
+              <SectionHeader
+                title="Relaciones"
+                description="Relaciones de clave foránea u origen documental de este término."
+                className="mb-0"
+              />
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                data={data.relations ?? []}
+                columns={relationColumns}
+                emptyTitle="Sin relaciones registradas."
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <SectionHeader title="Auditoría" className="mb-0" />
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                data={data.audit ?? []}
+                columns={auditColumns}
+                emptyTitle="Sin eventos de auditoría registrados."
+              />
+            </CardContent>
+          </Card>
         </div>
       ) : null}
     </PermissionGate>

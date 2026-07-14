@@ -2,6 +2,8 @@
 
 import { Breadcrumbs } from "./breadcrumbs";
 import { GlobalSearchBox } from "./global-search-box";
+import { LiveDot } from "@/shared/components/ui/badges";
+import { NotificationBell } from "@/features/my-notifications/notification-bell";
 import {
   getRuntimeEnvironmentLabel,
   getServiceOriginLabel,
@@ -14,12 +16,15 @@ export function AppTopbar() {
         <div className="min-w-0">
           <Breadcrumbs />
           <p className="mt-1 flex items-center gap-1.5 text-xs text-atlas-muted">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-ring" />
+            <LiveDot tone="success" />
             Ambiente: {getRuntimeEnvironmentLabel()} · {getServiceOriginLabel()}
           </p>
         </div>
-        <div className="hidden w-full max-w-sm items-center gap-2 md:flex">
-          <GlobalSearchBox />
+        <div className="flex flex-1 items-center justify-end gap-3">
+          <div className="hidden w-full max-w-sm items-center gap-2 md:flex">
+            <GlobalSearchBox />
+          </div>
+          <NotificationBell />
         </div>
       </div>
     </header>

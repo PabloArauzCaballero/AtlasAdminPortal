@@ -56,8 +56,8 @@ export function DataTable<T>({
             {meta?.total ?? data.length}
           </span>
         </div>
-        <div className="atlas-scrollbar atlas-table-scroll max-h-[560px] overflow-y-auto">
-          <table className="min-w-full border-collapse text-sm">
+        <div className="atlas-scrollbar atlas-table-scroll max-h-[560px] overflow-auto">
+          <table className="w-full min-w-max border-collapse text-sm">
             <thead className="sticky top-0 z-10 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-atlas-muted shadow-[0_1px_0_0_theme(colors.atlas.border)]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>

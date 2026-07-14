@@ -27,6 +27,9 @@ export type DefinitionListResponse = {
     sourceGroup: string | null;
     riskDimension: string | null;
     isActive: boolean;
+    ownerTeam: string | null;
+    domainCode: string | null;
+    reviewStatus: string;
   }>;
   events: Array<{
     eventDefinitionId: string;
@@ -37,6 +40,10 @@ export type DefinitionListResponse = {
     riskDimension: string | null;
     isHighVolume: boolean;
     isActive: boolean;
+    ownerTeam: string | null;
+    domainCode: string | null;
+    reviewStatus: string;
+    relatedTables: string[];
   }>;
   attributes: Array<{
     attributeDefinitionId: string;
@@ -47,6 +54,9 @@ export type DefinitionListResponse = {
     riskDimension: string | null;
     isSensitive: boolean;
     isActive: boolean;
+    ownerTeam: string | null;
+    domainCode: string | null;
+    reviewStatus: string;
   }>;
   features: Array<{
     featureDefinitionId: string;
@@ -58,6 +68,9 @@ export type DefinitionListResponse = {
     isModelInput: boolean;
     isPolicyRuleInput: boolean;
     isActive: boolean;
+    ownerTeam: string | null;
+    domainCode: string | null;
+    reviewStatus: string;
   }>;
 };
 

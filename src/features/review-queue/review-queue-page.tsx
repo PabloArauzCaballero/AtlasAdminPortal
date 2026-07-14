@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -70,16 +71,27 @@ export function ReviewQueuePage() {
   return (
     <PermissionGate permissions={["systems.reviewQueue.read"]}>
       <PageHeader
-        eyebrow="Fase 5"
+        eyebrow="Cola de revisión"
         title="Cola de revisión"
         description="Revisión controlada de endpoints, tablas, impactos y herramientas detectadas por Systems Ops. Cada sección está separada para evitar componentes gigantes."
         actions={
-          <Button onClick={() => void queue.refetch()}>
+          <Button
+            onClick={() => void queue.refetch()}
+            isLoading={queue.isFetching}
+            loadingText="Actualizando…"
+          >
             <RefreshCw className="h-4 w-4" />
             Actualizar
           </Button>
         }
       />
+      <BusinessContextNote>
+        El catálogo de endpoints y tablas se llena automáticamente escaneando el
+        código (auto-detectado), pero eso puede equivocarse. Esta cola existe
+        para que una persona confirme o corrija esas detecciones antes de que el
+        resto de la plataforma (QA, gobierno, reportes) confíe ciegamente en
+        datos sin revisar.
+      </BusinessContextNote>
       <FilterBar
         search={module}
         searchPlaceholder="Filtrar por módulo…"

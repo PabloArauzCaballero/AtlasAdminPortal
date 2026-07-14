@@ -90,14 +90,17 @@ El frontend soporta modo `cookie`, `session` y `auto`. Producción debe usar coo
 
 ## Seguridad, usuarios y auditoría
 
-| Método | Ruta                                      | Pantalla              | Permiso esperado            |
-| ------ | ----------------------------------------- | --------------------- | --------------------------- |
-| GET    | `/internal/users`                         | Usuarios              | `internal.users.read`       |
-| GET    | `/internal/users/:internalUserId`         | Detalle usuario       | `internal.users.read`       |
-| GET    | `/internal/roles`                         | Roles                 | `internal.roles.read`       |
-| GET    | `/internal/permissions`                   | Permisos              | `internal.permissions.read` |
-| GET    | `/systems/action-logs`                    | Auditoría             | `audit.events.read`         |
-| GET    | `/systems/action-logs/request/:requestId` | Auditoría por request | `audit.events.detail`       |
+| Método | Ruta                                         | Pantalla              | Permiso esperado            |
+| ------ | -------------------------------------------- | --------------------- | --------------------------- |
+| GET    | `/internal/users`                            | Usuarios              | `internal.users.read`       |
+| GET    | `/internal/users/:internalUserId`            | Detalle usuario       | `internal.users.read`       |
+| POST   | `/internal/auth/signup`                      | Alta usuario interno  | `internal.users.manage`     |
+| PATCH  | `/internal/users/:internalUserId`            | Editar/desactivar     | `internal.users.manage`     |
+| PATCH  | `/internal/users/:internalUserId/roles`      | Asignar roles al alta | `internal.users.manage`     |
+| GET    | `/internal/roles`                            | Roles                 | `internal.roles.read`       |
+| GET    | `/internal/permissions`                      | Permisos              | `internal.permissions.read` |
+| GET    | `/systems/action-logs`                       | Auditoría             | `audit.events.read`         |
+| GET    | `/systems/action-logs/by-request/:requestId` | Auditoría por request | `audit.events.detail`       |
 
 ## Operaciones, gobierno y calidad
 
@@ -130,6 +133,40 @@ El frontend soporta modo `cookie`, `session` y `auto`. Producción debe usar coo
 | GET    | `/internal/lineage/nodes/:nodeId`           | Nodo lineage     | `lineage.read`           |
 | GET    | `/internal/lineage/impact`                  | Impacto lineage  | `lineage.read`           |
 
+## Notificaciones
+
+Estos endpoints usaban `data`/`pagination` (no `items`/`meta`) sin documentar — el cliente
+API solo normaliza `items`+`pagination` -> `meta` automáticamente (`shared/api/response.ts`);
+como este módulo pagina bajo la clave `data`, `src/features/notifications/services.ts` y
+`src/features/my-notifications/services.ts` remapean manualmente. Si el backend cambia esa forma,
+hay que tocar esos dos archivos.
+
+| Método | Ruta                                                    | Pantalla                   | Permiso esperado                                                                              |
+| ------ | ------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| GET    | `/operations/notifications/messages`                    | Mensajería interna         | `notifications.messages.read`                                                                 |
+| GET    | `/operations/notifications/messages/:messageId`         | Detalle mensaje            | `notifications.messages.read`                                                                 |
+| POST   | `/operations/notifications/messages/:messageId/retry`   | Reintentar entrega         | `notifications.messages.manage`                                                               |
+| POST   | `/operations/notifications/messages/:messageId/cancel`  | Cancelar mensaje           | `notifications.messages.manage`                                                               |
+| GET    | `/operations/notifications/templates`                   | Plantillas                 | `notifications.templates.read`                                                                |
+| POST   | `/operations/notifications/templates`                   | Nueva plantilla            | `notifications.templates.manage`                                                              |
+| PATCH  | `/operations/notifications/templates/:templateId`       | Editar plantilla           | `notifications.templates.manage`                                                              |
+| POST   | `/operations/notifications/broadcast`                   | Enviar notificación        | `notifications.messages.manage` (backend además exige rol legacy admin/platform_admin/system) |
+| GET    | `/internal-users/me/notifications`                      | Mis notificaciones         | Sesión válida (autoservicio, sin permiso administrativo)                                      |
+| GET    | `/internal-users/me/notifications/unread-count`         | Mis notificaciones (badge) | Sesión válida                                                                                 |
+| POST   | `/internal-users/me/notifications/:notificationId/read` | Marcar como leída          | Sesión válida                                                                                 |
+| POST   | `/internal-users/me/notifications/read-all`             | Marcar todas como leídas   | Sesión válida                                                                                 |
+
+`POST /operations/notifications/broadcast` crea y entrega mensajes in-app reales (no una
+simulación): uno por destinatario resuelto, vía `bulkCreate` + el mismo orchestrator de entrega
+que usan los eventos de dominio. Requiere `x-idempotency-key`. `audience` es
+`customers | internal_users | both`; sin `customerIds`/`internalUserIds` explícitos, apunta a
+TODOS los activos de esa audiencia — el frontend pide confirmación explícita antes de enviar.
+
+Las alertas automáticas de servicios caídos (`SystemsHealthMonitorService`, backend) llegan por
+este mismo canal: se entregan como `recipientType: internal_user` con
+`category: system_alert`, visibles en "Mis notificaciones" de cada usuario interno, sin acción
+del frontend más allá de listar/marcar leído.
+
 ## Operación productiva
 
 | Método | Ruta                                    | Pantalla            | Permiso esperado              |
@@ -144,3 +181,40 @@ El frontend soporta modo `cookie`, `session` y `auto`. Producción debe usar coo
 | GET    | `/internal/exports/:exportId`           | Detalle exportación | `internal.exports.read`       |
 
 La apertura de archivo exportado requiere `internal.exports.download` y confirmación explícita.
+
+### Alta de usuario interno (`POST /internal/auth/signup` + `PATCH /internal/users/:id/roles`)
+
+CORRECCION_ATLAS (2026-07-10): esta sección documentaba antes un endpoint
+`POST /internal/users` que **no existe** en el backend real. El dump de rutas
+del backend (`QA_LAB_BACKEND_ENDPOINT_CONTRACT.json`, módulo
+`internal-users/internal-auth.controller.ts`) confirma que el alta real es
+`POST /internal/auth/signup`, y que la asignación de roles es un paso
+separado vía `PATCH /internal/users/:internalUserId/roles` (handler
+`replaceRoles`). El frontend hace 3 llamadas encadenadas para dar de alta:
+
+1. `POST /internal/auth/signup` — crea la cuenta. El admin **no** elige la
+   contraseña de otra persona a mano: el frontend genera una contraseña
+   temporal aleatoria (`crypto.getRandomValues`, 20 caracteres) solo para
+   cumplir el campo obligatorio del contrato; nunca se registra en logs ni se
+   reutiliza.
+   ```json
+   {
+     "email": "nombre.apellido@empresa.com",
+     "password": "<temporal, generada client-side>",
+     "fullName": "Nombre Apellido",
+     "department": "OPERATIONS",
+     "jobTitle": "Analista"
+   }
+   ```
+2. `PATCH /internal/users/:internalUserId/roles` — `{ "roles": ["role-code-1"] }`.
+3. `PATCH /internal/users/:internalUserId` — `{ "mustChangePassword": true, "reason": "..." }`
+   (reusa el endpoint de edición ya documentado) para forzar cambio de
+   contraseña en el primer login y dejar el motivo auditado.
+
+PENDIENTE_ATLAS: no tenemos el DTO real de `signup` (solo el nombre de ruta
+desde el dump de controllers, sin body). Falta confirmar con el equipo de
+backend: nombres exactos de campos, si `tenantId` es obligatorio en el body o
+si se infiere del header `x-tenant-id` (como en el resto de endpoints
+internos), si el endpoint exige permiso `internal.users.manage` o si es
+autoservicio público, y si rechaza `email` duplicado. Hasta confirmar esto,
+tratar el flujo de alta como best-effort, no como contrato congelado.

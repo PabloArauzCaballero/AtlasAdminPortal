@@ -6,9 +6,7 @@ export type QaJsonField = {
   onChange: (value: string) => void;
 };
 
-export function QaJsonFields({
-  fields,
-}: Readonly<{ fields: QaJsonField[] }>) {
+export function QaJsonFields({ fields }: Readonly<{ fields: QaJsonField[] }>) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {fields.map((field) => (

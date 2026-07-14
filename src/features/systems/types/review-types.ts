@@ -62,3 +62,52 @@ export type EndpointDiscoveryInput = {
 };
 
 export type ActionLogListResponse = PaginatedResponse<ActionLog>;
+
+export type MongoLogEntry = {
+  id: string;
+  type: "startup" | "append" | "rotation" | string;
+  service: string | null;
+  capturedAt: string | null;
+  content: string | null;
+  lineCount: number | null;
+  bytes: number | null;
+  fileSize: number | null;
+  source: { filePath?: string; fileName?: string } | null;
+};
+
+export type MongoLogListResponse = PaginatedResponse<MongoLogEntry>;
+
+export type TrafficLatencyRoute = {
+  routeTemplate: string | null;
+  method: string;
+  totalRequests: number;
+  avgLatencyMs: number | null;
+  p95LatencyMs: number | null;
+  errorRate: number;
+  lastSeenAt: string;
+};
+
+export type TrafficLatencyReport = {
+  windowHours: number;
+  summary: {
+    totalRequests: number;
+    avgLatencyMs: number;
+    p95LatencyMs: number;
+    errorRate: number;
+  };
+  routes: TrafficLatencyRoute[];
+};
+
+export type TrafficLatencyBucket = {
+  bucketStart: string;
+  totalRequests: number;
+  avgLatencyMs: number;
+  p95LatencyMs: number;
+  errorRate: number;
+};
+
+export type TrafficLatencyTimeseries = {
+  windowHours: number;
+  bucketMinutes: number;
+  buckets: TrafficLatencyBucket[];
+};

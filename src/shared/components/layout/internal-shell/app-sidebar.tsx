@@ -26,7 +26,7 @@ function NavLink({
     <Link
       href={item.href}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-all duration-150 hover:bg-white/5 hover:text-white",
+        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-all duration-200 ease-out hover:translate-x-0.5 hover:bg-white/5 hover:text-white",
         indent && "pl-9",
         active && "bg-white/10 text-white",
       )}
@@ -50,7 +50,7 @@ function NavLink({
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user, hasAnyPermission, logout } = useAuth();
+  const { user, hasAnyPermission, hasAnyRole, logout } = useAuth();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const groups = useMemo(
@@ -58,12 +58,14 @@ export function AppSidebar() {
       navGroups
         .map((group) => ({
           ...group,
-          items: group.items.filter((item) =>
-            hasAnyPermission(item.permissions),
+          items: group.items.filter(
+            (item) =>
+              hasAnyPermission(item.permissions) &&
+              hasAnyRole(item.roles ?? []),
           ),
         }))
         .filter((group) => group.items.length > 0),
-    [hasAnyPermission],
+    [hasAnyPermission, hasAnyRole],
   );
 
   const isGroupOpen = (label: string, items: InternalNavItem[]) => {
@@ -71,8 +73,9 @@ export function AppSidebar() {
     return items.some((item) => isActivePath(pathname, item.href));
   };
 
-  const visibleItems = navItems.filter((item) =>
-    hasAnyPermission(item.permissions),
+  const visibleItems = navItems.filter(
+    (item) =>
+      hasAnyPermission(item.permissions) && hasAnyRole(item.roles ?? []),
   );
 
   return (
@@ -111,9 +114,7 @@ export function AppSidebar() {
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-300"
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="flex-1 truncate text-left">
-                  {group.label}
-                </span>
+                <span className="flex-1 truncate text-left">{group.label}</span>
                 <ChevronDown
                   className={cn(
                     "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
@@ -124,7 +125,9 @@ export function AppSidebar() {
               <div
                 className={cn(
                   "grid overflow-hidden transition-all duration-200 ease-in-out",
-                  open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                  open
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0",
                 )}
               >
                 <div className="min-h-0 space-y-1">

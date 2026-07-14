@@ -45,9 +45,7 @@ export function buildEntityColumns(): ColumnDef<DataEntity>[] {
     {
       header: "Riesgo",
       accessorKey: "containsRiskData",
-      cell: ({ row }) => (
-        <BooleanBadge value={row.original.containsRiskData} />
-      ),
+      cell: ({ row }) => <BooleanBadge value={row.original.containsRiskData} />,
     },
     {
       header: "Legal",

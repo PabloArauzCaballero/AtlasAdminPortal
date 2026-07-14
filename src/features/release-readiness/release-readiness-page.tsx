@@ -10,6 +10,7 @@ import { calculateReadinessScore } from "./readiness-score";
 import { ReadinessActions, ReadinessChecklist } from "./readiness-checklist";
 import { toReadinessView } from "./adapters";
 import { useReleaseReadiness } from "./hooks";
+import { ReportsReadinessPage } from "@/features/reports-readiness/reports-readiness-page";
 
 export function ReleaseReadinessPage() {
   const readinessQuery = useReleaseReadiness();
@@ -22,8 +23,8 @@ export function ReleaseReadinessPage() {
     <PermissionGate permissions={["reporting.read"]}>
       <PageHeader
         eyebrow="Readiness"
-        title="Readiness operativo para releases"
-        description="Semáforo auditable calculado por el servicio interno. El portal ya no calcula readiness crítico en navegador."
+        title="Readiness Release"
+        description="Vista unificada del semáforo operativo del release y de la preparación de metadata necesaria para reportes."
       />
       {readinessQuery.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {readinessQuery.error ? (
@@ -57,6 +58,7 @@ export function ReleaseReadinessPage() {
           </section>
           <ReadinessChecklist items={view.checks} />
           <ReadinessActions />
+          <ReportsReadinessPage embedded />
         </div>
       ) : null}
     </PermissionGate>

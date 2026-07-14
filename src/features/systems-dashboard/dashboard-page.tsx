@@ -13,10 +13,10 @@ import {
   TestTube2,
 } from "lucide-react";
 import { useDashboard, useToolsHealth } from "@/features/systems/hooks";
+import { ToolLiveBadge } from "@/features/systems/tool-live-state";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import {
   PageHeader,
@@ -25,6 +25,7 @@ import {
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { humanizeKey, objectEntries, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { TrafficLatencySection } from "./traffic-latency-section";
 
 export function DashboardPage() {
   const dashboard = useDashboard();
@@ -34,7 +35,7 @@ export function DashboardPage() {
   return (
     <PermissionGate permissions={["systems.dashboard.read"]}>
       <PageHeader
-        eyebrow="Fase 1 + 2 + 3"
+        eyebrow="Panel de sistemas"
         title="Centro interno ATLAS"
         description="Estado operativo de Systems Ops, catálogo, QA, gobierno, lineage y auditoría conectado al servicio interno real."
         actions={
@@ -43,6 +44,8 @@ export function DashboardPage() {
               void dashboard.refetch();
               void toolsHealth.refetch();
             }}
+            isLoading={dashboard.isFetching || toolsHealth.isFetching}
+            loadingText="Actualizando…"
           >
             <RefreshCw className="h-4 w-4" />
             Actualizar
@@ -73,6 +76,8 @@ export function DashboardPage() {
               <MetricCard key={key} label={humanizeKey(key)} value={value} />
             ))}
           </section>
+
+          <TrafficLatencySection />
 
           <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <Card>
@@ -131,7 +136,7 @@ export function DashboardPage() {
                         {safeText(tool.code)}
                       </p>
                     </div>
-                    <StatusBadge value={tool.status} />
+                    <ToolLiveBadge tool={tool} />
                   </div>
                 ))}
               </CardContent>
@@ -174,8 +179,8 @@ export function DashboardPage() {
               />
               <QuickAccessLink
                 icon={FileCheck2}
-                href="/internal/reports/readiness"
-                label="Preparar reportes"
+                href="/internal/release-readiness"
+                label="Readiness Release"
               />
               <QuickAccessLink
                 icon={TestTube2}

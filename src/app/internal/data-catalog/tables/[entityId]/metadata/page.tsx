@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { DataEntityMetadataPage } from "@/features/data-catalog/data-entity-metadata-page";
 
 export default async function Page({

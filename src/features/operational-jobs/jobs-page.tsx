@@ -33,7 +33,7 @@ export function JobsPage() {
   return (
     <PermissionGate permissions={["internal.jobs.read"]}>
       <PageHeader
-        eyebrow="Fase 9"
+        eyebrow="Jobs operativos"
         title="Jobs internos"
         description="Seguimiento operativo de procesos asíncronos, colas, reintentos y ejecuciones pesadas del sistema."
       />

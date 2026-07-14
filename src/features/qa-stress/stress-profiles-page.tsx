@@ -9,6 +9,7 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import {
@@ -123,9 +124,14 @@ export function StressProfilesPage() {
   return (
     <PermissionGate permissions={["systems.stress.read"]}>
       <PageHeader
-        eyebrow="Fase 2"
-        title="Pruebas de estrés"
-        description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs."
+        eyebrow="QA Stress"
+        title="Stress backend-driven"
+        description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"
+        actions={
+          <Link href="/internal/qa/lab">
+            <Button>Abrir QA Live Lab</Button>
+          </Link>
+        }
       />
       <FilterBar
         search={q}

@@ -42,7 +42,7 @@ export function ExportsPage() {
   return (
     <PermissionGate permissions={["internal.exports.read"]}>
       <PageHeader
-        eyebrow="Fase 9"
+        eyebrow="Exportaciones"
         title="Exportaciones"
         description="Solicitudes de exportación controladas por políticas, auditoría y vencimiento de acceso."
       />

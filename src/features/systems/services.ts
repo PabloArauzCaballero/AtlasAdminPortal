@@ -17,13 +17,14 @@ import type {
   ToolListResponse,
   DataEntityListResponse,
   DataEntityMetadataInput,
+  Domain,
+  DomainListResponse,
   EndpointListResponse,
+  MongoLogListResponse,
   SystemsDashboard,
-  TestRunDetail,
-  TestRunListResponse,
-  TestSuiteDetail,
-  TestSuiteListResponse,
   ToolHealth,
+  TrafficLatencyReport,
+  TrafficLatencyTimeseries,
 } from "./types";
 import {
   normalizeDataEntity,
@@ -99,50 +100,6 @@ export async function getImpactByTable(schemaName: string, tableName: string) {
   return normalizeTableImpact(response);
 }
 
-export async function listTestSuites(query: QueryParams) {
-  const response = await apiRequest<unknown>("/systems/test-suites", { query });
-  return normalizePaginatedResponse<TestSuiteListResponse["items"][number]>(
-    response,
-    ["testSuites", "suites", "records", "results"],
-  );
-}
-
-export function getTestSuite(suiteId: string) {
-  return apiRequest<TestSuiteDetail>(`/systems/test-suites/${suiteId}`);
-}
-
-export function runTestSuite(
-  suiteId: string,
-  body: {
-    environment: string;
-    dryRun: boolean;
-    timeoutMs: number;
-    config: Record<string, unknown>;
-    headers: Record<string, string>;
-  },
-) {
-  return apiRequest<{
-    runId?: string;
-    status?: string;
-    [key: string]: unknown;
-  }>(`/systems/test-suites/${suiteId}/run`, {
-    method: "POST",
-    body,
-  });
-}
-
-export async function listTestRuns(query: QueryParams) {
-  const response = await apiRequest<unknown>("/systems/test-runs", { query });
-  return normalizePaginatedResponse<TestRunListResponse["items"][number]>(
-    response,
-    ["testRuns", "runs", "records", "results"],
-  );
-}
-
-export function getTestRun(runId: string) {
-  return apiRequest<TestRunDetail>(`/systems/test-runs/${runId}`);
-}
-
 export async function listActionLogs(query: QueryParams) {
   const response = await apiRequest<unknown>("/systems/action-logs", { query });
   return normalizePaginatedResponse<ActionLogListResponse["items"][number]>(
@@ -153,7 +110,24 @@ export async function listActionLogs(query: QueryParams) {
 
 export function getActionLogsByRequest(requestId: string) {
   return apiRequest<ActionLog[]>(
-    `/systems/action-logs/request/${encodeURIComponent(requestId)}`,
+    `/systems/action-logs/by-request/${encodeURIComponent(requestId)}`,
+  );
+}
+
+export function listMongoLogs(query: QueryParams) {
+  return apiRequest<MongoLogListResponse>("/systems/logs/mongo", { query });
+}
+
+export function getTrafficLatencyReport(windowHours: number) {
+  return apiRequest<TrafficLatencyReport>("/systems/reports/traffic-latency", {
+    query: { windowHours },
+  });
+}
+
+export function getTrafficLatencyTimeseries(windowHours: number) {
+  return apiRequest<TrafficLatencyTimeseries>(
+    "/systems/reports/traffic-latency-timeseries",
+    { query: { windowHours } },
   );
 }
 
@@ -169,9 +143,30 @@ export function getTool(toolId: string) {
   return apiRequest<ToolItem>(`/systems/tools/${toolId}`);
 }
 
+export async function listDomains(query: QueryParams) {
+  const response = await apiRequest<unknown>("/systems/domains", { query });
+  return normalizePaginatedResponse<DomainListResponse["items"][number]>(
+    response,
+    ["domains", "records", "results"],
+  );
+}
+
+export function getDomain(domainCode: string) {
+  return apiRequest<Domain>(
+    `/systems/domains/${encodeURIComponent(domainCode)}`,
+  );
+}
+
 export function inferToolRequirements(body: { persist: boolean }) {
   return apiRequest<Record<string, unknown>>(
     "/systems/tools/infer-requirements",
+    { method: "POST", body },
+  );
+}
+
+export function inferDataImpacts(body: { persist: boolean }) {
+  return apiRequest<Record<string, unknown>>(
+    "/systems/data-entities/infer-impacts",
     { method: "POST", body },
   );
 }

@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { BusinessTermDetailPage } from "@/features/business-glossary/business-term-detail-page";
 
 export default async function Page({

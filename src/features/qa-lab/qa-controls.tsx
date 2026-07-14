@@ -1,6 +1,8 @@
 import type { EndpointItem } from "@/features/systems/types";
-import { Field, Input } from "@/shared/components/ui/input";
+import { Field, Input, Select } from "@/shared/components/ui/input";
 import { BaseRouteSelect } from "./base-route-select";
+import { getQaScenario, QA_SCENARIOS } from "./qa-scenarios";
+import type { QaAuthMode } from "./types";
 
 export function QaTargetControls({
   form,
@@ -77,6 +79,7 @@ export function QaExpectationsControls({
         value={form.maxLatencyMs}
         min={0}
         max={120000}
+        hint="Falla la prueba si la respuesta tarda más de este umbral (0 = sin límite)."
         onChange={(value) => onChange({ maxLatencyMs: value })}
       />
       <NumberField
@@ -84,9 +87,13 @@ export function QaExpectationsControls({
         value={form.maxResponseSizeBytes}
         min={0}
         max={10000000}
+        hint="Falla la prueba si el body de respuesta pesa más que esto (0 = sin límite)."
         onChange={(value) => onChange({ maxResponseSizeBytes: value })}
       />
-      <Field label="Respuesta contiene">
+      <Field
+        label="Respuesta contiene"
+        hint="Texto plano que debe aparecer en el body de la respuesta."
+      >
         <Input
           value={form.expectedBodyContains}
           onChange={(event) =>
@@ -99,15 +106,96 @@ export function QaExpectationsControls({
   );
 }
 
+export function QaScenarioControls({
+  form,
+  onChange,
+}: Readonly<QaScenarioControlsProps>) {
+  const active = getQaScenario(form.scenario ?? "valid_payload");
+  return (
+    <div className="space-y-3 rounded-xl border border-atlas-border bg-atlas-soft p-3">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field
+          label="Escenario de prueba"
+          hint="Preconfigura payload/expectativas para un caso común (payload inválido, sin auth, etc.)."
+        >
+          <Select
+            value={active.key}
+            onChange={(event) => {
+              const scenario = getQaScenario(event.target.value);
+              onChange({
+                scenario: scenario.key,
+                ...(scenario.patch ?? {}),
+              });
+            }}
+          >
+            {QA_SCENARIOS.map((scenario) => (
+              <option key={scenario.key} value={scenario.key}>
+                {scenario.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field
+          label="Auth mode efectivo"
+          hint="Con qué credencial se firma el request, sin importar tu sesión actual."
+        >
+          <Select
+            value={form.authMode}
+            onChange={(event) =>
+              onChange({ authMode: event.target.value as QaAuthMode })
+            }
+          >
+            <option value="session">Sesion actual</option>
+            <option value="none">Sin autenticacion</option>
+            <option value="invalid">Token invalido</option>
+            <option value="custom">Token manual</option>
+          </Select>
+        </Field>
+      </div>
+      <p className="text-xs text-atlas-muted">
+        {active.description} Resultado esperado: {active.expectedOutcome}
+      </p>
+      {form.authMode === "custom" ? (
+        <Field
+          label="Token manual (Bearer)"
+          hint="Pega un token de otro actor (customer/merchant/qa_engineer/etc.) para probar la matriz de permisos."
+        >
+          <Input
+            value={form.customAuthToken}
+            onChange={(event) =>
+              onChange({ customAuthToken: event.target.value })
+            }
+            placeholder="eyJhbGciOi..."
+            className="font-mono"
+          />
+        </Field>
+      ) : null}
+      <div className="flex flex-wrap gap-3">
+        <CheckBox
+          label="Incluir x-tenant-id"
+          checked={form.includeTenantHeader}
+          onChange={(value) => onChange({ includeTenantHeader: value })}
+        />
+        <CheckBox
+          label="Incluir x-idempotency-key"
+          checked={form.includeIdempotencyKey}
+          onChange={(value) => onChange({ includeIdempotencyKey: value })}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function NumberField({
   label,
   value,
   min,
   max,
+  hint,
   onChange,
 }: Readonly<NumberFieldProps>) {
   return (
-    <Field label={label}>
+    <Field label={label} hint={hint}>
       <Input
         type="number"
         min={min}
@@ -140,11 +228,22 @@ export type CommonLabFormState = {
   expectedBodyContains: string;
   maxLatencyMs: number;
   maxResponseSizeBytes: number;
+  scenario: string;
+  authMode: QaAuthMode;
+  customAuthToken: string;
+  includeTenantHeader: boolean;
+  includeIdempotencyKey: boolean;
+  deviceProfile: string;
 };
 
 type QaTargetControlsProps = {
   form: CommonLabFormState;
   endpoint?: EndpointItem;
+  onChange: (value: Partial<CommonLabFormState>) => void;
+};
+
+type QaScenarioControlsProps = {
+  form: CommonLabFormState;
   onChange: (value: Partial<CommonLabFormState>) => void;
 };
 
@@ -159,6 +258,7 @@ type NumberFieldProps = {
   value: number;
   min: number;
   max: number;
+  hint?: string;
   onChange: (value: number) => void;
 };
 

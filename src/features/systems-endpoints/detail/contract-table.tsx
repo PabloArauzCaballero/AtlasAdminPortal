@@ -77,10 +77,29 @@ function EmptyContract() {
 type ContractRow = { name: string; type: string; description: string };
 
 function toRows(value: unknown): ContractRow[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.map(rowFromUnknown);
-  if (isRecord(value)) return rowsFromRecord(value);
-  return [{ name: "valor", type: typeof value, description: String(value) }];
+  const resolved =
+    typeof value === "string" ? tryParseJsonString(value) : value;
+  if (!resolved) return [];
+  if (Array.isArray(resolved)) return resolved.map(rowFromUnknown);
+  if (isRecord(resolved)) return rowsFromRecord(resolved);
+  return [
+    { name: "valor", type: typeof resolved, description: String(resolved) },
+  ];
+}
+
+/**
+ * Some backend responses serialize JSONB schema columns as a JSON-encoded
+ * string instead of a parsed object depending on the query path. Without
+ * this, contract tables silently render as empty even with real data.
+ */
+function tryParseJsonString(value: string): unknown {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
 }
 
 function rowsFromRecord(record: JsonRecord): ContractRow[] {

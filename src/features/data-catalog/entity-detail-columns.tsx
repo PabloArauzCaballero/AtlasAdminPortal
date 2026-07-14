@@ -12,6 +12,7 @@ import {
   ReviewStatusBadge,
   RiskBadge,
 } from "@/shared/components/ui/badges";
+import { JsonCell } from "@/shared/components/ui/json-cell";
 import { formatBoolean, safeText } from "@/shared/lib/format";
 
 export function buildRelatedEndpointColumns(
@@ -29,6 +30,11 @@ export function buildRelatedEndpointColumns(
       ),
     },
     { header: "Operación", accessorKey: "operationType" },
+    {
+      header: "Afectación",
+      accessorKey: "detectedFrom",
+      cell: ({ row }) => <AffectationBadge impact={row.original} />,
+    },
     {
       header: "Impacto",
       accessorKey: "impactLevel",
@@ -89,9 +95,25 @@ export function buildColumnCatalogColumns(): ColumnDef<DataEntityColumn>[] {
     {
       header: "Validación",
       accessorKey: "validationRule",
-      cell: ({ row }) => safeText(row.original.validationRule ?? "—"),
+      cell: ({ row }) => <JsonCell value={row.original.validationRule} />,
     },
   ];
+}
+
+function AffectationBadge({ impact }: Readonly<{ impact: DataEntityImpact }>) {
+  const indirect = impact.detectedFrom === "relationship_inference";
+  return (
+    <span
+      className={
+        indirect
+          ? "inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600"
+          : "inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700"
+      }
+      title={impact.notes ?? undefined}
+    >
+      {indirect ? "Indirecta (vía FK)" : "Directa"}
+    </span>
+  );
 }
 
 function EndpointCell({

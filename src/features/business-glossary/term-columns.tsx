@@ -44,9 +44,33 @@ export function buildBusinessTermColumns(): ColumnDef<BusinessTerm>[] {
       ),
     },
     {
+      header: "Tablas",
+      id: "relatedTables",
+      cell: ({ row }) => <RelatedCount items={row.original.relatedTables} />,
+    },
+    {
+      header: "Columnas",
+      id: "relatedColumns",
+      cell: ({ row }) => <RelatedCount items={row.original.relatedColumns} />,
+    },
+    {
+      header: "Endpoints",
+      id: "relatedEndpoints",
+      cell: ({ row }) => <RelatedCount items={row.original.relatedEndpoints} />,
+    },
+    {
       header: "Actualizado",
       accessorKey: "updatedAt",
       cell: ({ row }) => formatDateTime(row.original.updatedAt),
     },
   ];
+}
+
+function RelatedCount({ items }: Readonly<{ items?: string[] }>) {
+  if (!items?.length) return <span className="text-atlas-muted">0</span>;
+  return (
+    <span title={items.join(", ")} className="font-medium">
+      {items.length}
+    </span>
+  );
 }

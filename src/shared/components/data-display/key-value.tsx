@@ -1,4 +1,5 @@
 import { cn } from "@/shared/lib/cn";
+import { CopyableCode } from "@/shared/components/ui/copy-button";
 import { formatBoolean, safeText } from "@/shared/lib/format";
 
 type Item = {
@@ -10,11 +11,13 @@ type Item = {
 
 export function KeyValueGrid({ items }: Readonly<{ items: Item[] }>) {
   return (
-    <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => (
-        <KeyValueItem key={item.label} item={item} />
-      ))}
-    </dl>
+    <div className="atlas-scrollbar max-h-[560px] overflow-auto rounded-xl border border-atlas-border">
+      <dl className="min-w-full divide-y divide-slate-100">
+        {items.map((item) => (
+          <KeyValueItem key={item.label} item={item} />
+        ))}
+      </dl>
+    </div>
   );
 }
 
@@ -43,20 +46,19 @@ function KeyValueItem({ item }: Readonly<{ item: Item }>) {
   return (
     <div
       className={cn(
-        "rounded-xl border bg-white p-4 transition-colors",
+        "grid grid-cols-1 gap-1 px-4 py-3 transition-colors odd:bg-white even:bg-slate-50/60 sm:grid-cols-[220px_1fr] sm:items-start sm:gap-4",
         toneClass(item.tone),
       )}
     >
       <dt className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-atlas-muted">
         {item.label}
       </dt>
-      <dd
-        className={cn(
-          "mt-2 min-h-5 break-words text-sm font-medium leading-6 text-atlas-text",
-          item.mono && "font-mono text-xs",
+      <dd className="min-h-5 break-words text-sm font-medium leading-6 text-atlas-text">
+        {item.mono && typeof value === "string" ? (
+          <CopyableCode value={value} />
+        ) : (
+          value
         )}
-      >
-        {value}
       </dd>
     </div>
   );
@@ -70,14 +72,14 @@ function resolveValue(value: unknown) {
 function toneClass(tone: Item["tone"]) {
   switch (tone) {
     case "success":
-      return "border-emerald-100 bg-emerald-50/50";
+      return "border-l-4 border-l-emerald-400";
     case "warning":
-      return "border-amber-100 bg-amber-50/50";
+      return "border-l-4 border-l-amber-400";
     case "critical":
-      return "border-red-100 bg-red-50/50";
+      return "border-l-4 border-l-red-400";
     case "muted":
-      return "border-slate-200 bg-slate-50";
+      return "opacity-70";
     default:
-      return "border-atlas-border";
+      return "";
   }
 }

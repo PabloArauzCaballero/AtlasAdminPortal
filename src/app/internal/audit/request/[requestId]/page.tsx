@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { AuditRequestPage } from "@/features/audit/audit-request-page";
 
 export default async function AuditRequestRoute({

@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { DataQualityRuleDetailPage } from "@/features/data-quality-rules/data-quality-rule-detail-page";
 
 export default async function Page({

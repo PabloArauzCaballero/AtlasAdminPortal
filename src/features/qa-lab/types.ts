@@ -4,6 +4,8 @@ import type { AssertionSummary, QaAssertion } from "./assertions";
 
 export type LabEndpointList = PaginatedResponse<EndpointItem>;
 
+export type QaAuthMode = "session" | "none" | "invalid" | "custom";
+
 export type EndpointRunInput = {
   environment: string;
   baseRouteKey: string;
@@ -12,6 +14,12 @@ export type EndpointRunInput = {
   dryRun: boolean;
   timeoutMs: number;
   allowMutations: boolean;
+  scenario?: string;
+  authMode: QaAuthMode;
+  customAuthToken?: string;
+  includeTenantHeader: boolean;
+  includeIdempotencyKey: boolean;
+  deviceProfile?: string;
   payload: JsonRecord;
   queryParams: JsonRecord;
   pathParams: JsonRecord;
@@ -38,6 +46,12 @@ export type EndpointStressRunInput = {
   maxP99Ms?: number;
   approvalTicket?: string;
   allowMutations: boolean;
+  scenario?: string;
+  authMode: QaAuthMode;
+  customAuthToken?: string;
+  includeTenantHeader: boolean;
+  includeIdempotencyKey: boolean;
+  deviceProfile?: string;
   payload: JsonRecord;
   queryParams: JsonRecord;
   pathParams: JsonRecord;

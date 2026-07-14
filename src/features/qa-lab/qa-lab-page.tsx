@@ -12,15 +12,21 @@ import { Button } from "@/shared/components/ui/button";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
+import { JourneyRunnerPanel } from "./journey-runner-panel";
+import { QaLabDocsPanel } from "./qa-lab-docs";
 import { StressTestCard } from "./stress-test-card";
+
+const tabs = ["Prueba unitaria", "Journey (encadenado)"];
 
 export function QaLabPage({
   initialEndpointId,
 }: Readonly<{ initialEndpointId: string }>) {
+  const [activeTab, setActiveTab] = useState(tabs[0]);
   const [endpointId, setEndpointId] = useState(initialEndpointId);
   const endpoint = useEndpoint(endpointId);
 
@@ -29,7 +35,7 @@ export function QaLabPage({
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Selecciona un endpoint, ejecuta una prueba funcional y prepara una prueba de stress controlada desde la misma vista."
+        description="Prueba unitaria de un endpoint (funcional + stress) o un journey de varios endpoints encadenados simulando un flujo real de negocio."
         actions={
           <>
             <Link href="/internal/qa/runs">
@@ -41,22 +47,28 @@ export function QaLabPage({
           </>
         }
       />
-      <div className="space-y-6">
-        <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
-        {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
-        {endpoint.data ? (
-          <div className="grid gap-6 xl:grid-cols-2">
-            <EndpointTestCard
-              endpointId={endpointId}
-              endpoint={endpoint.data.endpoint}
-            />
-            <StressTestCard
-              endpointId={endpointId}
-              endpoint={endpoint.data.endpoint}
-            />
-          </div>
-        ) : null}
-      </div>
+      <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      {activeTab === "Prueba unitaria" ? (
+        <div className="space-y-6">
+          <QaLabDocsPanel />
+          <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
+          {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
+          {endpoint.data ? (
+            <div className="grid gap-6 xl:grid-cols-2">
+              <EndpointTestCard
+                endpointId={endpointId}
+                endpoint={endpoint.data.endpoint}
+              />
+              <StressTestCard
+                endpointId={endpointId}
+                endpoint={endpoint.data.endpoint}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <JourneyRunnerPanel />
+      )}
     </PermissionGate>
   );
 }

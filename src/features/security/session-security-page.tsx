@@ -25,7 +25,7 @@ export function SessionSecurityPage() {
   return (
     <PermissionGate permissions={[]}>
       <PageHeader
-        eyebrow="Fase 10"
+        eyebrow="Seguridad de sesiones"
         title="Seguridad de sesión"
         description="Revisión operativa de autenticación interna, cookies, MFA y permisos efectivos antes de producción."
       />

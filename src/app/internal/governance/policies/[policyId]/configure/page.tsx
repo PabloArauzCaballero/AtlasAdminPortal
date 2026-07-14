@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { GovernancePolicyConfigPage } from "@/features/governance-policies/governance-policy-config-page";
 
 export default async function Page({

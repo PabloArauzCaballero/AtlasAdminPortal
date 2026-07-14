@@ -56,7 +56,7 @@ export function DataQualityIssuesPage() {
   return (
     <PermissionGate permissions={["dataQuality.issues.read"]}>
       <PageHeader
-        eyebrow="Fase 5"
+        eyebrow="Calidad de datos"
         title="Issues de calidad de datos"
         description="Bandeja conectada a `/operations/data-quality/issues`. La resolución se maneja en componentes pequeños y auditables."
       />

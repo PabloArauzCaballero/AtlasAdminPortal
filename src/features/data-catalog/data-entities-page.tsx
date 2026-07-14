@@ -17,6 +17,7 @@ import {
 } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
@@ -122,6 +123,13 @@ export function DataEntitiesPage() {
         title="Catálogo de datos"
         description="Tablas y entidades detectadas desde `/systems/data-entities`."
       />
+      <BusinessContextNote>
+        Cada fila es una tabla real de la base de datos. Este catálogo existe
+        para que soporte, auditoría y nuevos desarrolladores sepan qué significa
+        cada tabla, quién es responsable de ella y si contiene datos sensibles
+        (PII, financieros, de riesgo) — sin tener que leer el código fuente para
+        averiguarlo.
+      </BusinessContextNote>
       <FilterBar
         search={q}
         searchPlaceholder="Buscar tabla, entidad, módulo u owner…"

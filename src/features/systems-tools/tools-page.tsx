@@ -69,7 +69,7 @@ export function ToolsPage() {
   return (
     <PermissionGate permissions={["systems.tools.read"]}>
       <PageHeader
-        eyebrow="Fase 2"
+        eyebrow="Herramientas"
         title="Herramientas internas"
         description="Catálogo de herramientas técnicas requeridas por endpoints. No se muestran valores de variables de entorno ni secretos."
       />

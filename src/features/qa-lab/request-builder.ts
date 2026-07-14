@@ -3,6 +3,7 @@ import { getApiTimeoutMs, getCsrfHeaderName } from "@/shared/api/config";
 import type { JsonRecord } from "@/shared/api/types";
 import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import { resolveQaBaseRoute } from "./base-routes";
+import { getQaDeviceProfile } from "./qa-device-profiles";
 import { isMutatingMethod, sanitizeCustomHeaders } from "./qa-safety";
 
 const PATH_PARAM_PATTERN = /:([a-zA-Z0-9_]+)|\{([a-zA-Z0-9_]+)\}/g;
@@ -28,7 +29,7 @@ export function buildQaRequest(
   return {
     url: buildUrl(input, path),
     method,
-    headers: buildHeaders(method, input.headers),
+    headers: buildHeaders(method, input.headers, input),
     unresolvedPathParams,
   };
 }
@@ -54,6 +55,11 @@ type QaRequestInput = {
   pathParams: JsonRecord;
   queryParams: JsonRecord;
   headers: Record<string, string>;
+  authMode?: "session" | "none" | "invalid" | "custom";
+  customAuthToken?: string;
+  includeTenantHeader?: boolean;
+  includeIdempotencyKey?: boolean;
+  deviceProfile?: string;
 };
 
 function buildUrl(input: QaRequestInput, rawPath: string): string {
@@ -132,20 +138,68 @@ function substitutePathParams(path: string, params: JsonRecord) {
 function buildHeaders(
   method: string,
   customHeaders: Record<string, string>,
+  overrides: Pick<
+    QaRequestInput,
+    | "authMode"
+    | "customAuthToken"
+    | "includeTenantHeader"
+    | "includeIdempotencyKey"
+    | "deviceProfile"
+  >,
 ): Record<string, string> {
   const session = getStoredInternalSession();
   const safeCustomHeaders = sanitizeCustomHeaders(customHeaders);
+  const includeTenantHeader = overrides.includeTenantHeader !== false;
+  const includeIdempotencyKey = overrides.includeIdempotencyKey !== false;
+  const deviceHeaders = getQaDeviceProfile(overrides.deviceProfile).headers;
   const headers: Record<string, string> = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    ...(session?.user.tenantId ? { "x-tenant-id": session.user.tenantId } : {}),
+    ...(includeTenantHeader && session?.user.tenantId
+      ? { "x-tenant-id": session.user.tenantId }
+      : {}),
+    ...deviceHeaders,
     ...safeCustomHeaders,
   };
-  if (session?.accessToken)
-    headers.Authorization = `Bearer ${session.accessToken}`;
+  applyAuthOverride(headers, overrides, session);
+  if (isMutatingMethod(method) && includeIdempotencyKey) {
+    headers["x-idempotency-key"] = generateIdempotencyKey();
+  }
   const csrfHeaderName = getCsrfHeaderName();
-  if (csrfHeaderName && isMutatingMethod(method) && session?.csrfToken) {
+  if (
+    csrfHeaderName &&
+    isMutatingMethod(method) &&
+    overrides.authMode !== "none" &&
+    session?.csrfToken
+  ) {
     headers[csrfHeaderName] = session.csrfToken;
   }
   return headers;
+}
+
+function applyAuthOverride(
+  headers: Record<string, string>,
+  overrides: Pick<QaRequestInput, "authMode" | "customAuthToken">,
+  session: ReturnType<typeof getStoredInternalSession>,
+): void {
+  const mode = overrides.authMode ?? "session";
+  if (mode === "none") return;
+  if (mode === "invalid") {
+    headers.Authorization = "Bearer qa-invalid-token-0000000000";
+    return;
+  }
+  if (mode === "custom" && overrides.customAuthToken?.trim()) {
+    headers.Authorization = `Bearer ${overrides.customAuthToken.trim()}`;
+    return;
+  }
+  if (session?.accessToken) {
+    headers.Authorization = `Bearer ${session.accessToken}`;
+  }
+}
+
+function generateIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `qa-lab-${crypto.randomUUID()}`;
+  }
+  return `qa-lab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

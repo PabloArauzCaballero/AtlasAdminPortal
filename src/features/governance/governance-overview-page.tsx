@@ -8,6 +8,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
@@ -55,10 +56,17 @@ export function GovernanceOverviewPage() {
   return (
     <PermissionGate permissions={["governance.data.read"]}>
       <PageHeader
-        eyebrow="Fase 3"
+        eyebrow="Gobierno de datos"
         title="Gobierno de datos"
         description="Resumen dinámico de sensibilidad, PII, criticidad y revisión. Esta fase no inventa políticas; expone lo disponible en catálogo real."
       />
+      <BusinessContextNote>
+        Manejar datos de clientes (identidad, finanzas, ubicación) conlleva
+        obligaciones legales y de seguridad. Esta pantalla existe para que
+        gobierno de datos vea, sin auditar el código, cuánta información
+        sensible maneja Atlas y qué tan revisada/documentada está esa
+        exposición.
+      </BusinessContextNote>
       {entities.isLoading || endpoints.isLoading ? (
         <LoadingSkeleton rows={6} />
       ) : null}

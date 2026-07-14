@@ -1,7 +1,5 @@
-export const dynamic = "force-dynamic";
-
-import { ReportsReadinessPage } from "@/features/reports-readiness/reports-readiness-page";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ReportsReadinessPage />;
+  redirect("/internal/release-readiness");
 }

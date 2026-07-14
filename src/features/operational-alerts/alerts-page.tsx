@@ -33,7 +33,7 @@ export function AlertsPage() {
   return (
     <PermissionGate permissions={["internal.alerts.read"]}>
       <PageHeader
-        eyebrow="Fase 9"
+        eyebrow="Alertas operativas"
         title="Alertas operativas"
         description="Seguimiento de alertas del sistema interno, severidad, fuente y reconocimiento auditable."
       />

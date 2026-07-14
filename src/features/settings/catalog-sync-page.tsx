@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   useDiscoverEndpointsMutation,
+  useInferDataImpactsMutation,
   useInferToolRequirementsMutation,
   useRefreshCatalogSeedMutation,
 } from "@/features/systems/hooks";
@@ -19,7 +20,7 @@ import {
 } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-type ActionKey = "discover" | "seed" | "infer";
+type ActionKey = "discover" | "seed" | "infer" | "inferImpacts";
 
 export function CatalogSyncPage() {
   const [action, setAction] = useState<ActionKey | null>(null);
@@ -27,16 +28,19 @@ export function CatalogSyncPage() {
   const discoverMutation = useDiscoverEndpointsMutation();
   const refreshMutation = useRefreshCatalogSeedMutation();
   const inferMutation = useInferToolRequirementsMutation();
+  const inferImpactsMutation = useInferDataImpactsMutation();
   const activeMutation = selectMutation(action, {
     discoverMutation,
     refreshMutation,
     inferMutation,
+    inferImpactsMutation,
   });
 
   function runAction() {
     if (action === "discover") runDiscover();
     if (action === "seed") runSeedRefresh();
     if (action === "infer") runInferRequirements();
+    if (action === "inferImpacts") runInferDataImpacts();
   }
 
   function runDiscover() {
@@ -59,6 +63,13 @@ export function CatalogSyncPage() {
 
   function runInferRequirements() {
     inferMutation.mutate(
+      { persist: true },
+      { onSuccess: () => setAction(null) },
+    );
+  }
+
+  function runInferDataImpacts() {
+    inferImpactsMutation.mutate(
       { persist: true },
       { onSuccess: () => setAction(null) },
     );
@@ -96,11 +107,18 @@ export function CatalogSyncPage() {
           disabled={!hasPermission("systems.tools.inferRequirements")}
           onClick={() => setAction("infer")}
         />
+        <SyncActionCard
+          title="Inferir impactos endpoint-tabla"
+          description="Ejecuta `/systems/data-entities/infer-impacts`: escanea el código fuente de cada endpoint en busca de modelos Sequelize (lectura/escritura) para poblar la relación endpoint↔tabla automáticamente, sin depender de un seed curado a mano."
+          disabled={!hasPermission("systems.tools.inferRequirements")}
+          onClick={() => setAction("inferImpacts")}
+        />
       </div>
       <SyncResults
         discover={discoverMutation}
         refresh={refreshMutation}
         infer={inferMutation}
+        inferImpacts={inferImpactsMutation}
       />
       <ConfirmDialog
         open={Boolean(action)}
@@ -127,10 +145,12 @@ function selectMutation(
     discoverMutation: MutationLike;
     refreshMutation: MutationLike;
     inferMutation: MutationLike;
+    inferImpactsMutation: MutationLike;
   },
 ) {
   if (action === "discover") return mutations.discoverMutation;
   if (action === "seed") return mutations.refreshMutation;
+  if (action === "inferImpacts") return mutations.inferImpactsMutation;
   return mutations.inferMutation;
 }
 
@@ -167,14 +187,16 @@ function SyncResults({
   discover,
   refresh,
   infer,
+  inferImpacts,
 }: Readonly<{
   discover: MutationLike;
   refresh: MutationLike;
   infer: MutationLike;
+  inferImpacts: MutationLike;
 }>) {
   return (
     <div className="mt-6 space-y-4">
-      {[discover, refresh, infer].map((mutation, index) =>
+      {[discover, refresh, infer, inferImpacts].map((mutation, index) =>
         mutation.error ? (
           <MutationError key={index} error={mutation.error} />
         ) : null,
@@ -187,6 +209,12 @@ function SyncResults({
       ) : null}
       {infer.data ? (
         <JsonViewer title="Resultado inferencia" value={infer.data} />
+      ) : null}
+      {inferImpacts.data ? (
+        <JsonViewer
+          title="Resultado inferencia de impactos"
+          value={inferImpacts.data}
+        />
       ) : null}
     </div>
   );

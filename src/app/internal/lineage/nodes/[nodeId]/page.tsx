@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { LineageNodeDetailPage } from "@/features/lineage-official/lineage-node-detail-page";
 
 export default async function Page({

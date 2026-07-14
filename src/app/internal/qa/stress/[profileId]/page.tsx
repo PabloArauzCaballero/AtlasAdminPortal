@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { StressProfileDetailPage } from "@/features/qa-stress/stress-profile-detail-page";
 
 export default async function StressProfileDetailRoute({

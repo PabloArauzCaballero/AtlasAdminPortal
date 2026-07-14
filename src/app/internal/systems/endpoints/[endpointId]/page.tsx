@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { EndpointDetailPage } from "@/features/systems-endpoints/endpoint-detail-page";
 
 export default async function EndpointDetailRoute({

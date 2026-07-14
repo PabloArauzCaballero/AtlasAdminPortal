@@ -1,19 +1,21 @@
 "use client";
 import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useDataGovernancePolicies } from "@/features/operations/hooks";
 import type { DataGovernancePolicies } from "@/features/operations/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { Badge, StatusBadge } from "@/shared/components/ui/badges";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
 type PolicyRow = {
@@ -88,45 +90,10 @@ export function DataGovernancePoliciesPage() {
     () => (governance.data ? rowsFrom(governance.data) : []),
     [governance.data],
   );
-  const columns = useMemo<ColumnDef<PolicyRow>[]>(
-    () => [
-      { header: "Tipo", accessorKey: "type" },
-      {
-        header: "Código",
-        accessorKey: "code",
-        cell: ({ row }) => (
-          <Link
-            className="font-mono text-xs font-semibold text-blue-700 hover:underline"
-            href={`/internal/governance/policies/${encodeURIComponent(row.original.id)}`}
-          >
-            {row.original.code}
-          </Link>
-        ),
-      },
-      {
-        header: "Nombre",
-        accessorKey: "name",
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.name}</span>
-        ),
-      },
-      { header: "Alcance", accessorKey: "scope" },
-      { header: "Control", accessorKey: "control" },
-      { header: "Detalle", accessorKey: "detail" },
-      {
-        header: "Estado",
-        accessorKey: "active",
-        cell: ({ row }) => (
-          <StatusBadge value={row.original.active ? "active" : "inactive"} />
-        ),
-      },
-    ],
-    [],
-  );
   return (
     <PermissionGate permissions={["governance.policies.read"]}>
       <PageHeader
-        eyebrow="Fase 4"
+        eyebrow="Políticas de gobierno"
         title="Políticas reales de gobierno"
         description="Consume `/operations/data-governance/policies`; no deriva gobierno solo desde flags técnicos."
       />
@@ -183,15 +150,48 @@ export function DataGovernancePoliciesPage() {
               />
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={rows}
-                columns={columns}
-                emptyTitle="No hay políticas de gobierno sembradas."
-              />
+              {rows.length === 0 ? (
+                <EmptyState title="No hay políticas de gobierno sembradas." />
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {rows.map((row) => (
+                    <PolicyCard key={row.id} row={row} />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       ) : null}
     </PermissionGate>
+  );
+}
+
+function PolicyCard({ row }: Readonly<{ row: PolicyRow }>) {
+  return (
+    <article className="flex flex-col rounded-xl border border-atlas-border bg-white p-4 shadow-subtle transition-shadow hover:shadow-card">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <Badge tone="info">{row.type}</Badge>
+        <StatusBadge value={row.active ? "active" : "inactive"} />
+      </div>
+      <Link
+        className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+        href={`/internal/governance/policies/${encodeURIComponent(row.id)}`}
+      >
+        {row.code}
+      </Link>
+      <h3 className="mt-1 text-sm font-medium text-atlas-text">{row.name}</h3>
+      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <div className="rounded-md bg-atlas-soft p-2">
+          <dt className="text-atlas-muted">Alcance</dt>
+          <dd className="mt-0.5 font-medium text-atlas-text">{row.scope}</dd>
+        </div>
+        <div className="rounded-md bg-atlas-soft p-2">
+          <dt className="text-atlas-muted">Control</dt>
+          <dd className="mt-0.5 font-medium text-atlas-text">{row.control}</dd>
+        </div>
+      </dl>
+      <p className="mt-3 text-xs leading-5 text-atlas-muted">{row.detail}</p>
+    </article>
   );
 }

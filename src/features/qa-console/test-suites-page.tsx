@@ -8,9 +8,11 @@ import type { TestSuite } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { Button } from "@/shared/components/ui/button";
 import { ModuleBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -94,9 +96,21 @@ export function TestSuitesPage() {
   return (
     <PermissionGate permissions={["systems.qa.read"]}>
       <PageHeader
-        title="Suites QA"
-        description="Suites de prueba registradas en `/systems/test-suites`."
+        title="Suites QA registradas en backend"
+        description="Suites de prueba registradas en `/systems/test-suites`. ¿Quieres ejecutar requests directos contra otra URL?"
+        actions={
+          <Link href="/internal/qa/lab">
+            <Button>Abrir QA Live Lab</Button>
+          </Link>
+        }
       />
+      <BusinessContextNote>
+        Antes de liberar un cambio, alguien necesita saber si los flujos
+        críticos del negocio (onboarding, sesiones, riesgo) siguen funcionando
+        de punta a punta. Estas suites son pruebas pre-registradas y repetibles
+        para eso: existen para dar confianza de que un release no rompió algo
+        que el equipo ya no recuerda probar a mano.
+      </BusinessContextNote>
       <FilterBar
         search={module}
         searchPlaceholder="Filtrar por módulo…"

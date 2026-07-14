@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { ReportDetailPage } from "@/features/reports/report-detail-page";
 
 export default async function Page({

@@ -37,7 +37,7 @@ export function DataQualityRulesPage() {
   return (
     <PermissionGate permissions={["dataQuality.rules.read"]}>
       <PageHeader
-        eyebrow="Fase 7"
+        eyebrow="Reglas de calidad"
         title="Reglas de calidad"
         description="Catálogo real de reglas de calidad, severidad, dueño, estado y última ejecución."
       />

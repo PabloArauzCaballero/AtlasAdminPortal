@@ -10,6 +10,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
@@ -75,10 +76,17 @@ export function OperationCatalogsPage() {
   return (
     <PermissionGate permissions={["operations.catalogs.read"]}>
       <PageHeader
-        eyebrow="Fase 4"
+        eyebrow="Catálogos"
         title="Catálogos operativos"
         description="Conectado a `/operations/catalogs`. Verifica catálogos, versiones, dueños y estados antes de generar reportes o reglas nuevas."
       />
+      <BusinessContextNote>
+        Los catálogos operativos son las listas de valores que usan las reglas
+        de negocio (motivos de rechazo, tipos de documento, estados de proceso,
+        etc.). Si un catálogo tiene una versión sin aprobar o sin dueño, una
+        regla de riesgo o de cobranza puede estar operando sobre datos
+        desactualizados sin que nadie lo note.
+      </BusinessContextNote>
       <FilterBar
         search={domain}
         searchPlaceholder="Filtrar por dominio…"

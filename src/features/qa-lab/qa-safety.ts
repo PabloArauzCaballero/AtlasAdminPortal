@@ -30,7 +30,9 @@ export function sanitizeCustomHeaders(
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(headers)
-      .filter(([key, value]) => key.trim() && value !== undefined && value !== null)
+      .filter(
+        ([key, value]) => key.trim() && value !== undefined && value !== null,
+      )
       .filter(([key]) => !BLOCKED_CUSTOM_HEADERS.has(key.toLowerCase()))
       .map(([key, value]) => [key.trim(), String(value)]),
   );
@@ -61,7 +63,9 @@ export function assertRequestAllowed(input: {
     input.endpoint.isReadonly === false;
 
   if (environment === "PRODUCTION_READONLY" && !input.dryRun) {
-    throw new Error("Producción readonly solo permite dry-run desde el QA Lab.");
+    throw new Error(
+      "Producción readonly solo permite dry-run desde el QA Lab.",
+    );
   }
 
   if (mutates && !input.dryRun && !input.allowMutations) {
@@ -71,7 +75,9 @@ export function assertRequestAllowed(input: {
   }
 
   if (input.endpoint.testEnvironmentOnly && environment !== "LOCAL") {
-    throw new Error("Este endpoint solo puede ejecutarse en ambiente local/testing.");
+    throw new Error(
+      "Este endpoint solo puede ejecutarse en ambiente local/testing.",
+    );
   }
 }
 

@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { DataEntityDetailPage } from "@/features/data-catalog/data-entity-detail-page";
 
 export default async function DataEntityDetailRoute({

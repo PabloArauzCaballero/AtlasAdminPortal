@@ -23,6 +23,50 @@ export type InternalUsersListResponse = {
 
 export type InternalUserProfile = { user: InternalUserListItem };
 
+export type InternalUserDepartment =
+  | "OPERATIONS"
+  | "RISK"
+  | "COLLECTIONS"
+  | "COMPLIANCE"
+  | "FINANCE"
+  | "SUPPORT"
+  | "SYSTEMS"
+  | "AUDIT"
+  | "EXECUTIVE";
+
+export type InternalUserStatus =
+  "active" | "invited" | "suspended" | "locked" | "disabled";
+
+export type UpdateInternalUserInput = {
+  fullName?: string;
+  department?: InternalUserDepartment;
+  jobTitle?: string | null;
+  status?: InternalUserStatus;
+  mustChangePassword?: boolean;
+  reason: string;
+};
+
+/**
+ * El alta real usa POST /internal/auth/signup (requiere password en el
+ * contrato del backend) seguido de PATCH /internal/users/:id/roles. El
+ * formulario nunca deja que un admin escriba la contraseña de otra persona:
+ * se genera una temporal al azar client-side (ver temporary-password.ts) y
+ * se fuerza mustChangePassword tras el alta.
+ */
+export type CreateInternalUserInput = {
+  email: string;
+  fullName: string;
+  department: InternalUserDepartment;
+  jobTitle?: string;
+  roles: string[];
+  reason: string;
+};
+
+export type CreateInternalUserResult = {
+  user: InternalUserListItem;
+  temporaryPassword: string;
+};
+
 export type InternalRole = {
   id: string;
   code: string;

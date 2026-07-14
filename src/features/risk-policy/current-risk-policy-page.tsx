@@ -70,7 +70,7 @@ export function CurrentRiskPolicyPage() {
   return (
     <PermissionGate permissions={["lineage.read"]}>
       <PageHeader
-        eyebrow="Fase 4"
+        eyebrow="Política de riesgo"
         title="Política de riesgo actual"
         description="Consulta read-only de `/operations/risk-policy/current`. No activa reglas ni crea versiones desde UI."
       />

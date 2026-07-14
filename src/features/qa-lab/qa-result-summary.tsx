@@ -52,7 +52,15 @@ export function StressResultSummary({
   return (
     <section className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
       <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge value={result.errorCount === 0 ? "OK" : "WARNING"} />
+        <StatusBadge
+          value={
+            result.dryRun
+              ? "DRY_RUN"
+              : result.errorCount === 0
+                ? "OK"
+                : "WARNING"
+          }
+        />
         <Badge tone="info">{result.method}</Badge>
         <Badge>{result.totalRequests} requests</Badge>
         <Badge>{result.throughputRps} rps</Badge>

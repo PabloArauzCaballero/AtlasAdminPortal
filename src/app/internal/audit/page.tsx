@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic";
-
 import { AuditPage } from "@/features/audit/audit-page";
 
 export default function AuditRoute() {

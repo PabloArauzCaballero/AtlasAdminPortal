@@ -11,6 +11,7 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { jsonText } from "./json-utils";
+import { findPayloadPreset } from "./payload-presets";
 import { expectedStatusesText, parseEndpointStressForm } from "./qa-form";
 import { StressLatencyChart } from "./latency-chart";
 import { QaJsonFields } from "./qa-json-fields";
@@ -57,6 +58,20 @@ export function StressTestCard({
     setForm((current) => ({ ...current, ...value }));
   }
 
+  const preset = findPayloadPreset(
+    endpoint?.method ?? "GET",
+    endpoint?.fullPath ?? endpoint?.routePath,
+  );
+
+  function applyPreset() {
+    if (!preset) return;
+    patchForm({
+      payload: jsonText(preset.payload ?? {}),
+      queryParams: jsonText(preset.queryParams ?? {}),
+      pathParams: jsonText(preset.pathParams ?? {}),
+    });
+  }
+
   function submit() {
     const parsed = parseEndpointStressForm(form);
     if (!parsed.ok) {
@@ -79,6 +94,14 @@ export function StressTestCard({
       <CardContent className="space-y-4">
         <StressSafetyHints endpoint={endpoint} />
         <StressControls form={form} endpoint={endpoint} onChange={patchForm} />
+        {preset ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+            <Button variant="secondary" onClick={applyPreset}>
+              Usar payload de ejemplo: {preset.label}
+            </Button>
+            <p className="text-xs text-blue-900">{preset.notes}</p>
+          </div>
+        ) : null}
         <QaJsonFields
           fields={[
             {

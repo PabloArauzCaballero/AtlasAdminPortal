@@ -20,8 +20,11 @@ export const queryKeys = {
   actionLogs: (params: unknown) => ["systems", "action-logs", params] as const,
   actionLogsByRequest: (requestId: string) =>
     ["systems", "action-logs-by-request", requestId] as const,
+  mongoLogs: (params: unknown) => ["systems", "mongo-logs", params] as const,
   tools: (params: unknown) => ["systems", "tools", params] as const,
   tool: (toolId: string) => ["systems", "tool", toolId] as const,
+  domains: (params: unknown) => ["systems", "domains", params] as const,
+  domain: (domainCode: string) => ["systems", "domain", domainCode] as const,
   reviewQueue: (params: unknown) =>
     ["systems", "review-queue", params] as const,
   stressProfiles: (params: unknown) =>
@@ -77,4 +80,30 @@ export const queryKeys = {
   alerts: (params: unknown) => ["internal", "alerts", params] as const,
   dataExports: (params: unknown) => ["internal", "exports", params] as const,
   dataExport: (exportId: string) => ["internal", "exports", exportId] as const,
+  notificationMessages: (params: unknown) =>
+    ["notifications", "messages", params] as const,
+  notificationMessage: (messageId: string) =>
+    ["notifications", "message", messageId] as const,
+  notificationTemplates: (params: unknown) =>
+    ["notifications", "templates", params] as const,
+  notificationPreferences: (customerId: string) =>
+    ["notifications", "preferences", customerId] as const,
+  myNotifications: (params: unknown) => ["my-notifications", params] as const,
+  myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
+  workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  investigationSummary: (customerId: string) =>
+    ["operations", "investigation-summary", customerId] as const,
+  schemaVersions: (params: unknown) => ["schema", "versions", params] as const,
+  schemaVersion: (versionId: string) =>
+    ["schema", "version", versionId] as const,
+  schemaTables: (params: unknown) => ["schema", "tables", params] as const,
+  schemaTable: (tableId: string) => ["schema", "table", tableId] as const,
+  schemaChangeLog: (params: unknown) =>
+    ["schema", "change-log", params] as const,
+  externalProviders: ["external-providers", "list"] as const,
+  externalProvidersHealth: ["external-providers", "health"] as const,
+  providerCostPolicies: (providerCode: string) =>
+    ["external-providers", "cost-policy", providerCode] as const,
+  externalProvidersReport: (report: string, params: unknown = null) =>
+    ["external-providers", "report", report, params] as const,
 };

@@ -5,18 +5,22 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useInternalUsers } from "./hooks";
 import type { InternalUserListItem } from "./types";
+import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { Button } from "@/shared/components/ui/button";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function UsersPage() {
   const [search, setSearch] = useState("");
   const users = useInternalUsers();
+  const { hasPermission } = useAuth();
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const items = users.data?.items ?? [];
@@ -80,10 +84,24 @@ export function UsersPage() {
   return (
     <PermissionGate permissions={["internal.users.read"]}>
       <PageHeader
-        eyebrow="Fase 2"
+        eyebrow="Usuarios internos"
         title="Usuarios internos"
         description="Listado de usuarios internos desde `/internal/users`. No se inventan roles: se muestran únicamente los que devuelve el servicio interno."
+        actions={
+          hasPermission("internal.users.manage") ? (
+            <Link href="/internal/settings/users/new">
+              <Button variant="primary">Nuevo usuario</Button>
+            </Link>
+          ) : undefined
+        }
       />
+      <BusinessContextNote>
+        Cada persona con acceso al backoffice puede ver datos de clientes,
+        aprobar/rechazar decisiones o tocar configuración crítica. Esta pantalla
+        existe para saber quién tiene acceso a qué, y para poder desactivar a
+        alguien de inmediato (con motivo auditable) si deja el equipo o su
+        cuenta se ve comprometida.
+      </BusinessContextNote>
       <FilterBar
         search={search}
         searchPlaceholder="Buscar usuario, rol, departamento…"
