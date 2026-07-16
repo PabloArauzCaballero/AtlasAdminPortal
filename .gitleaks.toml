@@ -1,0 +1,50 @@
+# Configuración de escaneo de secretos para AtlasAdminPortal.
+# CI ejecuta:  gitleaks detect --no-git --source . --redact --config .gitleaks.toml
+#
+# NOTA DE HISTORIAL: la credencial de prueba que estuvo en .env.example sigue
+# presente en el historial de git (commits previos). Este escaneo (--no-git) cubre
+# el árbol de trabajo actual. La limpieza del historial (git filter-repo) y la
+# rotación real de la credencial son acciones manuales pendientes documentadas en
+# docs/audits/baseline-2026-07-15.md.
+
+title = "ATLAS Admin Portal - gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Rutas y placeholders seguros"
+# Patrones agnósticos al separador de rutas (Windows usa "\", Linux "/").
+paths = [
+  '''\.env$''',
+  '''\.env\.local$''',
+  '''\.env\..*\.local$''',
+  '''node_modules[\\/]''',
+  '''\.next[\\/]''',
+  '''yarn\.lock$''',
+]
+# Valores de ejemplo permitidos explícitamente: si alguien vuelve a poner una
+# credencial REAL en .env.example, no coincidirá con estos y el escaneo fallará.
+regexes = [
+  '''replace-me-locally''',
+  '''user@example\.invalid''',
+  '''MOCK_PROVIDERS_''',
+]
+
+# Regla adicional: credenciales en texto plano dentro de archivos .env versionados.
+# Acota el match a archivos .env* para no generar falsos positivos en el código TS.
+[[rules]]
+id = "atlas-env-plaintext-credential"
+description = "Credencial en texto plano dentro de un archivo .env versionado"
+regex = '''(?i)(^|\n)[ \t]*(email|password|passwd|pwd|secret|token|apikey|api_key|api-key)[ \t]*=[ \t]*\S{6,}'''
+# Sin prefijo (^|/): en Windows el separador es "\" y anclarlo a "/" hacía que la
+# regla nunca disparara. Este patrón es agnóstico al separador (verificado en ambos).
+path = '''\.env(\.example|\.sample|\.template)?$'''
+keywords = ["email", "password", "passwd", "pwd", "secret", "token", "apikey"]
+
+  [rules.allowlist]
+  regexes = [
+    '''replace-me-locally''',
+    '''user@example\.invalid''',
+    '''(?i)(change[-_]?me|placeholder|example|your[-_]|demo)''',
+  ]

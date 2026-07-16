@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Un solo run por rama: cancela el anterior si llega un push nuevo.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------
+  # Calidad estática: límites de arquitectura, formato, tipos y lint.
+  # ---------------------------------------------------------------
+  quality:
+    name: Calidad (tipos, lint, límites)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Instalar dependencias
+        run: yarn install --frozen-lockfile
+
+      - name: Máximo 300 líneas por archivo
+        run: yarn max-lines
+
+      - name: Límites de arquitectura (sin fetch fuera de la capa de transporte)
+        run: yarn source-boundaries
+
+      - name: Formato (Prettier)
+        run: yarn format:check
+
+      - name: TypeScript
+        run: yarn type-check
+
+      - name: ESLint
+        run: yarn lint
+
+  # ---------------------------------------------------------------
+  # Build estricto: next.config.ts ya NO ignora errores de TS/ESLint.
+  # ---------------------------------------------------------------
+  build:
+    name: Build estricto
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Instalar dependencias
+        run: yarn install --frozen-lockfile
+
+      - name: next build
+        run: yarn build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  # ---------------------------------------------------------------
+  # Seguridad: escaneo de secretos. Sin `yarn install` a propósito,
+  # así el scan no recorre node_modules y termina en segundos.
+  # ---------------------------------------------------------------
+  secrets:
+    name: Escaneo de secretos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar gitleaks
+        env:
+          GITLEAKS_VERSION: 8.21.2
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          chmod +x gitleaks
+
+      - name: Detectar secretos en el árbol de trabajo
+        run: ./gitleaks detect --no-git --source . --redact --config .gitleaks.toml
+
+  # ---------------------------------------------------------------
+  # Auditoría de dependencias. Informativa por ahora: se vuelve
+  # bloqueante cuando el árbol de dependencias esté limpio (ver docs).
+  # ---------------------------------------------------------------
+  audit:
+    name: Auditoría de dependencias (informativa)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: yarn audit (high+)
+        run: yarn audit --level high

@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Agrupa patch/minor en un solo PR; los majors llegan sueltos y se revisan a mano.
+    groups:
+      patch-and-minor:
+        update-types:
+          - patch
+          - minor
+    ignore:
+      # Los majors no se fusionan automáticamente: requieren revisión explícita.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
