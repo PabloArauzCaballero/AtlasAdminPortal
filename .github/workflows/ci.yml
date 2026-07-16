@@ -91,20 +91,23 @@ jobs:
         run: ./gitleaks detect --no-git --source . --redact --config .gitleaks.toml
 
   # ---------------------------------------------------------------
-  # Auditoría de dependencias. Informativa por ahora: se vuelve
-  # bloqueante cuando el árbol de dependencias esté limpio (ver docs).
+  # Auditoría de dependencias (high+). Bloqueante.
+  # `yarn audit` de Yarn 1 está descontinuado (su endpoint devuelve 410),
+  # así que se genera un package-lock desde package.json y se usa `npm audit`,
+  # cuyo endpoint de advisories sigue activo.
   # ---------------------------------------------------------------
   audit:
-    name: Auditoría de dependencias (informativa)
+    name: Auditoría de dependencias (high+)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: yarn
 
-      - name: yarn audit (high+)
-        run: yarn audit --level high
+      - name: Generar package-lock desde package.json (sin instalar)
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Auditar vulnerabilidades high/critical
+        run: npm audit --audit-level=high
