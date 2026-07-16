@@ -10,3 +10,6 @@ tsconfig.tsbuildinfo
 package-lock.json
 npm-debug.log*
 yarn-error.log*
+
+# Bundles de código empaquetado: no versionar (pueden contener .env u otros secretos).
+*.tgz
