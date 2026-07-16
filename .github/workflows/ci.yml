@@ -48,6 +48,28 @@ jobs:
         run: yarn lint
 
   # ---------------------------------------------------------------
+  # Tests unitarios (Vitest + Testing Library sobre jsdom).
+  # Los tests viven en tests/, fuera de src/, para que las guardas de
+  # arquitectura (source-boundaries) sigan aplicando solo a producción.
+  # ---------------------------------------------------------------
+  test:
+    name: Tests unitarios
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Instalar dependencias
+        run: yarn install --frozen-lockfile
+
+      - name: Vitest con cobertura
+        run: yarn test:coverage
+
+  # ---------------------------------------------------------------
   # Build estricto: next.config.ts ya NO ignora errores de TS/ESLint.
   # ---------------------------------------------------------------
   build:
