@@ -32,7 +32,9 @@ describe("validateContract", () => {
   });
 
   it("lanza ApiContractError si falta un campo requerido", () => {
-    const error = capture(() => validateContract(userSchema, { id: "u1" }, CTX));
+    const error = capture(() =>
+      validateContract(userSchema, { id: "u1" }, CTX),
+    );
     expect(isApiContractError(error)).toBe(true);
   });
 
