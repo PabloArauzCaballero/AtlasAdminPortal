@@ -8,7 +8,8 @@ import { DataTable } from "@/shared/components/data-table/data-table";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { RiskBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { LoadingSkeleton } from "@/shared/components/ui/states";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { isAtlasApiError } from "@/shared/api/errors";
 import type { LineageEdge } from "./types";
 
 export function NodeDetailDrawer({
@@ -25,6 +26,21 @@ export function NodeDetailDrawer({
       onClose={onClose}
     >
       {node.isLoading ? <LoadingSkeleton rows={4} /> : null}
+      {/* Sin esto, un fallo dejaba el drawer abierto y vacío para siempre: ni
+          error, ni reintento, ni pista de qué pasó. */}
+      {node.isError ? (
+        <ErrorState
+          description={
+            isAtlasApiError(node.error)
+              ? node.error.message
+              : "No se pudo cargar el detalle del nodo."
+          }
+          requestId={
+            isAtlasApiError(node.error) ? node.error.requestId : undefined
+          }
+          onRetry={() => void node.refetch()}
+        />
+      ) : null}
       {data ? (
         <div className="space-y-5">
           <div className="flex items-center gap-2">

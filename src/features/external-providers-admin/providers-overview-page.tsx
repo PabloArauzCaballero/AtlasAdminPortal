@@ -81,7 +81,14 @@ export function ProvidersOverviewPage() {
         />
       ) : null}
       {open ? (
-        <ProviderDetailDrawer provider={open} onClose={() => setOpen(null)} />
+        // `key` obliga a remontar al cambiar de proveedor: sin él, React reusa
+        // la instancia y los formularios internos (runtime, test) conservan el
+        // estado del proveedor anterior, con riesgo de guardar su config aquí.
+        <ProviderDetailDrawer
+          key={open.code}
+          provider={open}
+          onClose={() => setOpen(null)}
+        />
       ) : null}
     </>
   );

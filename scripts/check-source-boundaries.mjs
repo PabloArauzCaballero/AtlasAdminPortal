@@ -23,6 +23,17 @@ const checks = [
     allowed: new Set(),
   },
   {
+    // R1: enviar cookies/credenciales solo desde el cliente API y los runners
+    // del QA Lab, que ya validan el host contra la allowlist antes del fetch.
+    label: 'credentials: "include"',
+    pattern: /credentials\s*:\s*(?:[^,\n]*\?\?\s*)?["']include["']/,
+    allowed: new Set([
+      "src/shared/api/request-init.ts",
+      "src/features/qa-lab/direct-runner.ts",
+      "src/features/qa-lab/stress-runner.ts",
+    ]),
+  },
+  {
     label: "apertura de ventanas/descargas",
     pattern: /\bwindow\.open\s*\(/,
     allowed: new Set(["src/features/data-exports/export-download-action.tsx"]),

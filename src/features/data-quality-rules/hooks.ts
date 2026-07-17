@@ -29,9 +29,17 @@ export function useRunDataQualityRuleMutation(ruleId: string) {
   return useMutation({
     mutationFn: () => runDataQualityRule(ruleId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["internal", "data-quality"],
-      });
+      await Promise.all([
+        // Reglas y su detalle viven bajo `internal`…
+        queryClient.invalidateQueries({
+          queryKey: ["internal", "data-quality"],
+        }),
+        // …pero ejecutar una regla abre/cierra issues, y esos cuelgan de otra
+        // raíz (`operations`). Sin esto la lista de issues queda stale.
+        queryClient.invalidateQueries({
+          queryKey: ["operations", "data-quality", "issues"],
+        }),
+      ]);
     },
   });
 }

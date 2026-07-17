@@ -80,9 +80,15 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/operations/catalogs": {
         systems:
-          "Catálogos operativos (listas de valores) que consumen los flujos del backend, con su versión y estado.",
+          "Catálogos operativos (listas de valores) que consumen los flujos del backend, con su versión y estado. El listado expone la versión más reciente de cada catálogo (no solo la publicada), y desde ahí se entra a la ficha de la versión: items, alias, mapeos de riesgo y el ciclo de aprobación (borrador → envío a aprobación → decisión de un administrador → publicación o retiro). Cada paso exige una justificación escrita que queda en el evento de aprobación y en la auditoría. También permite ingerir valores crudos a staging, aunque su revisión posterior todavía no está disponible: el backend no expone un listado de items en staging.",
         business:
-          "Las listas que la operación usa a diario (motivos, estados, tipologías) administradas en un solo lugar y sin deploys.",
+          "Las listas que la operación usa a diario (motivos, estados, tipologías) administradas en un solo lugar y sin deploys, con control de cambios real: nadie cambia lo que las reglas leen en producción sin que un administrador lo apruebe y quede registrado quién, cuándo y por qué.",
+      },
+      "/internal/business-metadata/definitions/package": {
+        systems:
+          "Editor del paquete de definiciones semánticas (`/operations/definitions/package`): eventos, observaciones, atributos y features de un dominio, creados o actualizados en lote. El paquete se valida en el navegador con el mismo esquema del backend y muestra los conteos por tipo antes de aplicarse.",
+        business:
+          "Carga masiva del vocabulario con el que se escriben las reglas y los modelos. Se revisa qué se va a publicar antes de aplicarlo, porque un código mal escrito deja reglas apuntando a señales que no existen.",
       },
     },
   },
@@ -146,9 +152,21 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/risk-policy/current": {
         systems:
-          "Política de riesgo activa servida por el backend con sus umbrales y versión vigente.",
+          "Política de riesgo activa servida por el backend con sus umbrales y versión vigente. Desde acá un administrador puede activar una versión de ruleset en estado `draft`, `inactive` o `approved` (`/operations/risk-policy/ruleset-versions/:id/activate`): la activación retira la versión activa anterior, exige una justificación de mínimo 5 caracteres y pide doble confirmación tecleada.",
         business:
-          "La configuración que decide aprobaciones/rechazos de riesgo hoy; consultarla evita discusiones sobre 'qué regla estaba activa'.",
+          "La configuración que decide aprobaciones/rechazos de riesgo hoy; consultarla evita discusiones sobre 'qué regla estaba activa'. Activar una versión cambia en vivo cómo se decide, así que solo lo hace un administrador y siempre queda registrado el motivo.",
+      },
+      "/internal/risk-policy/ruleset-versions": {
+        systems:
+          "Editor del paquete de versión de ruleset (`/operations/risk-policy/ruleset-versions`): modelo, ruleset, hasta 500 reglas con su `expressionJson` y hasta 500 señales de riesgo. Crea todo en borrador — no activa nada. La versión se valida en el navegador con el esquema del backend antes de enviarse.",
+        business:
+          "Donde se arma una política de riesgo nueva sin tocar la que está corriendo. Queda en borrador hasta que un administrador la active, así se puede preparar y revisar un cambio de reglas sin riesgo para producción.",
+      },
+      "/internal/governance/policies/package": {
+        systems:
+          "Editor del paquete de gobernanza (`/operations/data-governance/policy-package`): propósitos de privacidad, retenciones, proveedores, clasificaciones, reglas de campos sensibles y reglas de calidad, creados o actualizados en lote y validados contra el esquema del backend antes de aplicarse.",
+        business:
+          "Carga masiva de las reglas de tratamiento de datos: qué se guarda, cuánto tiempo y quién lo ve. Se revisa el resumen antes de aplicar porque una retención mal cargada borra datos que había que conservar — o al revés.",
       },
       "/internal/data-quality/issues": {
         systems:

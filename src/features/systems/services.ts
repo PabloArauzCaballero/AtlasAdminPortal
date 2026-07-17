@@ -13,6 +13,7 @@ import type {
   StressProfile,
   StressProfileListResponse,
   StressRunListResponse,
+  UpsertStressProfileInput,
   ToolItem,
   ToolListResponse,
   DataEntityListResponse,
@@ -196,6 +197,7 @@ function reviewPath(targetType: ReviewTargetType, targetId: string): string {
     dataImpact: `/systems/impact/data/${targetId}/review`,
     fieldImpact: `/systems/impact/fields/${targetId}/review`,
     toolRequirement: `/systems/tools/requirements/${targetId}/review`,
+    column: `/systems/data-entities/columns/${targetId}/review`,
   };
   return paths[targetType];
 }
@@ -233,6 +235,17 @@ export async function listStressMatrix(query: QueryParams) {
     response,
     ["stressMatrix", "matrix", "items", "records", "results"],
   );
+}
+
+/**
+ * Upsert de perfil de stress. El backend deriva el `code` desde el endpoint y
+ * hace `upsert`, así que este mismo POST crea o sobrescribe: no hay PATCH.
+ */
+export function upsertStressProfile(body: UpsertStressProfileInput) {
+  return apiRequest<StressProfile>("/systems/stress-profiles", {
+    method: "POST",
+    body,
+  });
 }
 
 export function queueStressRun(profileId: string, body: QueueStressRunInput) {

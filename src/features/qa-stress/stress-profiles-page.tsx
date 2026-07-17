@@ -10,8 +10,10 @@ import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
+import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { StressProfileForm } from "./stress-profile-form";
 import {
   PageHeader,
   SectionHeader,
@@ -27,6 +29,7 @@ export function StressProfilesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [creating, setCreating] = useState(false);
   const profiles = useStressProfiles({ page, limit: 20, q, status });
   const matrix = useStressMatrix({ page: 1, limit: 10, q });
 
@@ -128,11 +131,33 @@ export function StressProfilesPage() {
         title="Stress backend-driven"
         description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
-          <Link href="/internal/qa/lab">
-            <Button>Abrir QA Live Lab</Button>
-          </Link>
+          <div className="flex gap-2">
+            {/* No existe un permiso "systems.stress.manage" en el catálogo de
+                /internal/permissions; el backend restringe el upsert a
+                system_admin/platform_admin/qa_engineer/devops. Se usa el
+                permiso de ejecución, que es el más cercano, y el backend
+                responde 403 si el rol no alcanza. */}
+            <PermissionGate
+              permissions={["systems.stress.execute"]}
+              fallback={null}
+            >
+              <Button variant="primary" onClick={() => setCreating(true)}>
+                Nuevo perfil
+              </Button>
+            </PermissionGate>
+            <Link href="/internal/qa/lab">
+              <Button>Abrir QA Live Lab</Button>
+            </Link>
+          </div>
         }
       />
+      <DrawerPanel
+        open={creating}
+        title="Nuevo perfil de stress"
+        onClose={() => setCreating(false)}
+      >
+        <StressProfileForm onSaved={() => setCreating(false)} />
+      </DrawerPanel>
       <FilterBar
         search={q}
         searchPlaceholder="Buscar perfil o endpoint…"

@@ -9,8 +9,9 @@ import {
   listStressProfiles,
   listStressRuns,
   queueStressRun,
+  upsertStressProfile,
 } from "./services";
-import type { QueueStressRunInput } from "./types";
+import type { QueueStressRunInput, UpsertStressProfileInput } from "./types";
 
 export function useStressProfiles(query: QueryParams) {
   return useQuery({
@@ -31,6 +32,27 @@ export function useStressMatrix(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.stressMatrix(query),
     queryFn: () => listStressMatrix(query),
+  });
+}
+
+export function useUpsertStressProfileMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpsertStressProfileInput) => upsertStressProfile(body),
+    // Es un upsert: puede crear un perfil nuevo o sobrescribir uno existente,
+    // y en ambos casos cambia la matriz de cobertura (`hasEnabledProfile`) y el
+    // detalle del perfil, no solo el listado. Se invalida la raíz de stress.
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["systems", "stress-profiles"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["systems", "stress-profile"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["systems", "stress-matrix"],
+      });
+    },
   });
 }
 

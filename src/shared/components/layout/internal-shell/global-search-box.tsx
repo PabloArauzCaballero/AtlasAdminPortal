@@ -5,12 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useGlobalSearch } from "@/features/search/hooks";
+import type { GlobalSearchResult } from "@/features/search/types";
 import { Input } from "@/shared/components/ui/input";
 import {
   addRecentSearch,
   getRecentSearches,
 } from "@/shared/lib/local-search-history";
 import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
+
+/** Resultado cuyo `href` ya pasó la validación de ruta interna al normalizar. */
+type SafeSuggestion = GlobalSearchResult & { href: string };
 
 export function GlobalSearchBox() {
   const router = useRouter();
@@ -20,6 +24,11 @@ export function GlobalSearchBox() {
   const containerRef = useRef<HTMLDivElement>(null);
   const debouncedQ = useDebouncedValue(q, 350);
   const suggestions = useGlobalSearch(open ? debouncedQ.trim() : "");
+  // Un resultado sin destino interno seguro no se ofrece como sugerencia: en un
+  // desplegable no hay forma útil de mostrarlo como texto no navegable.
+  const safeSuggestions = (suggestions.data?.items ?? []).filter(
+    (item): item is SafeSuggestion => Boolean(item.href),
+  );
 
   useEffect(() => setRecents(getRecentSearches()), [open]);
 
@@ -94,8 +103,8 @@ export function GlobalSearchBox() {
               <p className="px-2 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-atlas-muted">
                 Coincidencias
               </p>
-              {suggestions.data?.items.length ? (
-                suggestions.data.items.slice(0, 6).map((item) => (
+              {safeSuggestions.length ? (
+                safeSuggestions.slice(0, 6).map((item) => (
                   <Link
                     key={`${item.kind}-${item.id}`}
                     href={item.href}

@@ -34,12 +34,23 @@ export type QaLayerLogger = {
   error: (event: string, msg: string, data?: unknown) => void;
 };
 
-export function createQaPinoLogger(seed: string): QaPinoLogger {
+/**
+ * Tope duro de entradas. Un stress de 10.000 requests generaba una entrada por
+ * request —cada una sanitizada— que además viajaba entera en el resultado y se
+ * renderizaba. Pasado el tope se deja de acumular y se deja constancia.
+ */
+const MAX_LOG_ENTRIES = 2_000;
+
+export function createQaPinoLogger(
+  seed: string,
+  options: { minLevel?: QaLogLevel } = {},
+): QaPinoLogger {
   const runId = buildRunId(seed);
   const entries: QaLogEntry[] = [];
+  const minLevel = toPinoLevel(options.minLevel ?? "debug");
   return {
     runId,
-    child: (layer) => buildLayerLogger(entries, runId, layer),
+    child: (layer) => buildLayerLogger(entries, runId, layer, minLevel),
     lines: () => entries.map((entry) => JSON.stringify(entry)),
     entries: () => [...entries],
   };
@@ -61,15 +72,25 @@ function buildLayerLogger(
   entries: QaLogEntry[],
   runId: string,
   layer: string,
+  minLevel: number,
 ): QaLayerLogger {
   const push = (
     level: QaLogLevel,
     event: string,
     msg: string,
     data?: unknown,
-  ) =>
+  ) => {
+    const numericLevel = toPinoLevel(level);
+    // El gate va antes de `toSafeLogData`: sanitizar un payload que se va a
+    // descartar es justo el coste que se quiere evitar en un stress.
+    if (numericLevel < minLevel) return;
+    if (entries.length >= MAX_LOG_ENTRIES) {
+      if (entries.length === MAX_LOG_ENTRIES)
+        pushTruncationNotice(entries, runId, layer);
+      return;
+    }
     entries.push({
-      level: toPinoLevel(level),
+      level: numericLevel,
       time: Date.now(),
       pid: PID,
       hostname: HOSTNAME,
@@ -80,12 +101,31 @@ function buildLayerLogger(
       runId,
       ...(data === undefined ? {} : { data: toSafeLogData(data) }),
     });
+  };
   return {
     debug: (event, msg, data) => push("debug", event, msg, data),
     info: (event, msg, data) => push("info", event, msg, data),
     warn: (event, msg, data) => push("warn", event, msg, data),
     error: (event, msg, data) => push("error", event, msg, data),
   };
+}
+
+function pushTruncationNotice(
+  entries: QaLogEntry[],
+  runId: string,
+  layer: string,
+): void {
+  entries.push({
+    level: toPinoLevel("warn"),
+    time: Date.now(),
+    pid: PID,
+    hostname: HOSTNAME,
+    name: LOGGER_NAME,
+    layer,
+    msg: `Log truncado: se alcanzó el tope de ${MAX_LOG_ENTRIES} entradas.`,
+    event: "log.truncated",
+    runId,
+  });
 }
 
 function toPinoLevel(level: QaLogLevel): number {

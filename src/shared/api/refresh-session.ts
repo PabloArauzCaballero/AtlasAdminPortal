@@ -1,6 +1,7 @@
 import { buildRequestInit, buildUrl } from "./request-init";
 import { extractData, parseJsonSafely } from "./response";
 import { fetchWithTimeout } from "./transport";
+import { normalizeInternalSession } from "@/shared/auth/auth-normalizers";
 import {
   clearStoredInternalSession,
   setStoredInternalSession,
@@ -30,7 +31,12 @@ export async function refreshInternalSession(
     return null;
   }
 
-  const refreshed = extractData<InternalSession>(payload);
+  // Se normaliza igual que el login: el backend puede devolver permisos/roles
+  // como objetos o bajo otra clave, y guardarlos crudos deja la sesión sin
+  // permisos utilizables (parseSession la descartaría en el próximo arranque).
+  const refreshed = normalizeInternalSession(
+    extractData<InternalSession>(payload),
+  );
   setStoredInternalSession(refreshed);
   return refreshed;
 }

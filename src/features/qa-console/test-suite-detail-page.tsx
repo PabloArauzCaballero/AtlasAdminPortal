@@ -1,21 +1,23 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTestSuite } from "@/features/systems/hooks";
-import type { TestStep } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { DataTable } from "@/shared/components/data-table/data-table";
+import { useAuth } from "@/shared/auth/auth-context";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { MethodBadge, StatusBadge } from "@/shared/components/ui/badges";
+import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { SuiteExecutionPanel } from "./suite-execution-panel";
+import { SuiteForm } from "./suite-form";
+import { SuiteStepsSection } from "./suite-steps-section";
 
 const tabs = ["Resumen", "Pasos", "Config", "Ejecución"];
 
@@ -23,47 +25,10 @@ export function TestSuiteDetailPage({
   suiteId,
 }: Readonly<{ suiteId: string }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
+  const [editing, setEditing] = useState(false);
   const suite = useTestSuite(suiteId);
-
-  const stepColumns = useMemo<ColumnDef<TestStep>[]>(
-    () => [
-      { header: "#", accessorKey: "stepOrder" },
-      { header: "Nombre", accessorKey: "name" },
-      {
-        header: "Método",
-        accessorKey: "method",
-        cell: ({ row }) => <MethodBadge method={row.original.method} />,
-      },
-      {
-        header: "Ruta",
-        accessorKey: "pathTemplate",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.pathTemplate}</span>
-        ),
-      },
-      {
-        header: "Endpoint",
-        accessorKey: "endpointId",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">
-            {row.original.endpointId ? `#${row.original.endpointId}` : "—"}
-          </span>
-        ),
-      },
-      { header: "Input", accessorKey: "inputMode" },
-      {
-        header: "Continúa",
-        accessorKey: "continueOnFailure",
-        cell: ({ row }) => formatBoolean(row.original.continueOnFailure),
-      },
-      {
-        header: "Cleanup",
-        accessorKey: "cleanupRequired",
-        cell: ({ row }) => formatBoolean(row.original.cleanupRequired),
-      },
-    ],
-    [],
-  );
+  const { hasPermission } = useAuth();
+  const canAuthor = hasPermission("systems.qa.execute");
 
   return (
     <PermissionGate permissions={["systems.qa.read"]}>
@@ -91,11 +56,26 @@ export function TestSuiteDetailPage({
               "Suite sin descripción documentada."
             }
             actions={
-              <StatusBadge
-                value={suite.data.suite.isEnabled ? "ACTIVE" : "DISABLED"}
-              />
+              <>
+                <StatusBadge
+                  value={suite.data.suite.isEnabled ? "ACTIVE" : "DISABLED"}
+                />
+                {canAuthor ? (
+                  <Button onClick={() => setEditing(true)}>Editar suite</Button>
+                ) : null}
+              </>
             }
           />
+          <DrawerPanel
+            open={editing}
+            title={`Editar ${suite.data.suite.code}`}
+            onClose={() => setEditing(false)}
+          >
+            <SuiteForm
+              suite={suite.data.suite}
+              onSaved={() => setEditing(false)}
+            />
+          </DrawerPanel>
           <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
           {activeTab === "Resumen" ? (
             <KeyValueGrid
@@ -129,7 +109,7 @@ export function TestSuiteDetailPage({
             />
           ) : null}
           {activeTab === "Pasos" ? (
-            <DataTable data={suite.data.steps} columns={stepColumns} />
+            <SuiteStepsSection suiteId={suiteId} steps={suite.data.steps} />
           ) : null}
           {activeTab === "Config" ? (
             <div className="grid gap-4 xl:grid-cols-2">

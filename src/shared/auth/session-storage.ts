@@ -2,6 +2,7 @@ import {
   isSessionExpired,
   sanitizeSessionForStorage,
 } from "./auth-session-policy";
+import { emitSessionChange } from "./session-events";
 import type { InternalSession } from "./types";
 
 const SESSION_KEY = "atlas_internal_session_v3";
@@ -68,6 +69,9 @@ export function setStoredInternalSession(session: InternalSession): void {
   );
   storage.removeItem(LEGACY_SESSION_KEY);
   window.localStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
+  // Se emite la sesión completa, no la saneada: el estado en memoria conserva
+  // los tokens que el almacenamiento puede haber descartado a propósito.
+  emitSessionChange(session);
 }
 
 export function clearStoredInternalSession(): void {
@@ -77,4 +81,5 @@ export function clearStoredInternalSession(): void {
   if (typeof window !== "undefined") {
     window.localStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
   }
+  emitSessionChange(null);
 }

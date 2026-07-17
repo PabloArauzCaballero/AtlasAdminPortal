@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -112,9 +113,12 @@ export function InvestigationSummaryPage({
                     Score:{" "}
                     {formatNumber(summary.data.latestRiskAssessment.fraudScore)}
                   </span>
-                  <span className="ml-auto font-mono text-xs text-atlas-muted">
+                  <Link
+                    href={`/internal/operations/risk-assessments/${summary.data.latestRiskAssessment.riskAssessmentRunId}`}
+                    className="ml-auto font-mono text-xs text-blue-700 hover:underline"
+                  >
                     run #{summary.data.latestRiskAssessment.riskAssessmentRunId}
-                  </span>
+                  </Link>
                   <span className="w-full text-xs text-atlas-muted">
                     Decidido:{" "}
                     {formatDateTime(

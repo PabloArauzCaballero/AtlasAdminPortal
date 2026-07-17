@@ -43,6 +43,8 @@ export const queryKeys = {
     ["internal-permissions", params] as const,
   operationCatalogs: (params: unknown) =>
     ["operations", "catalogs", params] as const,
+  catalogVersion: (catalogCode: string, versionId: string) =>
+    ["operations", "catalog-version", catalogCode, versionId] as const,
   definitions: (params: unknown) =>
     ["operations", "definitions", params] as const,
   dataGovernancePolicies: [
@@ -51,6 +53,10 @@ export const queryKeys = {
     "policies",
   ] as const,
   currentRiskPolicy: ["operations", "risk-policy", "current"] as const,
+  riskAssessment: (runId: string) =>
+    ["operations", "risk-assessment", runId] as const,
+  riskAssessmentExplanation: (runId: string) =>
+    ["operations", "risk-assessment", runId, "explanation"] as const,
   releaseReadiness: ["internal", "release-readiness"] as const,
   globalSearch: (q: string) => ["internal", "search", q] as const,
   dataQualityIssues: (params: unknown) =>
@@ -93,6 +99,12 @@ export const queryKeys = {
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
   investigationSummary: (customerId: string) =>
     ["operations", "investigation-summary", customerId] as const,
+  sessionInvestigationSummary: (sessionId: string) =>
+    ["operations", "session-investigation-summary", sessionId] as const,
+  customerAuditFeed: (customerId: string) =>
+    ["operations", "customer-audit", "feed", customerId] as const,
+  customerAuditEvents: (customerId: string, params: unknown) =>
+    ["operations", "customer-audit", "events", customerId, params] as const,
   schemaVersions: (params: unknown) => ["schema", "versions", params] as const,
   schemaVersion: (versionId: string) =>
     ["schema", "version", versionId] as const,

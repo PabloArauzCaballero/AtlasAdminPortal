@@ -1,3 +1,4 @@
+import { isSafeInternalPath } from "@/shared/lib/urls";
 import type { GlobalSearchResponse, GlobalSearchResult } from "./types";
 
 type UnknownRecord = Record<string, unknown>;
@@ -20,12 +21,23 @@ function normalizeResult(value: unknown): GlobalSearchResult {
       "description",
       "summary",
     ]),
-    href: readString(record, ["href", "url", "path"], "/internal/search"),
+    href: readSafeHref(record),
     status: readOptionalString(record, ["status", "reviewStatus"]),
     method: readOptionalString(record, ["method"]),
     riskLevel: readOptionalString(record, ["riskLevel", "criticality"]),
     containsPii: readOptionalBoolean(record, ["containsPii", "pii"]),
   };
+}
+
+/**
+ * El `href` llega del backend y termina en un `<Link>`: sin validar, un
+ * `javascript:` o un `//host` externo convertiría un resultado de búsqueda en
+ * una redirección abierta. Si no es una ruta interna segura se devuelve `null`
+ * y la tarjeta se pinta como texto no navegable.
+ */
+function readSafeHref(record: UnknownRecord): string | null {
+  const href = readString(record, ["href", "url", "path"], "");
+  return isSafeInternalPath(href) ? href : null;
 }
 
 function extractItems(payload: unknown): unknown[] {

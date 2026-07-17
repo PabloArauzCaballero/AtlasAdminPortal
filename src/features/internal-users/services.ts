@@ -51,19 +51,35 @@ export async function createInternalUser(
   });
   const user = "user" in signupResult ? signupResult.user : signupResult;
 
+  // A partir de aquí la cuenta YA existe. Si un paso posterior falla y dejamos
+  // propagar el error, `onSuccess` no corre y la contraseña temporal —que solo
+  // vive en memoria de este cliente— se pierde: queda una cuenta creada a la
+  // que nadie puede entrar y que tampoco se puede volver a dar de alta (el
+  // email ya está tomado). Por eso los pasos de abajo degradan a warning.
+  const warnings: string[] = [];
+
   if (input.roles.length > 0) {
-    await apiRequest(`/internal/users/${user.id}/roles`, {
-      method: "PATCH",
-      body: { roles: input.roles },
-    });
+    try {
+      await updateInternalUserRoles(user.id, input.roles);
+    } catch {
+      warnings.push(
+        "La cuenta se creó, pero no se pudieron asignar los roles: no tendrá permisos hasta que los asignes desde el detalle del usuario.",
+      );
+    }
   }
 
-  await updateInternalUser(user.id, {
-    mustChangePassword: true,
-    reason: input.reason,
-  });
+  try {
+    await updateInternalUser(user.id, {
+      mustChangePassword: true,
+      reason: input.reason,
+    });
+  } catch {
+    warnings.push(
+      "La cuenta se creó, pero no se pudo forzar el cambio de contraseña: la temporal seguirá siendo válida hasta que lo actives en el detalle del usuario.",
+    );
+  }
 
-  return { user, temporaryPassword };
+  return { user, temporaryPassword, warnings };
 }
 
 export function updateInternalUser(

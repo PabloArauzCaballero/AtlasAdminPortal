@@ -16,7 +16,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"docs/**/*.md\" \"scripts/**/*.mjs\"",
     "clean": "node -e \"const fs=require('node:fs'); for (const p of ['.next','out','dist','coverage','tsconfig.tsbuildinfo']) fs.rmSync(p,{recursive:true,force:true})\"",
     "validate": "npm run max-lines && npm run source-boundaries && npm run format:check && npm run type-check && npm run lint",
-    "validate:full": "npm run validate && npm run test && npm run build && npm run audit:high",
+    "validate:full": "npm run validate && npm run test:coverage && npm run build && npm run audit:high",
     "build:raw": "next build",
     "audit:high": "npm audit --audit-level=high",
     "build:portable": "node scripts/next-build.mjs",

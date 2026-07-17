@@ -10,7 +10,9 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Field, Input, Select } from "@/shared/components/ui/input";
+import { StressProfileForm } from "./stress-profile-form";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
@@ -31,6 +33,7 @@ export function StressProfileDetailPage({
   const queueMutation = useQueueStressRunMutation(profileId);
   const { hasPermission } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [environment, setEnvironment] = useState<
     "LOCAL" | "STAGING" | "PRODUCTION_READONLY"
   >("LOCAL");
@@ -83,6 +86,11 @@ export function StressProfileDetailPage({
             actions={
               <>
                 <StatusBadge value={profile.data.status} />
+                {canExecute ? (
+                  <Button onClick={() => setEditing(true)}>
+                    Editar perfil
+                  </Button>
+                ) : null}
                 <Button
                   variant="primary"
                   disabled={queueDisabled}
@@ -199,6 +207,16 @@ export function StressProfileDetailPage({
             </Card>
             <JsonViewer title="Perfil completo" value={profile.data} />
           </div>
+          <DrawerPanel
+            open={editing}
+            title={`Editar ${profile.data.code}`}
+            onClose={() => setEditing(false)}
+          >
+            <StressProfileForm
+              profile={profile.data}
+              onSaved={() => setEditing(false)}
+            />
+          </DrawerPanel>
           <ConfirmDialog
             open={confirmOpen}
             title="Confirmar stress dry-run"

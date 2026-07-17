@@ -1,8 +1,9 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Upload, X } from "lucide-react";
+import { useLogFileUpload } from "./use-log-file-upload";
 import { useMongoLogs } from "@/features/systems/hooks";
 import type { MongoLogEntry } from "@/features/systems/types";
 import { Button } from "@/shared/components/ui/button";
@@ -24,21 +25,8 @@ export function MongoLogsSection() {
   const [type, setType] = useState("");
   const [live, setLive] = useState(true);
   const [view, setView] = useState<"terminal" | "table">("terminal");
-  const [uploadedLog, setUploadedLog] = useState<{
-    name: string;
-    content: string;
-  } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const logs = useMongoLogs({ page, limit: 20, q, type }, { live });
-
-  async function handleLoadFile(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const content = await file.text();
-    setUploadedLog({ name: file.name, content });
-    setView("terminal");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
+  const upload = useLogFileUpload(() => setView("terminal"));
 
   const columns = useMemo<ColumnDef<MongoLogEntry>[]>(
     () => [
@@ -138,26 +126,34 @@ export function MongoLogsSection() {
           </button>
         </div>
         <input
-          ref={fileInputRef}
+          ref={upload.fileInputRef}
           type="file"
           accept=".log,.txt,text/plain"
           className="hidden"
-          onChange={handleLoadFile}
+          onChange={upload.loadFile}
         />
         <Button
           variant="secondary"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => upload.fileInputRef.current?.click()}
         >
           <Upload className="h-4 w-4" />
           Cargar Archivo.log
         </Button>
       </div>
 
-      {uploadedLog ? (
+      {upload.notice ? (
+        <p
+          role="status"
+          className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-atlas-text"
+        >
+          {upload.notice}
+        </p>
+      ) : null}
+      {upload.uploadedLog ? (
         <UploadedLogTerminal
-          name={uploadedLog.name}
-          content={uploadedLog.content}
-          onClear={() => setUploadedLog(null)}
+          name={upload.uploadedLog.name}
+          content={upload.uploadedLog.content}
+          onClear={upload.clear}
         />
       ) : null}
       {logs.isLoading ? <LoadingSkeleton rows={6} /> : null}

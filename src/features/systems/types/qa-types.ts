@@ -39,6 +39,57 @@ export type TestSuiteDetail = {
   steps: TestStep[];
 };
 
+export type TestSuiteType =
+  "INTEGRATION" | "SMOKE" | "REGRESSION" | "E2E_API" | "LOAD";
+
+export type TestStepInputMode =
+  "DEFAULT" | "CONFIGURABLE" | "GENERATED" | "FROM_PREVIOUS_STEP";
+
+export type HttpMethod =
+  "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
+
+/**
+ * Cuerpo de `POST /systems/test-suites` y `PATCH /systems/test-suites/:suiteId`.
+ *
+ * En el PATCH el backend usa un schema donde **todo es opcional y sin
+ * defaults** (a propósito: `.partial()` habría reaplicado los `.default()` de
+ * Zod y sobrescrito suites existentes en silencio). Por eso el update manda
+ * solo lo que cambió y rechaza un body vacío.
+ */
+export type UpsertTestSuiteInput = {
+  code?: string;
+  name?: string;
+  description?: string;
+  module?: string;
+  suiteType?: TestSuiteType;
+  environmentScope?: StressEnvironment[];
+  isEnabled?: boolean;
+  requiresSeedData?: boolean;
+  isSafeForProduction?: boolean;
+  requiresDestructivePermission?: boolean;
+};
+
+export type CreateTestStepInput = {
+  endpointId?: string | null;
+  stepOrder: number;
+  name: string;
+  inputMode?: TestStepInputMode;
+  method: HttpMethod;
+  /** Debe empezar con una sola `/`. El backend rechaza `//…`. */
+  pathTemplate: string;
+  defaultHeaders?: JsonRecord;
+  defaultPayload?: JsonRecord;
+  configSchema?: JsonRecord;
+  extractors?: JsonRecord;
+  assertions?: JsonRecord;
+  continueOnFailure?: boolean;
+  cleanupRequired?: boolean;
+};
+
+export type ReorderTestStepsInput = {
+  steps: Array<{ stepId: string; stepOrder: number }>;
+};
+
 export type TestRun = {
   runId: string;
   suiteId: string;
@@ -111,6 +162,36 @@ export type StressRun = {
   triggeredById: string | null;
   createdAt: string | null;
 };
+
+/**
+ * Cuerpo de `POST /systems/stress-profiles`.
+ *
+ * Es un **upsert**, no un create: el backend deriva el `code` final desde el
+ * código del endpoint (`stressCode(endpoint.code, body.code)`) y hace `upsert`
+ * sobre esa clave. No existe un PATCH aparte — reenviar el mismo `code`
+ * sobrescribe el perfil existente.
+ */
+export type UpsertStressProfileInput = {
+  endpointId: string;
+  code?: string;
+  name: string;
+  targetRps: number;
+  durationSeconds: number;
+  concurrency: number;
+  environmentScope?: StressEnvironment[];
+  /** Fracción (0–1), no porcentaje. El backend rechaza > 1. */
+  maxErrorRate?: number;
+  maxP95Ms?: number;
+  isEnabled?: boolean;
+  requiresApproval?: boolean;
+  status?: StressProfileStatus;
+  notes?: string;
+};
+
+export type StressEnvironment = "LOCAL" | "STAGING" | "PRODUCTION_READONLY";
+
+export type StressProfileStatus =
+  "ACTIVE" | "DISABLED" | "NEEDS_REVIEW" | "DEPRECATED";
 
 export type QueueStressRunInput = {
   environment: "LOCAL" | "STAGING" | "PRODUCTION_READONLY";

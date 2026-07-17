@@ -48,7 +48,12 @@ export type ReviewDecisionInput = {
 };
 
 export type ReviewTargetType =
-  "endpoint" | "dataEntity" | "dataImpact" | "fieldImpact" | "toolRequirement";
+  | "endpoint"
+  | "dataEntity"
+  | "dataImpact"
+  | "fieldImpact"
+  | "toolRequirement"
+  | "column";
 
 export type CatalogSeedRefreshInput = {
   includeTools: boolean;

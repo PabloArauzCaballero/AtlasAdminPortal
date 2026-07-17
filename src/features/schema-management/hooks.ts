@@ -52,10 +52,10 @@ export function useProposeSchemaTableMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: ProposeSchemaTableInput) => proposeSchemaTable(body),
+    // Proponer una tabla no solo agrega una entrada al change-log: deja stale
+    // versiones, tablas y sus contadores. Se invalida la raíz del dominio.
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["schema", "change-log"],
-      });
+      await queryClient.invalidateQueries({ queryKey: ["schema"] });
     },
   });
 }
@@ -72,10 +72,9 @@ export function useApproveSchemaChangeMutation() {
   return useMutation({
     mutationFn: (input: { changeId: string; body: ApproveSchemaChangeInput }) =>
       approveSchemaChange(input.changeId, input.body),
+    // Aprobar/rechazar un cambio altera versiones y tablas, no solo el log.
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["schema", "change-log"],
-      });
+      await queryClient.invalidateQueries({ queryKey: ["schema"] });
     },
   });
 }

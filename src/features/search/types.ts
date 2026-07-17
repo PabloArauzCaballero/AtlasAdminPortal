@@ -3,7 +3,8 @@ export type GlobalSearchResult = {
   kind: string;
   title: string;
   subtitle?: string | null;
-  href: string;
+  /** `null` si el backend devolvió un destino no navegable de forma segura. */
+  href: string | null;
   status?: string | null;
   method?: string | null;
   riskLevel?: string | null;

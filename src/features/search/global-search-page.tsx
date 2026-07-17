@@ -110,25 +110,38 @@ function SearchResults({
 }
 
 function ResultCard({ result }: Readonly<{ result: GlobalSearchResult }>) {
+  const body = (
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
+          {result.kind}
+        </p>
+        <h3 className="mt-1 truncate text-sm font-semibold text-atlas-text">
+          {result.title}
+        </h3>
+        <p className="mt-1 line-clamp-2 text-sm text-atlas-muted">
+          {safeText(result.subtitle)}
+        </p>
+      </div>
+      <ResultMeta result={result} />
+    </div>
+  );
+
+  // Sin destino seguro el resultado sigue informando, pero no navega.
+  if (!result.href) {
+    return (
+      <div className="block rounded-lg border border-atlas-border p-4">
+        {body}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={result.href}
       className="block rounded-lg border border-atlas-border p-4 hover:bg-atlas-soft"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
-            {result.kind}
-          </p>
-          <h3 className="mt-1 truncate text-sm font-semibold text-atlas-text">
-            {result.title}
-          </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-atlas-muted">
-            {safeText(result.subtitle)}
-          </p>
-        </div>
-        <ResultMeta result={result} />
-      </div>
+      {body}
     </Link>
   );
 }

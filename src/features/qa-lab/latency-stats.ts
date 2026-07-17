@@ -36,7 +36,12 @@ export function buildLatencyTimeline(
   const buckets = new Map<number, LatencySample[]>();
   samples.forEach((sample) => {
     const second = Math.floor(sample.elapsedMs / 1_000);
-    buckets.set(second, [...(buckets.get(second) ?? []), sample]);
+    // Se hace push sobre el bucket existente en vez de recrearlo: copiar el
+    // array en cada muestra convertía esto en O(n²) por segundo, y un stress
+    // de 10.000 requests concentrado en pocos segundos congelaba la UI.
+    const bucket = buckets.get(second);
+    if (bucket) bucket.push(sample);
+    else buckets.set(second, [sample]);
   });
   return [...buckets.entries()]
     .sort(([a], [b]) => a - b)

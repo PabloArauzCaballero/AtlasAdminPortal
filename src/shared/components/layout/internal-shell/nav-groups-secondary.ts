@@ -7,6 +7,7 @@ import {
   ListChecks,
   LockKeyhole,
   MessageSquare,
+  PlayCircle,
   Plug,
   Settings,
   ShieldAlert,
@@ -45,6 +46,12 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         href: "/internal/jobs",
         icon: ListChecks,
         permissions: ["internal.jobs.read"],
+      },
+      {
+        label: "Jobs de runtime",
+        href: "/internal/operations/runtime-jobs",
+        icon: PlayCircle,
+        permissions: ["internal.jobs.execute"],
       },
       {
         label: "Alertas",

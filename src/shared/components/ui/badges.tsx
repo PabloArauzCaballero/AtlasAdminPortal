@@ -130,19 +130,48 @@ export function ReviewStatusBadge({
   );
 }
 
+/**
+ * Semáforo de estados. Los valores no mapeados caían en `default` (gris), que
+ * es exactamente lo que no se quiere en un semáforo: un journey de QA con
+ * fallos (`WARNING`) o un release `BLOCKED` se pintaban igual que un estado
+ * neutro. Cualquier estado nuevo con carga semántica va en una de estas listas.
+ */
+const SUCCESS_STATUSES = new Set([
+  "ACTIVE",
+  "PASSED",
+  "ENABLED",
+  "OK",
+  "READY",
+]);
+
+const CRITICAL_STATUSES = new Set([
+  "FAILED",
+  "DISABLED",
+  "ERROR",
+  "REJECTED",
+  "BLOCKED",
+]);
+
+const WARNING_STATUSES = new Set([
+  "NEEDS_REVIEW",
+  "RUNNING",
+  "QUEUED",
+  "WARNING",
+  "INCOMPLETE",
+]);
+
+export function statusTone(value?: string | null): Tone {
+  const normalized = value?.toUpperCase() ?? "";
+  if (!value) return "muted";
+  if (SUCCESS_STATUSES.has(normalized)) return "success";
+  if (CRITICAL_STATUSES.has(normalized)) return "critical";
+  if (WARNING_STATUSES.has(normalized)) return "warning";
+  return "default";
+}
+
 export function StatusBadge({ value }: Readonly<{ value?: string | null }>) {
-  const normalized = value?.toUpperCase();
-  const tone: Tone = ["ACTIVE", "PASSED", "ENABLED", "OK"].includes(
-    normalized ?? "",
-  )
-    ? "success"
-    : ["FAILED", "DISABLED", "ERROR", "REJECTED"].includes(normalized ?? "")
-      ? "critical"
-      : ["NEEDS_REVIEW", "RUNNING", "QUEUED"].includes(normalized ?? "")
-        ? "warning"
-        : "default";
   return (
-    <Badge tone={value ? tone : "muted"} dot>
+    <Badge tone={statusTone(value)} dot>
       {value ?? "—"}
     </Badge>
   );

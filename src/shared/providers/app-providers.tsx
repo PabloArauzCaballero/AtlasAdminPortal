@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { AuthProvider } from "@/shared/auth/auth-context";
+import { SessionCacheGuard } from "@/shared/auth/session-cache-guard";
 
 export function AppProviders({
   children,
@@ -28,6 +29,7 @@ export function AppProviders({
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionCacheGuard />
       <AuthProvider>{children}</AuthProvider>
     </QueryClientProvider>
   );

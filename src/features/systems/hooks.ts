@@ -43,6 +43,7 @@ export {
   useStressProfile,
   useStressMatrix,
   useQueueStressRunMutation,
+  useUpsertStressProfileMutation,
   useStressRuns,
 } from "./stress-hooks";
 export {

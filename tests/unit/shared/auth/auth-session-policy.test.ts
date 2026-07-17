@@ -22,19 +22,51 @@ afterEach(() => {
 });
 
 describe("getInternalAuthStorageMode", () => {
-  it.each(["cookie", "session"])("respeta el modo explícito %s", (mode) => {
+  it.each(["auto", "session"])("respeta el modo explícito %s", (mode) => {
     setMode(mode);
     expect(getInternalAuthStorageMode()).toBe(mode);
   });
 
-  it("cae en 'auto' si no está configurado", () => {
+  /**
+   * El default falla cerrado. Antes era `auto`, que persiste tokens si el backend responde
+   * `Bearer`: un despliegue que olvidara la variable caía en el modo inseguro en silencio. El
+   * backend ya entrega la sesión en cookies `HttpOnly`, así que `cookie` es además lo correcto.
+   */
+  it("cae en 'cookie' si no está configurado (fail-closed)", () => {
     setMode(undefined);
-    expect(getInternalAuthStorageMode()).toBe("auto");
+    expect(getInternalAuthStorageMode()).toBe("cookie");
   });
 
-  it("cae en 'auto' ante un valor desconocido", () => {
+  it("cae en 'cookie' ante un valor desconocido, no en un modo que persista tokens", () => {
     setMode("cualquier-cosa");
-    expect(getInternalAuthStorageMode()).toBe("auto");
+    expect(getInternalAuthStorageMode()).toBe("cookie");
+  });
+});
+
+describe("sanitizeSessionForStorage · sin configuración explícita", () => {
+  it("no deja ningún token en lo que se serializa al storage", () => {
+    setMode(undefined);
+    const stored = sanitizeSessionForStorage(
+      makeSession({
+        accessToken: "access-secreto",
+        refreshToken: "refresh-secreto",
+      }),
+    );
+
+    expect(stored.accessToken).toBeUndefined();
+    expect(stored.refreshToken).toBeUndefined();
+    // La comprobación que pide la rúbrica: ni rastro del token en el JSON serializado.
+    const serialized = JSON.stringify(stored);
+    expect(serialized).not.toContain("access-secreto");
+    expect(serialized).not.toContain("refresh-secreto");
+  });
+
+  it("conserva el perfil: lo que se descarta son las credenciales, no la sesión", () => {
+    setMode(undefined);
+    const stored = sanitizeSessionForStorage(makeSession({ accessToken: "x" }));
+
+    expect(stored.user.email).toBeTruthy();
+    expect(stored.tokenType).toBe("Cookie");
   });
 });
 

@@ -6,7 +6,11 @@ import {
   effectiveTimeoutMs,
   getBodyForMethod,
 } from "./request-builder";
-import { assertRequestAllowed, redactedHeaders } from "./qa-safety";
+import {
+  assertHostAllowed,
+  assertRequestAllowed,
+  redactedHeaders,
+} from "./qa-safety";
 import {
   buildStressResult,
   dryRunStressResult,
@@ -31,7 +35,11 @@ export async function runStressBurst(
   endpoint: EndpointItem,
   input: DirectStressInput,
 ): Promise<DirectStressResult> {
-  const logger = createQaPinoLogger(endpoint.endpointId || endpoint.code);
+  // `info` como mínimo: el detalle por muestra es `debug` y en un stress de
+  // miles de requests solo sirve para inflar memoria y congelar el visor.
+  const logger = createQaPinoLogger(endpoint.endpointId || endpoint.code, {
+    minLevel: "info",
+  });
   const built = buildQaRequest(endpoint, input);
   const warnings = buildStressWarnings(input, built.unresolvedPathParams);
   const plan = normalizeStressPlan(input);
@@ -40,7 +48,7 @@ export async function runStressBurst(
     expectedResponse: input.expectedResponse,
   });
   logStressPlan(logger, endpoint, input, built, plan, warnings);
-  assertStressAllowed(endpoint, input, built.method, logger);
+  assertStressAllowed(endpoint, input, built, logger);
   if (built.unresolvedPathParams.length > 0 && !input.dryRun) {
     throw new Error(
       `Faltan path params: ${built.unresolvedPathParams.join(", ")}`,
@@ -64,12 +72,18 @@ export async function runStressBurst(
 function assertStressAllowed(
   endpoint: EndpointItem,
   input: DirectStressInput,
-  method: string,
+  built: BuiltRequest,
   logger: QaPinoLogger,
 ): void {
+  try {
+    assertHostAllowed(built.url);
+  } catch (error) {
+    logger.child("safety").error("stress.blocked", "Host no permitido", error);
+    throw error;
+  }
   assertRequestAllowed({
     endpoint,
-    method,
+    method: built.method,
     environment: input.environment,
     dryRun: input.dryRun,
     allowMutations: input.allowMutations,
@@ -161,7 +175,9 @@ async function executeStressRequest(
       started,
       runStartedAt,
     );
-    logger.child("transport").debug("stress.sample_error", "Error en muestra", {
+    // Una muestra fallida sí es señal: se emite como `warn` para que sobreviva
+    // al gate de nivel, a diferencia de las muestras correctas.
+    logger.child("transport").warn("stress.sample_error", "Error en muestra", {
       ...sample,
       error,
     });

@@ -24,11 +24,32 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
       },
+      "/internal/operations/runtime-jobs": {
+        systems:
+          "Disparo manual de los 5 procesos de mantenimiento del backend (outbox, eventos, expiración de sesiones, retención y recálculo de calidad). Cada corrida arranca en dry-run y queda registrada con su jobRunId.",
+        business:
+          "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
+      },
+      // El matcher de vistas resuelve por prefijo (`startsWith`), así que las
+      // subrutas con `customerId` dinámico (`/investigation-summary`, `/audit`)
+      // no pueden tener clave propia y caen todas en esta entrada.
       "/internal/operations/customers": {
         systems:
-          "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend.",
+          "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend. La pestaña de Auditoría lee `/operations/audit/customer/:id/feed` — paginado por cursor real sobre la vista `audit_event_feed`, que unifica las 8 fuentes de auditoría — y ofrece como modo secundario la ruta `/operations/audit/customer/:id`, deprecada en el backend, que aporta un resumen por evento y filtros por tipo y fecha a cambio de un conteo aproximado.",
         business:
-          "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas.",
+          "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas, incluida la auditoría completa: qué le pasó al cliente, cuándo y quién lo hizo — la evidencia que respalda una decisión de riesgo, fraude o compliance.",
+      },
+      "/internal/operations/risk-assessments": {
+        systems:
+          "Detalle de una evaluación de riesgo por `riskAssessmentRunId`: explicación legible (decisión, factores a favor/en contra, reglas disparadas) más la traza cruda — corrida, resultado con scores por dimensión, contribuciones de features y snapshot. No tiene listado: se llega por enlace desde la investigación del cliente.",
+        business:
+          "Responde 'por qué el sistema decidió esto' con evidencia: el analista puede sostener, revertir o auditar una decisión de riesgo sin pedirle el desglose al equipo técnico.",
+      },
+      "/internal/operations/sessions": {
+        systems:
+          "Resumen de investigación de una sesión (`OperationsSessionsController`): sesión, cliente y dispositivo, más la telemetría asociada — snapshots del dispositivo, reputación de IP, SIM, eventos de autenticación y permisos, GPS, acciones, observaciones y auditoría. Enlace directo por sessionId: no hay listado de sesiones.",
+        business:
+          "Responde '¿esta sesión es legítima?' en una pantalla: si la conexión venía por VPN/proxy/Tor, si el teléfono estaba rooteado o era un emulador, cuántos logins fallaron y qué permisos se denegaron. Por privacidad nunca muestra la ubicación exacta, solo si hubo captura de GPS.",
       },
       "/internal/jobs": {
         systems:

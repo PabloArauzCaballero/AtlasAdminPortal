@@ -5,22 +5,7 @@ import type {
   InternalSession,
   LoginInput,
 } from "./types";
-import { normalizeInternalUser } from "./auth-normalizers";
-
-export function normalizeInternalSession(
-  payload: InternalAuthResponse | InternalAccessProfile,
-): InternalSession {
-  return {
-    ...payload,
-    tokenType:
-      "tokenType" in payload && payload.tokenType
-        ? payload.tokenType
-        : "accessToken" in payload && payload.accessToken
-          ? "Bearer"
-          : "Cookie",
-    user: normalizeInternalUser(payload),
-  };
-}
+import { normalizeInternalSession } from "./auth-normalizers";
 
 export async function loginInternal(
   input: LoginInput,

@@ -1,4 +1,29 @@
-import type { InternalAuthResponse, InternalUser } from "./types";
+import type {
+  InternalAccessProfile,
+  InternalAuthResponse,
+  InternalSession,
+  InternalUser,
+} from "./types";
+
+/**
+ * Vive aquí y no en `auth-service` a propósito: este módulo solo depende de
+ * tipos, así que el cliente API puede normalizar la sesión de un refresh sin
+ * crear el ciclo refresh-session -> auth-service -> client -> refresh-session.
+ */
+export function normalizeInternalSession(
+  payload: InternalAuthResponse | InternalAccessProfile,
+): InternalSession {
+  return {
+    ...payload,
+    tokenType:
+      "tokenType" in payload && payload.tokenType
+        ? payload.tokenType
+        : "accessToken" in payload && payload.accessToken
+          ? "Bearer"
+          : "Cookie",
+    user: normalizeInternalUser(payload),
+  };
+}
 
 export function normalizeInternalUser(
   payload: InternalAuthResponse,

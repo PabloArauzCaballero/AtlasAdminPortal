@@ -1,9 +1,16 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useCreateInternalUserMutation, useInternalRoles } from "./hooks";
-import type { CreateInternalUserInput, InternalUserDepartment } from "./types";
+import {
+  createUserSchema,
+  DEPARTMENTS,
+  type CreateUserForm,
+} from "./user-create-schema";
+import type { CreateInternalUserResult } from "./types";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Field, Input, Select } from "@/shared/components/ui/input";
@@ -11,87 +18,45 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-const DEPARTMENTS: InternalUserDepartment[] = [
-  "OPERATIONS",
-  "RISK",
-  "COLLECTIONS",
-  "COMPLIANCE",
-  "FINANCE",
-  "SUPPORT",
-  "SYSTEMS",
-  "AUDIT",
-  "EXECUTIVE",
-];
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export function UserCreateForm() {
   const router = useRouter();
   const mutation = useCreateInternalUserMutation();
   const roles = useInternalRoles();
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [department, setDepartment] =
-    useState<InternalUserDepartment>("OPERATIONS");
-  const [jobTitle, setJobTitle] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [reason, setReason] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [createdUserId, setCreatedUserId] = useState<string | null>(null);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(
-    null,
-  );
+  const [created, setCreated] = useState<CreateInternalUserResult | null>(null);
 
-  function toggleRole(code: string) {
-    setSelectedRoles((current) =>
-      current.includes(code)
-        ? current.filter((value) => value !== code)
-        : [...current, code],
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateUserForm>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      email: "",
+      fullName: "",
+      department: "OPERATIONS",
+      jobTitle: "",
+      roles: [],
+      reason: "",
+    },
+  });
+
+  // `handleSubmit` no llama a esto si el esquema no pasa: no quedan validaciones
+  // sueltas en el componente ni forma de enviar un alta incompleta.
+  const onSubmit = handleSubmit((values) => {
+    mutation.mutate(
+      { ...values, jobTitle: values.jobTitle?.trim() || undefined },
+      { onSuccess: setCreated },
     );
-  }
+  });
 
-  function submit() {
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      setValidationError("Ingresa un correo institucional válido.");
-      return;
-    }
-    if (fullName.trim().length < 3) {
-      setValidationError("El nombre completo es obligatorio.");
-      return;
-    }
-    if (selectedRoles.length === 0) {
-      setValidationError("Selecciona al menos un rol para el nuevo usuario.");
-      return;
-    }
-    if (reason.trim().length < 8) {
-      setValidationError(
-        "El motivo es obligatorio y debe tener al menos 8 caracteres.",
-      );
-      return;
-    }
-    setValidationError(null);
-    const body: CreateInternalUserInput = {
-      email: email.trim(),
-      fullName: fullName.trim(),
-      department,
-      jobTitle: jobTitle.trim() || undefined,
-      roles: selectedRoles,
-      reason: reason.trim(),
-    };
-    mutation.mutate(body, {
-      onSuccess: (result) => {
-        setCreatedUserId(result.user.id);
-        setTemporaryPassword(result.temporaryPassword);
-      },
-    });
-  }
-
-  if (createdUserId && temporaryPassword) {
+  if (created) {
     return (
       <TemporaryPasswordReveal
-        temporaryPassword={temporaryPassword}
+        temporaryPassword={created.temporaryPassword}
+        warnings={created.warnings}
         onContinue={() =>
-          router.push(`/internal/settings/users/${createdUserId}`)
+          router.push(`/internal/settings/users/${created.user.id}`)
         }
       />
     );
@@ -106,104 +71,108 @@ export function UserCreateForm() {
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Correo institucional">
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nombre.apellido@empresa.com"
-            />
-          </Field>
-          <Field label="Nombre completo">
-            <Input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </Field>
-          <Field label="Cargo (opcional)">
-            <Input
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-            />
-          </Field>
-          <Field label="Departamento">
-            <Select
-              value={department}
-              onChange={(e) =>
-                setDepartment(e.target.value as InternalUserDepartment)
-              }
-            >
-              {DEPARTMENTS.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-        <Field
-          label="Roles"
-          hint="Determina los permisos efectivos que tendrá la cuenta desde el primer login."
-        >
-          <div className="flex flex-wrap gap-2">
-            {(roles.data?.items ?? []).map((role) => (
-              <label
-                key={role.id}
-                className="flex items-center gap-2 rounded-lg border border-atlas-border px-3 py-1.5 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedRoles.includes(role.code)}
-                  onChange={() => toggleRole(role.code)}
-                />
-                {role.name}
-              </label>
-            ))}
-            {roles.isLoading ? (
-              <span className="text-xs text-atlas-muted">Cargando roles…</span>
-            ) : null}
+      <CardContent>
+        <form onSubmit={onSubmit} noValidate className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Correo institucional" error={errors.email?.message}>
+              <Input
+                type="email"
+                placeholder="nombre.apellido@empresa.com"
+                {...register("email")}
+              />
+            </Field>
+            <Field label="Nombre completo" error={errors.fullName?.message}>
+              <Input {...register("fullName")} />
+            </Field>
+            <Field label="Cargo (opcional)" error={errors.jobTitle?.message}>
+              <Input {...register("jobTitle")} />
+            </Field>
+            <Field label="Departamento" error={errors.department?.message}>
+              <Select {...register("department")}>
+                {DEPARTMENTS.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </Select>
+            </Field>
           </div>
-        </Field>
-        <Field
-          label="Motivo (obligatorio, mínimo 8 caracteres)"
-          hint="Se guarda en el registro de auditoría junto con el alta del usuario."
-        >
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Ej: Alta solicitada por gerencia de Riesgo para nuevo analista"
+
+          <Controller
+            control={control}
+            name="roles"
+            render={({ field }) => (
+              <Field
+                label="Roles"
+                hint="Determina los permisos efectivos que tendrá la cuenta desde el primer login."
+                error={errors.roles?.message}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {(roles.data?.items ?? []).map((role) => (
+                    <label
+                      key={role.id}
+                      className="flex items-center gap-2 rounded-lg border border-atlas-border px-3 py-1.5 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={field.value.includes(role.code)}
+                        onChange={() =>
+                          field.onChange(
+                            field.value.includes(role.code)
+                              ? field.value.filter((code) => code !== role.code)
+                              : [...field.value, role.code],
+                          )
+                        }
+                      />
+                      {role.name}
+                    </label>
+                  ))}
+                  {roles.isLoading ? (
+                    <span className="text-xs text-atlas-muted">
+                      Cargando roles…
+                    </span>
+                  ) : null}
+                </div>
+              </Field>
+            )}
           />
-        </Field>
-        {validationError ? (
-          <ErrorState
-            title="Formulario inválido"
-            description={validationError}
-          />
-        ) : null}
-        {mutation.error ? (
-          <ErrorState
-            description={
-              isAtlasApiError(mutation.error)
-                ? mutation.error.message
-                : "No se pudo crear el usuario."
-            }
-            requestId={
-              isAtlasApiError(mutation.error)
-                ? mutation.error.requestId
-                : undefined
-            }
-          />
-        ) : null}
-        <Button
-          variant="primary"
-          isLoading={mutation.isPending}
-          loadingText="Creando usuario…"
-          onClick={submit}
-        >
-          Crear usuario
-        </Button>
+
+          <Field
+            label="Motivo (obligatorio, mínimo 8 caracteres)"
+            hint="Se guarda en el registro de auditoría junto con el alta del usuario."
+            error={errors.reason?.message}
+          >
+            <Input
+              placeholder="Ej: Alta solicitada por gerencia de Riesgo para nuevo analista"
+              {...register("reason")}
+            />
+          </Field>
+
+          {mutation.error ? (
+            <ErrorState
+              description={
+                isAtlasApiError(mutation.error)
+                  ? mutation.error.message
+                  : "No se pudo crear el usuario."
+              }
+              requestId={
+                isAtlasApiError(mutation.error)
+                  ? mutation.error.requestId
+                  : undefined
+              }
+            />
+          ) : null}
+
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={mutation.isPending}
+            loadingText="Creando usuario…"
+            disabled={mutation.isPending}
+          >
+            Crear usuario
+          </Button>
+        </form>
       </CardContent>
     </Card>
   );
@@ -211,8 +180,13 @@ export function UserCreateForm() {
 
 function TemporaryPasswordReveal({
   temporaryPassword,
+  warnings,
   onContinue,
-}: Readonly<{ temporaryPassword: string; onContinue: () => void }>) {
+}: Readonly<{
+  temporaryPassword: string;
+  warnings: string[];
+  onContinue: () => void;
+}>) {
   const [copied, setCopied] = useState(false);
   return (
     <Card>
@@ -224,6 +198,21 @@ function TemporaryPasswordReveal({
         />
       </CardHeader>
       <CardContent className="space-y-4">
+        {warnings.length > 0 ? (
+          <div
+            role="alert"
+            className="space-y-1 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-atlas-text"
+          >
+            <p className="font-semibold">
+              El alta se completó a medias: revisa estos puntos
+            </p>
+            <ul className="list-disc space-y-1 pl-5 text-atlas-muted">
+              {warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <div className="flex items-center gap-2 rounded-lg border border-atlas-border bg-atlas-soft p-3 font-mono text-sm">
           <span className="flex-1 select-all break-all">
             {temporaryPassword}

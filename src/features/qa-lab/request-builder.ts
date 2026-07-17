@@ -4,7 +4,11 @@ import type { JsonRecord } from "@/shared/api/types";
 import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import { resolveQaBaseRoute } from "./base-routes";
 import { getQaDeviceProfile } from "./qa-device-profiles";
-import { isMutatingMethod, sanitizeCustomHeaders } from "./qa-safety";
+import {
+  isHostAllowed,
+  isMutatingMethod,
+  sanitizeCustomHeaders,
+} from "./qa-safety";
 
 const PATH_PARAM_PATTERN = /:([a-zA-Z0-9_]+)|\{([a-zA-Z0-9_]+)\}/g;
 
@@ -13,6 +17,7 @@ export type BuiltQaRequest = {
   method: string;
   headers: Record<string, string>;
   unresolvedPathParams: string[];
+  hostAllowed: boolean;
 };
 
 export function buildQaRequest(
@@ -26,11 +31,14 @@ export function buildQaRequest(
     rawPath,
     input.pathParams,
   );
+  const url = buildUrl(input, path);
+  const hostAllowed = isHostAllowed(url);
   return {
-    url: buildUrl(input, path),
+    url,
     method,
-    headers: buildHeaders(method, input.headers, input),
+    headers: buildHeaders(method, input.headers, input, hostAllowed),
     unresolvedPathParams,
+    hostAllowed,
   };
 }
 
@@ -146,6 +154,7 @@ function buildHeaders(
     | "includeIdempotencyKey"
     | "deviceProfile"
   >,
+  hostAllowed: boolean,
 ): Record<string, string> {
   const session = getStoredInternalSession();
   const safeCustomHeaders = sanitizeCustomHeaders(customHeaders);
@@ -161,13 +170,14 @@ function buildHeaders(
     ...deviceHeaders,
     ...safeCustomHeaders,
   };
-  applyAuthOverride(headers, overrides, session);
+  applyAuthOverride(headers, overrides, session, hostAllowed);
   if (isMutatingMethod(method) && includeIdempotencyKey) {
     headers["x-idempotency-key"] = generateIdempotencyKey();
   }
   const csrfHeaderName = getCsrfHeaderName();
   if (
     csrfHeaderName &&
+    hostAllowed &&
     isMutatingMethod(method) &&
     overrides.authMode !== "none" &&
     session?.csrfToken
@@ -181,6 +191,7 @@ function applyAuthOverride(
   headers: Record<string, string>,
   overrides: Pick<QaRequestInput, "authMode" | "customAuthToken">,
   session: ReturnType<typeof getStoredInternalSession>,
+  hostAllowed: boolean,
 ): void {
   const mode = overrides.authMode ?? "session";
   if (mode === "none") return;
@@ -192,7 +203,9 @@ function applyAuthOverride(
     headers.Authorization = `Bearer ${overrides.customAuthToken.trim()}`;
     return;
   }
-  if (session?.accessToken) {
+  // El token real de sesión nunca se adjunta a un host fuera de la allowlist,
+  // ni siquiera para construir el preview de un dry-run.
+  if (session?.accessToken && hostAllowed) {
     headers.Authorization = `Bearer ${session.accessToken}`;
   }
 }

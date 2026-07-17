@@ -15,7 +15,11 @@ import {
   effectiveTimeoutMs,
   getBodyForMethod,
 } from "./request-builder";
-import { assertRequestAllowed, redactedHeaders } from "./qa-safety";
+import {
+  assertHostAllowed,
+  assertRequestAllowed,
+  redactedHeaders,
+} from "./qa-safety";
 import {
   buildPinoLogFileName,
   createQaPinoLogger,
@@ -34,6 +38,7 @@ export async function executeEndpointDirectly(
   logBuildLayer(logger, endpoint, input, built, warnings);
 
   try {
+    assertHostAllowed(built.url);
     assertRequestAllowed({
       endpoint,
       method: built.method,

@@ -14,12 +14,9 @@ import {
   getStoredInternalSession,
   setStoredInternalSession,
 } from "./session-storage";
-import {
-  getInternalMe,
-  loginInternal,
-  logoutInternal,
-  normalizeInternalSession,
-} from "./auth-service";
+import { subscribeToSessionChanges } from "./session-events";
+import { normalizeInternalSession } from "./auth-normalizers";
+import { getInternalMe, loginInternal, logoutInternal } from "./auth-service";
 import type { InternalSession, InternalUser, LoginInput } from "./types";
 
 type AuthContextValue = {
@@ -48,8 +45,13 @@ export function AuthProvider({
   const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
 
   useEffect(() => {
+    // La suscripción va antes de leer: el refresh silencioso del cliente API
+    // escribe la sesión sin pasar por React, y sin esto los gates seguirían
+    // decidiendo con los permisos previos hasta el próximo montaje.
+    const unsubscribe = subscribeToSessionChanges(setSession);
     setSession(getStoredInternalSession());
     setIsHydrated(true);
+    return unsubscribe;
   }, []);
 
   const setAndStoreSession = useCallback((nextSession: InternalSession) => {

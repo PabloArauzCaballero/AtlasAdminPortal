@@ -1,9 +1,14 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { CatalogIngestionForm } from "@/features/operations/catalog-ingestion-form";
+import { CatalogVersionCreateForm } from "@/features/operations/catalog-version-create-form";
 import { useOperationCatalogs } from "@/features/operations/hooks";
 import type { ContextCatalog } from "@/features/operations/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { Button } from "@/shared/components/ui/button";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
@@ -21,6 +26,9 @@ export function OperationCatalogsPage() {
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState("all");
   const [active, setActive] = useState("all");
+  const [creatingFor, setCreatingFor] = useState<string | null>(null);
+  const [ingestingFor, setIngestingFor] = useState<string | null>(null);
+  const router = useRouter();
   const catalogs = useOperationCatalogs({ domain, status, active });
   const items = catalogs.data?.items ?? [];
   const columns = useMemo<ColumnDef<ContextCatalog>[]>(
@@ -59,7 +67,23 @@ export function OperationCatalogsPage() {
       {
         header: "Versión",
         id: "version",
-        cell: ({ row }) => safeText(row.original.currentVersion?.versionCode),
+        // `currentVersion` es la versión MÁS RECIENTE del catálogo (el backend
+        // la resuelve con `findLatestVersionsByCatalogIds`, ordenando por
+        // validFrom DESC, id DESC), no solo la publicada. Por eso un borrador
+        // recién creado es alcanzable desde acá: este enlace es la entrada al
+        // flujo de aprobación.
+        cell: ({ row }) => {
+          const version = row.original.currentVersion;
+          if (!version) return safeText(null);
+          return (
+            <Link
+              href={`/internal/operations/catalogs/${row.original.catalogCode}/versions/${version.catalogVersionId}`}
+              className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+            >
+              {version.versionCode}
+            </Link>
+          );
+        },
       },
       {
         header: "Estado",
@@ -68,6 +92,26 @@ export function OperationCatalogsPage() {
           <StatusBadge
             value={row.original.currentVersion?.status ?? "sin_version"}
           />
+        ),
+      },
+      {
+        header: "Acciones",
+        id: "actions",
+        cell: ({ row }) => (
+          <div className="flex gap-2">
+            <Button
+              className="h-7 px-2 text-xs"
+              onClick={() => setCreatingFor(row.original.catalogCode)}
+            >
+              Nueva versión
+            </Button>
+            <Button
+              className="h-7 px-2 text-xs"
+              onClick={() => setIngestingFor(row.original.catalogCode)}
+            >
+              Ingerir
+            </Button>
+          </div>
         ),
       },
     ],
@@ -181,6 +225,30 @@ export function OperationCatalogsPage() {
             </CardContent>
           </Card>
         </div>
+      ) : null}
+
+      {creatingFor ? (
+        <CatalogVersionCreateForm
+          catalogCode={creatingFor}
+          onCreated={(versionId) => {
+            // Se va directo al borrador recién creado: es donde sigue el flujo
+            // (enviarlo a aprobación), y evita que el operador tenga que
+            // buscarlo de vuelta en el listado.
+            const code = creatingFor;
+            setCreatingFor(null);
+            router.push(
+              `/internal/operations/catalogs/${code}/versions/${versionId}`,
+            );
+          }}
+          onClose={() => setCreatingFor(null)}
+        />
+      ) : null}
+
+      {ingestingFor ? (
+        <CatalogIngestionForm
+          catalogCode={ingestingFor}
+          onClose={() => setIngestingFor(null)}
+        />
       ) : null}
     </PermissionGate>
   );

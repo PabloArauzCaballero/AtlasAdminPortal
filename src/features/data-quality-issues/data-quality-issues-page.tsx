@@ -18,7 +18,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { buildIssueColumns } from "./issue-columns";
-import { ResolutionDialog } from "./resolution-dialog";
+import { isResolutionComplete, ResolutionDialog } from "./resolution-dialog";
 import type { ResolutionState } from "./types";
 
 export function DataQualityIssuesPage() {
@@ -39,14 +39,17 @@ export function DataQualityIssuesPage() {
   const columns = useMemo(() => buildIssueColumns(setResolution), []);
 
   function confirmResolution() {
-    if (!resolution) return;
+    // El diálogo ya impide confirmar incompleto; esto cierra el paso también
+    // por código. No se inventan motivo ni notas: lo que se manda es lo que el
+    // operador escribió, porque queda como auditoría del cierre del issue.
+    if (!resolution || !isResolutionComplete(resolution)) return;
     resolveMutation.mutate(
       {
         issueId: resolution.issue.issueId,
         body: {
           resolution: resolution.resolution,
-          reasonCode: resolution.reasonCode.trim() || "manual_review",
-          notes: resolution.notes.trim() || "Revisión desde portal interno.",
+          reasonCode: resolution.reasonCode.trim(),
+          notes: resolution.notes.trim(),
         },
       },
       { onSuccess: () => setResolution(null) },
@@ -86,9 +89,6 @@ export function DataQualityIssuesPage() {
           error={issues.error}
           onRetry={() => void issues.refetch()}
         />
-      ) : null}
-      {resolveMutation.error ? (
-        <QualityError error={resolveMutation.error} />
       ) : null}
       {issues.data ? (
         <div className="space-y-6">
@@ -132,8 +132,11 @@ export function DataQualityIssuesPage() {
       ) : null}
       {resolution ? (
         <ResolutionDialog
+          // Remonta al cambiar de issue: evita arrastrar notas del anterior.
+          key={resolution.issue.issueId}
           resolution={resolution}
           isLoading={resolveMutation.isPending}
+          error={resolveMutation.error}
           onCancel={() => setResolution(null)}
           onChange={setResolution}
           onConfirm={confirmResolution}
