@@ -9,7 +9,9 @@ import {
   it,
   vi,
 } from "vitest";
+import { z } from "zod";
 import { apiRequest, resetLoginRedirectLock } from "@/shared/api/client";
+import { isApiContractError } from "@/shared/api/contract";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { resetRefreshCoordinator } from "@/shared/api/refresh-coordinator";
 import {
@@ -318,6 +320,54 @@ describe("apiRequest", () => {
       expect(results.every((r) => JSON.stringify(r) === '{"id":"ok"}')).toBe(
         true,
       );
+    });
+  });
+
+  describe("validación de contrato (FASE 7)", () => {
+    const thingSchema = z.object({ id: z.string(), name: z.string() });
+
+    it("devuelve los datos cuando cumplen el esquema", async () => {
+      server.use(
+        http.get(THINGS_URL, () =>
+          HttpResponse.json({ data: { id: "t1", name: "Cosa" } }),
+        ),
+      );
+
+      await expect(
+        apiRequest("/internal/things", { schema: thingSchema }),
+      ).resolves.toEqual({ id: "t1", name: "Cosa" });
+    });
+
+    it("lanza ApiContractError cuando la forma no coincide", async () => {
+      server.use(
+        http.get(THINGS_URL, () =>
+          HttpResponse.json(
+            { data: { id: "t1" } },
+            { headers: { "x-request-id": "req_contract" } },
+          ),
+        ),
+      );
+
+      const error = await apiRequest("/internal/things", {
+        schema: thingSchema,
+      }).catch((e: unknown) => e);
+
+      expect(isApiContractError(error)).toBe(true);
+      expect(error).toMatchObject({
+        code: "API_CONTRACT_ERROR",
+        endpoint: "/internal/things",
+        requestId: "req_contract",
+      });
+    });
+
+    it("sin schema no valida nada (retrocompatibilidad)", async () => {
+      server.use(
+        http.get(THINGS_URL, () => HttpResponse.json({ data: { raro: true } })),
+      );
+
+      await expect(apiRequest("/internal/things")).resolves.toEqual({
+        raro: true,
+      });
     });
   });
 });
