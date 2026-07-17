@@ -1,3 +1,5 @@
+import type { ZodType } from "zod";
+import { validateContract } from "./contract";
 import { coordinateSessionRefresh } from "./refresh-coordinator";
 import {
   buildRequestInit,
@@ -10,9 +12,16 @@ import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import { clearStoredInternalSession } from "@/shared/auth/session-storage";
 import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 
+/**
+ * Pasar `schema` valida la respuesta 2xx contra el contrato esperado: si no
+ * coincide, lanza ApiContractError en vez de devolver datos inválidos. Es
+ * opcional para no forzar la migración de todos los servicios de golpe.
+ */
+type RequestOptions<T> = ApiRequestOptions & { schema?: ZodType<T> };
+
 export async function apiRequest<T>(
   path: string,
-  options: ApiRequestOptions = {},
+  options: RequestOptions<T> = {},
 ): Promise<T> {
   const session = getSessionForBrowser();
   const response = await fetchWithTimeout(
@@ -21,7 +30,7 @@ export async function apiRequest<T>(
   );
   const payload = await parseJsonSafely(response);
 
-  if (response.ok) return extractData<T>(payload);
+  if (response.ok) return finalizeResponse<T>(payload, response, path, options);
 
   if (canRefreshSession(response.status, options)) {
     const refreshed = await coordinateSessionRefresh(session);
@@ -30,6 +39,21 @@ export async function apiRequest<T>(
 
   handleUnauthorized(response.status, options);
   throw toAtlasApiError(response, payload);
+}
+
+function finalizeResponse<T>(
+  payload: unknown,
+  response: Response,
+  path: string,
+  options: RequestOptions<T>,
+): T {
+  const data = extractData<T>(payload);
+  if (!options.schema) return data;
+  return validateContract(options.schema, data, {
+    endpoint: path,
+    method: (options.method ?? "GET").toUpperCase(),
+    requestId: response.headers.get("x-request-id") ?? undefined,
+  });
 }
 
 function getSessionForBrowser() {
@@ -45,7 +69,7 @@ function canRefreshSession(
 
 async function retryRequest<T>(
   path: string,
-  options: ApiRequestOptions,
+  options: RequestOptions<T>,
   session: NonNullable<ReturnType<typeof getSessionForBrowser>>,
 ): Promise<T> {
   const response = await fetchWithTimeout(
@@ -53,7 +77,7 @@ async function retryRequest<T>(
     buildRequestInit({ ...options, skipRefresh: true }, session),
   );
   const payload = await parseJsonSafely(response);
-  if (response.ok) return extractData<T>(payload);
+  if (response.ok) return finalizeResponse<T>(payload, response, path, options);
   handleUnauthorized(response.status, options);
   throw toAtlasApiError(response, payload);
 }
