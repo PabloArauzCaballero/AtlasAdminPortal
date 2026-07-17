@@ -27,6 +27,17 @@ type RuleRow = RiskPolicyCurrent["rulesetVersions"][number]["rules"][number] & {
 type ActivationTarget = { id: string; label: string };
 
 export function CurrentRiskPolicyPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedCurrentRiskPolicyPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedCurrentRiskPolicyPage() {
   const [activating, setActivating] = useState<ActivationTarget | null>(null);
   const policy = useCurrentRiskPolicy();
   const rules = useMemo<RuleRow[]>(
@@ -76,7 +87,7 @@ export function CurrentRiskPolicyPage() {
     [],
   );
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Política de riesgo"
         title="Política de riesgo actual"
@@ -192,6 +203,6 @@ export function CurrentRiskPolicyPage() {
           onClose={() => setActivating(null)}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

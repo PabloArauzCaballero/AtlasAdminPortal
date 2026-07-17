@@ -11,10 +11,21 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function ToolDetailPage({ toolId }: Readonly<{ toolId: string }>) {
-  const tool = useTool(toolId);
+export function ToolDetailPage(props: Readonly<{ toolId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
   return (
     <PermissionGate permissions={["systems.tools.read"]}>
+      <AuthorizedToolDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedToolDetailPage({ toolId }: Readonly<{ toolId: string }>) {
+  const tool = useTool(toolId);
+  return (
+    <>
       {tool.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {tool.error ? (
         <ErrorState
@@ -76,6 +87,6 @@ export function ToolDetailPage({ toolId }: Readonly<{ toolId: string }>) {
           </div>
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

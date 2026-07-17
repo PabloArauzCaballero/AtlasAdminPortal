@@ -12,11 +12,22 @@ import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { JobActions } from "./job-actions";
 import { useJobRun } from "./hooks";
 
-export function JobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
+export function JobDetailPage(props: Readonly<{ jobRunId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.jobs.read"]}>
+      <AuthorizedJobDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
   const job = useJobRun(jobRunId);
 
   return (
-    <PermissionGate permissions={["internal.jobs.read"]}>
+    <>
       {job.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {job.error ? (
         <ErrorState
@@ -82,6 +93,6 @@ export function JobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
           <JsonViewer title="Logs" value={job.data.logs} />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

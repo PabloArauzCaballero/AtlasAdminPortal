@@ -38,6 +38,17 @@ type DomainSummary = {
 };
 
 export function BusinessDomainsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["businessMetadata.read"]}>
+      <AuthorizedBusinessDomainsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedBusinessDomainsPage() {
   const [q, setQ] = useState("");
   const endpoints = useEndpoints({ page: 1, limit: 100, q });
   const entities = useDataEntities({ page: 1, limit: 100, q });
@@ -116,7 +127,7 @@ export function BusinessDomainsPage() {
   }, [endpoints.data?.items, entities.data?.items, suites.data?.items]);
 
   return (
-    <PermissionGate permissions={["businessMetadata.read"]}>
+    <>
       <PageHeader
         eyebrow="Metadata de negocio"
         title="Dominios del sistema"
@@ -263,6 +274,6 @@ export function BusinessDomainsPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

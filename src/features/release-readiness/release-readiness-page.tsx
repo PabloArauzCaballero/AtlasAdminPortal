@@ -13,6 +13,17 @@ import { useReleaseReadiness } from "./hooks";
 import { ReportsReadinessPage } from "@/features/reports-readiness/reports-readiness-page";
 
 export function ReleaseReadinessPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["reporting.read"]}>
+      <AuthorizedReleaseReadinessPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedReleaseReadinessPage() {
   const readinessQuery = useReleaseReadiness();
   const view = readinessQuery.data
     ? toReadinessView(readinessQuery.data)
@@ -20,7 +31,7 @@ export function ReleaseReadinessPage() {
   const score = view ? calculateReadinessScore(view.checks) : 0;
 
   return (
-    <PermissionGate permissions={["reporting.read"]}>
+    <>
       <PageHeader
         eyebrow="Readiness"
         title="Readiness Release"
@@ -61,6 +72,6 @@ export function ReleaseReadinessPage() {
           <ReportsReadinessPage embedded />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

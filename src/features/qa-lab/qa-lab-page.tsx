@@ -23,7 +23,18 @@ import { StressTestCard } from "./stress-test-card";
 
 const tabs = ["Prueba unitaria", "Journey (encadenado)"];
 
-export function QaLabPage({
+export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.endpoints.read"]}>
+      <AuthorizedQaLabPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedQaLabPage({
   initialEndpointId,
 }: Readonly<{ initialEndpointId: string }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -31,7 +42,7 @@ export function QaLabPage({
   const endpoint = useEndpoint(endpointId);
 
   return (
-    <PermissionGate permissions={["systems.endpoints.read"]}>
+    <>
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
@@ -69,7 +80,7 @@ export function QaLabPage({
       ) : (
         <JourneyRunnerPanel />
       )}
-    </PermissionGate>
+    </>
   );
 }
 

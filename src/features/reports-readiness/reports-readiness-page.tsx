@@ -23,6 +23,22 @@ import { isAtlasApiError } from "@/shared/api/errors";
 export function ReportsReadinessPage({
   embedded = false,
 }: Readonly<{ embedded?: boolean }>) {
+  // Embebido, el gate lo pone la página anfitriona (comportamiento previo).
+  if (embedded) return <AuthorizedReportsReadinessPage embedded />;
+
+  // Los hooks viven en el hijo a propósito: aquí saldrían durante el render,
+  // antes de que el gate decidiera, y un usuario sin `reporting.read`
+  // dispararía igual las cuatro queries.
+  return (
+    <PermissionGate permissions={["reporting.read"]}>
+      <AuthorizedReportsReadinessPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedReportsReadinessPage({
+  embedded = false,
+}: Readonly<{ embedded?: boolean }>) {
   const dashboard = useDashboard();
   const endpoints = useEndpoints({ page: 1, limit: 100 });
   const entities = useDataEntities({ page: 1, limit: 100 });
@@ -230,9 +246,6 @@ export function ReportsReadinessPage({
       ) : null}
     </>
   );
-  return embedded ? (
-    content
-  ) : (
-    <PermissionGate permissions={["reporting.read"]}>{content}</PermissionGate>
-  );
+  // El gate ya lo aplicó el componente de arriba: aquí solo se pinta.
+  return content;
 }

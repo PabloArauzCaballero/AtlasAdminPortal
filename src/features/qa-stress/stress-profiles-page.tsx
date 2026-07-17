@@ -26,6 +26,17 @@ const statusOptions = ["ACTIVE", "DISABLED", "NEEDS_REVIEW", "DEPRECATED"].map(
 );
 
 export function StressProfilesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.stress.read"]}>
+      <AuthorizedStressProfilesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedStressProfilesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
@@ -125,7 +136,7 @@ export function StressProfilesPage() {
   );
 
   return (
-    <PermissionGate permissions={["systems.stress.read"]}>
+    <>
       <PageHeader
         eyebrow="QA Stress"
         title="Stress backend-driven"
@@ -240,6 +251,6 @@ export function StressProfilesPage() {
           ) : null}
         </CardContent>
       </Card>
-    </PermissionGate>
+    </>
   );
 }

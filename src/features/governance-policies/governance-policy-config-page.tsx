@@ -13,7 +13,20 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { PolicyConfigurationForm } from "./forms/policy-configuration-form";
 
-export function GovernancePolicyConfigPage({
+export function GovernancePolicyConfigPage(
+  props: Readonly<{ policyId: string }>,
+) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["governance.policies.manage"]}>
+      <AuthorizedGovernancePolicyConfigPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedGovernancePolicyConfigPage({
   policyId,
 }: Readonly<{ policyId: string }>) {
   const router = useRouter();
@@ -21,7 +34,7 @@ export function GovernancePolicyConfigPage({
   const mutation = useUpdateGovernancePolicyMutation(policyId);
 
   return (
-    <PermissionGate permissions={["governance.policies.manage"]}>
+    <>
       <PageHeader
         eyebrow="Formulario de gobierno"
         title="Configurar política"
@@ -72,6 +85,6 @@ export function GovernancePolicyConfigPage({
           }
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

@@ -100,6 +100,17 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
   ];
 }
 export function DefinitionsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["operations.definitions.read"]}>
+      <AuthorizedDefinitionsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDefinitionsPage() {
   const [domain, setDomain] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
@@ -177,7 +188,7 @@ export function DefinitionsPage() {
     [],
   );
   return (
-    <PermissionGate permissions={["operations.definitions.read"]}>
+    <>
       <PageHeader
         eyebrow="Definiciones"
         title="Definiciones de negocio"
@@ -284,6 +295,6 @@ export function DefinitionsPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

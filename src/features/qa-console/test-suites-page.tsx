@@ -21,6 +21,17 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function TestSuitesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.qa.read"]}>
+      <AuthorizedTestSuitesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedTestSuitesPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [module, setModule] = useState("");
@@ -99,7 +110,7 @@ export function TestSuitesPage() {
   );
 
   return (
-    <PermissionGate permissions={["systems.qa.read"]}>
+    <>
       <PageHeader
         title="Suites QA registradas en backend"
         description="Suites de prueba registradas en `/systems/test-suites`. ¿Quieres ejecutar requests directos contra otra URL?"
@@ -189,6 +200,6 @@ export function TestSuitesPage() {
           onPageChange={setPage}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

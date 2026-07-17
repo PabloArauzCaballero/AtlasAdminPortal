@@ -25,6 +25,18 @@ import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function PiiRegistryPage() {
+  // El gate envuelve a un componente aparte a propósito. Si los hooks vivieran
+  // en este cuerpo, las queries saldrían durante el render, antes de que el gate
+  // pudiera decidir: un usuario sin `governance.data.read` dispararía igual las
+  // peticiones que traen datos personales. Ocultar la UI no es autorizar.
+  return (
+    <PermissionGate permissions={["governance.data.read"]}>
+      <AuthorizedPiiRegistryPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedPiiRegistryPage() {
   const [q, setQ] = useState("");
   const entities = useDataEntities({ page: 1, limit: 100, q });
   const endpoints = useEndpoints({ page: 1, limit: 100, q });
@@ -158,7 +170,7 @@ export function PiiRegistryPage() {
   );
 
   return (
-    <PermissionGate permissions={["governance.data.read"]}>
+    <>
       <PageHeader
         eyebrow="Gobierno"
         title="PII registry"
@@ -223,6 +235,6 @@ export function PiiRegistryPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

@@ -85,13 +85,24 @@ function rowsFrom(data: DataGovernancePolicies): PolicyRow[] {
   ];
 }
 export function DataGovernancePoliciesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["governance.policies.read"]}>
+      <AuthorizedDataGovernancePoliciesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDataGovernancePoliciesPage() {
   const governance = useDataGovernancePolicies();
   const rows = useMemo(
     () => (governance.data ? rowsFrom(governance.data) : []),
     [governance.data],
   );
   return (
-    <PermissionGate permissions={["governance.policies.read"]}>
+    <>
       <PageHeader
         eyebrow="Políticas de gobierno"
         title="Políticas reales de gobierno"
@@ -163,7 +174,7 @@ export function DataGovernancePoliciesPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

@@ -15,13 +15,24 @@ import { formatDateTime, safeText } from "@/shared/lib/format";
 import { RuleRunCard } from "./rule-run-card";
 import { useDataQualityRule } from "./hooks";
 
-export function DataQualityRuleDetailPage({
+export function DataQualityRuleDetailPage(props: Readonly<{ ruleId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["dataQuality.rules.read"]}>
+      <AuthorizedDataQualityRuleDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDataQualityRuleDetailPage({
   ruleId,
 }: Readonly<{ ruleId: string }>) {
   const rule = useDataQualityRule(ruleId);
 
   return (
-    <PermissionGate permissions={["dataQuality.rules.read"]}>
+    <>
       <PageHeader
         eyebrow="Calidad de datos"
         title="Detalle de regla"
@@ -103,6 +114,6 @@ export function DataQualityRuleDetailPage({
           <RuleRunCard ruleId={ruleId} />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

@@ -35,7 +35,18 @@ const tabs = [
   "QA Lab",
 ];
 
-export function EndpointDetailPage({
+export function EndpointDetailPage(props: Readonly<{ endpointId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.endpoints.read"]}>
+      <AuthorizedEndpointDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedEndpointDetailPage({
   endpointId,
 }: Readonly<{ endpointId: string }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -52,7 +63,7 @@ export function EndpointDetailPage({
   );
 
   return (
-    <PermissionGate permissions={["systems.endpoints.read"]}>
+    <>
       {endpoint.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {endpoint.error ? (
         <EndpointError error={endpoint.error} retry={endpoint.refetch} />
@@ -137,7 +148,7 @@ export function EndpointDetailPage({
           ) : null}
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

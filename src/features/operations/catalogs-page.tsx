@@ -23,6 +23,17 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
 export function OperationCatalogsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["operations.catalogs.read"]}>
+      <AuthorizedOperationCatalogsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedOperationCatalogsPage() {
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState("all");
   const [active, setActive] = useState("all");
@@ -118,7 +129,7 @@ export function OperationCatalogsPage() {
     [],
   );
   return (
-    <PermissionGate permissions={["operations.catalogs.read"]}>
+    <>
       <PageHeader
         eyebrow="Catálogos"
         title="Catálogos operativos"
@@ -250,6 +261,6 @@ export function OperationCatalogsPage() {
           onClose={() => setIngestingFor(null)}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

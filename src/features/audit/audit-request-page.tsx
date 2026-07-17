@@ -19,7 +19,18 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function AuditRequestPage({
+export function AuditRequestPage(props: Readonly<{ requestId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["audit.events.read"]}>
+      <AuthorizedAuditRequestPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedAuditRequestPage({
   requestId,
 }: Readonly<{ requestId: string }>) {
   const logs = useActionLogsByRequest(requestId);
@@ -87,7 +98,7 @@ export function AuditRequestPage({
   );
 
   return (
-    <PermissionGate permissions={["audit.events.read"]}>
+    <>
       <PageHeader
         eyebrow="Auditoría"
         title={`Request ${requestId}`}
@@ -139,6 +150,6 @@ export function AuditRequestPage({
         </div>
       ) : null}
       {logs.data ? <DataTable data={logs.data} columns={columns} /> : null}
-    </PermissionGate>
+    </>
   );
 }

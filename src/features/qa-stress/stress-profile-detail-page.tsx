@@ -26,7 +26,20 @@ import {
 } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function StressProfileDetailPage({
+export function StressProfileDetailPage(
+  props: Readonly<{ profileId: string }>,
+) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.stress.read"]}>
+      <AuthorizedStressProfileDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedStressProfileDetailPage({
   profileId,
 }: Readonly<{ profileId: string }>) {
   const profile = useStressProfile(profileId);
@@ -60,7 +73,7 @@ export function StressProfileDetailPage({
     !canExecute || !profile.data?.isEnabled || productionSelected;
 
   return (
-    <PermissionGate permissions={["systems.stress.read"]}>
+    <>
       {profile.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {profile.error ? (
         <ErrorState
@@ -249,6 +262,6 @@ export function StressProfileDetailPage({
           ) : null}
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

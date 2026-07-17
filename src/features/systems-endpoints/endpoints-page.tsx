@@ -38,6 +38,17 @@ const reviewOptions = [
 ];
 
 export function EndpointsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.endpoints.read"]}>
+      <AuthorizedEndpointsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedEndpointsPage() {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") ?? "";
   const [page, setPage] = useState(1);
@@ -157,7 +168,7 @@ export function EndpointsPage() {
   );
 
   return (
-    <PermissionGate permissions={["systems.endpoints.read"]}>
+    <>
       <PageHeader
         title="Catálogo de endpoints"
         description="Listado dinámico desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
@@ -227,6 +238,6 @@ export function EndpointsPage() {
           onPageChange={setPage}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

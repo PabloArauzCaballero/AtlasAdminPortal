@@ -24,14 +24,27 @@ import {
 import { PolicyConfigSummary } from "./policy-config-summary";
 import { PolicyScopeTable } from "./policy-scope-table";
 
-export function GovernancePolicyDetailPage({
+export function GovernancePolicyDetailPage(
+  props: Readonly<{ policyId: string }>,
+) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["governance.policies.read"]}>
+      <AuthorizedGovernancePolicyDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedGovernancePolicyDetailPage({
   policyId,
 }: Readonly<{ policyId: string }>) {
   const policy = useGovernancePolicy(policyId);
   const data = policy.data;
 
   return (
-    <PermissionGate permissions={["governance.policies.read"]}>
+    <>
       <PageHeader
         eyebrow="Gobierno"
         title={data?.name ?? "Detalle de política"}
@@ -93,7 +106,7 @@ export function GovernancePolicyDetailPage({
           />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

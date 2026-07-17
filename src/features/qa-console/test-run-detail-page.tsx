@@ -18,7 +18,18 @@ import {
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function TestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
+export function TestRunDetailPage(props: Readonly<{ runId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.qa.read"]}>
+      <AuthorizedTestRunDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
   const run = useTestRun(runId);
   const columns = useMemo<ColumnDef<TestStepRun>[]>(
     () => [
@@ -66,7 +77,7 @@ export function TestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
   );
 
   return (
-    <PermissionGate permissions={["systems.qa.read"]}>
+    <>
       {run.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {run.error ? (
         <ErrorState
@@ -128,6 +139,6 @@ export function TestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
           </div>
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

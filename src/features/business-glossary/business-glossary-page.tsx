@@ -16,6 +16,17 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { formatNumber } from "@/shared/lib/format";
 
 export function BusinessGlossaryPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["businessMetadata.read"]}>
+      <AuthorizedBusinessGlossaryPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedBusinessGlossaryPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [domain, setDomain] = useState("");
@@ -28,7 +39,7 @@ export function BusinessGlossaryPage() {
   );
 
   return (
-    <PermissionGate permissions={["businessMetadata.read"]}>
+    <>
       <PageHeader
         eyebrow="Glosario de negocio"
         title="Glosario de negocio"
@@ -110,6 +121,6 @@ export function BusinessGlossaryPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

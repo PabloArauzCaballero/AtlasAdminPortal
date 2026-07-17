@@ -21,7 +21,18 @@ import { SuiteStepsSection } from "./suite-steps-section";
 
 const tabs = ["Resumen", "Pasos", "Config", "Ejecución"];
 
-export function TestSuiteDetailPage({
+export function TestSuiteDetailPage(props: Readonly<{ suiteId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.qa.read"]}>
+      <AuthorizedTestSuiteDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedTestSuiteDetailPage({
   suiteId,
 }: Readonly<{ suiteId: string }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -31,7 +42,7 @@ export function TestSuiteDetailPage({
   const canAuthor = hasPermission("systems.qa.execute");
 
   return (
-    <PermissionGate permissions={["systems.qa.read"]}>
+    <>
       {suite.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {suite.error ? (
         <ErrorState
@@ -135,6 +146,6 @@ export function TestSuiteDetailPage({
           ) : null}
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

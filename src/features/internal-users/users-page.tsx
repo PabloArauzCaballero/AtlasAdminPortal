@@ -18,6 +18,17 @@ import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function UsersPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.users.read"]}>
+      <AuthorizedUsersPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedUsersPage() {
   const [search, setSearch] = useState("");
   const users = useInternalUsers();
   const { hasPermission } = useAuth();
@@ -82,7 +93,7 @@ export function UsersPage() {
   );
 
   return (
-    <PermissionGate permissions={["internal.users.read"]}>
+    <>
       <PageHeader
         eyebrow="Usuarios internos"
         title="Usuarios internos"
@@ -129,6 +140,6 @@ export function UsersPage() {
           emptyTitle="No hay usuarios internos para los filtros actuales."
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

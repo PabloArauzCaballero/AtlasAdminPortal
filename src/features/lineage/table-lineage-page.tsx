@@ -19,7 +19,20 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function TableLineagePage({
+export function TableLineagePage(
+  props: Readonly<{ schemaName: string; tableName: string }>,
+) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedTableLineagePage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedTableLineagePage({
   schemaName,
   tableName,
 }: Readonly<{ schemaName: string; tableName: string }>) {
@@ -100,7 +113,7 @@ export function TableLineagePage({
   const endpointImpacts = impact.data?.endpointImpacts ?? [];
 
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Lineage por tabla"
         title={`${schemaName}.${tableName}`}
@@ -187,6 +200,6 @@ export function TableLineagePage({
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

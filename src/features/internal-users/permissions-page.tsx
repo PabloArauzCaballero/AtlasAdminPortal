@@ -13,6 +13,17 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
 
 export function PermissionsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.permissions.read"]}>
+      <AuthorizedPermissionsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedPermissionsPage() {
   const permissions = useInternalPermissions({ page: 1, limit: 200 });
   const columns = useMemo<ColumnDef<InternalPermission>[]>(
     () => [
@@ -45,7 +56,7 @@ export function PermissionsPage() {
   );
 
   return (
-    <PermissionGate permissions={["internal.permissions.read"]}>
+    <>
       <PageHeader
         eyebrow="RBAC"
         title="Permisos internos"
@@ -75,6 +86,6 @@ export function PermissionsPage() {
           emptyTitle="No hay permisos internos registrados."
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

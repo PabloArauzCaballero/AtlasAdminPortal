@@ -27,13 +27,24 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
 
 export function GlobalSearchPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={[]}>
+      <AuthorizedGlobalSearchPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedGlobalSearchPage() {
   const params = useSearchParams();
   const q = params.get("q")?.trim() ?? "";
   const search = useGlobalSearch(q);
   const totals = useMemo(() => search.data?.totals ?? {}, [search.data]);
 
   return (
-    <PermissionGate permissions={[]}>
+    <>
       <PageHeader
         eyebrow="Búsqueda"
         title="Búsqueda global"
@@ -62,7 +73,7 @@ export function GlobalSearchPage() {
       {q && search.data ? (
         <SearchResults q={q} results={search.data.items} totals={totals} />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

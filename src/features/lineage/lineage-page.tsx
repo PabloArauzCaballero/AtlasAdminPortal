@@ -26,6 +26,17 @@ import { DomainMapCard } from "./domain-map-card";
 import { buildDomainNodes, countSensitiveNodes } from "./domain-nodes";
 
 export function LineagePage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedLineagePage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedLineagePage() {
   const [q, setQ] = useState("");
   const endpoints = useEndpoints({ page: 1, limit: 100, q });
   const entities = useDataEntities({ page: 1, limit: 100, q });
@@ -51,7 +62,7 @@ export function LineagePage() {
   const endpointColumns = useMemo(() => buildEndpointColumns(), []);
 
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Linaje"
         title="Lineage e impacto operativo"
@@ -126,7 +137,7 @@ export function LineagePage() {
           />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

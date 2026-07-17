@@ -15,6 +15,17 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { formatNumber } from "@/shared/lib/format";
 
 export function LineageImpactPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedLineageImpactPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedLineageImpactPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [severity, setSeverity] = useState("");
@@ -27,7 +38,7 @@ export function LineageImpactPage() {
   );
 
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Lineage"
         title="Impacto entre activos"
@@ -104,6 +115,6 @@ export function LineageImpactPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

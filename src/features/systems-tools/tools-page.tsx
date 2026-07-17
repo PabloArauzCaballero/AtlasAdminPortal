@@ -16,6 +16,17 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function ToolsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.tools.read"]}>
+      <AuthorizedToolsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedToolsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
@@ -67,7 +78,7 @@ export function ToolsPage() {
   );
 
   return (
-    <PermissionGate permissions={["systems.tools.read"]}>
+    <>
       <PageHeader
         eyebrow="Herramientas"
         title="Herramientas internas"
@@ -120,6 +131,6 @@ export function ToolsPage() {
           onPageChange={setPage}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

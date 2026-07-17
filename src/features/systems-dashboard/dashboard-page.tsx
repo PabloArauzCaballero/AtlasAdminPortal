@@ -28,12 +28,23 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { TrafficLatencySection } from "./traffic-latency-section";
 
 export function DashboardPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.dashboard.read"]}>
+      <AuthorizedDashboardPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDashboardPage() {
   const dashboard = useDashboard();
   const toolsHealth = useToolsHealth();
   const error = dashboard.error ?? toolsHealth.error;
 
   return (
-    <PermissionGate permissions={["systems.dashboard.read"]}>
+    <>
       <PageHeader
         eyebrow="Panel de sistemas"
         title="Centro interno ATLAS"
@@ -196,7 +207,7 @@ export function DashboardPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

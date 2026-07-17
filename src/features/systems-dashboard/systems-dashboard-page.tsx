@@ -18,6 +18,19 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { TrafficLatencySection } from "./traffic-latency-section";
 
 export function SystemsDashboardPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate
+      permissions={["systems.endpoints.read", "systems.tools.health.read"]}
+    >
+      <AuthorizedSystemsDashboardPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedSystemsDashboardPage() {
   const dashboard = useDashboard();
   const health = useToolsHealth();
   // Usa la salud viva (isHealthy), la misma señal que dispara las notificaciones
@@ -27,9 +40,7 @@ export function SystemsDashboardPage() {
   );
 
   return (
-    <PermissionGate
-      permissions={["systems.endpoints.read", "systems.tools.health.read"]}
-    >
+    <>
       <PageHeader
         eyebrow="Systems Ops"
         title="Panel de control del sistema"
@@ -72,7 +83,7 @@ export function SystemsDashboardPage() {
       <DashboardCounts dashboard={dashboard} />
       <ToolsHealthSummary health={health} />
       <TrafficLatencySection />
-    </PermissionGate>
+    </>
   );
 }
 

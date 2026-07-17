@@ -19,7 +19,18 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function LineageNodeDetailPage({
+export function LineageNodeDetailPage(props: Readonly<{ nodeId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedLineageNodeDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedLineageNodeDetailPage({
   nodeId,
 }: Readonly<{ nodeId: string }>) {
   const node = useLineageNode(nodeId);
@@ -28,7 +39,7 @@ export function LineageNodeDetailPage({
   const data = node.data;
 
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Lineage"
         title={data?.label ?? "Detalle de nodo"}
@@ -78,7 +89,7 @@ export function LineageNodeDetailPage({
           <JsonViewer title="Metadata" value={data.metadata} />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

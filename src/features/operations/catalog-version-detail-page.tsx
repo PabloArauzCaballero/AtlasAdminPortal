@@ -36,7 +36,20 @@ import { useCatalogVersion } from "./hooks";
  * enviar a aprobación o decidir lo resuelve el backend por rol y devuelve 403
  * si no corresponde. El permiso de lectura solo controla ver la pantalla.
  */
-export function CatalogVersionDetailPage({
+export function CatalogVersionDetailPage(
+  props: Readonly<{ catalogCode: string; versionId: string }>,
+) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["operations.catalogs.read"]}>
+      <AuthorizedCatalogVersionDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedCatalogVersionDetailPage({
   catalogCode,
   versionId,
 }: Readonly<{ catalogCode: string; versionId: string }>) {
@@ -59,7 +72,7 @@ export function CatalogVersionDetailPage({
   );
 
   return (
-    <PermissionGate permissions={["operations.catalogs.read"]}>
+    <>
       <PageHeader
         eyebrow="Catálogos"
         title={`Versión ${safeText(version?.versionCode)}`}
@@ -194,6 +207,6 @@ export function CatalogVersionDetailPage({
           onClose={() => setInspected(null)}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

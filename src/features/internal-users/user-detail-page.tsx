@@ -16,12 +16,23 @@ import {
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function UserDetailPage({
+export function UserDetailPage(props: Readonly<{ internalUserId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.users.read"]}>
+      <AuthorizedUserDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedUserDetailPage({
   internalUserId,
 }: Readonly<{ internalUserId: string }>) {
   const user = useInternalUser(internalUserId);
   return (
-    <PermissionGate permissions={["internal.users.read"]}>
+    <>
       {user.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {user.error ? (
         <ErrorState
@@ -90,6 +101,6 @@ export function UserDetailPage({
           </div>
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

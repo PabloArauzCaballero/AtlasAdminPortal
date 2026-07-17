@@ -17,6 +17,17 @@ import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function GovernanceOverviewPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["governance.data.read"]}>
+      <AuthorizedGovernanceOverviewPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedGovernanceOverviewPage() {
   const entities = useDataEntities({ page: 1, limit: 100 });
   const endpoints = useEndpoints({ page: 1, limit: 100 });
   const error = entities.error ?? endpoints.error;
@@ -54,7 +65,7 @@ export function GovernanceOverviewPage() {
   }, [endpoints.data?.items, entities.data?.items]);
 
   return (
-    <PermissionGate permissions={["governance.data.read"]}>
+    <>
       <PageHeader
         eyebrow="Gobierno de datos"
         title="Gobierno de datos"
@@ -199,6 +210,6 @@ export function GovernanceOverviewPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

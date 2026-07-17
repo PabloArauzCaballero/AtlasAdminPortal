@@ -25,6 +25,17 @@ import { formatDateTime, formatNumber } from "@/shared/lib/format";
 type ViewMode = "table" | "graph";
 
 export function LineageOfficialPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["lineage.read"]}>
+      <AuthorizedLineageOfficialPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedLineageOfficialPage() {
   const [q, setQ] = useState("");
   const [nodeType, setNodeType] = useState("");
   const [domain, setDomain] = useState("");
@@ -70,7 +81,7 @@ export function LineageOfficialPage() {
   );
 
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    <>
       <PageHeader
         eyebrow="Linaje oficial"
         title="Lineage oficial"
@@ -148,7 +159,7 @@ export function LineageOfficialPage() {
           <JsonViewer title="Resumen técnico" value={graph.data.summary} />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

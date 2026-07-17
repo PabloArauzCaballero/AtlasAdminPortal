@@ -28,6 +28,17 @@ import { ReviewTableCard } from "./review-table-card";
 import type { PendingReview } from "./types";
 
 export function ReviewQueuePage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.reviewQueue.read"]}>
+      <AuthorizedReviewQueuePage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedReviewQueuePage() {
   const [page, setPage] = useState(1);
   const [type, setType] = useState("all");
   const [module, setModule] = useState("");
@@ -69,7 +80,7 @@ export function ReviewQueuePage() {
   }
 
   return (
-    <PermissionGate permissions={["systems.reviewQueue.read"]}>
+    <>
       <PageHeader
         eyebrow="Cola de revisión"
         title="Cola de revisión"
@@ -209,6 +220,6 @@ export function ReviewQueuePage() {
           />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

@@ -34,6 +34,17 @@ const riskOptions = ["LOW", "MEDIUM", "HIGH", "CRITICAL"].map((value) => ({
 }));
 
 export function AuditPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["audit.events.read"]}>
+      <AuthorizedAuditPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedAuditPage() {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [page, setPage] = useState(1);
   const [requestId, setRequestId] = useState("");
@@ -120,7 +131,7 @@ export function AuditPage() {
   );
 
   return (
-    <PermissionGate permissions={["audit.events.read"]}>
+    <>
       <PageHeader
         title="Terminal y auditoría del backend"
         description="Eventos registrados por Systems Ops desde `/systems/action-logs`, más el tail crudo de `Archivo.log` sincronizado a MongoDB."
@@ -192,6 +203,6 @@ export function AuditPage() {
           ) : null}
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

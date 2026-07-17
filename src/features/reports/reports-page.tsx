@@ -18,6 +18,17 @@ import { buildReportColumns } from "./report-columns";
 import { useReports } from "./hooks";
 
 export function ReportsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["reporting.read"]}>
+      <AuthorizedReportsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedReportsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [domain, setDomain] = useState("");
@@ -35,7 +46,7 @@ export function ReportsPage() {
   );
 
   return (
-    <PermissionGate permissions={["reporting.read"]}>
+    <>
       <PageHeader
         eyebrow="Reportería"
         title="Reportería dinámica"
@@ -133,6 +144,6 @@ export function ReportsPage() {
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

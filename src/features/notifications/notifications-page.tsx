@@ -49,6 +49,17 @@ const recipientTypeOptions = [
 ].map((value) => ({ label: value, value }));
 
 export function NotificationsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["notifications.messages.read"]}>
+      <AuthorizedNotificationsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedNotificationsPage() {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
@@ -75,7 +86,7 @@ export function NotificationsPage() {
   );
 
   return (
-    <PermissionGate permissions={["notifications.messages.read"]}>
+    <>
       <PageHeader
         eyebrow="Mensajería interna"
         title="Notificaciones"
@@ -170,6 +181,6 @@ export function NotificationsPage() {
           onClose={() => setOpenMessageId(null)}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

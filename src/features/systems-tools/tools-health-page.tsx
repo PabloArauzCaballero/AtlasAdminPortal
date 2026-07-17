@@ -17,6 +17,17 @@ import { formatDateTime, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
 export function ToolsHealthPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.tools.health.read"]}>
+      <AuthorizedToolsHealthPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedToolsHealthPage() {
   const health = useToolsHealth();
   const tools = health.data ?? [];
   const downTools = tools.filter((tool) => toolLiveState(tool) === "DOWN");
@@ -24,7 +35,7 @@ export function ToolsHealthPage() {
   const noProbeCount = tools.length - upCount - downTools.length;
 
   return (
-    <PermissionGate permissions={["systems.tools.health.read"]}>
+    <>
       <PageHeader
         title="Salud de herramientas"
         description="Estado vivo reportado por `/systems/health/tools` — la misma fuente que dispara las notificaciones de servicio caído/recuperado. Se actualiza automáticamente cada 30s."
@@ -143,6 +154,6 @@ export function ToolsHealthPage() {
           })}
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

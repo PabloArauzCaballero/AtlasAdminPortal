@@ -28,6 +28,17 @@ const environmentOptions = ["LOCAL", "STAGING", "PRODUCTION_READONLY"].map(
 );
 
 export function StressRunsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["systems.stress.read"]}>
+      <AuthorizedStressRunsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedStressRunsPage() {
   const [page, setPage] = useState(1);
   const [suiteId, setSuiteId] = useState("");
   const [status, setStatus] = useState("");
@@ -91,7 +102,7 @@ export function StressRunsPage() {
     [],
   );
   return (
-    <PermissionGate permissions={["systems.stress.read"]}>
+    <>
       <PageHeader
         title="Historial de stress runs"
         description="Runs encolados como jobs internos. El servicio interno registra payload sanitizado y bloquea producción para stress."
@@ -158,6 +169,6 @@ export function StressRunsPage() {
       >
         {selectedRun ? <JsonViewer value={selectedRun} /> : null}
       </DrawerPanel>
-    </PermissionGate>
+    </>
   );
 }

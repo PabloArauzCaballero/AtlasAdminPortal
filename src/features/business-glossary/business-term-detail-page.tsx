@@ -48,14 +48,25 @@ const auditColumns: ColumnDef<AuditEntry>[] = [
   },
 ];
 
-export function BusinessTermDetailPage({
+export function BusinessTermDetailPage(props: Readonly<{ termId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["businessMetadata.read"]}>
+      <AuthorizedBusinessTermDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedBusinessTermDetailPage({
   termId,
 }: Readonly<{ termId: string }>) {
   const term = useBusinessTerm(termId);
   const data = term.data;
 
   return (
-    <PermissionGate permissions={["businessMetadata.read"]}>
+    <>
       <PageHeader
         eyebrow="Glosario"
         title={data?.name ?? "Detalle de término"}
@@ -128,6 +139,6 @@ export function BusinessTermDetailPage({
           </Card>
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

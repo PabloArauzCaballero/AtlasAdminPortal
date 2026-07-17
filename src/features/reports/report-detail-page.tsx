@@ -16,7 +16,20 @@ import { ReportWidgetsCard } from "./report-widgets-card";
 import { buildSnapshotColumns } from "./report-columns";
 import { useReport, useReportSnapshots } from "./hooks";
 
-export function ReportDetailPage({ reportId }: Readonly<{ reportId: string }>) {
+export function ReportDetailPage(props: Readonly<{ reportId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["reporting.read"]}>
+      <AuthorizedReportDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedReportDetailPage({
+  reportId,
+}: Readonly<{ reportId: string }>) {
   const [page, setPage] = useState(1);
   const report = useReport(reportId);
   const snapshots = useReportSnapshots(reportId, { page, limit: 10 });
@@ -24,7 +37,7 @@ export function ReportDetailPage({ reportId }: Readonly<{ reportId: string }>) {
   const snapshotColumns = useMemo(() => buildSnapshotColumns(), []);
 
   return (
-    <PermissionGate permissions={["reporting.read"]}>
+    <>
       <PageHeader
         eyebrow="Reportería dinámica"
         title="Detalle de reporte"
@@ -74,6 +87,6 @@ export function ReportDetailPage({ reportId }: Readonly<{ reportId: string }>) {
           ) : null}
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

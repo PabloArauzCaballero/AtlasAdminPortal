@@ -14,6 +14,17 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
 
 export function RolesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.roles.read"]}>
+      <AuthorizedRolesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedRolesPage() {
   const roles = useInternalRoles({ page: 1, limit: 100 });
   const columns = useMemo<ColumnDef<InternalRole>[]>(
     () => [
@@ -54,7 +65,7 @@ export function RolesPage() {
   );
 
   return (
-    <PermissionGate permissions={["internal.roles.read"]}>
+    <>
       <PageHeader
         eyebrow="RBAC"
         title="Roles internos"
@@ -90,6 +101,6 @@ export function RolesPage() {
           emptyTitle="No hay roles internos registrados."
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

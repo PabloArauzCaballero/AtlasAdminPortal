@@ -22,6 +22,17 @@ import { isResolutionComplete, ResolutionDialog } from "./resolution-dialog";
 import type { ResolutionState } from "./types";
 
 export function DataQualityIssuesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["dataQuality.issues.read"]}>
+      <AuthorizedDataQualityIssuesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDataQualityIssuesPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [severity, setSeverity] = useState("");
@@ -57,7 +68,7 @@ export function DataQualityIssuesPage() {
   }
 
   return (
-    <PermissionGate permissions={["dataQuality.issues.read"]}>
+    <>
       <PageHeader
         eyebrow="Calidad de datos"
         title="Issues de calidad de datos"
@@ -142,7 +153,7 @@ export function DataQualityIssuesPage() {
           onConfirm={confirmResolution}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

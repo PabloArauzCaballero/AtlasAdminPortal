@@ -22,7 +22,18 @@ import { EntityGovernanceSummary } from "./entity-governance-summary";
 
 const tabs = ["Vista general", "Columnas", "Endpoints", "Gobierno operativo"];
 
-export function DataEntityDetailPage({
+export function DataEntityDetailPage(props: Readonly<{ entityId: string }>) {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["catalog.data.read"]}>
+      <AuthorizedDataEntityDetailPage {...props} />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDataEntityDetailPage({
   entityId,
 }: Readonly<{ entityId: string }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -41,7 +52,7 @@ export function DataEntityDetailPage({
   );
 
   return (
-    <PermissionGate permissions={["catalog.data.read"]}>
+    <>
       {entity.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {entity.error ? (
         <EntityError error={entity.error} retry={entity.refetch} />
@@ -88,7 +99,7 @@ export function DataEntityDetailPage({
           ) : null}
         </>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
 

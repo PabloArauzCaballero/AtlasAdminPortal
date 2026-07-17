@@ -29,6 +29,17 @@ const reviewOptions = [
 ];
 
 export function DataEntitiesPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["catalog.data.read"]}>
+      <AuthorizedDataEntitiesPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedDataEntitiesPage() {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") ?? "";
   const [page, setPage] = useState(1);
@@ -118,7 +129,7 @@ export function DataEntitiesPage() {
   );
 
   return (
-    <PermissionGate permissions={["catalog.data.read"]}>
+    <>
       <PageHeader
         title="Catálogo de datos"
         description="Tablas y entidades detectadas desde `/systems/data-entities`."
@@ -179,6 +190,6 @@ export function DataEntitiesPage() {
           onPageChange={setPage}
         />
       ) : null}
-    </PermissionGate>
+    </>
   );
 }

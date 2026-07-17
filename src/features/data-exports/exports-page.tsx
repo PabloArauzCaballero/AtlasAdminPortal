@@ -14,6 +14,17 @@ import { buildDataExportColumns } from "./export-columns";
 import { useDataExports } from "./hooks";
 
 export function ExportsPage() {
+  // El gate envuelve a un componente aparte a propósito: si los hooks de
+  // datos vivieran aquí, las queries saldrían en el render antes de que el
+  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  return (
+    <PermissionGate permissions={["internal.exports.read"]}>
+      <AuthorizedExportsPage />
+    </PermissionGate>
+  );
+}
+
+function AuthorizedExportsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
@@ -40,7 +51,7 @@ export function ExportsPage() {
   );
 
   return (
-    <PermissionGate permissions={["internal.exports.read"]}>
+    <>
       <PageHeader
         eyebrow="Exportaciones"
         title="Exportaciones"
@@ -126,6 +137,6 @@ export function ExportsPage() {
           />
         </div>
       ) : null}
-    </PermissionGate>
+    </>
   );
 }
