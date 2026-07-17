@@ -100,9 +100,7 @@ function toRows(data: DefinitionListResponse): DefinitionRow[] {
   ];
 }
 export function DefinitionsPage() {
-  // El gate envuelve a un componente aparte a propósito: si los hooks de
-  // datos vivieran aquí, las queries saldrían en el render antes de que el
-  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
+  // Los hooks viven en el hijo: aquí saldrían antes de que el gate decidiera.
   return (
     <PermissionGate permissions={["operations.definitions.read"]}>
       <AuthorizedDefinitionsPage />
