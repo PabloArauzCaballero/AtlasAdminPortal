@@ -6,6 +6,7 @@ import type { EndpointItem } from "@/features/systems/types";
 import type { QaJourneyStepSpec } from "./journey-types";
 import { findPayloadPreset } from "./payload-presets";
 import { Input } from "@/shared/components/ui/input";
+import { StepAdvancedFields } from "./journey-step-advanced-fields";
 import { cn } from "@/shared/lib/cn";
 import { JourneyStepEndpointSelect } from "./journey-step-endpoint-select";
 
@@ -106,7 +107,7 @@ export function JourneyStepCard({
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-medium text-blue-700 hover:underline"
+          className="text-xs font-medium text-blue-700 underline"
         >
           {expanded
             ? "Ocultar avanzado"
@@ -116,123 +117,6 @@ export function JourneyStepCard({
           <StepAdvancedFields step={step} onChange={onChange} />
         ) : null}
       </div>
-    </div>
-  );
-}
-
-function StepAdvancedFields({
-  step,
-  onChange,
-}: Readonly<{
-  step: QaJourneyStepSpec;
-  onChange: (step: QaJourneyStepSpec) => void;
-}>) {
-  return (
-    <div className="grid gap-3 rounded-lg bg-atlas-soft p-3 md:grid-cols-2">
-      <JsonMiniField
-        label="Path params"
-        hint='Ej: { "customerId": "{{customerId}}" }'
-        value={step.pathParams}
-        onCommit={(value) => onChange({ ...step, pathParams: value })}
-      />
-      <JsonMiniField
-        label="Query params"
-        value={step.queryParams}
-        onCommit={(value) => onChange({ ...step, queryParams: value })}
-      />
-      <JsonMiniField
-        label="Payload"
-        value={step.payload}
-        onCommit={(value) => onChange({ ...step, payload: value })}
-      />
-      <JsonMiniField
-        label="Headers"
-        value={step.headers}
-        onCommit={(value) =>
-          onChange({ ...step, headers: value as Record<string, string> })
-        }
-      />
-      <JsonMiniField
-        label="Extraer variables"
-        hint='Ej: { "customerId": "data.customerId" }'
-        value={step.extract}
-        onCommit={(value) =>
-          onChange({ ...step, extract: value as Record<string, string> })
-        }
-      />
-      <div>
-        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-atlas-muted">
-          HTTP esperados
-        </span>
-        <Input
-          value={(step.expectedStatusCodes ?? []).join(", ")}
-          onChange={(event) =>
-            onChange({
-              ...step,
-              expectedStatusCodes: parseStatusCodes(event.target.value),
-            })
-          }
-          placeholder="200, 201"
-          className="h-8 font-mono text-xs"
-        />
-      </div>
-    </div>
-  );
-}
-
-function JsonMiniField({
-  label,
-  hint,
-  value,
-  onCommit,
-}: Readonly<{
-  label: string;
-  hint?: string;
-  value: unknown;
-  onCommit: (value: Record<string, unknown>) => void;
-}>) {
-  const [text, setText] = useState(() => stringifyOrEmpty(value));
-  const [error, setError] = useState<string | null>(null);
-
-  function commit() {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      setError(null);
-      onCommit({});
-      return;
-    }
-    try {
-      const parsed = JSON.parse(trimmed) as unknown;
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        setError("Debe ser un objeto JSON, ej: {}");
-        return;
-      }
-      setError(null);
-      onCommit(parsed as Record<string, unknown>);
-    } catch {
-      setError("JSON inválido");
-    }
-  }
-
-  return (
-    <div>
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-atlas-muted">
-        {label}
-      </span>
-      <textarea
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        onBlur={commit}
-        spellCheck={false}
-        placeholder={hint ?? "{}"}
-        className={cn(
-          "min-h-16 w-full rounded-md border bg-white p-2 font-mono text-[11px]",
-          error ? "border-red-400" : "border-atlas-border",
-        )}
-      />
-      {error ? (
-        <p className="mt-0.5 text-[11px] text-red-600">{error}</p>
-      ) : null}
     </div>
   );
 }
@@ -264,21 +148,4 @@ function IconButton({
       {children}
     </button>
   );
-}
-
-function parseStatusCodes(text: string): number[] {
-  return text
-    .split(",")
-    .map((part) => Number(part.trim()))
-    .filter((value) => Number.isFinite(value) && value > 0);
-}
-
-function stringifyOrEmpty(value: unknown): string {
-  if (
-    !value ||
-    (typeof value === "object" && Object.keys(value).length === 0)
-  ) {
-    return "";
-  }
-  return JSON.stringify(value, null, 2);
 }

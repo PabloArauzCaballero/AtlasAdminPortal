@@ -134,7 +134,7 @@ export function buildNotificationMessageColumns(
         <button
           type="button"
           onClick={() => onOpen(row.original)}
-          className="text-xs font-medium text-blue-700 hover:underline"
+          className="text-xs font-medium text-blue-700 underline"
         >
           Ver
         </button>

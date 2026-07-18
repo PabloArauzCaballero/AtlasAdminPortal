@@ -1,43 +1,48 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useId } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Field, Select, Textarea } from "@/shared/components/ui/input";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import type { ResolutionState } from "./types";
-
-/** Mínimo para que la nota sirva como rastro de auditoría y no como relleno. */
-export const MIN_RESOLUTION_NOTES_LENGTH = 10;
-
-export function isResolutionComplete(
-  resolution: NonNullable<ResolutionState>,
-): boolean {
-  return (
-    resolution.reasonCode.trim().length > 0 &&
-    resolution.notes.trim().length >= MIN_RESOLUTION_NOTES_LENGTH
-  );
-}
+import {
+  MIN_RESOLUTION_NOTES_LENGTH,
+  resolutionDefaults,
+  resolutionSchema,
+  type ResolutionForm,
+} from "./resolution-schema";
 
 export function ResolutionDialog({
-  resolution,
+  issueId,
   isLoading,
   error,
   onCancel,
-  onConfirm,
-  onChange,
+  onSubmit,
 }: Readonly<{
-  resolution: NonNullable<ResolutionState>;
+  issueId: string;
   isLoading: boolean;
   error?: unknown;
   onCancel: () => void;
-  onConfirm: () => void;
-  onChange: (value: NonNullable<ResolutionState>) => void;
+  onSubmit: (values: ResolutionForm) => void;
 }>) {
   const titleId = useId();
-  const canConfirm = isResolutionComplete(resolution) && !isLoading;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResolutionForm>({
+    resolver: zodResolver(resolutionSchema),
+    defaultValues: resolutionDefaults,
+  });
+
+  // `handleSubmit` no llama a esto si el esquema no pasa: no hay forma de cerrar
+  // un issue sin motivo ni notas suficientes, ni de enviarlo dos veces.
+  const submit = handleSubmit((values) => onSubmit(values));
+
   return (
     <DialogShell
       open
@@ -46,36 +51,23 @@ export function ResolutionDialog({
       overlayClassName="z-50 flex items-center justify-center bg-slate-950/40 p-4"
       panelClassName="w-full max-w-2xl rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
     >
-      <div>
+      <form onSubmit={submit}>
         <h2 id={titleId} className="sr-only">
-          {`Cerrar issue #${resolution.issue.issueId}`}
+          {`Cerrar issue #${issueId}`}
         </h2>
         <SectionHeader
-          title={`Cerrar issue #${resolution.issue.issueId}`}
+          title={`Cerrar issue #${issueId}`}
           description="Completa resolución y notas. Evita incluir datos sensibles."
         />
         <div className="grid gap-4 md:grid-cols-[180px_1fr]">
-          <Field label="Resolución">
-            <Select
-              value={resolution.resolution}
-              onChange={(event) =>
-                onChange({
-                  ...resolution,
-                  resolution: event.target.value as "resolved" | "ignored",
-                })
-              }
-            >
+          <Field label="Resolución" error={errors.resolution?.message}>
+            <Select {...register("resolution")}>
               <option value="resolved">resolved</option>
               <option value="ignored">ignored</option>
             </Select>
           </Field>
-          <Field label="Razón">
-            <Select
-              value={resolution.reasonCode}
-              onChange={(event) =>
-                onChange({ ...resolution, reasonCode: event.target.value })
-              }
-            >
+          <Field label="Razón" error={errors.reasonCode?.message}>
+            <Select {...register("reasonCode")}>
               <option value="manual_review">manual_review</option>
               <option value="source_validated">source_validated</option>
               <option value="false_positive">false_positive</option>
@@ -85,14 +77,12 @@ export function ResolutionDialog({
           <div className="md:col-span-2">
             <Field
               label={`Notas (obligatorio, mínimo ${MIN_RESOLUTION_NOTES_LENGTH} caracteres)`}
+              error={errors.notes?.message}
               hint="Explica criterio operativo sin pegar datos personales. Queda en la auditoría del issue."
             >
               <Textarea
-                value={resolution.notes}
                 placeholder="Ejemplo: validado contra fuente primaria."
-                onChange={(event) =>
-                  onChange({ ...resolution, notes: event.target.value })
-                }
+                {...register("notes")}
               />
             </Field>
           </div>
@@ -112,14 +102,14 @@ export function ResolutionDialog({
           </div>
         ) : null}
         <div className="mt-5 flex justify-end gap-2">
-          <Button disabled={isLoading} onClick={onCancel}>
+          <Button type="button" disabled={isLoading} onClick={onCancel}>
             Cancelar
           </Button>
-          <Button variant="primary" disabled={!canConfirm} onClick={onConfirm}>
+          <Button type="submit" variant="primary" disabled={isLoading}>
             {isLoading ? "Procesando…" : "Cerrar issue"}
           </Button>
         </div>
-      </div>
+      </form>
     </DialogShell>
   );
 }

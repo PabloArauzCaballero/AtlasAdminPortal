@@ -97,7 +97,7 @@ function buildColumns(
       header: "Ruta",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs text-blue-700 hover:underline"
+          className="font-mono text-xs text-blue-700 underline"
           href={`/internal/systems/endpoints/${row.original.endpointId}`}
         >
           {safeText(row.original.fullPath ?? row.original.routePath)}

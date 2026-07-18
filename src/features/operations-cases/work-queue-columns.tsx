@@ -48,7 +48,7 @@ export function buildWorkQueueColumns(
         row.original.customerId ? (
           <Link
             href={`/internal/operations/customers/${row.original.customerId}/investigation-summary`}
-            className="font-mono text-xs text-blue-700 hover:underline"
+            className="font-mono text-xs text-blue-700 underline"
           >
             #{row.original.customerId}
           </Link>

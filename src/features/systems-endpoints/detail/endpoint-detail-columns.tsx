@@ -118,7 +118,7 @@ function TableLink({ impact }: Readonly<{ impact: DataEntityImpact }>) {
   const table = tableLabel(impact.dataEntity);
   return (
     <Link
-      className="font-mono text-xs text-blue-700 hover:underline"
+      className="font-mono text-xs text-blue-700 underline"
       href={`/internal/data-catalog/tables/${impact.dataEntityId}`}
     >
       {table === "—" ? `#${impact.dataEntityId}` : table}
@@ -133,7 +133,7 @@ function ToolLink({ requirement }: Readonly<{ requirement: ToolRequirement }>) {
     `#${requirement.toolId}`;
   return (
     <Link
-      className="font-mono text-xs text-blue-700 hover:underline"
+      className="font-mono text-xs text-blue-700 underline"
       href={`/internal/systems/tools/${requirement.toolId}`}
     >
       {safeText(label)}

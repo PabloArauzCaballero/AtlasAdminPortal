@@ -46,7 +46,7 @@ export function SessionOverviewSection({
         {customer ? (
           <Link
             href={`/internal/operations/customers/${customer.customerId}/investigation-summary`}
-            className="inline-flex text-sm font-semibold text-atlas-accent hover:underline"
+            className="inline-flex text-sm font-semibold text-atlas-accent underline"
           >
             Ver la investigación del cliente #{customer.customerId} →
           </Link>

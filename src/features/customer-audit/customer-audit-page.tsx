@@ -33,7 +33,7 @@ export function CustomerAuditPage({
         actions={
           <Link
             href={`/internal/operations/customers/${encodeURIComponent(customerId)}/investigation-summary`}
-            className="text-sm font-medium text-blue-700 hover:underline"
+            className="text-sm font-medium text-blue-700 underline"
           >
             Ver investigación
           </Link>

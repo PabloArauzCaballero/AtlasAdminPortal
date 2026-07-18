@@ -86,10 +86,14 @@ export function JourneyStepsEditor({
           }}
         />
       ) : (
-        <Field
-          label="Especificación de pasos (JSON)"
-          hint="Array de pasos: { key, name, endpointId, pathParams, queryParams, payload, headers, expectedStatusCodes, extract }. Usa {{variable}} para reusar valores extraídos de pasos previos."
-        >
+        <>
+          {/*
+            La fila de carga va FUERA del `Field`: este envuelve a sus hijos en
+            un `<label>`, y un label toma como control el primer elemento
+            etiquetable que contiene. Con el input de archivo dentro, la
+            etiqueta apuntaba a ese input oculto y el textarea se quedaba sin
+            nombre accesible.
+          */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <input
               ref={fileInputRef}
@@ -111,16 +115,21 @@ export function JourneyStepsEditor({
               </span>
             ) : null}
           </div>
-          <Textarea
-            spellCheck={false}
-            value={stepsText}
-            onChange={(event) => {
-              onStepsTextChange(event.target.value);
-              setLoadedFileName(null);
-            }}
-            className="min-h-64 font-mono text-xs"
-          />
-        </Field>
+          <Field
+            label="Especificación de pasos (JSON)"
+            hint="Array de pasos: { key, name, endpointId, pathParams, queryParams, payload, headers, expectedStatusCodes, extract }. Usa {{variable}} para reusar valores extraídos de pasos previos."
+          >
+            <Textarea
+              spellCheck={false}
+              value={stepsText}
+              onChange={(event) => {
+                onStepsTextChange(event.target.value);
+                setLoadedFileName(null);
+              }}
+              className="min-h-64 font-mono text-xs"
+            />
+          </Field>
+        </>
       )}
     </div>
   );

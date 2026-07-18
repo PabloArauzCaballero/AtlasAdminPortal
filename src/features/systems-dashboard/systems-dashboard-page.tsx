@@ -160,7 +160,7 @@ function ToolsHealthSummary({
             Herramientas monitoreadas
           </p>
           <Link
-            className="text-sm font-medium text-blue-700 hover:underline"
+            className="text-sm font-medium text-blue-700 underline"
             href="/internal/systems/tools/health"
           >
             Ver salud completa

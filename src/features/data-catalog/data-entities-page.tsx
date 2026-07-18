@@ -61,7 +61,7 @@ function AuthorizedDataEntitiesPage() {
         accessorKey: "tableName",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+            className="font-mono text-xs font-semibold text-blue-700 underline"
             href={`/internal/data-catalog/tables/${row.original.entityId}`}
           >
             {row.original.tableName}

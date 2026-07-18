@@ -21,7 +21,7 @@ export function buildCatalogVersionItemColumns(
         <button
           type="button"
           onClick={() => onInspect(row.original)}
-          className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+          className="font-mono text-xs font-semibold text-blue-700 underline"
         >
           {row.original.itemCode}
         </button>

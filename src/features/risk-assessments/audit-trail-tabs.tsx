@@ -30,7 +30,7 @@ function RunTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
       {run.sessionId ? (
         <Link
           href={`/internal/operations/sessions/${run.sessionId}/investigation-summary`}
-          className="inline-flex text-sm font-semibold text-atlas-accent hover:underline"
+          className="inline-flex text-sm font-semibold text-atlas-accent underline"
         >
           Ver la investigación de la sesión #{run.sessionId} →
         </Link>

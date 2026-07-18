@@ -206,10 +206,7 @@ function EntityLink({
   label,
 }: Readonly<{ href: string; label: string }>) {
   return (
-    <Link
-      className="font-mono text-xs text-blue-700 hover:underline"
-      href={href}
-    >
+    <Link className="font-mono text-xs text-blue-700 underline" href={href}>
       {label}
     </Link>
   );

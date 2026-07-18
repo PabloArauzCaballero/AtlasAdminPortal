@@ -28,7 +28,7 @@ export function buildEndpointColumns(
       accessorKey: "fullPath",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs text-blue-700 hover:underline"
+          className="font-mono text-xs text-blue-700 underline"
           href={`/internal/systems/endpoints/${row.original.endpointId}`}
         >
           {row.original.fullPath}
@@ -82,7 +82,7 @@ export function buildEntityColumns(
       accessorKey: "tableName",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs text-blue-700 hover:underline"
+          className="font-mono text-xs text-blue-700 underline"
           href={`/internal/data-catalog/tables/${row.original.entityId}`}
         >
           {row.original.schemaName}.{row.original.tableName}

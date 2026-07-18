@@ -80,7 +80,7 @@ export function NotificationBell() {
                 type="button"
                 disabled={markAllRead.isPending}
                 onClick={() => markAllRead.mutate()}
-                className="text-xs font-medium text-atlas-accent hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-xs font-medium text-atlas-accent underline disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Marcar todas
               </button>

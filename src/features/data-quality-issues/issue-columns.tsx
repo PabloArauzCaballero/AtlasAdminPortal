@@ -5,10 +5,9 @@ import type { DataQualityIssue } from "@/features/operations/types";
 import { Button } from "@/shared/components/ui/button";
 import { SeverityBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import type { ResolutionState } from "./types";
 
 export function buildIssueColumns(
-  setResolution: (value: ResolutionState) => void,
+  onResolve: (issue: DataQualityIssue) => void,
 ): ColumnDef<DataQualityIssue>[] {
   return [
     {
@@ -61,18 +60,7 @@ export function buildIssueColumns(
         row.original.resolvedAt ? (
           <span className="text-xs text-atlas-muted">Cerrado</span>
         ) : (
-          <Button
-            onClick={() =>
-              setResolution({
-                issue: row.original,
-                resolution: "resolved",
-                reasonCode: "manual_review",
-                notes: "",
-              })
-            }
-          >
-            Resolver
-          </Button>
+          <Button onClick={() => onResolve(row.original)}>Resolver</Button>
         ),
     },
   ];

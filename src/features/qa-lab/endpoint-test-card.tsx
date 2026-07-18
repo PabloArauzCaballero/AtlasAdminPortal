@@ -56,15 +56,35 @@ export function EndpointTestCard({
     });
   }
 
-  function submit() {
+  /**
+   * Se valida ANTES de abrir el diálogo (mismo patrón que `JourneyRunnerPanel`).
+   * Validar dentro de `submit` dejaba el error pintado en la card, detrás del
+   * backdrop `z-50` del propio diálogo: el operador pulsaba "Ejecutar" y no
+   * pasaba nada visible (RESUELTO_ATLAS_F1_R7).
+   */
+  function tryExecute() {
     const parsed = parseEndpointRunForm(form);
     if (!parsed.ok) {
       setError(parsed.error);
       return;
     }
     setError(null);
+    setConfirmOpen(true);
+  }
+
+  function submit() {
+    const parsed = parseEndpointRunForm(form);
+    if (!parsed.ok) {
+      setError(parsed.error);
+      setConfirmOpen(false);
+      return;
+    }
+    setError(null);
     runMutation.mutate(parsed.value, {
       onSuccess: () => setConfirmOpen(false),
+      // Igual que arriba: el error de la mutación vive en la card, así que el
+      // diálogo tiene que apartarse para que se pueda leer.
+      onError: () => setConfirmOpen(false),
     });
   }
 
@@ -129,7 +149,7 @@ export function EndpointTestCard({
         <Button
           variant="primary"
           disabled={!endpointId || !canExecute || runMutation.isPending}
-          onClick={() => setConfirmOpen(true)}
+          onClick={tryExecute}
         >
           {form.dryRun ? "Previsualizar request" : "Ejecutar request real"}
         </Button>

@@ -1,6 +1,8 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { SectionHeader } from "@/shared/components/layout/page-header";
@@ -11,33 +13,19 @@ import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
 import { ErrorState, ForbiddenState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useSendBroadcastNotificationMutation } from "./hooks";
-import type {
-  BroadcastAudience,
-  CreateBroadcastNotificationInput,
-} from "./types";
+import {
+  broadcastDefaults,
+  broadcastFormToInput,
+  broadcastSchema,
+  type BroadcastForm,
+} from "./broadcast-helpers";
+import type { BroadcastAudience } from "./types";
 
 const AUDIENCE_OPTIONS: { value: BroadcastAudience; label: string }[] = [
   { value: "customers", label: "Todos los customers" },
   { value: "internal_users", label: "Todos los usuarios internos" },
   { value: "both", label: "Customers + usuarios internos" },
 ];
-
-function splitIds(value: string): string[] | undefined {
-  const ids = value
-    .split(",")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
-  return ids.length > 0 ? ids : undefined;
-}
-
-const emptyForm: CreateBroadcastNotificationInput = {
-  title: "",
-  body: "",
-  priority: 0,
-  category: "custom_broadcast",
-  icon: "",
-  audience: "customers",
-};
 
 export function BroadcastSection() {
   return (
@@ -53,40 +41,39 @@ export function BroadcastSection() {
 }
 
 function BroadcastForm() {
-  const [form, setForm] = useState(emptyForm);
-  const [customerIdsText, setCustomerIdsText] = useState("");
-  const [internalUserIdsText, setInternalUserIdsText] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const send = useSendBroadcastNotificationMutation();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    getValues,
+    reset,
+    formState: { errors },
+  } = useForm<BroadcastForm>({
+    resolver: zodResolver(broadcastSchema),
+    defaultValues: broadcastDefaults,
+  });
 
-  function patch(value: Partial<CreateBroadcastNotificationInput>) {
-    setForm((current) => ({ ...current, ...value }));
-  }
-
+  const audience = watch("audience");
+  const [title, customerIdsText, internalUserIdsText] = watch([
+    "title",
+    "customerIdsText",
+    "internalUserIdsText",
+  ]);
   const audienceLabel =
-    AUDIENCE_OPTIONS.find((option) => option.value === form.audience)?.label ??
-    form.audience;
-  const canSubmit = form.title.trim().length > 0 && form.body.trim().length > 0;
+    AUDIENCE_OPTIONS.find((option) => option.value === audience)?.label ??
+    audience;
 
-  function submit() {
-    const customerIds =
-      form.audience === "internal_users"
-        ? undefined
-        : splitIds(customerIdsText);
-    const internalUserIds =
-      form.audience === "customers" ? undefined : splitIds(internalUserIdsText);
-    send.mutate(
-      {
-        ...form,
-        icon: form.icon?.trim() ? form.icon.trim() : undefined,
-        customerIds,
-        internalUserIds,
-      },
-      {
-        onSuccess: () => setForm(emptyForm),
-        onSettled: () => setConfirmOpen(false),
-      },
-    );
+  // El botón "Enviar" solo abre la confirmación si el formulario es válido:
+  // `handleSubmit` no corre el callback si el esquema falla.
+  const openConfirm = handleSubmit(() => setConfirmOpen(true));
+
+  function sendBroadcast() {
+    send.mutate(broadcastFormToInput(getValues()), {
+      onSuccess: () => reset(broadcastDefaults),
+      onSettled: () => setConfirmOpen(false),
+    });
   }
 
   return (
@@ -106,120 +93,96 @@ function BroadcastForm() {
             className="mb-0"
           />
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Título">
-              <Input
-                value={form.title}
-                onChange={(event) => patch({ title: event.target.value })}
-              />
-            </Field>
-            <Field
-              label="Prioridad"
-              hint="Entero, 0-100. Mayor = más importante."
-            >
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={form.priority ?? 0}
-                onChange={(event) =>
-                  patch({ priority: Number(event.target.value) || 0 })
-                }
-              />
-            </Field>
-          </div>
-          <Field label="Mensaje">
-            <Textarea
-              value={form.body}
-              onChange={(event) => patch({ body: event.target.value })}
-              className="min-h-24"
-            />
-          </Field>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Audiencia">
-              <Select
-                value={form.audience}
-                onChange={(event) =>
-                  patch({ audience: event.target.value as BroadcastAudience })
-                }
+        <CardContent>
+          <form onSubmit={openConfirm} noValidate className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Título" error={errors.title?.message}>
+                <Input {...register("title")} />
+              </Field>
+              <Field
+                label="Prioridad"
+                hint="Entero, 0-100. Mayor = más importante."
+                error={errors.priority?.message}
               >
-                {AUDIENCE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  {...register("priority", { valueAsNumber: true })}
+                />
+              </Field>
+            </div>
+            <Field label="Mensaje" error={errors.body?.message}>
+              <Textarea className="min-h-24" {...register("body")} />
             </Field>
-            <Field label="Categoría">
-              <Input
-                value={form.category ?? ""}
-                onChange={(event) => patch({ category: event.target.value })}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label="Audiencia">
+                <Select {...register("audience")}>
+                  {AUDIENCE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Categoría">
+                <Input {...register("category")} />
+              </Field>
+              <Field label="Ícono (opcional)">
+                <Input {...register("icon")} />
+              </Field>
+            </div>
+            {audience !== "internal_users" ? (
+              <Field
+                label="IDs de customers (opcional)"
+                hint="Separados por coma. Vacío = todos los customers activos del tenant."
+              >
+                <Input
+                  placeholder="12, 45, 90"
+                  {...register("customerIdsText")}
+                />
+              </Field>
+            ) : null}
+            {audience !== "customers" ? (
+              <Field
+                label="IDs de usuarios internos (opcional)"
+                hint="Separados por coma. Vacío = todos los usuarios internos activos del tenant."
+              >
+                <Input
+                  placeholder="3, 7"
+                  {...register("internalUserIdsText")}
+                />
+              </Field>
+            ) : null}
+            {send.error ? (
+              <ErrorState
+                description={
+                  isAtlasApiError(send.error)
+                    ? send.error.message
+                    : "No se pudo enviar la notificación."
+                }
+                requestId={
+                  isAtlasApiError(send.error) ? send.error.requestId : undefined
+                }
               />
-            </Field>
-            <Field label="Ícono (opcional)">
-              <Input
-                value={form.icon ?? ""}
-                onChange={(event) => patch({ icon: event.target.value })}
-              />
-            </Field>
-          </div>
-          {form.audience !== "internal_users" ? (
-            <Field
-              label="IDs de customers (opcional)"
-              hint="Separados por coma. Vacío = todos los customers activos del tenant."
-            >
-              <Input
-                value={customerIdsText}
-                onChange={(event) => setCustomerIdsText(event.target.value)}
-                placeholder="12, 45, 90"
-              />
-            </Field>
-          ) : null}
-          {form.audience !== "customers" ? (
-            <Field
-              label="IDs de usuarios internos (opcional)"
-              hint="Separados por coma. Vacío = todos los usuarios internos activos del tenant."
-            >
-              <Input
-                value={internalUserIdsText}
-                onChange={(event) => setInternalUserIdsText(event.target.value)}
-                placeholder="3, 7"
-              />
-            </Field>
-          ) : null}
-          {send.error ? (
-            <ErrorState
-              description={
-                isAtlasApiError(send.error)
-                  ? send.error.message
-                  : "No se pudo enviar la notificación."
-              }
-              requestId={
-                isAtlasApiError(send.error) ? send.error.requestId : undefined
-              }
-            />
-          ) : null}
-          {send.isSuccess ? (
-            <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-              Enviada — {send.data.targeted} destinatario(s) targeteados,{" "}
-              {send.data.created} mensaje(s) creados (referencia{" "}
-              <code className="font-mono">{send.data.broadcastId}</code>).
-            </p>
-          ) : null}
-          <Button
-            variant="primary"
-            disabled={!canSubmit || send.isPending}
-            onClick={() => setConfirmOpen(true)}
-          >
-            Enviar notificación
-          </Button>
+            ) : null}
+            {send.isSuccess ? (
+              <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                Enviada — {send.data.targeted} destinatario(s) targeteados,{" "}
+                {send.data.created} mensaje(s) creados (referencia{" "}
+                <code className="font-mono">{send.data.broadcastId}</code>).
+              </p>
+            ) : null}
+            <Button type="submit" variant="primary" disabled={send.isPending}>
+              Enviar notificación
+            </Button>
+          </form>
         </CardContent>
       </Card>
       <ConfirmDialog
         open={confirmOpen}
         title="Confirmar envío de notificación"
-        description={`Se enviará "${form.title || "(sin título)"}" a: ${audienceLabel}${
+        description={`Se enviará "${title || "(sin título)"}" a: ${audienceLabel}${
           customerIdsText || internalUserIdsText
             ? " (IDs específicos indicados)"
             : " (todos los activos — puede ser un número grande de destinatarios)"
@@ -227,7 +190,7 @@ function BroadcastForm() {
         confirmText="Enviar"
         isLoading={send.isPending}
         onCancel={() => setConfirmOpen(false)}
-        onConfirm={() => submit()}
+        onConfirm={sendBroadcast}
       />
     </div>
   );

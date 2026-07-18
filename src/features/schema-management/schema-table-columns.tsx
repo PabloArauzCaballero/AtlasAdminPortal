@@ -14,7 +14,7 @@ export function buildSchemaTableColumns(): ColumnDef<SchemaTable>[] {
       cell: ({ row }) => (
         <Link
           href={`/internal/schema/tables/${row.original._id}`}
-          className="font-mono text-xs text-blue-700 hover:underline"
+          className="font-mono text-xs text-blue-700 underline"
         >
           {row.original.tableName}
         </Link>

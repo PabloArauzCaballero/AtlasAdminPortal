@@ -94,10 +94,13 @@ function evaluateHeaders(input: AssertionInput): QaAssertion[] {
 function evaluateBodyContains(input: AssertionInput): QaAssertion[] {
   const expected = input.expectedResponse?.bodyContains;
   if (!expected) return [];
+  // `JSON.stringify(undefined)` devuelve `undefined`, no un string: sin el `??`
+  // el `includes` de abajo reventaba el run entero con un TypeError. Una
+  // respuesta sin cuerpo simplemente no contiene el texto esperado -> falla.
   const bodyText =
     typeof input.responseBody === "string"
       ? input.responseBody
-      : JSON.stringify(input.responseBody);
+      : (JSON.stringify(input.responseBody) ?? "");
   return [
     {
       name: "Contenido de respuesta",

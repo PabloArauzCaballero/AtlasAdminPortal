@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Select, Textarea } from "@/shared/components/ui/input";
@@ -11,30 +12,40 @@ import {
   FRAUD_NEXT_STATUS_VALUES,
   NEXT_STATUS_OPTIONS,
 } from "./decision-options";
+import {
+  fraudDefaults,
+  fraudSchema,
+  toFraudInput,
+  type FraudForm,
+} from "./decision-schemas";
 import { useDecideFraudCaseMutation } from "./hooks";
-import type { FraudDecision, NextCustomerStatus, WorkQueueItem } from "./types";
+import type { WorkQueueItem } from "./types";
 
 export function FraudDecisionForm({
   item,
   onClose,
 }: Readonly<{ item: WorkQueueItem; onClose: () => void }>) {
-  const [decision, setDecision] = useState<FraudDecision>(
-    "needs_more_investigation",
-  );
-  const [reasonCode, setReasonCode] = useState("");
-  const [applyWatchlist, setApplyWatchlist] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [nextCustomerStatus, setNextCustomerStatus] = useState<
-    NextCustomerStatus | ""
-  >("");
   const decide = useDecideFraudCaseMutation();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FraudForm>({
+    resolver: zodResolver(fraudSchema),
+    defaultValues: fraudDefaults,
+  });
 
+  const decision = watch("decision");
   const reasonRequired =
     decision === "confirmed_fraud" || decision === "blocked";
-  const canSubmit = !reasonRequired || reasonCode.trim().length > 0;
   const nextStatusOptions = NEXT_STATUS_OPTIONS.filter((option) =>
     (FRAUD_NEXT_STATUS_VALUES as string[]).includes(option.value),
   );
+
+  const onSubmit = handleSubmit((values) => {
+    decide.mutate({ caseId: item.caseId, body: toFraudInput(values) });
+  });
 
   return (
     <DrawerPanel
@@ -42,14 +53,9 @@ export function FraudDecisionForm({
       title={`Decidir caso de fraude · #${item.caseId}`}
       onClose={onClose}
     >
-      <div className="space-y-4">
+      <form onSubmit={onSubmit} noValidate className="space-y-4">
         <Field label="Decisión">
-          <Select
-            value={decision}
-            onChange={(event) =>
-              setDecision(event.target.value as FraudDecision)
-            }
-          >
+          <Select {...register("decision")}>
             {FRAUD_DECISIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -59,42 +65,24 @@ export function FraudDecisionForm({
         </Field>
         <Field
           label="Código de motivo"
+          error={errors.reasonCode?.message}
           hint={
             reasonRequired
               ? "Obligatorio para fraude confirmado o bloqueo."
               : "Opcional."
           }
         >
-          <Textarea
-            value={reasonCode}
-            onChange={(event) => setReasonCode(event.target.value)}
-            className="min-h-9"
-          />
+          <Textarea className="min-h-9" {...register("reasonCode")} />
         </Field>
         <label className="flex items-center gap-2 text-sm text-atlas-text">
-          <input
-            type="checkbox"
-            checked={applyWatchlist}
-            onChange={(event) => setApplyWatchlist(event.target.checked)}
-          />
+          <input type="checkbox" {...register("applyWatchlist")} />
           Aplicar watchlist (marca teléfono/email hasheados del cliente real)
         </label>
         <Field label="Notas (opcional)">
-          <Textarea
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            className="min-h-20"
-          />
+          <Textarea className="min-h-20" {...register("notes")} />
         </Field>
         <Field label="Próximo estado del cliente (opcional)">
-          <Select
-            value={nextCustomerStatus}
-            onChange={(event) =>
-              setNextCustomerStatus(
-                event.target.value as NextCustomerStatus | "",
-              )
-            }
-          >
+          <Select {...register("nextCustomerStatus")}>
             <option value="">Sin cambio</option>
             {nextStatusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -125,30 +113,19 @@ export function FraudDecisionForm({
         ) : null}
         <div className="flex gap-2">
           <Button
+            type="submit"
             variant="primary"
-            disabled={!canSubmit}
             isLoading={decide.isPending}
             loadingText="Guardando…"
-            onClick={() =>
-              decide.mutate({
-                caseId: item.caseId,
-                body: {
-                  decision,
-                  reasonCode: reasonCode.trim() || undefined,
-                  applyWatchlist,
-                  notes: notes.trim() || undefined,
-                  nextCustomerStatus: nextCustomerStatus || undefined,
-                },
-              })
-            }
+            disabled={decide.isPending}
           >
             Registrar decisión
           </Button>
-          <Button variant="ghost" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cerrar
           </Button>
         </div>
-      </div>
+      </form>
     </DrawerPanel>
   );
 }

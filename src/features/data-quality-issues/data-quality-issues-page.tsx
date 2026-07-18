@@ -18,8 +18,9 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { buildIssueColumns } from "./issue-columns";
-import { isResolutionComplete, ResolutionDialog } from "./resolution-dialog";
-import type { ResolutionState } from "./types";
+import { ResolutionDialog } from "./resolution-dialog";
+import type { ResolutionForm } from "./resolution-schema";
+import type { DataQualityIssue } from "@/features/operations/types";
 
 export function DataQualityIssuesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -37,7 +38,9 @@ function AuthorizedDataQualityIssuesPage() {
   const [status, setStatus] = useState("");
   const [severity, setSeverity] = useState("");
   const [entityType, setEntityType] = useState("");
-  const [resolution, setResolution] = useState<ResolutionState>(null);
+  // La página solo recuerda QUÉ issue se está cerrando; los campos del cierre
+  // (resolución, motivo, notas) viven en el formulario del diálogo (rhf + Zod).
+  const [activeIssue, setActiveIssue] = useState<DataQualityIssue | null>(null);
   const issues = useDataQualityIssues({
     page,
     limit: 20,
@@ -47,23 +50,13 @@ function AuthorizedDataQualityIssuesPage() {
   });
   const resolveMutation = useResolveDataQualityIssueMutation();
   const items = issues.data?.items ?? [];
-  const columns = useMemo(() => buildIssueColumns(setResolution), []);
+  const columns = useMemo(() => buildIssueColumns(setActiveIssue), []);
 
-  function confirmResolution() {
-    // El diálogo ya impide confirmar incompleto; esto cierra el paso también
-    // por código. No se inventan motivo ni notas: lo que se manda es lo que el
-    // operador escribió, porque queda como auditoría del cierre del issue.
-    if (!resolution || !isResolutionComplete(resolution)) return;
+  function submitResolution(values: ResolutionForm) {
+    if (!activeIssue) return;
     resolveMutation.mutate(
-      {
-        issueId: resolution.issue.issueId,
-        body: {
-          resolution: resolution.resolution,
-          reasonCode: resolution.reasonCode.trim(),
-          notes: resolution.notes.trim(),
-        },
-      },
-      { onSuccess: () => setResolution(null) },
+      { issueId: activeIssue.issueId, body: values },
+      { onSuccess: () => setActiveIssue(null) },
     );
   }
 
@@ -141,16 +134,15 @@ function AuthorizedDataQualityIssuesPage() {
           </Card>
         </div>
       ) : null}
-      {resolution ? (
+      {activeIssue ? (
         <ResolutionDialog
-          // Remonta al cambiar de issue: evita arrastrar notas del anterior.
-          key={resolution.issue.issueId}
-          resolution={resolution}
+          // Remonta al cambiar de issue: el form del diálogo arranca limpio.
+          key={activeIssue.issueId}
+          issueId={activeIssue.issueId}
           isLoading={resolveMutation.isPending}
           error={resolveMutation.error}
-          onCancel={() => setResolution(null)}
-          onChange={setResolution}
-          onConfirm={confirmResolution}
+          onCancel={() => setActiveIssue(null)}
+          onSubmit={submitResolution}
         />
       ) : null}
     </>

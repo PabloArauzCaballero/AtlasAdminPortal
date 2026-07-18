@@ -130,7 +130,7 @@ function EndpointCell({
     `#${endpointId}`;
   return (
     <Link
-      className="block max-w-[360px] truncate font-mono text-xs text-blue-700 hover:underline"
+      className="block max-w-[360px] truncate font-mono text-xs text-blue-700 underline"
       href={`/internal/systems/endpoints/${endpointId}`}
       title={resolved?.businessPurpose ?? undefined}
     >

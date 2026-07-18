@@ -13,7 +13,7 @@ export function buildRuleColumns(): ColumnDef<DataQualityRule>[] {
       accessorKey: "ruleName",
       cell: ({ row }) => (
         <Link
-          className="font-medium text-blue-700 hover:underline"
+          className="font-medium text-blue-700 underline"
           href={`/internal/data-quality/rules/${row.original.ruleId}`}
         >
           {row.original.ruleName}

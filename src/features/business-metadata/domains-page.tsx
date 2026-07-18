@@ -249,19 +249,19 @@ function AuthorizedBusinessDomainsPage() {
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Link
                           href={`/internal/systems/endpoints?q=${encodeURIComponent(domain.name)}`}
-                          className="text-xs font-medium text-blue-700 hover:underline"
+                          className="text-xs font-medium text-blue-700 underline"
                         >
                           Endpoints
                         </Link>
                         <Link
                           href={`/internal/data-catalog/tables?q=${encodeURIComponent(domain.name)}`}
-                          className="text-xs font-medium text-blue-700 hover:underline"
+                          className="text-xs font-medium text-blue-700 underline"
                         >
                           Tablas
                         </Link>
                         <Link
                           href="/internal/review-queue"
-                          className="text-xs font-medium text-blue-700 hover:underline"
+                          className="text-xs font-medium text-blue-700 underline"
                         >
                           Revisión
                         </Link>

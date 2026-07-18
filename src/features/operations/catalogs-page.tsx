@@ -89,7 +89,7 @@ function AuthorizedOperationCatalogsPage() {
           return (
             <Link
               href={`/internal/operations/catalogs/${row.original.catalogCode}/versions/${version.catalogVersionId}`}
-              className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+              className="font-mono text-xs font-semibold text-blue-700 underline"
             >
               {version.versionCode}
             </Link>

@@ -112,7 +112,7 @@ function SelectedEndpointState({
         <RiskBadge value={item.riskLevel} />
         <StatusBadge value={item.status} />
         <Link
-          className="ml-auto text-sm font-medium text-blue-700 hover:underline"
+          className="ml-auto text-sm font-medium text-blue-700 underline"
           href={`/internal/systems/endpoints/${item.endpointId}`}
         >
           Ver ficha completa

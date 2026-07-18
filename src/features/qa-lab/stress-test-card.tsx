@@ -72,14 +72,36 @@ export function StressTestCard({
     });
   }
 
-  function submit() {
+  /**
+   * Se valida ANTES de abrir el diálogo (mismo patrón que `JourneyRunnerPanel`).
+   * Validar dentro de `submit` dejaba el error pintado en la card, detrás del
+   * backdrop `z-50` del propio diálogo: el operador pulsaba "Ejecutar" y no
+   * pasaba nada visible (RESUELTO_ATLAS_F1_R7).
+   */
+  function tryExecute() {
     const parsed = parseEndpointStressForm(form);
     if (!parsed.ok) {
       setError(parsed.error);
       return;
     }
     setError(null);
-    mutation.mutate(parsed.value, { onSuccess: () => setConfirmOpen(false) });
+    setConfirmOpen(true);
+  }
+
+  function submit() {
+    const parsed = parseEndpointStressForm(form);
+    if (!parsed.ok) {
+      setError(parsed.error);
+      setConfirmOpen(false);
+      return;
+    }
+    setError(null);
+    mutation.mutate(parsed.value, {
+      onSuccess: () => setConfirmOpen(false),
+      // Igual que arriba: el error de la mutación vive en la card, así que el
+      // diálogo tiene que apartarse para que se pueda leer.
+      onError: () => setConfirmOpen(false),
+    });
   }
 
   return (
@@ -136,11 +158,7 @@ export function StressTestCard({
           <ErrorState title="Formulario inválido" description={error} />
         ) : null}
         {mutation.error ? <MutationError error={mutation.error} /> : null}
-        <Button
-          variant="primary"
-          disabled={!canRun}
-          onClick={() => setConfirmOpen(true)}
-        >
+        <Button variant="primary" disabled={!canRun} onClick={tryExecute}>
           {form.dryRun ? "Previsualizar stress" : "Ejecutar stress real"}
         </Button>
         {mutation.data ? (

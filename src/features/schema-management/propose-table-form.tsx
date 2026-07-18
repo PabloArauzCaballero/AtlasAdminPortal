@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
@@ -8,84 +9,56 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useProposeSchemaTableMutation } from "./hooks";
 import { ColumnRowEditor, RelationshipRowEditor } from "./propose-table-rows";
-import type {
-  NewColumnInput,
-  NewRelationshipInput,
-  SchemaTableType,
-} from "./types";
-
-const emptyColumn: NewColumnInput = {
-  columnName: "",
-  columnType: "bigint",
-  isNullable: false,
-  isImmutable: false,
-  isPii: false,
-  isIndexed: false,
-};
-
-const emptyRelationship: NewRelationshipInput = {
-  sourceColumnName: "",
-  targetTableName: "",
-  targetColumnName: "_id",
-  cascadeDelete: false,
-};
+import {
+  emptyColumn,
+  emptyRelationship,
+  proposeTableDefaults,
+  proposeTableSchema,
+  toProposeTableInput,
+  type ProposeTableForm,
+} from "./propose-table-schema";
 
 export function ProposeTableForm({
   onClose,
 }: Readonly<{ onClose: () => void }>) {
-  const [tableName, setTableName] = useState("");
-  const [tableType, setTableType] = useState<SchemaTableType>("operational");
-  const [isAppendOnly, setIsAppendOnly] = useState(false);
-  const [isTenantScoped, setIsTenantScoped] = useState(true);
-  const [description, setDescription] = useState("");
-  const [justification, setJustification] = useState("");
-  const [columns, setColumns] = useState<NewColumnInput[]>([emptyColumn]);
-  const [relationships, setRelationships] = useState<NewRelationshipInput[]>(
-    [],
-  );
   const propose = useProposeSchemaTableMutation();
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProposeTableForm>({
+    resolver: zodResolver(proposeTableSchema),
+    defaultValues: proposeTableDefaults,
+  });
 
-  const canSubmit =
-    tableName.trim().length >= 3 &&
-    justification.trim().length >= 10 &&
-    columns.every(
-      (column) => column.columnName.trim() && column.columnType.trim(),
-    );
+  // `useFieldArray` usa `field.id` como key, no el índice: arregla el bug en el
+  // que borrar/reordenar una fila hacía que React reusara el estado de la fila
+  // vecina (el clásico `key={index}` sobre una lista mutable).
+  const columns = useFieldArray({ control, name: "columns" });
+  const relationships = useFieldArray({ control, name: "relationships" });
 
-  function submit() {
-    propose.mutate({
-      tableName: tableName.trim(),
-      tableType,
-      isAppendOnly,
-      isTenantScoped,
-      description: description.trim() || undefined,
-      columns,
-      relationships: relationships.filter(
-        (r) => r.sourceColumnName.trim() && r.targetTableName.trim(),
-      ),
-      justification: justification.trim(),
-    });
-  }
+  const onSubmit = handleSubmit((values) => {
+    propose.mutate(toProposeTableInput(values));
+  });
 
   return (
     <DrawerPanel open title="Proponer tabla nueva" onClose={onClose}>
-      <div className="space-y-4">
+      <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Nombre de tabla" hint="snake_case, mín. 3 caracteres.">
+          <Field
+            label="Nombre de tabla"
+            hint="snake_case, mín. 3 caracteres."
+            error={errors.tableName?.message}
+          >
             <Input
-              value={tableName}
-              onChange={(event) => setTableName(event.target.value)}
               placeholder="ej: customer_watchlist_entries"
               className="font-mono text-sm"
+              {...register("tableName")}
             />
           </Field>
           <Field label="Tipo">
-            <Select
-              value={tableType}
-              onChange={(event) =>
-                setTableType(event.target.value as SchemaTableType)
-              }
-            >
+            <Select {...register("tableType")}>
               <option value="transactional">Transactional</option>
               <option value="catalog">Catalog</option>
               <option value="audit">Audit</option>
@@ -95,60 +68,51 @@ export function ProposeTableForm({
         </div>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm text-atlas-text">
-            <input
-              type="checkbox"
-              checked={isAppendOnly}
-              onChange={(event) => setIsAppendOnly(event.target.checked)}
-            />
+            <input type="checkbox" {...register("isAppendOnly")} />
             Append-only
           </label>
           <label className="flex items-center gap-2 text-sm text-atlas-text">
-            <input
-              type="checkbox"
-              checked={isTenantScoped}
-              onChange={(event) => setIsTenantScoped(event.target.checked)}
-            />
+            <input type="checkbox" {...register("isTenantScoped")} />
             Multi-tenant
           </label>
         </div>
         <Field label="Descripción (opcional)">
-          <Textarea
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            className="min-h-16"
-          />
+          <Textarea className="min-h-16" {...register("description")} />
         </Field>
 
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-semibold text-atlas-text">Columnas</p>
             <Button
+              type="button"
               className="h-7 px-2 text-xs"
-              onClick={() =>
-                setColumns((current) => [...current, { ...emptyColumn }])
-              }
+              onClick={() => columns.append({ ...emptyColumn })}
             >
               Agregar columna
             </Button>
           </div>
+          {errors.columns?.message ? (
+            <p className="mb-2 text-xs font-medium text-red-600">
+              {errors.columns.message}
+            </p>
+          ) : null}
           <div className="space-y-3">
-            {columns.map((column, index) => (
-              <ColumnRowEditor
-                key={index}
-                column={column}
-                onChange={(next) =>
-                  setColumns((current) =>
-                    current.map((c, i) => (i === index ? next : c)),
-                  )
-                }
-                onRemove={
-                  columns.length > 1
-                    ? () =>
-                        setColumns((current) =>
-                          current.filter((_, i) => i !== index),
-                        )
-                    : undefined
-                }
+            {columns.fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`columns.${index}`}
+                render={({ field: columnField }) => (
+                  <ColumnRowEditor
+                    column={columnField.value}
+                    onChange={columnField.onChange}
+                    onRemove={
+                      columns.fields.length > 1
+                        ? () => columns.remove(index)
+                        : undefined
+                    }
+                  />
+                )}
               />
             ))}
           </div>
@@ -160,32 +124,26 @@ export function ProposeTableForm({
               Relaciones (opcional)
             </p>
             <Button
+              type="button"
               className="h-7 px-2 text-xs"
-              onClick={() =>
-                setRelationships((current) => [
-                  ...current,
-                  { ...emptyRelationship },
-                ])
-              }
+              onClick={() => relationships.append({ ...emptyRelationship })}
             >
               Agregar relación
             </Button>
           </div>
           <div className="space-y-3">
-            {relationships.map((relationship, index) => (
-              <RelationshipRowEditor
-                key={index}
-                relationship={relationship}
-                onChange={(next) =>
-                  setRelationships((current) =>
-                    current.map((r, i) => (i === index ? next : r)),
-                  )
-                }
-                onRemove={() =>
-                  setRelationships((current) =>
-                    current.filter((_, i) => i !== index),
-                  )
-                }
+            {relationships.fields.map((field, index) => (
+              <Controller
+                key={field.id}
+                control={control}
+                name={`relationships.${index}`}
+                render={({ field: relationshipField }) => (
+                  <RelationshipRowEditor
+                    relationship={relationshipField.value}
+                    onChange={relationshipField.onChange}
+                    onRemove={() => relationships.remove(index)}
+                  />
+                )}
               />
             ))}
           </div>
@@ -194,12 +152,9 @@ export function ProposeTableForm({
         <Field
           label="Justificación"
           hint="Mín. 10 caracteres: por qué se necesita esta tabla."
+          error={errors.justification?.message}
         >
-          <Textarea
-            value={justification}
-            onChange={(event) => setJustification(event.target.value)}
-            className="min-h-20"
-          />
+          <Textarea className="min-h-20" {...register("justification")} />
         </Field>
 
         {propose.error ? (
@@ -225,19 +180,19 @@ export function ProposeTableForm({
         ) : null}
         <div className="flex gap-2">
           <Button
+            type="submit"
             variant="primary"
-            disabled={!canSubmit}
             isLoading={propose.isPending}
             loadingText="Enviando…"
-            onClick={submit}
+            disabled={propose.isPending}
           >
             Registrar propuesta
           </Button>
-          <Button variant="ghost" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cerrar
           </Button>
         </div>
-      </div>
+      </form>
     </DrawerPanel>
   );
 }

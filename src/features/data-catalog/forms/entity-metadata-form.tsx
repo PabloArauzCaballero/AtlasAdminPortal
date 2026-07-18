@@ -9,9 +9,11 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { BooleanField } from "./boolean-field";
 import { metadataValuesFrom, mutationModes } from "./entity-metadata-values";
+import { firstMetadataError } from "./entity-metadata-schema";
 
 export function EntityMetadataForm({
   entity,
@@ -25,12 +27,27 @@ export function EntityMetadataForm({
   const [values, setValues] = useState(() => metadataValuesFrom(entity));
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Validación en vivo: la confirmación solo se abre si la config es coherente,
+  // así el operador ve la incongruencia de gobierno antes de confirmar y no como
+  // un 400 opaco (o, peor, una regla mal guardada que el servicio sí obedece).
+  const validationError = firstMetadataError(values);
+
   return (
     <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
       <MetadataSection values={values} onChange={setValues} />
       <GovernanceSection values={values} onChange={setValues} />
+      {validationError ? (
+        <ErrorState
+          title="Configuración incoherente"
+          description={validationError}
+        />
+      ) : null}
       <div className="flex justify-end gap-2">
-        <Button variant="primary" onClick={() => setConfirmOpen(true)}>
+        <Button
+          variant="primary"
+          disabled={Boolean(validationError)}
+          onClick={() => setConfirmOpen(true)}
+        >
           Guardar configuración
         </Button>
       </div>

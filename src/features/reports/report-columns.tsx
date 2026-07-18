@@ -13,7 +13,7 @@ export function buildReportColumns(): ColumnDef<ReportDefinition>[] {
       accessorKey: "name",
       cell: ({ row }) => (
         <Link
-          className="font-medium text-blue-700 hover:underline"
+          className="font-medium text-blue-700 underline"
           href={`/internal/reports/${row.original.reportId}`}
         >
           {row.original.name}

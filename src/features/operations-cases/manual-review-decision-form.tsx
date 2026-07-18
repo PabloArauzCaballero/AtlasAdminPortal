@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Select, Textarea } from "@/shared/components/ui/input";
@@ -10,29 +11,37 @@ import {
   MANUAL_REVIEW_DECISIONS,
   NEXT_STATUS_OPTIONS,
 } from "./decision-options";
+import {
+  manualReviewDefaults,
+  manualReviewSchema,
+  toManualReviewInput,
+  type ManualReviewForm,
+} from "./decision-schemas";
 import { useDecideManualReviewCaseMutation } from "./hooks";
-import type {
-  ManualReviewDecision,
-  NextCustomerStatus,
-  WorkQueueItem,
-} from "./types";
+import type { WorkQueueItem } from "./types";
 
 export function ManualReviewDecisionForm({
   item,
   onClose,
 }: Readonly<{ item: WorkQueueItem; onClose: () => void }>) {
-  const [decision, setDecision] = useState<ManualReviewDecision>("approved");
-  const [reasonCode, setReasonCode] = useState("");
-  const [notes, setNotes] = useState("");
-  const [nextCustomerStatus, setNextCustomerStatus] = useState<
-    NextCustomerStatus | ""
-  >("");
   const decide = useDecideManualReviewCaseMutation();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ManualReviewForm>({
+    resolver: zodResolver(manualReviewSchema),
+    defaultValues: manualReviewDefaults,
+  });
 
+  const decision = watch("decision");
   const notesRequired =
     decision === "rejected" || decision === "request_more_information";
-  const canSubmit =
-    reasonCode.trim().length > 0 && (!notesRequired || notes.trim().length > 0);
+
+  const onSubmit = handleSubmit((values) => {
+    decide.mutate({ caseId: item.caseId, body: toManualReviewInput(values) });
+  });
 
   return (
     <DrawerPanel
@@ -40,14 +49,9 @@ export function ManualReviewDecisionForm({
       title={`Decidir caso de revisión manual · #${item.caseId}`}
       onClose={onClose}
     >
-      <div className="space-y-4">
+      <form onSubmit={onSubmit} noValidate className="space-y-4">
         <Field label="Decisión">
-          <Select
-            value={decision}
-            onChange={(event) =>
-              setDecision(event.target.value as ManualReviewDecision)
-            }
-          >
+          <Select {...register("decision")}>
             {MANUAL_REVIEW_DECISIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -55,37 +59,26 @@ export function ManualReviewDecisionForm({
             ))}
           </Select>
         </Field>
-        <Field label="Código de motivo">
+        <Field label="Código de motivo" error={errors.reasonCode?.message}>
           <Textarea
-            value={reasonCode}
-            onChange={(event) => setReasonCode(event.target.value)}
             className="min-h-9"
             placeholder="Ej: identity_verified, insufficient_documents"
+            {...register("reasonCode")}
           />
         </Field>
         <Field
           label="Notas"
+          error={errors.notes?.message}
           hint={
             notesRequired
               ? "Obligatorio: el backend exige notas al rechazar o pedir más información."
               : "Opcional."
           }
         >
-          <Textarea
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            className="min-h-20"
-          />
+          <Textarea className="min-h-20" {...register("notes")} />
         </Field>
         <Field label="Próximo estado del cliente (opcional)">
-          <Select
-            value={nextCustomerStatus}
-            onChange={(event) =>
-              setNextCustomerStatus(
-                event.target.value as NextCustomerStatus | "",
-              )
-            }
-          >
+          <Select {...register("nextCustomerStatus")}>
             <option value="">Sin cambio</option>
             {NEXT_STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -115,29 +108,19 @@ export function ManualReviewDecisionForm({
         ) : null}
         <div className="flex gap-2">
           <Button
+            type="submit"
             variant="primary"
-            disabled={!canSubmit}
             isLoading={decide.isPending}
             loadingText="Guardando…"
-            onClick={() =>
-              decide.mutate({
-                caseId: item.caseId,
-                body: {
-                  decision,
-                  reasonCode: reasonCode.trim(),
-                  notes: notes.trim() || undefined,
-                  nextCustomerStatus: nextCustomerStatus || undefined,
-                },
-              })
-            }
+            disabled={decide.isPending}
           >
             Registrar decisión
           </Button>
-          <Button variant="ghost" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cerrar
           </Button>
         </div>
-      </div>
+      </form>
     </DrawerPanel>
   );
 }

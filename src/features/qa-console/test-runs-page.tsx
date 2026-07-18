@@ -46,7 +46,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "runId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+            className="font-mono text-xs font-semibold text-blue-700 underline"
             href={`/internal/qa/runs/${row.original.runId}`}
           >
             #{row.original.runId}
@@ -58,7 +58,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "suiteId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 hover:underline"
+            className="font-mono text-xs text-blue-700 underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             #{row.original.suiteId}

@@ -81,7 +81,7 @@ function AuthorizedEndpointsPage() {
         cell: ({ row }) => (
           <div>
             <Link
-              className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+              className="font-mono text-xs font-semibold text-blue-700 underline"
               href={`/internal/systems/endpoints/${row.original.endpointId}`}
             >
               {row.original.fullPath}
@@ -110,7 +110,7 @@ function AuthorizedEndpointsPage() {
         header: "QA",
         cell: ({ row }) => (
           <Link
-            className="text-xs font-semibold text-blue-700 hover:underline"
+            className="text-xs font-semibold text-blue-700 underline"
             href={`/internal/qa/lab?endpointId=${row.original.endpointId}`}
           >
             Laboratorio

@@ -18,7 +18,7 @@ export function buildEntityColumns(): ColumnDef<DataEntity>[] {
       accessorKey: "tableName",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+          className="font-mono text-xs font-semibold text-blue-700 underline"
           href={`/internal/data-catalog/tables/${row.original.entityId}`}
         >
           {row.original.schemaName}.{row.original.tableName}
@@ -59,7 +59,7 @@ export function buildEntityColumns(): ColumnDef<DataEntity>[] {
       id: "impact",
       cell: ({ row }) => (
         <Link
-          className="text-xs font-medium text-blue-700 hover:underline"
+          className="text-xs font-medium text-blue-700 underline"
           href={`/internal/lineage/table/${encodeURIComponent(row.original.schemaName)}/${encodeURIComponent(row.original.tableName)}`}
         >
           Ver impacto
@@ -76,7 +76,7 @@ export function buildEndpointColumns(): ColumnDef<EndpointItem>[] {
       accessorKey: "fullPath",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs font-semibold text-blue-700 hover:underline"
+          className="font-mono text-xs font-semibold text-blue-700 underline"
           href={`/internal/systems/endpoints/${row.original.endpointId}`}
         >
           {row.original.method} {row.original.fullPath}

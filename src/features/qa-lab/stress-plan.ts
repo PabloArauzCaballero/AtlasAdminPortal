@@ -78,7 +78,16 @@ export async function runPacedRequests(
   await Promise.allSettled(executing);
 }
 
-function delayForIndex(plan: StressPlan, index: number): number {
+/**
+ * Espera (ms) antes de emitir la petición siguiente a `index`.
+ *
+ * Exportada para poder probar el ramp-up de forma determinista. Antes solo se
+ * podía verificar midiendo el reloj alrededor de `runPacedRequests`, y esa
+ * prueba era inherentemente inestable: los timers pueden retrasarse (nunca
+ * adelantarse), así que una máquina cargada la hacía fallar sin que existiera
+ * ningún bug — y un test que falla al azar se acaba borrando.
+ */
+export function delayForIndex(plan: StressPlan, index: number): number {
   if (plan.rampUpSeconds <= 0) return plan.intervalMs;
   const elapsedSeconds = index / plan.targetRps;
   if (elapsedSeconds >= plan.rampUpSeconds) return plan.intervalMs;

@@ -13,7 +13,7 @@ export function buildLineageNodeColumns(): ColumnDef<LineageNode>[] {
       accessorKey: "label",
       cell: ({ row }) => (
         <Link
-          className="font-semibold text-blue-700 hover:underline"
+          className="font-semibold text-blue-700 underline"
           href={`/internal/lineage/nodes/${row.original.nodeId}`}
         >
           {row.original.label}
@@ -63,7 +63,7 @@ export function buildLineageEdgeColumns(
       accessorKey: "sourceNodeId",
       cell: ({ row }) => (
         <Link
-          className="font-medium text-blue-700 hover:underline"
+          className="font-medium text-blue-700 underline"
           href={`/internal/lineage/nodes/${row.original.sourceNodeId}`}
         >
           {label(row.original.sourceNodeId)}
@@ -75,7 +75,7 @@ export function buildLineageEdgeColumns(
       accessorKey: "targetNodeId",
       cell: ({ row }) => (
         <Link
-          className="font-medium text-blue-700 hover:underline"
+          className="font-medium text-blue-700 underline"
           href={`/internal/lineage/nodes/${row.original.targetNodeId}`}
         >
           {label(row.original.targetNodeId)}
