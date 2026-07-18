@@ -105,6 +105,9 @@ export function AppSidebar() {
             <div key={group.label} className="pt-1">
               <button
                 type="button"
+                // El plegado es puramente visual (grid-rows-[0fr]), así que sin
+                // esto no queda ninguna pista accesible del estado del cajón.
+                aria-expanded={open}
                 onClick={() =>
                   setOpenGroups((prev) => ({
                     ...prev,

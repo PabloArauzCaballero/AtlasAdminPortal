@@ -21,6 +21,10 @@ export function PermissionGate({
       ? permissions.every((permission) => userPermissions.includes(permission))
       : permissions.some((permission) => userPermissions.includes(permission)));
 
-  if (!allowed) return fallback ?? <ForbiddenState />;
+  // `fallback === undefined` (no se pasó) es lo único que trae la tarjeta. Con
+  // `??`, un `fallback={null}` explícito — la convención para esconder una
+  // acción suelta — caía en el operando derecho y colaba la tarjeta entera.
+  if (!allowed)
+    return fallback === undefined ? <ForbiddenState /> : <>{fallback}</>;
   return <>{children}</>;
 }

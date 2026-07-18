@@ -16,11 +16,29 @@ export async function fetchWithTimeout(
     });
   }
 
-  const timeout = setTimeout(() => controller.abort(), getApiTimeoutMs());
+  // `timedOut` distingue el abort del timeout interno del que viene de arriba
+  // (el usuario, o TanStack Query al desmontar). Sin esta marca, `toNetworkError`
+  // mapeaba **cualquier** AbortError a REQUEST_TIMEOUT, así que una petición que
+  // nadie dejó terminar reportaba "la solicitud tardó demasiado" — un timeout
+  // que nunca ocurrió. (Flagueado desde la baseline / FASE 8.)
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, getApiTimeoutMs());
 
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } catch (error) {
+    // Cancelación de arriba: se re-lanza el abort original para conservar la
+    // semántica de cancelación (TanStack Query lo trata como cancelado, no como
+    // error). Solo el timeout interno se traduce a REQUEST_TIMEOUT.
+    if (upstreamSignal?.aborted && !timedOut) {
+      throw (
+        upstreamSignal.reason ??
+        new DOMException("The operation was aborted.", "AbortError")
+      );
+    }
     throw toNetworkError(error);
   } finally {
     clearTimeout(timeout);

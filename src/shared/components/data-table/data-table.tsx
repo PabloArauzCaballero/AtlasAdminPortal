@@ -11,7 +11,6 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { cn } from "@/shared/lib/cn";
 import { EmptyState } from "@/shared/components/ui/states";
 import { Button } from "@/shared/components/ui/button";
 import type { PaginationMeta } from "@/shared/api/types";
@@ -98,22 +97,44 @@ export function DataTable<T>({
 function HeaderCell<T>({ header }: Readonly<{ header: Header<T, unknown> }>) {
   const canSort = header.column.getCanSort();
   const sorted = header.column.getIsSorted();
+  const label = header.isPlaceholder
+    ? null
+    : flexRender(header.column.columnDef.header, header.getContext());
+
   return (
-    <th className="border-b border-atlas-border px-4 py-3 text-left align-middle">
-      <button
-        type="button"
-        className={cn(
-          "inline-flex items-center gap-1 text-left",
-          canSort && "hover:text-atlas-text",
-        )}
-        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-      >
-        {header.isPlaceholder
-          ? null
-          : flexRender(header.column.columnDef.header, header.getContext())}
-        {sorted === "asc" ? <ChevronUp className="h-3 w-3" /> : null}
-        {sorted === "desc" ? <ChevronDown className="h-3 w-3" /> : null}
-      </button>
+    <th
+      // aria-sort le dice al lector de pantalla el estado de ordenación de esta
+      // columna; solo se declara donde realmente se puede ordenar.
+      aria-sort={
+        canSort
+          ? sorted === "asc"
+            ? "ascending"
+            : sorted === "desc"
+              ? "descending"
+              : "none"
+          : undefined
+      }
+      className="border-b border-atlas-border px-4 py-3 text-left align-middle"
+    >
+      {canSort ? (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 text-left hover:text-atlas-text"
+          onClick={header.column.getToggleSortingHandler()}
+        >
+          {label}
+          {sorted === "asc" ? (
+            <ChevronUp className="h-3 w-3" aria-hidden="true" />
+          ) : null}
+          {sorted === "desc" ? (
+            <ChevronDown className="h-3 w-3" aria-hidden="true" />
+          ) : null}
+        </button>
+      ) : (
+        // Columna no ordenable: texto plano, no un <button> sin acción que el
+        // lector de pantalla anunciaría como interactivo en falso.
+        <span className="inline-flex items-center gap-1">{label}</span>
+      )}
     </th>
   );
 }

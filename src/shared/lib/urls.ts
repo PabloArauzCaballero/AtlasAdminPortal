@@ -35,12 +35,23 @@ export function isSafeInternalPath(value: string): boolean {
   return !hasControlCharacters(value);
 }
 
+/**
+ * `URL.hostname` devuelve las direcciones IPv6 entre corchetes (`[::1]`), así
+ * que la entrada `::1` de la allowlist nunca casaría contra el valor crudo. Se
+ * quitan aquí para que el set siga escrito con nombres de host legibles.
+ */
+function bareHostname(parsed: URL): string {
+  return parsed.hostname.replace(/^\[(.*)\]$/, "$1");
+}
+
 export function isSafeExternalUrl(value: string): boolean {
   try {
     const parsed = new URL(value, window.location.origin);
     if (parsed.origin === window.location.origin) return true;
     if (SAFE_EXTERNAL_PROTOCOLS.has(parsed.protocol)) return true;
-    return parsed.protocol === "http:" && LOCALHOST_NAMES.has(parsed.hostname);
+    return (
+      parsed.protocol === "http:" && LOCALHOST_NAMES.has(bareHostname(parsed))
+    );
   } catch {
     return false;
   }

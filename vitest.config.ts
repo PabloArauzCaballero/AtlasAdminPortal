@@ -17,6 +17,12 @@ export default defineConfig({
     globals: false,
     setupFiles: ["./vitest.setup.ts"],
     include: ["tests/unit/**/*.test.{ts,tsx}"],
+    // El default de vitest (5s) es demasiado ajustado para la suite completa en
+    // CI: con ~1500 tests y jsdom, el arranque de un test bajo carga supera los
+    // 5s y falla por timeout sin que haya ningún bug (los mismos tests pasan
+    // aislados). 20s da holgura sin esconder un test genuinamente colgado.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "lcov"],
@@ -25,33 +31,34 @@ export default defineConfig({
       /**
        * Umbrales de trinquete, no objetivos.
        *
-       * Están fijados ~1 punto por debajo de la cobertura real medida
-       * (2026-07-17) con un único propósito: que no BAJE. Poner aquí el 80%
-       * que pide el plan dejaría el CI en rojo permanentemente, y un umbral
-       * que siempre falla se acaba ignorando o borrando, que es peor que no
-       * tenerlo.
+       * Fijados ~1 punto por debajo de la cobertura real medida (2026-07-17)
+       * con un único propósito: que no BAJE. Un umbral por encima de la
+       * realidad deja el CI en rojo permanente, y un umbral que siempre falla
+       * se acaba borrando — que es peor que no tenerlo.
        *
-       * Al subir cobertura, sube también estos números en el mismo PR.
-       * Objetivo declarado: 80% en `shared/` y `features/qa-lab`.
+       * **Al subir cobertura, sube también estos números en el mismo PR.**
+       *
+       * El objetivo declarado del plan (80% en `shared/` y `features/qa-lab`)
+       * está CUMPLIDO: shared 98.0%, qa-lab 92.5%. Los trinquetes de esas dos
+       * áreas ya no son "de arranque": defienden un nivel real.
        *
        * OJO con los globs: en Vitest, un archivo que matchea un glob queda
-       * **excluido** del umbral global. Por eso el `lines` de abajo cubre solo
-       * lo que no cae en ninguno de los globs; no es la cobertura del proyecto.
-       * Los números de referencia medidos hoy son:
-       *   global 10.7% · shared 38.8% · qa-lab 18.0% · runtime-jobs 36.1%
-       *   qa-console 14.2% · operations-sessions 16.0% · qa-stress 9.3%
-       *   operations 2.3%
+       * **excluido** del umbral global. Por eso `lines` de abajo NO es la
+       * cobertura del proyecto (30.8%), sino solo la del resto que no cae en
+       * ningún glob. Medición por área:
+       *   shared 98.0% · qa-lab 92.5% · runtime-jobs 36.1% · operations-sessions 16.0%
+       *   qa-console 14.0% · qa-stress 9.1% · operations 2.3% · TOTAL 30.8%
        *
-       * `src/features/operations/**` no tiene trinquete propio a propósito: el
-       * flujo de versionado de catálogo es sobre todo formulario sin probar
-       * (2.3%), y un umbral ahí solo serviría para congelar ese número. La
-       * lógica que sí decide algo (máquina de estados de aprobación) está
-       * cubierta por `catalog-version-lifecycle.test.ts`.
+       * `src/features/operations/**` y `qa-stress/**` no tienen trinquete
+       * propio a propósito: son sobre todo formularios sin probar, y un umbral
+       * ahí solo congelaría ese número. La lógica que sí decide algo (máquina
+       * de estados de aprobación, schema del perfil de stress) está cubierta
+       * por sus tests dedicados.
        */
       thresholds: {
         lines: 10,
-        "src/shared/**": { lines: 38 },
-        "src/features/qa-lab/**": { lines: 17 },
+        "src/shared/**": { lines: 97 },
+        "src/features/qa-lab/**": { lines: 91 },
         "src/features/runtime-jobs/**": { lines: 35 },
         "src/features/qa-console/**": { lines: 13 },
         "src/features/operations-sessions/**": { lines: 15 },

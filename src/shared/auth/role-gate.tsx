@@ -13,6 +13,9 @@ export function RoleGate({
   fallback?: React.ReactNode;
 }>) {
   const { hasAnyRole } = useAuth();
-  if (!hasAnyRole(roles)) return fallback ?? <ForbiddenState />;
+  // Ver PermissionGate: `fallback={null}` significa "no renderices nada", y con
+  // `??` acababa mostrando la tarjeta de acceso restringido.
+  if (!hasAnyRole(roles))
+    return fallback === undefined ? <ForbiddenState /> : <>{fallback}</>;
   return <>{children}</>;
 }

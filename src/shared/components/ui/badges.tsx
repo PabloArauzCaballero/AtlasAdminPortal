@@ -88,6 +88,14 @@ function StaticDot({ tone }: Readonly<{ tone: Tone }>) {
   );
 }
 
+/**
+ * `LOW` se mapea explícito y lo desconocido cae en `default`, no en `success`.
+ *
+ * Antes la cadena terminaba en `: "success"`, así que un valor que el front no
+ * conociera (un typo, un nivel nuevo del backend) se pintaba verde: una
+ * afirmación falsa sobre el riesgo de algo que nadie supo interpretar. Gris
+ * dice "no sé leerlo", que es la verdad, y alinea con `SeverityBadge`.
+ */
 export function RiskBadge({ value }: Readonly<{ value?: string | null }>) {
   const normalized = value?.toUpperCase();
   const tone: Tone =
@@ -97,7 +105,9 @@ export function RiskBadge({ value }: Readonly<{ value?: string | null }>) {
         ? "warning"
         : normalized === "MEDIUM"
           ? "info"
-          : "success";
+          : normalized === "LOW"
+            ? "success"
+            : "default";
   return (
     <Badge tone={value ? tone : "muted"} dot>
       {value ?? "Sin riesgo"}
