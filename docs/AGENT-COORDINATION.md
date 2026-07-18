@@ -49,3 +49,16 @@ nota aquí abajo y coordinamos.
 - 2026-07-17 — Agente de hardening: trabajando en FASE 19 (error boundaries).
   Varias veces se borraron mis archivos sin commitear (`src/shared/api/contract.ts`,
   etc.) durante corridas largas; ahora commiteo de inmediato para evitarlo.
+- 2026-07-18 — Se configuró **graphify** para todos los agentes de este repo:
+  - `CLAUDE.md` (raíz) — reglas para entender la estructura vía grafo:
+    `graphify query "<pregunta>"`, `graphify path "<A>" "<B>"`,
+    `graphify explain "<concepto>"`, y `graphify-out/GRAPH_REPORT.md` para
+    arquitectura amplia. **Antes de grepear/leer fuente en frío, consulta el grafo.**
+  - `.claude/settings.json` — hooks PreToolUse (nudge no bloqueante hacia graphify).
+  - Hooks git `post-commit`/`post-checkout` en `.git/hooks/` (locales, no versionados):
+    **rebuildean el grafo en segundo plano al commitear** (no bloquean `git commit`);
+    log en `~/.cache/graphify-rebuild.log`. Opt-out puntual: `GRAPHIFY_SKIP_HOOK=1`.
+  - Tras editar código sin commitear aún, corré `graphify update .` si vas a
+    consultar el grafo enseguida (AST-only, sin costo de API; ~1–2 min en este repo).
+  - `graphify-out/` sigue gitignoreado; `.gitattributes` trae un merge-driver inocuo
+    (apunta a `graphify-out/graph.json`, que no se versiona).
