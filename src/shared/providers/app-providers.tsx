@@ -1,13 +1,23 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthProvider } from "@/shared/auth/auth-context";
 import { SessionCacheGuard } from "@/shared/auth/session-cache-guard";
+import { consoleSink } from "@/shared/observability/console-sink";
+import { setObservabilitySink } from "@/shared/observability/reporter";
 
 export function AppProviders({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  useEffect(() => {
+    // Solo en desarrollo: en producción se registra un sink real. En test
+    // (NODE_ENV="test") no se toca, para no ensuciar la salida de los tests.
+    if (process.env.NODE_ENV === "development") {
+      setObservabilitySink(consoleSink);
+    }
+  }, []);
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

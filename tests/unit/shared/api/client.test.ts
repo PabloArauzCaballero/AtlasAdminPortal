@@ -14,6 +14,7 @@ import { apiRequest, resetLoginRedirectLock } from "@/shared/api/client";
 import { isApiContractError } from "@/shared/api/contract";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { resetRefreshCoordinator } from "@/shared/api/refresh-coordinator";
+import { setObservabilitySink } from "@/shared/observability/reporter";
 import {
   API_BASE,
   SESSION_STORAGE_KEY,
@@ -368,6 +369,41 @@ describe("apiRequest", () => {
       await expect(apiRequest("/internal/things")).resolves.toEqual({
         raro: true,
       });
+    });
+  });
+
+  describe("observabilidad (FASE 18)", () => {
+    const thingSchema = z.object({ id: z.string(), name: z.string() });
+
+    afterEach(() => setObservabilitySink(null));
+
+    it("reporta contract_error cuando la respuesta rompe el contrato", async () => {
+      const eventos: string[] = [];
+      setObservabilitySink((e) => eventos.push(e.type));
+      server.use(
+        http.get(THINGS_URL, () => HttpResponse.json({ data: { id: "t1" } })),
+      );
+
+      await apiRequest("/internal/things", { schema: thingSchema }).catch(
+        () => undefined,
+      );
+
+      expect(eventos).toContain("contract_error");
+    });
+
+    it("reporta refresh_fail cuando el refresh no recupera la sesión", async () => {
+      seedStoredSession();
+      stubLocation();
+      const eventos: string[] = [];
+      setObservabilitySink((e) => eventos.push(e.type));
+      server.use(
+        http.get(THINGS_URL, () => new HttpResponse(null, { status: 401 })),
+        http.post(REFRESH_URL, () => new HttpResponse(null, { status: 401 })),
+      );
+
+      await apiRequest("/internal/things").catch(() => undefined);
+
+      expect(eventos).toContain("refresh_fail");
     });
   });
 });

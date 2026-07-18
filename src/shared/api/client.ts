@@ -8,6 +8,7 @@ import {
 } from "./request-init";
 import { extractData, parseJsonSafely, toAtlasApiError } from "./response";
 import { fetchWithTimeout } from "./transport";
+import { reportEvent } from "@/shared/observability/reporter";
 import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import { clearStoredInternalSession } from "@/shared/auth/session-storage";
 import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
@@ -35,6 +36,9 @@ export async function apiRequest<T>(
   if (canRefreshSession(response.status, options)) {
     const refreshed = await coordinateSessionRefresh(session);
     if (refreshed) return retryRequest<T>(path, options, refreshed);
+    reportEvent("refresh_fail", new Error("Refresh de sesión fallido"), {
+      endpoint: path,
+    });
   }
 
   handleUnauthorized(response.status, options);
@@ -49,11 +53,16 @@ function finalizeResponse<T>(
 ): T {
   const data = extractData<T>(payload);
   if (!options.schema) return data;
-  return validateContract(options.schema, data, {
-    endpoint: path,
-    method: (options.method ?? "GET").toUpperCase(),
-    requestId: response.headers.get("x-request-id") ?? undefined,
-  });
+  try {
+    return validateContract(options.schema, data, {
+      endpoint: path,
+      method: (options.method ?? "GET").toUpperCase(),
+      requestId: response.headers.get("x-request-id") ?? undefined,
+    });
+  } catch (error) {
+    reportEvent("contract_error", error, { endpoint: path });
+    throw error;
+  }
 }
 
 function getSessionForBrowser() {
