@@ -13,3 +13,6 @@ yarn-error.log*
 
 # Bundles de código empaquetado: no versionar (pueden contener .env u otros secretos).
 *.tgz
+
+# Salida generada por graphify (análisis): no versionar.
+graphify-out/
