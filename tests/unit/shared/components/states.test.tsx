@@ -5,6 +5,7 @@ import {
   EmptyState,
   ErrorState,
   ForbiddenState,
+  FullPageLoader,
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
@@ -100,5 +101,44 @@ describe("ForbiddenState", () => {
   it("permite personalizar el mensaje", () => {
     renderWithProviders(<ForbiddenState message="Solo para auditores." />);
     expect(screen.getByText("Solo para auditores.")).toBeInTheDocument();
+  });
+});
+
+describe("LoadingSkeleton · bordes", () => {
+  it("rows=0 no pinta filas pero sigue anunciando la carga", () => {
+    // Un contador vacío no debe dejar la pantalla sin señal de que algo carga.
+    const { container } = renderWithProviders(<LoadingSkeleton rows={0} />);
+    expect(container.querySelectorAll(".animate-shimmer")).toHaveLength(0);
+    expect(screen.getByLabelText("Cargando")).toBeInTheDocument();
+  });
+});
+
+describe("FullPageLoader", () => {
+  it("dice qué se está esperando en vez de mostrar solo un spinner", () => {
+    renderWithProviders(<FullPageLoader />);
+    expect(screen.getByText("Preparando portal interno…")).toBeInTheDocument();
+  });
+});
+
+describe("EmptyState · sin extras", () => {
+  it("sin acción no deja un botón fantasma", () => {
+    renderWithProviders(<EmptyState title="Sin resultados" />);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+});
+
+describe("LoadingSkeleton · bordes", () => {
+  it("rows=0 no pinta filas pero sigue anunciando la carga", () => {
+    // Un contador vacío no debe dejar la pantalla sin señal de que algo carga.
+    const { container } = renderWithProviders(<LoadingSkeleton rows={0} />);
+    expect(container.querySelectorAll(".animate-shimmer")).toHaveLength(0);
+    expect(screen.getByLabelText("Cargando")).toBeInTheDocument();
+  });
+});
+
+describe("FullPageLoader", () => {
+  it("dice qué se está esperando en vez de mostrar solo un spinner", () => {
+    renderWithProviders(<FullPageLoader />);
+    expect(screen.getByText("Preparando portal interno…")).toBeInTheDocument();
   });
 });
