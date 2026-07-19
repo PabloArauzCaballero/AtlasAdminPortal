@@ -12,6 +12,10 @@ tener que reconstruirlo desde el código.
 | [0003](0003-runtime-contract-validation.md) | Validación de contrato en runtime con Zod (opt-in)       | 7    |
 | [0004](0004-observability-redaction.md)     | Observabilidad con redacción de tokens/PII               | 18   |
 | [0005](0005-tests-fuera-de-src.md)          | Los tests viven fuera de `src/`                          | 3    |
+| [0006](0006-build-estricto-y-ci.md)         | Build estricto y CI en jobs separados                    | 2    |
+| [0007](0007-secretos-gitleaks.md)           | Contención de secretos con gitleaks                      | 1    |
+| [0008](0008-idempotencia-mutaciones.md)     | Llaves de idempotencia para mutaciones                   | 8    |
+| [0009](0009-e2e-workflow-separado.md)       | E2E en un workflow separado y no bloqueante              | 3/12 |
 
 ## Formato
 
