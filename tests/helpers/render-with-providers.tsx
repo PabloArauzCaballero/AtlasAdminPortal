@@ -5,6 +5,8 @@ import {
   type RenderOptions,
   type RenderResult,
 } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import esBO from "@/shared/i18n/messages/es-BO.json";
 
 /**
  * QueryClient aislado por test: sin reintentos ni cache, para que un test no
@@ -29,9 +31,19 @@ export function renderWithProviders(
 ): RenderResult & { queryClient: QueryClient } {
   const { queryClient = createTestQueryClient(), ...renderOptions } = options;
 
+  // Espejo de producción: AppProviders envuelve el árbol en NextIntlClientProvider.
+  // Así los componentes que usan useTranslations funcionan en sus tests.
   function Wrapper({ children }: Readonly<{ children: ReactNode }>) {
     return (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <NextIntlClientProvider
+        locale="es-BO"
+        messages={esBO}
+        timeZone="America/La_Paz"
+      >
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </NextIntlClientProvider>
     );
   }
 
