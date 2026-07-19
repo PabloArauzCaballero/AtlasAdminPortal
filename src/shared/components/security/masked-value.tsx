@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { maskByType, type PiiType } from "@/shared/security/pii-formatters";
 
@@ -21,6 +22,7 @@ export function MaskedValue({
   onReveal?: () => void;
 }>) {
   const [revealed, setRevealed] = useState(false);
+  const t = useTranslations("pii");
 
   if (!value) return <span className="text-atlas-muted">—</span>;
 
@@ -41,7 +43,7 @@ export function MaskedValue({
           type="button"
           onClick={toggle}
           aria-pressed={revealed}
-          aria-label={revealed ? "Ocultar dato" : "Revelar dato"}
+          aria-label={revealed ? t("hide") : t("reveal")}
           className="rounded p-0.5 text-atlas-muted transition hover:text-atlas-text"
         >
           {revealed ? (
