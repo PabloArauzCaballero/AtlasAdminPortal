@@ -62,3 +62,8 @@ nota aquí abajo y coordinamos.
     consultar el grafo enseguida (AST-only, sin costo de API; ~1–2 min en este repo).
   - `graphify-out/` sigue gitignoreado; `.gitattributes` trae un merge-driver inocuo
     (apunta a `graphify-out/graph.json`, que no se versiona).
+  - **Caveat Windows:** el lock que serializa rebuilds de graphify es no-op en Windows
+    (no hay `fcntl`). Si vos y yo commiteamos casi a la vez, los dos rebuilds
+    post-commit en background compiten y el conteo de nodos del grafo oscila un rato.
+    Se auto-cura al calmarse los commits. Si necesitás el grafo **completo/autoritativo**
+    en un momento dado, corré `graphify update .` y esperá a que termine (~1–2 min).
