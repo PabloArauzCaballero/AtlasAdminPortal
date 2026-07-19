@@ -101,6 +101,7 @@ export function TrafficLatencySection() {
           </label>
           <Select
             className="w-48"
+            aria-label="Ventana de tiempo del gráfico"
             value={windowHours}
             onChange={(event) => setWindowHours(Number(event.target.value))}
           >

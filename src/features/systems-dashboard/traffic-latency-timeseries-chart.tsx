@@ -67,7 +67,14 @@ export function TrafficLatencyTimeseriesChart({
           </div>
         ) : null}
       </div>
-      <div className="atlas-scrollbar overflow-x-auto">
+      {/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- una región con scroll horizontal debe ser focusable por teclado para poder desplazarla; axe lo exige (scrollable-region-focusable) y la regla no modela este caso legítimo. */}
+      <div
+        className="atlas-scrollbar overflow-x-auto"
+        tabIndex={0}
+        role="group"
+        aria-label="Gráfico de tráfico y latencia (desplazable horizontalmente)"
+      >
+        {/* eslint-enable jsx-a11y/no-noninteractive-tabindex */}
         <svg
           width={width}
           height={CHART_HEIGHT}
