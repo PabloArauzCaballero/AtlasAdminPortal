@@ -1,8 +1,10 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NextIntlClientProvider } from "next-intl";
 import { useEffect, useState } from "react";
 import { AuthProvider } from "@/shared/auth/auth-context";
+import esBOMessages from "@/shared/i18n/messages/es-BO.json";
 import { SessionCacheGuard } from "@/shared/auth/session-cache-guard";
 import { consoleSink } from "@/shared/observability/console-sink";
 import { setObservabilitySink } from "@/shared/observability/reporter";
@@ -38,9 +40,15 @@ export function AppProviders({
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionCacheGuard />
-      <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
+    <NextIntlClientProvider
+      locale="es-BO"
+      messages={esBOMessages}
+      timeZone="America/La_Paz"
+    >
+      <QueryClientProvider client={queryClient}>
+        <SessionCacheGuard />
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
+    </NextIntlClientProvider>
   );
 }

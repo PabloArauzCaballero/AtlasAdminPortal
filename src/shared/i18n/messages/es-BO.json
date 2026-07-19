@@ -1,0 +1,21 @@
+{
+  "common": {
+    "retry": "Reintentar",
+    "loading": "Cargando",
+    "empty": "Sin resultados",
+    "back": "Volver al portal"
+  },
+  "auth": {
+    "loginTitle": "Bienvenido de vuelta",
+    "loginSubmit": "Entrar al portal interno"
+  },
+  "errors": {
+    "generic": "No se pudo cargar la información.",
+    "forbidden": "No tienes permisos para ver esta sección.",
+    "sessionExpired": "Tu sesión expiró. Ingresa de nuevo."
+  },
+  "pii": {
+    "reveal": "Revelar dato",
+    "hide": "Ocultar dato"
+  }
+}
