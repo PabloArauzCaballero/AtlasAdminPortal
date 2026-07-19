@@ -9,6 +9,11 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "headers"> & {
   tenantId?: string;
   skipAuth?: boolean;
   skipRefresh?: boolean;
+  /**
+   * Llave de idempotencia para mutaciones. Se genera una vez por acción del
+   * usuario y se reenvía en cada reintento para que el backend deduplique.
+   */
+  idempotencyKey?: string;
 };
 
 function isMutatingMethod(method?: string): boolean {
@@ -92,6 +97,10 @@ function buildHeaders(
     headers.Authorization = `Bearer ${session.accessToken}`;
   }
   appendCsrfHeader(headers, session, options.method);
+  // La llave solo tiene sentido en mutaciones; en un GET se ignora.
+  if (options.idempotencyKey && isMutatingMethod(options.method)) {
+    headers["Idempotency-Key"] = options.idempotencyKey;
+  }
   return headers;
 }
 
