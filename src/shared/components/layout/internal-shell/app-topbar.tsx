@@ -11,11 +11,11 @@ import {
 
 export function AppTopbar() {
   return (
-    <header className="sticky top-0 z-20 border-b border-atlas-border bg-white/80 shadow-sm backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between gap-4 px-4 lg:px-6">
+    <header className="sticky top-0 z-20 border-b border-atlas-border bg-white/95 backdrop-blur-md">
+      <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-8">
         <div className="min-w-0">
           <Breadcrumbs />
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-atlas-muted">
+          <p className="mt-0.5 flex items-center gap-1.5 text-[0.6875rem] text-atlas-muted">
             <LiveDot tone="success" />
             Ambiente: {getRuntimeEnvironmentLabel()} · {getServiceOriginLabel()}
           </p>

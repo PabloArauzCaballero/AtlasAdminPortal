@@ -12,13 +12,15 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-atlas-bg text-atlas-text">
       <AppSidebar />
-      <div className="lg:pl-[268px]">
+      <div className="lg:pl-[252px]">
         <AppTopbar />
         {/* key={pathname} remonta el contenido en cada navegación para que toda
             vista entre con la misma transición de fade/slide. */}
-        <main key={pathname} className="animate-fade-in px-4 py-6 lg:px-6">
-          <ViewExplainer />
-          {children}
+        <main key={pathname} className="px-4 py-6 lg:px-8 lg:py-7">
+          <div className="mx-auto w-full max-w-[1600px]">
+            <ViewExplainer />
+            {children}
+          </div>
         </main>
       </div>
     </div>

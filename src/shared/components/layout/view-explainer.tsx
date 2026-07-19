@@ -25,12 +25,12 @@ export function ViewExplainer() {
   if (!resolved) return null;
 
   return (
-    <section className="mb-4 animate-fade-in overflow-hidden rounded-xl border border-atlas-border bg-white shadow-sm">
+    <section className="mb-5 overflow-hidden rounded-lg border border-atlas-border bg-white shadow-subtle">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-atlas-soft"
+        className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors duration-150 hover:bg-atlas-soft"
       >
         <span className="flex min-w-0 items-center gap-2 text-sm text-atlas-muted">
           <BookOpenText className="h-4 w-4 shrink-0 text-atlas-accent" />
@@ -43,19 +43,19 @@ export function ViewExplainer() {
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-atlas-muted transition-transform duration-300",
+            "h-4 w-4 shrink-0 text-atlas-muted transition-transform duration-[180ms]",
             open && "rotate-180",
           )}
         />
       </button>
       <div
         className={cn(
-          "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
+          "grid transition-[grid-template-rows,opacity] duration-[180ms] ease-out",
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="grid gap-4 border-t border-atlas-border px-4 py-4 md:grid-cols-2">
+          <div className="grid gap-3 border-t border-atlas-border bg-[#FAFAFB] px-3.5 py-3.5 md:grid-cols-2">
             <ExplanationBlock
               icon={Landmark}
               tone="business"
@@ -93,15 +93,13 @@ function ExplanationBlock({
   return (
     <div
       className={cn(
-        "rounded-lg border p-3",
-        tone === "business"
-          ? "border-amber-200 bg-amber-50/60"
-          : "border-sky-200 bg-sky-50/60",
+        "rounded-lg border bg-white p-3",
+        tone === "business" ? "border-amber-200/80" : "border-sky-200/80",
       )}
     >
       <p
         className={cn(
-          "flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide",
+          "flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em]",
           tone === "business" ? "text-amber-800" : "text-sky-800",
         )}
       >

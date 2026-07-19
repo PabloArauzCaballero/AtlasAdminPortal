@@ -6,21 +6,21 @@ const config: Config = {
     extend: {
       colors: {
         atlas: {
-          bg: "#F8FAFC",
+          bg: "#F6F7F8",
           card: "#FFFFFF",
-          border: "#E2E8F0",
-          muted: "#64748B",
-          text: "#0F172A",
-          soft: "#F1F5F9",
-          primary: "#111827",
-          accent: "#4F46E5",
-          accentSoft: "#EEF2FF",
-          success: "#10B981",
-          warning: "#F59E0B",
-          critical: "#EF4444",
-          info: "#3B82F6",
-          pii: "#6366F1",
-          sensitive: "#EC4899",
+          border: "#E1E3E8",
+          muted: "#686B73",
+          text: "#18191D",
+          soft: "#F1F2F4",
+          primary: "#18191D",
+          accent: "#405CCB",
+          accentSoft: "#EEF1FC",
+          success: "#16875A",
+          warning: "#B66A00",
+          critical: "#CE3E36",
+          info: "#356FC0",
+          pii: "#6656C7",
+          sensitive: "#B44A78",
         },
       },
       fontFamily: {
@@ -41,30 +41,33 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        subtle: "0 8px 20px rgba(15, 23, 42, 0.04)",
-        card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -12px rgba(15, 23, 42, 0.12)",
+        subtle: "0 1px 2px rgba(24, 25, 29, 0.04)",
+        card: "0 1px 2px rgba(24, 25, 29, 0.04), 0 6px 18px -14px rgba(24, 25, 29, 0.24)",
         "card-hover":
-          "0 4px 10px rgba(15, 23, 42, 0.06), 0 20px 40px -16px rgba(15, 23, 42, 0.18)",
-        glow: "0 0 0 1px rgba(79, 70, 229, 0.08), 0 8px 24px -8px rgba(79, 70, 229, 0.35)",
+          "0 1px 2px rgba(24, 25, 29, 0.06), 0 10px 24px -16px rgba(24, 25, 29, 0.28)",
+        glow: "0 0 0 3px rgba(64, 92, 203, 0.12)",
       },
       backgroundImage: {
         "atlas-radial":
-          "radial-gradient(circle at top left, rgba(79,70,229,0.12), transparent 55%)",
-        "atlas-mesh":
-          "linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%)",
+          "radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 55%)",
+        "atlas-mesh": "linear-gradient(180deg, #191A1E 0%, #121316 100%)",
       },
       keyframes: {
         "fade-in": {
-          "0%": { opacity: "0", transform: "translateY(4px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
         "slide-up": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(6px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
-          "0%": { opacity: "0", transform: "scale(0.95) translateY(-4px)" },
+          "0%": { opacity: "0", transform: "scale(0.98) translateY(-2px)" },
           "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "drawer-in": {
+          "0%": { opacity: "0", transform: "translateX(12px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
         pop: {
           "0%": { transform: "scale(0.4)", opacity: "0" },
@@ -90,9 +93,10 @@ const config: Config = {
         },
       },
       animation: {
-        "fade-in": "fade-in 0.35s ease-out both",
-        "slide-up": "slide-up 0.4s ease-out both",
-        "scale-in": "scale-in 0.2s ease-out both",
+        "fade-in": "fade-in 0.16s ease-out both",
+        "slide-up": "slide-up 0.18s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-in": "scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "drawer-in": "drawer-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both",
         pop: "pop 0.3s ease-out both",
         "bell-ring": "bell-ring 0.9s ease-in-out 1",
         shimmer: "shimmer 1.6s infinite linear",

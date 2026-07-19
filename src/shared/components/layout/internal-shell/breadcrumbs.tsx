@@ -13,11 +13,11 @@ export function Breadcrumbs() {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1 text-xs text-atlas-muted"
+      className="flex flex-wrap items-center gap-1 text-[0.6875rem] text-atlas-muted"
     >
       <Link
         href="/internal"
-        className="transition-colors hover:text-atlas-accent"
+        className="transition-colors duration-150 hover:text-atlas-text"
       >
         Inicio
       </Link>

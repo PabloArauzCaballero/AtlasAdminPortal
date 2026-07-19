@@ -7,7 +7,7 @@ export function LoadingSkeleton({ rows = 6 }: Readonly<{ rows?: number }>) {
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="relative h-12 overflow-hidden rounded-xl border border-atlas-border bg-slate-100"
+          className="relative h-11 overflow-hidden rounded-lg border border-atlas-border bg-slate-100"
           style={{ animationDelay: `${index * 60}ms` }}
         >
           {/* transform-based sweep (compositor-only) instead of animating background-position, which forces a repaint every frame and used to run simultaneously across every row */}
@@ -28,9 +28,9 @@ export function EmptyState({
   action?: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-56 animate-fade-in flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-subtle">
-      <div className="mb-4 rounded-full border border-slate-200 bg-atlas-accentSoft p-3">
-        <SearchX className="h-7 w-7 text-atlas-accent" />
+    <div className="flex min-h-56 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <div className="mb-4 rounded-lg border border-slate-200 bg-atlas-soft p-2.5">
+        <SearchX className="h-6 w-6 text-atlas-muted" />
       </div>
       <h3 className="text-base font-semibold text-atlas-text">{title}</h3>
       {description ? (
@@ -55,9 +55,9 @@ export function ErrorState({
   onRetry?: () => void;
 }>) {
   return (
-    <div className="animate-fade-in rounded-2xl border border-red-200 bg-red-50 p-5 text-red-800 shadow-subtle">
+    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
       <div className="flex items-start gap-3">
-        <div className="rounded-full bg-red-100 p-2">
+        <div className="rounded-lg bg-red-100 p-2">
           <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" />
         </div>
         <div className="min-w-0 flex-1">
@@ -85,9 +85,9 @@ export function ForbiddenState({
   message = "No tienes permisos para ver esta sección.",
 }: Readonly<{ message?: string }>) {
   return (
-    <div className="flex min-h-64 animate-fade-in flex-col items-center justify-center rounded-2xl border border-atlas-border bg-white p-8 text-center shadow-subtle">
-      <div className="mb-4 rounded-full border border-slate-200 bg-slate-50 p-3">
-        <Ban className="h-7 w-7 text-atlas-muted" />
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-atlas-border bg-white p-8 text-center">
+      <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+        <Ban className="h-6 w-6 text-atlas-muted" />
       </div>
       <h3 className="text-base font-semibold text-atlas-text">
         Acceso restringido
@@ -101,9 +101,9 @@ export function ForbiddenState({
 
 export function FullPageLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-atlas-mesh text-white">
+    <div className="flex min-h-screen items-center justify-center bg-[#15161A] text-white">
       <div className="flex flex-col items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06]">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
         <p className="text-sm text-slate-300">Preparando portal interno…</p>

@@ -26,23 +26,18 @@ function NavLink({
     <Link
       href={item.href}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-all duration-200 ease-out hover:translate-x-0.5 hover:bg-white/5 hover:text-white",
+        "group relative flex min-h-9 items-center gap-2.5 rounded-md px-3 py-2 text-[0.8125rem] font-medium text-slate-400 transition-colors duration-150 hover:bg-white/[0.055] hover:text-slate-100",
         indent && "pl-9",
-        active && "bg-white/10 text-white",
+        active && "bg-white/[0.09] text-white",
       )}
     >
       <span
         className={cn(
-          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-indigo-400 transition-all duration-200",
-          active && "h-5",
+          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-[#8296EA] transition-[height] duration-150",
+          active && "h-4",
         )}
       />
-      <Icon
-        className={cn(
-          "h-4 w-4 shrink-0 transition-transform duration-150 group-hover:scale-110",
-          active && "text-indigo-400",
-        )}
-      />
+      <Icon className={cn("h-4 w-4 shrink-0", active && "text-[#9AABEF]")} />
       <span className="truncate">{item.label}</span>
     </Link>
   );
@@ -79,17 +74,19 @@ export function AppSidebar() {
   );
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[268px] border-r border-slate-800 bg-atlas-mesh lg:block">
-      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-sm font-bold text-white shadow-glow">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[252px] border-r border-white/[0.06] bg-atlas-mesh lg:block">
+      <div className="flex h-14 items-center gap-2.5 border-b border-white/[0.07] px-4">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/[0.08] text-xs font-semibold text-white">
           A
         </div>
         <div>
-          <p className="text-sm font-semibold leading-4 text-white">ATLAS</p>
-          <p className="text-xs text-slate-400">Portal interno</p>
+          <p className="text-[0.8125rem] font-semibold leading-4 tracking-[0.06em] text-white">
+            ATLAS
+          </p>
+          <p className="text-[0.6875rem] text-slate-500">Portal interno</p>
         </div>
       </div>
-      <nav className="atlas-scrollbar max-h-[calc(100vh-160px)] space-y-1 overflow-auto px-3 py-4">
+      <nav className="atlas-scrollbar max-h-[calc(100vh-150px)] space-y-1 overflow-auto px-2.5 py-3">
         {visibleItems.map((item) => (
           <NavLink
             key={item.href}
@@ -114,20 +111,20 @@ export function AppSidebar() {
                     [group.label]: !open,
                   }))
                 }
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-300"
+                className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-slate-600 transition-colors duration-150 hover:text-slate-400"
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" />
                 <span className="flex-1 truncate text-left">{group.label}</span>
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+                    "h-3.5 w-3.5 shrink-0 transition-transform duration-150",
                     open && "rotate-180",
                   )}
                 />
               </button>
               <div
                 className={cn(
-                  "grid overflow-hidden transition-all duration-200 ease-in-out",
+                  "grid overflow-hidden transition-[grid-template-rows,opacity] duration-[180ms] ease-out",
                   open
                     ? "grid-rows-[1fr] opacity-100"
                     : "grid-rows-[0fr] opacity-0",
@@ -148,20 +145,22 @@ export function AppSidebar() {
           );
         })}
       </nav>
-      <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/20 p-4">
-        <div className="mb-3 flex min-w-0 items-center gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 text-xs font-semibold text-white">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-white/[0.07] bg-black/10 p-3">
+        <div className="mb-2.5 flex min-w-0 items-center gap-2.5 px-1">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#405CCB] text-[0.6875rem] font-semibold text-white">
             {(user?.fullName ?? "U").slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
+            <p className="truncate text-xs font-medium text-white">
               {user?.fullName ?? "Usuario interno"}
             </p>
-            <p className="truncate text-xs text-slate-400">{user?.email}</p>
+            <p className="truncate text-[0.6875rem] text-slate-500">
+              {user?.email}
+            </p>
           </div>
         </div>
         <Button
-          className="w-full justify-start border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+          className="h-8 w-full justify-start border-white/[0.06] bg-white/[0.04] text-xs text-slate-300 hover:bg-white/[0.08] hover:text-white"
           variant="ghost"
           onClick={() => void logout()}
         >

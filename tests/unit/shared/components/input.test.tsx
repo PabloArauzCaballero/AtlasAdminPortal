@@ -157,6 +157,6 @@ describe("Card", () => {
     const className = container.querySelector("section")?.className ?? "";
 
     expect(className).toContain("mi-clase");
-    expect(className).toContain("rounded-2xl");
+    expect(className).toContain("rounded-xl");
   });
 });

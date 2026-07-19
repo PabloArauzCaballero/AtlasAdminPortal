@@ -54,37 +54,38 @@ export function LoginPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-stretch bg-atlas-bg">
-      <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-atlas-mesh p-10 text-white lg:flex">
-        <div className="pointer-events-none absolute inset-0 bg-atlas-radial opacity-60" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+    <main className="flex min-h-screen items-stretch bg-[#F6F7F8]">
+      <section className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-atlas-mesh p-12 text-white lg:flex">
         <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06]">
             <LockKeyhole className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold">ATLAS</p>
-            <p className="text-xs text-slate-300">Portal interno</p>
+            <p className="text-xs font-semibold tracking-[0.08em]">ATLAS</p>
+            <p className="text-[0.6875rem] text-slate-500">Portal interno</p>
           </div>
         </div>
-        <div className="relative max-w-md animate-fade-in">
-          <h2 className="text-3xl font-bold leading-tight tracking-tight">
+        <div className="relative max-w-md">
+          <p className="mb-4 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[#9AABEF]">
+            Control operativo
+          </p>
+          <h2 className="text-3xl font-semibold leading-[1.15] tracking-[-0.035em]">
             Sistemas, QA y gobierno de datos en un solo lugar.
           </h2>
-          <p className="mt-4 text-sm leading-6 text-slate-300">
+          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">
             Monitorea catálogos, calidad de datos, lineage y auditoría
             conectados en tiempo real al servicio interno de ATLAS.
           </p>
         </div>
-        <p className="relative text-xs text-slate-400">
+        <p className="relative text-[0.6875rem] text-slate-600">
           © {new Date().getFullYear()} ATLAS · Uso interno
         </p>
       </section>
 
-      <section className="flex w-full flex-1 items-center justify-center p-4 lg:w-1/2">
-        <div className="w-full max-w-md animate-fade-in rounded-2xl border border-atlas-border bg-white p-6 shadow-card lg:border-0 lg:shadow-none">
+      <section className="flex w-full flex-1 items-center justify-center p-5 lg:w-[54%]">
+        <div className="w-full max-w-sm rounded-xl border border-atlas-border bg-white p-6 shadow-card lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-slate-900 text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-atlas-primary text-white">
               <LockKeyhole className="h-5 w-5" />
             </div>
             <div>
@@ -94,7 +95,7 @@ export function LoginPage() {
             </div>
           </div>
           <div className="mb-6 hidden lg:block">
-            <h1 className="text-2xl font-bold tracking-tight text-atlas-text">
+            <h1 className="text-2xl font-semibold tracking-[-0.03em] text-atlas-text">
               Bienvenido de vuelta
             </h1>
             <p className="mt-1 text-sm text-atlas-muted">
@@ -133,7 +134,7 @@ export function LoginPage() {
               />
             </Field>
             <Button
-              className="w-full"
+              className="h-10 w-full"
               variant="primary"
               type="submit"
               disabled={isSubmitting}

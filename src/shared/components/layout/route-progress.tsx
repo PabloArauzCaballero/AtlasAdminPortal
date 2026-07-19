@@ -44,11 +44,11 @@ export function RouteProgress() {
   if (!loading) return null;
   return (
     <div
-      className="fixed inset-x-0 top-0 z-[100] h-[3px] overflow-hidden bg-transparent"
+      className="fixed inset-x-0 top-0 z-[100] h-0.5 overflow-hidden bg-transparent"
       role="status"
       aria-label="Cargando página"
     >
-      <div className="h-full w-1/3 animate-route-progress bg-gradient-to-r from-atlas-accent via-blue-500 to-atlas-accent" />
+      <div className="h-full w-1/3 animate-route-progress bg-atlas-accent" />
     </div>
   );
 }
