@@ -7,6 +7,7 @@ import {
   ForbiddenState,
 } from "@/shared/components/ui/states";
 import { findA11yViolations } from "../../helpers/axe";
+import { renderWithIntl } from "../../helpers/render-with-intl";
 
 describe("Accesibilidad (axe) de componentes clave — FASE 12", () => {
   it("EmptyState no tiene violaciones", async () => {
@@ -29,7 +30,8 @@ describe("Accesibilidad (axe) de componentes clave — FASE 12", () => {
   });
 
   it("MaskedValue con botón de revelar no tiene violaciones", async () => {
-    const { container } = render(
+    // MaskedValue usa useTranslations: necesita el provider de next-intl.
+    const { container } = renderWithIntl(
       <MaskedValue value="71234567" type="phone" canReveal />,
     );
     expect(await findA11yViolations(container)).toEqual([]);
