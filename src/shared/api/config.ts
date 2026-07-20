@@ -8,6 +8,29 @@ export function getApiBaseUrl(): string {
     : DEFAULT_API_BASE_URL;
 }
 
+/**
+ * En producción `NEXT_PUBLIC_API_BASE_URL` es obligatorio: sin ella el portal
+ * cae al default de desarrollo y el navegador del operador acaba llamando a su
+ * propio `localhost`, fallando con un "connection refused" que no explica nada.
+ *
+ * La validación vive aquí y no dentro de `getApiBaseUrl()` a propósito:
+ * `src/middleware.ts` también lo usa para armar la CSP y corre en cada request,
+ * así que lanzar allí convertiría un despliegue mal configurado en un 500 total
+ * sin UI. Acotado a la ruta de peticiones, el fallo se ve como un error de API
+ * con mensaje accionable y el resto del portal sigue renderizando.
+ */
+export function assertApiBaseUrlConfigured(): void {
+  const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configured && configured.length > 0) return;
+
+  const environment = (process.env.NEXT_PUBLIC_ATLAS_ENVIRONMENT ?? "").trim();
+  if (environment.toLowerCase() === "production") {
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE_URL no está configurado: en producción el portal no puede caer al API local.",
+    );
+  }
+}
+
 export function getApiTimeoutMs(): number {
   const configured = Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS);
   return Number.isFinite(configured) && configured >= 1_000

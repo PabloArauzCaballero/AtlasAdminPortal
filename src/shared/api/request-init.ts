@@ -1,4 +1,8 @@
-import { getApiBaseUrl, getCsrfHeaderName } from "./config";
+import {
+  assertApiBaseUrlConfigured,
+  getApiBaseUrl,
+  getCsrfHeaderName,
+} from "./config";
 import type { QueryParams } from "./types";
 import type { InternalSession } from "@/shared/auth/types";
 
@@ -32,6 +36,9 @@ function appendCsrfHeader(
 }
 
 export function buildUrl(path: string, query?: QueryParams): string {
+  // Falla ruidoso si en producción falta la base del API, en vez de dejar que el
+  // navegador del operador llame a su propio localhost.
+  assertApiBaseUrlConfigured();
   const url = new URL(joinApiBaseAndPath(getApiBaseUrl(), path));
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value === null || value === undefined || value === "") return;

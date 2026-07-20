@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  assertApiBaseUrlConfigured,
   getApiBaseUrl,
   getApiTimeoutMs,
   getCsrfHeaderName,
@@ -36,6 +37,44 @@ describe("getApiBaseUrl", () => {
     vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", value);
     expect(getApiBaseUrl()).toBe("http://localhost:3005/api/v1");
   });
+});
+
+describe("assertApiBaseUrlConfigured", () => {
+  it("no se queja si la base está configurada, aunque sea producción", () => {
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.atlas.internal/api/v1");
+    expect(() => assertApiBaseUrlConfigured()).not.toThrow();
+  });
+
+  it.each([
+    ["no está definida", undefined],
+    ["está vacía", ""],
+    ["es solo espacios", "   "],
+  ])(
+    "en producción falla ruidoso si la base %s, en vez de caer al localhost del operador",
+    (_label, value) => {
+      vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
+      vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", value);
+      expect(() => assertApiBaseUrlConfigured()).toThrow(
+        /NEXT_PUBLIC_API_BASE_URL/,
+      );
+    },
+  );
+
+  it("compara el ambiente sin distinguir mayúsculas ni espacios", () => {
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "  Production  ");
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "");
+    expect(() => assertApiBaseUrlConfigured()).toThrow();
+  });
+
+  it.each([["local"], ["staging"], [""], [undefined]])(
+    "fuera de producción (%s) deja pasar el default de desarrollo",
+    (environment) => {
+      vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", environment);
+      vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "");
+      expect(() => assertApiBaseUrlConfigured()).not.toThrow();
+    },
+  );
 });
 
 describe("getApiTimeoutMs", () => {
