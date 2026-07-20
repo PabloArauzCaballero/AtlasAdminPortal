@@ -13,9 +13,9 @@
 - [ ] `NEXT_PUBLIC_API_BASE_URL` apunta al API interno correcto. — el **valor** depende del despliegue, pero ya no puede faltar en silencio: `assertApiBaseUrlConfigured()` (`shared/api/config.ts`) hace fallar la ruta de peticiones con un mensaje accionable si la variable no está y el ambiente es `production`, en vez de caer al default de desarrollo y que el navegador del operador llame a su propio `localhost`. La validación **no** vive en `getApiBaseUrl()` porque `src/middleware.ts` lo usa para la CSP en cada request: lanzar allí convertiría el error de configuración en un 500 total sin UI.
 - [ ] `NEXT_PUBLIC_ATLAS_ENVIRONMENT` refleja el ambiente real. — depende del despliegue.
 - [ ] Permisos `internal.exports.download`, `systems.stress.execute`, `reporting.execute` y `dataQuality.rules.manage` seedados correctamente. — **3 de 4 OK** (`systems.stress.execute`, `reporting.execute`, `dataQuality.rules.manage` existen activos y asignados a roles). **`internal.exports.download` NO existe en el catálogo de permisos**: ver "Bloqueante abierto" abajo.
-- [ ] Exportaciones usan URL firmada temporal o endpoint de descarga auditado. — contrato de backend.
+- [ ] Exportaciones usan URL firmada temporal o endpoint de descarga auditado. — **verificado contra el backend real: hoy no se cumple.** `GET /internal/exports` devuelve `downloadUrl` como ruta **relativa al API** (p. ej. `/api/v1/systems/endpoints`) y `expiresAt: null`: no hay firma ni expiración, y el "archivo" es en realidad otro endpoint JSON del API. Para cerrar este punto el backend debe emitir una URL firmada con vencimiento, o un endpoint de descarga dedicado que registre quién descargó qué.
 - [x] Stress QA está bloqueado en producción salvo política explícita. — ya está implementado y fijado con tests: `assertRequestAllowed()` (`features/qa-lab/qa-safety.ts`) lanza `"Producción readonly solo permite dry-run desde el QA Lab."` cuando el ambiente es `PRODUCTION_READONLY` y no es dry-run. El guard está en el choke point que atraviesan **ambos** runners antes de cualquier fetch (`direct-runner.ts`, `stress-runner.ts`), así que no se evade tocando la UI. Cubierto por `direct-runner.test.ts` (casos bloqueado y permitido) y `stress-runner.test.ts`.
-- [ ] Ejecución de reportes pesados y reglas pesadas corre como job observable. — backend.
+- [ ] Ejecución de reportes pesados y reglas pesadas corre como job observable. — **verificado contra el backend real: hoy no se cumple.** `POST /internal/reports/:reportId/run` y `POST /internal/data-quality/rules/:ruleId/run` responden `200` con el snapshot / resultado ya calculado, es decir **ejecutan síncronamente dentro del request**; ninguno encola nada ni devuelve un id de job. El subsistema de jobs sí existe (`/internal/jobs` con listar, detalle, re-encolar y cancelar), pero estos dos endpoints no lo usan. Con un reporte pesado la petición se cuelga hasta el timeout del portal (`NEXT_PUBLIC_API_TIMEOUT_MS`), que es justo el riesgo anotado en `pending-items.md`. Cerrar esto es cambiar los dos `run` para encolar en el subsistema de jobs y que el portal muestre estado, no un cambio de frontend.
 - [x] Auditoría registra acciones críticas con `requestId`. — todas las respuestas del API interno incluyen `requestId`, y el portal lo muestra al usuario en los errores (visto en el error de login inválido).
 
 ## Bloqueante abierto: falta seedear `internal.exports.download`
@@ -33,6 +33,16 @@ es idempotente con `ON CONFLICT (permission_code)`): dar de alta el permiso con
 Qué roles exactamente es una decisión de seguridad del owner, no un default técnico: por eso queda
 sin resolver aquí. Lo mínimo razonable es `SUPER_ADMIN`; cualquier rol adicional debería ser una
 decisión explícita y auditada.
+
+**Contexto que conviene tener antes de decidir:** el backend hoy **no gatea exports por permiso
+granular sino por rol** — `InternalPortalController` lleva `@UseGuards(JwtAuthGuard, RolesGuard)` y
+`@Roles(...INTERNAL_PORTAL_ROLES)` a nivel de controller, y los `@Get('exports')` no añaden permiso
+propio. Es decir, el portal está exigiendo un permiso que el backend nunca define, mientras el
+backend deja pasar a cualquier rol del portal. Las dos mitades no coinciden, así que la decisión no
+es solo "a qué roles asignarlo" sino **dónde debe vivir la autorización**: seedear el permiso y
+gatear también en backend (más estricto y auditable), o alinear el portal al gateo por rol que ya
+existe (menos código, pero amplía quién puede descargar). Conviene resolverlo junto con el punto de
+URL firmada, porque son el mismo flujo.
 
 ## Validación funcional con backend real
 

@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 5273;
+// Puerto configurable por `E2E_PORT`. En Windows, Hyper-V/WSL reservan rangos
+// dinámicos (`netsh interface ipv4 show excludedportrange protocol=tcp`) y el
+// 5273 puede caer dentro: `next start` falla con EACCES aunque netstat muestre
+// el puerto libre. Elegir un puerto que el CORS del backend ya permita (3000).
+const PORT = Number(process.env.E2E_PORT ?? 5273);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 /**
@@ -22,7 +26,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "yarn start",
+    command: `npx next start -p ${PORT}`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

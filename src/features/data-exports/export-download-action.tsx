@@ -4,14 +4,19 @@ import { useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { getApiBaseUrl } from "@/shared/api/config";
 import { isSafeExternalUrl } from "@/shared/lib/urls";
+import { resolveExportDownloadUrl } from "./download-url";
 
 export function ExportDownloadAction({
   downloadUrl,
   expiresAt,
 }: Readonly<{ downloadUrl?: string | null; expiresAt?: string | null }>) {
   const [open, setOpen] = useState(false);
-  if (!downloadUrl || !isSafeExternalUrl(downloadUrl)) return null;
+  // El backend da la ruta relativa al API; sin resolverla contra su origen el
+  // navegador la buscaría en el portal, que no sirve /api/* (404).
+  const resolvedUrl = resolveExportDownloadUrl(downloadUrl, getApiBaseUrl());
+  if (!resolvedUrl || !isSafeExternalUrl(resolvedUrl)) return null;
 
   return (
     <PermissionGate permissions={["internal.exports.download"]} fallback={null}>
@@ -25,7 +30,7 @@ export function ExportDownloadAction({
         confirmText="Abrir archivo"
         onCancel={() => setOpen(false)}
         onConfirm={() => {
-          window.open(downloadUrl, "_blank", "noopener,noreferrer");
+          window.open(resolvedUrl, "_blank", "noopener,noreferrer");
           setOpen(false);
         }}
       />
