@@ -26,25 +26,39 @@ function attachDiagnostics(page: Page): Diag {
   });
   page.on("response", (res) => {
     const s = res.status();
-    if (s >= 400) diag.badResponses.push(`${s} ${res.request().method()} ${res.url()}`);
+    if (s >= 400)
+      diag.badResponses.push(`${s} ${res.request().method()} ${res.url()}`);
   });
-  page.on("pageerror", (err) => diag.consoleErrors.push(`pageerror: ${err.message}`));
+  page.on("pageerror", (err) =>
+    diag.consoleErrors.push(`pageerror: ${err.message}`),
+  );
   return diag;
 }
 
 async function login(page: Page): Promise<void> {
   await page.goto(url("/internal/login"));
-  await page.locator('input[autocomplete="organization"]').fill(TENANT);
+  // El form es controlado por react-hook-form y "Tenant" viene con defaultValue.
+  // Rellenarlo antes de que React hidrate duplica el valor ("11") y el backend
+  // recibe un tenant inexistente. Se espera hidratación y se afirma el valor.
+  await page.waitForLoadState("networkidle").catch(() => undefined);
+  const tenant = page.locator('input[autocomplete="organization"]');
+  await tenant.waitFor({ state: "visible" });
+  await tenant.fill(TENANT);
+  if ((await tenant.inputValue()) !== TENANT) await tenant.fill(TENANT);
+  await expect(tenant).toHaveValue(TENANT);
+
   await page.locator('input[type="email"]').fill(EMAIL);
   await page.locator('input[type="password"]').fill(PASSWORD);
   await page.getByRole("button", { name: /entrar al portal interno/i }).click();
-  // Éxito = salimos de /internal/login (redirect a la landing interna).
-  // waitUntil "commit": basta con que la navegación cambie de URL; no se espera
-  // el evento load de la landing (pesada), que introducía flake bajo carga.
-  await page.waitForURL((url) => !url.pathname.endsWith("/internal/login"), {
-    timeout: 20_000,
-    waitUntil: "commit",
-  });
+  // Éxito = salimos de /internal/login (redirect a la landing interna). El
+  // redirect es client-side (router.replace) y no emite evento de navegación,
+  // así que se sondea la URL dentro de la página en vez de esperar un commit
+  // o el load de la landing (pesada), que introducían flake.
+  await page.waitForFunction(
+    () => !window.location.pathname.endsWith("/internal/login"),
+    undefined,
+    { timeout: 20_000 },
+  );
 }
 
 test.describe.configure({ mode: "serial" });
@@ -78,7 +92,9 @@ test.describe("Producción — verificación real con backend", () => {
     // La sesión persistida en el navegador NO debe contener tokens.
     const raw = await page.evaluate(() => {
       const keys = Object.keys(window.sessionStorage);
-      const sessionKey = keys.find((k) => k.startsWith("atlas_internal_session"));
+      const sessionKey = keys.find((k) =>
+        k.startsWith("atlas_internal_session"),
+      );
       return sessionKey ? window.sessionStorage.getItem(sessionKey) : null;
     });
     if (raw) {
@@ -86,8 +102,14 @@ test.describe("Producción — verificación real con backend", () => {
         accessToken?: unknown;
         refreshToken?: unknown;
       };
-      expect(parsed.accessToken, "sin accessToken en sessionStorage").toBeFalsy();
-      expect(parsed.refreshToken, "sin refreshToken en sessionStorage").toBeFalsy();
+      expect(
+        parsed.accessToken,
+        "sin accessToken en sessionStorage",
+      ).toBeFalsy();
+      expect(
+        parsed.refreshToken,
+        "sin refreshToken en sessionStorage",
+      ).toBeFalsy();
     }
   });
 
@@ -106,7 +128,9 @@ test.describe("Producción — verificación real con backend", () => {
     ];
     const visited: string[] = [];
     for (const route of routes) {
-      const res = await page.goto(url(route), { waitUntil: "domcontentloaded" });
+      const res = await page.goto(url(route), {
+        waitUntil: "domcontentloaded",
+      });
       // La ruta no debe devolver el HTML con 5xx.
       expect(res?.status(), `status de ${route}`).toBeLessThan(500);
       // La app no debe rebotar a login (sesión válida).
@@ -234,7 +258,8 @@ test.describe("Producción — verificación real con backend", () => {
     } else {
       test.info().annotations.push({
         type: "warning",
-        description: "No se halló control de logout por rol/nombre; revisar topbar.",
+        description:
+          "No se halló control de logout por rol/nombre; revisar topbar.",
       });
     }
   });

@@ -59,6 +59,23 @@ const eslintConfig = [
       'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
     },
   },
+  {
+    // El código ya usa el prefijo `_` para marcar lo que existe por contrato
+    // (parámetros de un callback, capturas de error) pero no se consume. Sin
+    // este patrón la regla los reporta igual, y ese ruido termina tapando los
+    // no-usados de verdad. Un identificador sin `_` sigue avisando.
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;
