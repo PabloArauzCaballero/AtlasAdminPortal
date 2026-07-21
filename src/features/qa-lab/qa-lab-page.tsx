@@ -49,6 +49,9 @@ function AuthorizedQaLabPage({
         description="Prueba unitaria de un endpoint (funcional + stress) o un journey de varios endpoints encadenados simulando un flujo real de negocio."
         actions={
           <>
+            <Link href="/internal/qa/guia">
+              <Button>Guía</Button>
+            </Link>
             <Link href="/internal/qa/runs">
               <Button>Historial QA</Button>
             </Link>

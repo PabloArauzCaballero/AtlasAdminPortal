@@ -224,6 +224,12 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Reproducir un caso puntual en segundos — para soporte, debugging o validar un fix — sin herramientas externas.",
       },
+      "/internal/qa/guia": {
+        systems:
+          "Guía didáctica del laboratorio: explica los tres modos (funcional, stress, journey encadenado), la matriz de escenarios de headers, los umbrales de aprobación y las barreras de seguridad, con un gráfico de stress simulado y el diagrama de encadenamiento de endpoints.",
+        business:
+          "Onboarding de quien va a probar la plataforma: reduce la curva de aprendizaje del QA Lab y estandariza cómo se valida antes de un release.",
+      },
       "/internal/qa/suites": {
         systems:
           "Suites multi-paso con extractores entre pasos y aserciones; se versionan y ejecutan contra ambientes permitidos.",
