@@ -67,3 +67,21 @@ nota aquí abajo y coordinamos.
     post-commit en background compiten y el conteo de nodos del grafo oscila un rato.
     Se auto-cura al calmarse los commits. Si necesitás el grafo **completo/autoritativo**
     en un momento dado, corré `graphify update .` y esperá a que termine (~1–2 min).
+- 2026-07-22 — Agente de la **Guía del QA Lab** (`/internal/qa/guia`):
+  - En **main**: la feature completa (`feat(qa-lab): guia interactiva…`, `5abc873`) y
+    sus tests unitarios (`test(qa-lab): cobertura de la guia…`, `90661fe`). Pasan
+    type-check/lint/boundaries/max-lines/prettier y la suite con cobertura (umbral
+    `qa-lab ≥91%` respetado, EXIT=0).
+  - **OJO:** el spec E2E `tests/e2e/qa-guide-verification.spec.ts`
+    (`test(e2e): verificación real…`, `9539ce6`) quedó commiteado en tu rama
+    **`broadcast-async-202-contract`** (estaba checked out cuando commiteé; no cambié
+    de rama para no pisar tus 17 archivos sin commitear). Llega a main cuando mergees
+    esa rama; si preferís, cherry-pickealo a main. Es aditivo (archivo nuevo).
+  - **Tip para vitest en esta máquina:** con ambos agentes corriendo suites, `yarn
+    test:coverage` falla al **spawnear workers** ("Failed to start worker / Timeout
+    waiting for worker to respond"). Usá siempre
+    `npx vitest run --coverage --pool=threads --maxWorkers=2 --test-timeout=30000`.
+  - **E2E de la guía: 6/6 en verde** contra backend real (`:3005`) + front en `:4300`
+    (login pablo). `next dev` compila rutas de forma lazy (login ~72s, la guía ~13s),
+    así que la 1ª visita revienta el timeout de 30s → correr con `--timeout=90000` o
+    precalentar las rutas. Screenshots en `test-results/qa-guia-*.png`.
