@@ -7,7 +7,12 @@ const checks = [
   {
     label: "fetch directo",
     pattern: /\bfetch\s*\(/,
-    allowed: new Set(["src/shared/api/transport.ts"]),
+    allowed: new Set([
+      "src/shared/api/transport.ts",
+      // Cliente del endpoint portal-owned de progreso de tutoriales (same-origin,
+      // Next Route Handler): no pasa por el cliente de AtlasBackend a propósito.
+      "src/features/qa-tutorials/progress-remote.ts",
+    ]),
   },
   {
     label: "storage del navegador",
@@ -15,6 +20,8 @@ const checks = [
     allowed: new Set([
       "src/shared/auth/session-storage.ts",
       "src/shared/lib/local-search-history.ts",
+      // Caché (no fuente de verdad) del progreso de tutoriales de QA LAB.
+      "src/features/qa-tutorials/progress-storage.ts",
     ]),
   },
   {

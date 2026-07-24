@@ -85,3 +85,12 @@ nota aquí abajo y coordinamos.
     (login pablo). `next dev` compila rutas de forma lazy (login ~72s, la guía ~13s),
     así que la 1ª visita revienta el timeout de 30s → correr con `--timeout=90000` o
     precalentar las rutas. Screenshots en `test-results/qa-guia-*.png`.
+- 2026-07-24 — Agente QA-tutoriales: feature **`src/features/qa-tutorials/**`**
+  (tutoriales interactivos de QA LAB) + ruta `src/app/internal/qa/aprender`,
+  layout `src/app/internal/qa/layout.tsx`, endpoint `src/app/api/qa-tutorials/`,
+  y cableado ligero en `qa-lab-page.tsx`, `endpoint-test-card.tsx`,
+  `test-suites-page.tsx`, `nav-groups-primary.ts`. Añadí 2 entradas al allowlist
+  de `scripts/check-source-boundaries.mjs` (fetch same-origin + caché de
+  progreso). No toqué `shared/api/*` ni los boundaries de `app/`. Tests en
+  `tests/unit/features/qa-tutorials/**` (aditivos, no reescriben baterías).
+  Commit en rama `qa-lab-tutoriales-interactivos`.

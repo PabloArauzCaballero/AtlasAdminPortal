@@ -15,6 +15,7 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
@@ -49,7 +50,17 @@ function AuthorizedQaLabPage({
         description="Prueba unitaria de un endpoint (funcional + stress) o un journey de varios endpoints encadenados simulando un flujo real de negocio."
         actions={
           <>
-            <Link href="/internal/qa/guia">
+            <TutorialLaunchButton
+              tutorialId={
+                activeTab === "Prueba unitaria"
+                  ? "qa-lab-functional"
+                  : "qa-lab-journey"
+              }
+            />
+            <Link href="/internal/qa/aprender">
+              <Button>Centro de aprendizaje</Button>
+            </Link>
+            <Link href="/internal/qa/guia" data-tutorial-id="qa-lab-guide-link">
               <Button>Guía</Button>
             </Link>
             <Link href="/internal/qa/runs">
@@ -61,27 +72,37 @@ function AuthorizedQaLabPage({
           </>
         }
       />
-      <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      <div data-tutorial-id="qa-lab-tabs">
+        <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      </div>
       {activeTab === "Prueba unitaria" ? (
         <div className="space-y-6">
           <QaLabDocsPanel />
-          <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
+          <div data-tutorial-id="qa-lab-endpoint-picker">
+            <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
+          </div>
           {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
           {endpoint.data ? (
             <div className="grid gap-6 xl:grid-cols-2">
-              <EndpointTestCard
-                endpointId={endpointId}
-                endpoint={endpoint.data.endpoint}
-              />
-              <StressTestCard
-                endpointId={endpointId}
-                endpoint={endpoint.data.endpoint}
-              />
+              <div data-tutorial-id="qa-lab-functional-card">
+                <EndpointTestCard
+                  endpointId={endpointId}
+                  endpoint={endpoint.data.endpoint}
+                />
+              </div>
+              <div data-tutorial-id="qa-lab-stress-card">
+                <StressTestCard
+                  endpointId={endpointId}
+                  endpoint={endpoint.data.endpoint}
+                />
+              </div>
             </div>
           ) : null}
         </div>
       ) : (
-        <JourneyRunnerPanel />
+        <div data-tutorial-id="qa-lab-journey-panel">
+          <JourneyRunnerPanel />
+        </div>
       )}
     </>
   );

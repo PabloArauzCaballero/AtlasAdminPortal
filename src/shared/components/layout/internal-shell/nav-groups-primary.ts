@@ -178,6 +178,12 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["systems.endpoints.read"],
       },
       {
+        label: "Centro de aprendizaje",
+        href: "/internal/qa/aprender",
+        icon: GraduationCap,
+        permissions: ["systems.endpoints.read"],
+      },
+      {
         label: "Guía QA Lab",
         href: "/internal/qa/guia",
         icon: GraduationCap,

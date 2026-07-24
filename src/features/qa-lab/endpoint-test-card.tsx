@@ -148,13 +148,14 @@ export function EndpointTestCard({
         {runMutation.error ? <MutationError error={runMutation.error} /> : null}
         <Button
           variant="primary"
+          data-tutorial-id="qa-lab-run-functional"
           disabled={!endpointId || !canExecute || runMutation.isPending}
           onClick={tryExecute}
         >
           {form.dryRun ? "Previsualizar request" : "Ejecutar request real"}
         </Button>
         {runMutation.data ? (
-          <div className="space-y-3">
+          <div className="space-y-3" data-tutorial-id="qa-lab-functional-result">
             <RunResultSummary result={runMutation.data} />
             {runMutation.data.pinoLogFileName &&
             runMutation.data.pinoLogLines ? (
