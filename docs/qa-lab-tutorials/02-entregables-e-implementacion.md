@@ -70,6 +70,12 @@ Cambio automático de pestaña/página: `step.nextRoute` navega al entrar al pas
 | `qa-suites-new`            | Botón «Nueva suite»       | test-suites-page.tsx            |
 | `qa-suites-table`          | Tabla de suites           | test-suites-page.tsx            |
 | `qa-suite-form`            | Formulario de suite       | test-suites-page.tsx            |
+| `qa-suite-tabs`            | Pestañas del detalle      | test-suite-detail-page.tsx      |
+| `qa-suite-execution`       | Panel de ejecución        | suite-execution-panel.tsx       |
+| `qa-suite-run-button`      | Botón ejecutar suite      | suite-execution-panel.tsx       |
+| `qa-run-summary`           | Resumen del run           | test-run-detail-page.tsx        |
+| `qa-run-steps`             | Steps ejecutados          | test-run-detail-page.tsx        |
+| `qa-stress-new`            | Botón «Nuevo perfil»      | stress-profiles-page.tsx        |
 | `launch-<id>`              | Cada botón de tutorial    | tutorial-launch-button.tsx      |
 | `field-<key>`              | Cada etiqueta con ayuda   | field-help.tsx                  |
 | `error-help-<code>`        | Cada tarjeta de error     | error-help-card.tsx             |
@@ -117,8 +123,19 @@ para reapuntarse a AtlasBackend sin tocar la UI cuando exponga estos endpoints.
 - `src/features/qa-lab/qa-lab-page.tsx` — launch button, enlace al centro, anchors.
 - `src/features/qa-lab/endpoint-test-card.tsx` — anchors de run/resultado.
 - `src/features/qa-console/test-suites-page.tsx` — launch button, empty state autodescriptivo, anchors.
+- `src/features/qa-console/test-suite-detail-page.tsx` — launch button + anchor de pestañas.
+- `src/features/qa-console/test-runs-page.tsx` — launch button.
+- `src/features/qa-console/test-run-detail-page.tsx` — launch button + anchors de resumen/steps.
+- `src/features/qa-console/suite-execution-panel.tsx` — **`ErrorHelpCard`** ante fallo real (clasifica el status HTTP) + anchors.
+- `src/features/qa-stress/stress-profiles-page.tsx` — launch button + anchor `qa-stress-new`.
+- `src/features/qa-tutorials/error-catalog.ts` — `classifyHttpStatus` (status → código con ayuda).
 - `src/shared/components/layout/internal-shell/nav-groups-primary.ts` — ítem «Centro de aprendizaje».
 - `scripts/check-source-boundaries.mjs` — allowlist de `progress-remote.ts` (fetch same-origin) y `progress-storage.ts` (caché).
+
+Con esto, **las 8 herramientas de QA tienen botón de tutorial visible** (lab,
+suites lista/detalle, runs lista/detalle, stress) y la **ayuda contextual de
+errores está consumida en una superficie real** (ejecución de suite), no sólo
+disponible como componente.
 
 ### Eliminados
 

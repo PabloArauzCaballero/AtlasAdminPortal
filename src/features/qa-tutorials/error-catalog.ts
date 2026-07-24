@@ -166,6 +166,18 @@ const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
   },
 };
 
+/**
+ * Traduce un código de estado HTTP al código de error catalogado más cercano,
+ * para poder mostrar ayuda contextual a partir de un fallo real del backend.
+ * Devuelve `undefined` si no hay una explicación útil para ese estado.
+ */
+export function classifyHttpStatus(status: number): string | undefined {
+  if (status === 401 || status === 403) return "HTTP_401";
+  if (status === 404) return "HTTP_404";
+  if (status >= 500) return "HTTP_500";
+  return undefined;
+}
+
 export function explainError(code: string): ErrorExplanation | undefined {
   const base = catalog[code];
   if (!base) return undefined;

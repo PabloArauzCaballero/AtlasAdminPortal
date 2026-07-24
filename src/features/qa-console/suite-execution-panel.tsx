@@ -16,6 +16,8 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { ErrorHelpCard } from "@/features/qa-tutorials/error-help-card";
+import { classifyHttpStatus } from "@/features/qa-tutorials/error-catalog";
 import {
   DEFAULT_HEADERS,
   DEFAULT_LOCAL_BASE_URL,
@@ -99,9 +101,14 @@ export function SuiteExecutionPanel({
     );
   }
 
+  const errorHelpCode =
+    isAtlasApiError(runMutation.error) && runMutation.error.status
+      ? classifyHttpStatus(runMutation.error.status)
+      : undefined;
+
   return (
     <Card>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5" data-tutorial-id="qa-suite-execution">
         <div className="grid gap-4 xl:grid-cols-2">
           <Field label="Ambiente">
             <Select
@@ -190,10 +197,26 @@ export function SuiteExecutionPanel({
             }
           />
         ) : null}
+        {errorHelpCode ? (
+          <ErrorHelpCard
+            code={errorHelpCode}
+            technicalDetail={
+              isAtlasApiError(runMutation.error)
+                ? runMutation.error.message
+                : undefined
+            }
+            supportId={
+              isAtlasApiError(runMutation.error)
+                ? runMutation.error.requestId
+                : undefined
+            }
+          />
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="primary"
+            data-tutorial-id="qa-suite-run-button"
             disabled={!canSubmit}
             isLoading={runMutation.isPending}
             onClick={openConfirm}

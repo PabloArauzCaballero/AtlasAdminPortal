@@ -78,6 +78,9 @@ const suiteDetail: TutorialDefinition = {
   steps: [
     {
       id: "tabs",
+      target: "qa-suite-tabs",
+      position: "bottom",
+      waitForElement: true,
       title: "Las cuatro pestañas del detalle",
       content:
         "Resumen (qué es la suite) · Pasos (los casos que ejecuta) · Config (variables y ambiente) · Ejecución (lanzarla y ver el resultado).\n\nEl orden es también el flujo de trabajo: primero defines, luego configuras, luego ejecutas.",
@@ -121,12 +124,20 @@ const runsInterpret: TutorialDefinition = {
   steps: [
     {
       id: "what",
+      target: "qa-run-summary",
+      position: "top",
+      waitForElement: true,
+      optional: true,
       title: "¿Qué estás viendo?",
       content:
         "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.",
     },
     {
       id: "states",
+      target: "qa-run-steps",
+      position: "top",
+      waitForElement: true,
+      optional: true,
       title: "Los estados y su acción recomendada",
       content:
         "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → no falló la prueba, falló el entorno (DB caída, timeout de red); reintenta antes de reportar un bug.",

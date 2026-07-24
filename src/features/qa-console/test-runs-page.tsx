@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/button";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
@@ -101,9 +102,12 @@ function AuthorizedTestRunsPage() {
         title="Runs QA registrados en backend"
         description="Historial dinámico desde `/systems/test-runs`. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
-          <Link href="/internal/qa/lab">
-            <Button>Abrir QA Live Lab</Button>
-          </Link>
+          <div className="flex gap-2">
+            <TutorialLaunchButton tutorialId="qa-runs-interpret" />
+            <Link href="/internal/qa/lab">
+              <Button>Abrir QA Live Lab</Button>
+            </Link>
+          </div>
         }
       />
       <FilterBar

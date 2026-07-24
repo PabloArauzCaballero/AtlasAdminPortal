@@ -7,7 +7,10 @@ import {
   knownErrorCodes,
   tutorialCatalog,
 } from "@/features/qa-tutorials/catalog";
-import { allErrorExplanations } from "@/features/qa-tutorials/error-catalog";
+import {
+  allErrorExplanations,
+  classifyHttpStatus,
+} from "@/features/qa-tutorials/error-catalog";
 import { allFieldHelp } from "@/features/qa-tutorials/field-help-catalog";
 
 describe("catálogo de tutoriales · integridad", () => {
@@ -79,6 +82,20 @@ describe("catálogo de tutoriales · integridad", () => {
     for (const help of allFieldHelp()) {
       expect(help.tooltip.length).toBeGreaterThan(0);
       expect(help.help.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("classifyHttpStatus mapea estados a códigos con ayuda", () => {
+    expect(classifyHttpStatus(401)).toBe("HTTP_401");
+    expect(classifyHttpStatus(403)).toBe("HTTP_401");
+    expect(classifyHttpStatus(404)).toBe("HTTP_404");
+    expect(classifyHttpStatus(500)).toBe("HTTP_500");
+    expect(classifyHttpStatus(503)).toBe("HTTP_500");
+    expect(classifyHttpStatus(200)).toBeUndefined();
+    // Todo código devuelto debe existir en el catálogo de explicaciones.
+    for (const status of [401, 403, 404, 500, 502]) {
+      const code = classifyHttpStatus(status);
+      expect(knownErrorCodes()).toContain(code);
     }
   });
 });
