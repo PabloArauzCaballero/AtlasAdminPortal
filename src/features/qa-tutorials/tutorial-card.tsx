@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Loader2,
   MousePointerClick,
   SkipForward,
   X,
@@ -112,9 +113,9 @@ export function TutorialCard({
       ) : null}
 
       {missing ? (
-        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs leading-5 text-amber-800">
-          No encontramos el elemento en pantalla. Puedes continuar con el
-          recorrido de todas formas.
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-atlas-muted">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          Ubicando el elemento en esta pantalla… o continúa con «Siguiente».
         </p>
       ) : null}
       {awaiting ? (

@@ -7,6 +7,7 @@ import {
   useMemo,
   useReducer,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { getTutorial } from "./catalog";
 import {
   initialEngineState,
@@ -47,6 +48,8 @@ function nowIso(): string {
 export function TutorialProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { getProgress, statusFor, saveProgress } = useTutorialProgress();
   const [state, dispatch] = useReducer(
     (prev: EngineState, action: Parameters<typeof tutorialReducer>[2]) => {
@@ -84,12 +87,20 @@ export function TutorialProvider({
     (tutorialId: string, stepIndex = 0) => {
       const definition = getTutorial(tutorialId);
       if (!definition) return;
+      // Navega a la herramienta del tutorial si no estamos ya en ella: así los
+      // elementos que el recorrido resalta existen en pantalla (y no cae al
+      // estado "no encontramos el elemento"). El provider vive en el layout de
+      // /internal/qa, que persiste entre navegaciones, así que el recorrido no
+      // se interrumpe.
+      if (definition.route && !pathname.startsWith(definition.route)) {
+        router.push(definition.route);
+      }
       dispatch({ type: "START", tutorialId, stepIndex });
       saveProgress(
         progressOnStart(definition, getProgress(tutorialId), nowIso()),
       );
     },
-    [getProgress, saveProgress],
+    [getProgress, saveProgress, pathname, router],
   );
 
   const advance = useCallback(() => {

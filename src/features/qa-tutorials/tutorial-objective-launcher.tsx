@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ArrowRight, Target } from "lucide-react";
 import { getGoalTutorials } from "./catalog";
 import { statusVisual } from "./status-visuals";
@@ -8,10 +7,9 @@ import { useTutorial } from "./tutorial-provider";
 
 /**
  * Launcher por objetivo: «¿Qué quieres hacer?». El usuario elige una tarea de
- * negocio y el sistema navega a la herramienta correcta y arranca el recorrido.
+ * negocio y `start` navega a la herramienta correcta y arranca el recorrido.
  */
 export function TutorialObjectiveLauncher() {
-  const router = useRouter();
   const { start, statusFor } = useTutorial();
   const goals = getGoalTutorials();
 
@@ -33,10 +31,7 @@ export function TutorialObjectiveLauncher() {
             <li key={tutorial.id}>
               <button
                 type="button"
-                onClick={() => {
-                  router.push(tutorial.route);
-                  start(tutorial.id);
-                }}
+                onClick={() => start(tutorial.id)}
                 className="group flex w-full items-center justify-between gap-3 rounded-xl border border-atlas-border bg-atlas-soft/40 p-3 text-left transition-colors hover:border-atlas-accent/40 hover:bg-atlas-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
               >
                 <span className="min-w-0">

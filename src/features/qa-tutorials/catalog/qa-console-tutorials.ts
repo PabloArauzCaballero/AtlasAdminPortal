@@ -124,20 +124,12 @@ const runsInterpret: TutorialDefinition = {
   steps: [
     {
       id: "what",
-      target: "qa-run-summary",
-      position: "top",
-      waitForElement: true,
-      optional: true,
       title: "¿Qué estás viendo?",
       content:
-        "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.",
+        "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.\n\nAbre cualquier run de la lista para ver su resumen y los estados de cada paso.",
     },
     {
       id: "states",
-      target: "qa-run-steps",
-      position: "top",
-      waitForElement: true,
-      optional: true,
       title: "Los estados y su acción recomendada",
       content:
         "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → no falló la prueba, falló el entorno (DB caída, timeout de red); reintenta antes de reportar un bug.",

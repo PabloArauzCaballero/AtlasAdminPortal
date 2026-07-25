@@ -13,8 +13,12 @@ import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
 
 const CARD_SIZE = { width: 352, height: 300 };
-const WAIT_TIMEOUT_MS = 4000;
-const QUICK_TIMEOUT_MS = 400;
+// Cuánto esperamos a que un elemento estático aparezca antes de mostrar el
+// estado discreto "ubicando…". Generoso: tras navegar a la herramienta, la
+// página puede tardar en montar/compilar. Igual seguimos buscando en cada
+// frame, así que si aparece más tarde se resalta de todas formas.
+const WAIT_TIMEOUT_MS = 10_000;
+const QUICK_TIMEOUT_MS = 6_000;
 
 /**
  * Capa de spotlight: encuentra el target por `data-tutorial-id`, lo resalta
@@ -105,6 +109,14 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
           step.position,
         );
         applyPos(placeTooltip(nextRect, CARD_SIZE, viewport, placement));
+      } else if (step.requiredAction) {
+        // El elemento aparecerá cuando el usuario haga la acción del paso
+        // (seleccionar, abrir un panel, ejecutar…). No es un error: es parte
+        // del recorrido. Mantenemos el estado de espera —no "missing"— y
+        // seguimos buscando para resaltarlo en cuanto aparezca.
+        report(false);
+        applyRect(null);
+        applyPos(centered(viewport));
       } else {
         const elapsed =
           (typeof performance !== "undefined" ? performance.now() : 0) -
@@ -125,6 +137,7 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
     step.target,
     step.position,
     step.waitForElement,
+    step.requiredAction,
     onMissingChange,
   ]);
 
