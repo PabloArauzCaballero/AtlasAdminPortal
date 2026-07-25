@@ -43,6 +43,23 @@ export function resolvePlacement(
   return order.find((p) => fits[p]) ?? "bottom";
 }
 
+/**
+ * Recorta el rectángulo del elemento a la porción visible del viewport. Es la
+ * pieza que faltaba: un elemento más alto/ancho que la pantalla (p. ej. una
+ * lista larga) tenía su resaltado y su atenuado fuera de pantalla. Devuelve
+ * `null` si el elemento no intersecta el viewport.
+ */
+export function clampRectToViewport(rect: Rect, viewport: Size): Rect | null {
+  const top = Math.max(rect.top, 0);
+  const left = Math.max(rect.left, 0);
+  const right = Math.min(rect.left + rect.width, viewport.width);
+  const bottom = Math.min(rect.top + rect.height, viewport.height);
+  const width = right - left;
+  const height = bottom - top;
+  if (width <= 0 || height <= 0) return null;
+  return { top, left, width, height };
+}
+
 /** Coordenadas (top,left) del tooltip, ancladas al target y recortadas al viewport. */
 export function placeTooltip(
   target: Rect,

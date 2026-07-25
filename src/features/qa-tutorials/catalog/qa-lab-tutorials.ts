@@ -78,7 +78,7 @@ const functional: TutorialDefinition = {
     {
       id: "pick",
       target: "qa-lab-endpoint-picker",
-      title: "1 · Selecciona el endpoint",
+      title: "Selecciona el endpoint",
       content:
         "Elige el endpoint a probar. Al seleccionarlo verás su método (GET/POST…), su nivel de riesgo y si requiere prueba de carga.",
       position: "bottom",
@@ -91,7 +91,7 @@ const functional: TutorialDefinition = {
     {
       id: "review",
       target: "qa-lab-functional-card",
-      title: "2 · Revisa la configuración",
+      title: "Revisa la configuración",
       content:
         "La tarjeta funcional arma la petición por ti (ruta, método, cuerpo de ejemplo). Los datos sensibles se muestran enmascarados: nunca verás tokens ni contraseñas en claro.",
       position: "left",
@@ -100,7 +100,7 @@ const functional: TutorialDefinition = {
     {
       id: "run",
       target: "qa-lab-run-functional",
-      title: "3 · Ejecuta",
+      title: "Ejecuta la prueba",
       content:
         "Pulsa Ejecutar. QA LAB envía la petición real contra el ambiente seleccionado y espera la respuesta.",
       position: "top",
@@ -113,7 +113,7 @@ const functional: TutorialDefinition = {
     {
       id: "read",
       target: "qa-lab-functional-result",
-      title: "4 · Interpreta el resultado",
+      title: "Interpreta el resultado",
       content:
         "Mira el código de estado y el tiempo de respuesta:\n\n200 → salió bien.\n401 → falta autenticación o credenciales inválidas.\n404 → la ruta no existe.\n500 → error interno del servidor (el problema está en backend, no en tu prueba).",
       example:
