@@ -21,6 +21,8 @@ const stressProfile: TutorialDefinition = {
       title: "¿Qué es un perfil de stress?",
       content:
         "A diferencia del stress rápido del Lab, un perfil es una configuración de carga guardada y ejecutada por el backend: usuarios virtuales, escalado (ramp), duración y umbrales. Sirve para repetir la misma prueba de carga de forma consistente.",
+      example:
+        "Perfil «Login — pico de campaña»: sube de 0 a 500 VUs en 30s, mantiene 2 min, umbral p95 800 ms. Lo corres igual antes de cada release.",
     },
     {
       id: "new",
@@ -28,6 +30,8 @@ const stressProfile: TutorialDefinition = {
       title: "Nuevo perfil",
       content:
         "Crea el perfil con «Nuevo perfil de stress». Todos los valores tienen ayuda contextual: no necesitas saber de antemano qué es un p95 o un ramp-up.",
+      example:
+        "El «ramp-up» es cuánto tardas en llegar a la carga máxima: subir de golpe a 500 VUs no es lo mismo que subir en 30s.",
       position: "bottom",
       waitForElement: true,
       optional: true,
@@ -46,6 +50,8 @@ const stressProfile: TutorialDefinition = {
       title: "Leer el historial",
       content:
         "Cada corrida queda en «Historial de stress runs» con su p95, throughput y errores. Compara corridas entre sí para ver si un cambio mejoró o empeoró el rendimiento.",
+      example:
+        "Antes del cambio: p95 1200 ms. Después de añadir caché: p95 400 ms con la misma carga. El historial lo prueba con datos.",
     },
   ],
 };

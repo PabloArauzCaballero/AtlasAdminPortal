@@ -44,7 +44,10 @@ export function EndpointPicker({
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_260px_auto]">
+        <div
+          className="grid gap-3 lg:grid-cols-[1fr_260px_auto]"
+          data-tutorial-id="qa-lab-endpoint-search"
+        >
           <FilterBar
             search={q}
             searchPlaceholder="Buscar ruta, módulo o acción..."

@@ -36,6 +36,12 @@ src/features/qa-tutorials/
 porcentajes, fusión de progreso, geometría) es **pura y testeada en aislamiento**;
 los efectos (DOM, red, rAF) viven en hooks/componentes finos.
 
+**Demos interactivas en la tarjeta**: un paso puede declarar `demo` para
+incrustar una visualización viva. `qa-lab-stress` usa `demo: "latency"` →
+`latency-demo-chart.tsx` anima la curva de latencia p95 **a medida que se
+procesan las peticiones**, como ejemplo de cómo se lee una prueba de carga.
+Los pasos también llevan `example` (bloque de ejemplo práctico) donde aporta.
+
 ## 2. Reactividad (reacciona a acciones reales)
 
 `use-tutorial-runtime.ts` implementa los gates:
@@ -61,6 +67,7 @@ Cambio automático de pestaña/página: `step.nextRoute` navega al entrar al pas
 | -------------------------- | ------------------------- | ------------------------------- |
 | `qa-lab-tabs`              | Pestañas del lab          | qa-lab-page.tsx                 |
 | `qa-lab-endpoint-picker`   | Selector de endpoint      | qa-lab-page.tsx                 |
+| `qa-lab-endpoint-search`   | Buscador del selector     | endpoint-picker.tsx             |
 | `qa-lab-functional-card`   | Tarjeta funcional         | qa-lab-page.tsx                 |
 | `qa-lab-run-functional`    | Botón ejecutar            | endpoint-test-card.tsx          |
 | `qa-lab-functional-result` | Resultado de la ejecución | endpoint-test-card.tsx          |
