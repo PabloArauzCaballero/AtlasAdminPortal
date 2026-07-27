@@ -9,6 +9,7 @@ import {
   useTestSuites,
 } from "@/features/systems/hooks";
 import {
+  moduleDescription,
   moduleKeyForDomainCode,
   normalizeModule,
 } from "@/features/systems/domain-module-map";
@@ -194,6 +195,12 @@ function AuthorizedBusinessDomainsPage() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {domains.map((domain) => {
                   const catalog = domainCatalogByModule.get(domain.key);
+                  // Prioridad: descripción del catálogo del backend →
+                  // descripción de respaldo del módulo → texto genérico.
+                  const description =
+                    catalog?.description?.trim() ||
+                    moduleDescription(domain.key) ||
+                    "Sin descripción registrada en el catálogo de dominios.";
                   return (
                     <article
                       key={domain.key}
@@ -217,8 +224,7 @@ function AuthorizedBusinessDomainsPage() {
                         />
                       </div>
                       <p className="mt-2 text-xs italic text-atlas-muted">
-                        {catalog?.description ??
-                          "Sin descripción registrada en el catálogo de dominios."}
+                        {description}
                       </p>
                       <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                         <span className="rounded-md bg-atlas-soft p-2">
