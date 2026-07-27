@@ -32,10 +32,13 @@ sin inventar recorridos sobre funcionalidad inexistente.
   pasos explican la vista; sus `data-tutorial-id` finos se pueden añadir de forma
   incremental (el motor degrada con gracia si un target no existe).
 
-## Deuda técnica preexistente (ajena a esta tarea)
+## Estado de las guardas del proyecto
 
-- `src/features/qa-lab/guide/guide-stress-chart.tsx` tiene 301 líneas y el chequeo
-  `max-lines` (umbral 300) lo reporta. No fue modificado por esta tarea.
+- `npm run validate` (max-lines, source-boundaries, format:check, type-check,
+  lint) pasa en verde en la rama. Se corrigió de paso: `guide-stress-chart.tsx`
+  (301→299 líneas) que `max-lines` marcaba, y se reformatearon con Prettier 3
+  archivos ya commiteados que `format:check` reportaba (2 de `shared/api` del
+  agente de hardening — solo whitespace, anotado en `docs/AGENT-COORDINATION.md`).
 - `git status` muestra bajas en `mock-server/**` y cambios en `systems*` previos
   al inicio de esta tarea; no forman parte de este entregable.
 

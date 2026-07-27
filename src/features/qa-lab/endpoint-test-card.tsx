@@ -155,7 +155,10 @@ export function EndpointTestCard({
           {form.dryRun ? "Previsualizar request" : "Ejecutar request real"}
         </Button>
         {runMutation.data ? (
-          <div className="space-y-3" data-tutorial-id="qa-lab-functional-result">
+          <div
+            className="space-y-3"
+            data-tutorial-id="qa-lab-functional-result"
+          >
             <RunResultSummary result={runMutation.data} />
             {runMutation.data.pinoLogFileName &&
             runMutation.data.pinoLogLines ? (

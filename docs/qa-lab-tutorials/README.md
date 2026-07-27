@@ -23,8 +23,9 @@ técnicos.
   elemento, input, cambio de ruta) y resaltan el elemento por `data-tutorial-id`.
 - **Persistencia**: `/api/qa-tutorials/progress` (backend, fuente de verdad) +
   caché de navegador.
-- **Pruebas**: 43 unit/integración (incluye flujo completo con reactividad y
-  persistencia) + E2E Playwright.
+- **Pruebas**: ~50 unit/integración de tutoriales (incluye flujo completo con
+  reactividad y persistencia) + E2E Playwright. La suite completa del proyecto
+  pasa en verde (1755 tests) y `npm run validate` sale limpio.
 
 ## Probar
 

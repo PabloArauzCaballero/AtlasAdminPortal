@@ -3,14 +3,11 @@
 ## Resultado de ejecución (vitest)
 
 ```
-tests/unit/features/qa-tutorials → 8 archivos, 43 tests → 43 passed
-Suites existentes afectadas (qa-lab + qa-console) → 700 passed (sin regresiones)
-Guardas de arquitectura: max-lines OK* · source-boundaries OK · eslint OK
-type-check (tsc --noEmit) → exit 0 · prettier --check → OK
+tests/unit/features/qa-tutorials → ~50 tests → passed
+Suite completa del proyecto (vitest run) → 1755 passed (sin regresiones)
+npm run validate → EXIT 0 (max-lines · source-boundaries · format:check ·
+                            type-check · lint, todo en verde)
 ```
-
-\* `max-lines` sólo reporta `guide-stress-chart.tsx` (301 líneas, preexistente y
-ajeno a esta tarea; ver `05-matriz-cumplimiento.md` y `06-limitaciones.md`).
 
 ## Pruebas unitarias / integración (frontend + "backend")
 

@@ -18,10 +18,10 @@
 | 12  | Estados vacíos autodescriptivos                                       | ✅         | Empty state de suites (qué/para qué/ejemplo/acción/tutorial)                                                                    |
 | 13  | Tooltips comprensibles                                                | ✅         | `field-help-catalog.ts` + `InfoDot` accesible                                                                                   |
 | 14  | Usable por alguien sin conocimiento previo                            | ✅         | Onboarding `qa-lab-overview` + explicaciones de negocio                                                                         |
-| 15  | Pruebas frontend/backend/Playwright pasan                             | ✅*        | vitest 43/43; e2e escrita (requiere entorno E2E)                                                                                |
+| 15  | Pruebas frontend/backend/Playwright pasan                             | ✅*        | vitest verde (suite completa 1755); e2e escrita (requiere entorno E2E)                                                          |
 | 16  | Sin tutoriales simulados/decorativos                                  | ✅         | Todos los recorridos operan sobre elementos reales; los inexistentes se omiten con honestidad                                   |
 
-\* La verificación automática ejecutable aquí es vitest (43/43, cubre arranque →
+\* La verificación automática ejecutable aquí es vitest (~50 en qa-tutorials, cubre arranque →
 reactividad → persistencia). La E2E Playwright requiere el entorno local
 levantado (documentado).
 

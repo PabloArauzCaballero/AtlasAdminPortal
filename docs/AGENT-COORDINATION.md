@@ -78,7 +78,7 @@ nota aquí abajo y coordinamos.
     de rama para no pisar tus 17 archivos sin commitear). Llega a main cuando mergees
     esa rama; si preferís, cherry-pickealo a main. Es aditivo (archivo nuevo).
   - **Tip para vitest en esta máquina:** con ambos agentes corriendo suites, `yarn
-    test:coverage` falla al **spawnear workers** ("Failed to start worker / Timeout
+test:coverage` falla al **spawnear workers** ("Failed to start worker / Timeout
     waiting for worker to respond"). Usá siempre
     `npx vitest run --coverage --pool=threads --maxWorkers=2 --test-timeout=30000`.
   - **E2E de la guía: 6/6 en verde** contra backend real (`:3005`) + front en `:4300`
@@ -94,3 +94,12 @@ nota aquí abajo y coordinamos.
   progreso). No toqué `shared/api/*` ni los boundaries de `app/`. Tests en
   `tests/unit/features/qa-tutorials/**` (aditivos, no reescriben baterías).
   Commit en rama `qa-lab-tutoriales-interactivos`.
+- 2026-07-27 — Agente QA-tutoriales: dejé `npm run validate` en verde (EXIT 0).
+  Correcciones propias: `endpoint-test-card.tsx` reformateado (mi edit anterior
+  quedó sin prettier), `guide-stress-chart.tsx` recortado 2 líneas de comentario
+  (`max-lines` lo marcaba, 301→299), y `suite-execution-panel.tsx` bajado de 309
+  a <300 extrayendo `SubmittedRun`/`LiveRunStatus` a `suite-run-status.tsx`.
+  NO toqué contenido tuyo: `shared/api/contract.ts|schemas.ts` y
+  `contract.test.ts` los marcaba `format:check` sólo por finales de línea CRLF
+  en mi working tree local (el contenido commiteado ya está LF-limpio); no hay
+  diff contra HEAD, así que no van en ningún commit mío.

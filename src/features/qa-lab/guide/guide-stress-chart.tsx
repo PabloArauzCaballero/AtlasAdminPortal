@@ -17,9 +17,7 @@ import {
 } from "./guide-stress-timeline";
 
 // Réplica didáctica del gráfico real (`StressLatencyChart`): mismas variables
-// —hits/seg, p95, promedio, segundos con error— pero animada segundo a segundo
-// para que el usuario vea "el avance" de una corrida sin ejecutar carga real.
-
+// (hits/seg, p95, promedio, errores) animada segundo a segundo, sin carga real.
 export function GuideStressChart() {
   const timeline = useMemo(buildDemoTimeline, []);
   const [progress, setProgress] = useState(0);
