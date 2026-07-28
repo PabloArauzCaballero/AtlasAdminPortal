@@ -1,16 +1,25 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LockKeyhole } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/shared/auth/auth-context";
 import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { AnimatedBackground } from "@/shared/components/layout/animated-background";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input } from "@/shared/components/ui/input";
-import { ErrorState } from "@/shared/components/ui/states";
+import { LoginField } from "./login-field";
+import { LoginHero } from "./login-hero";
 
 const loginSchema = z.object({
   tenantId: z.string().trim().min(1, "El tenant es obligatorio."),
@@ -24,6 +33,7 @@ export function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -54,44 +64,21 @@ export function LoginPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-stretch bg-[#F6F7F8]">
-      <section className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-atlas-mesh p-12 text-white lg:flex">
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06]">
-            <LockKeyhole className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold tracking-[0.08em]">ATLAS</p>
-            <p className="text-[0.6875rem] text-slate-500">Portal interno</p>
-          </div>
-        </div>
-        <div className="relative max-w-md">
-          <p className="mb-4 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-[#9AABEF]">
-            Control operativo
-          </p>
-          <h2 className="text-3xl font-semibold leading-[1.15] tracking-[-0.035em]">
-            Sistemas, QA y gobierno de datos en un solo lugar.
-          </h2>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">
-            Monitorea catálogos, calidad de datos, lineage y auditoría
-            conectados en tiempo real al servicio interno de ATLAS.
-          </p>
-        </div>
-        <p className="relative text-[0.6875rem] text-slate-600">
-          © {new Date().getFullYear()} ATLAS · Uso interno
-        </p>
-      </section>
+    <main className="relative flex min-h-screen items-stretch overflow-hidden bg-atlas-bg">
+      <AnimatedBackground variant="app" />
+      <LoginHero />
 
-      <section className="flex w-full flex-1 items-center justify-center p-5 lg:w-[54%]">
-        <div className="w-full max-w-sm rounded-xl border border-atlas-border bg-white p-6 shadow-card lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+      <section className="relative flex w-full flex-1 items-center justify-center p-5 lg:w-[54%]">
+        <div className="glass w-full max-w-sm animate-scale-in rounded-2xl border border-atlas-border/70 p-6 shadow-card sm:p-7">
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-atlas-primary text-white">
-              <LockKeyhole className="h-5 w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-gradient text-lg font-semibold text-white shadow-md">
+              A
             </div>
             <div>
               <h1 className="text-lg font-semibold text-atlas-text">
                 Acceso interno ATLAS
               </h1>
+              <p className="text-xs text-atlas-muted">Portal interno</p>
             </div>
           </div>
           <div className="mb-6 hidden lg:block">
@@ -104,11 +91,17 @@ export function LoginPage() {
           </div>
 
           {errors.root?.message ? (
-            <div className="mb-4">
-              <ErrorState
-                title="No se pudo iniciar sesión"
-                description={errors.root.message}
-              />
+            <div
+              role="alert"
+              className="mb-4 flex animate-slide-up items-start gap-2.5 rounded-xl border border-red-200 bg-red-50/90 p-3 text-sm text-red-800"
+            >
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+              <div>
+                <p className="font-semibold">No se pudo iniciar sesión</p>
+                <p className="mt-0.5 text-xs text-red-700">
+                  {errors.root.message}
+                </p>
+              </div>
             </div>
           ) : null}
 
@@ -116,30 +109,79 @@ export function LoginPage() {
             className="space-y-4"
             onSubmit={(event) => void onSubmit(event)}
           >
-            <Field
+            <LoginField
+              id="login-tenant"
               label="Tenant"
+              icon={Building2}
+              autoComplete="organization"
               error={errors.tenantId?.message}
-              hint="Usa el tenant configurado para el ambiente interno."
-            >
-              <Input {...register("tenantId")} autoComplete="organization" />
-            </Field>
-            <Field label="Correo interno" error={errors.email?.message}>
-              <Input {...register("email")} type="email" autoComplete="email" />
-            </Field>
-            <Field label="Contraseña" error={errors.password?.message}>
-              <Input
-                {...register("password")}
-                type="password"
-                autoComplete="current-password"
-              />
-            </Field>
+              {...register("tenantId")}
+            />
+            <LoginField
+              id="login-email"
+              label="Correo interno"
+              icon={Mail}
+              type="email"
+              autoComplete="email"
+              placeholder="tu.usuario@atlas.internal"
+              error={errors.email?.message}
+              {...register("email")}
+            />
+            <LoginField
+              id="login-password"
+              label="Contraseña"
+              icon={LockKeyhole}
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              error={errors.password?.message}
+              trailing={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                  aria-pressed={showPassword}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-atlas-soft hover:text-atlas-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              }
+              {...register("password")}
+            />
+
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-atlas-muted">
+                <input
+                  type="checkbox"
+                  defaultChecked
+                  className="h-4 w-4 rounded border-slate-300 text-atlas-accent focus-visible:ring-atlas-accent/40"
+                />
+                Recordar sesión
+              </label>
+              <details className="group text-right">
+                <summary className="cursor-pointer list-none text-xs font-medium text-atlas-accent hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </summary>
+                <p className="mt-1 text-[0.6875rem] leading-4 text-atlas-muted">
+                  Solicita el restablecimiento al administrador del portal.
+                </p>
+              </details>
+            </div>
+
             <Button
-              className="h-10 w-full"
+              className="w-full"
+              size="lg"
               variant="primary"
               type="submit"
-              disabled={isSubmitting}
+              isLoading={isSubmitting}
+              loadingText="Validando…"
             >
-              {isSubmitting ? "Validando…" : "Entrar al portal interno"}
+              Entrar al portal interno
             </Button>
           </form>
         </div>
