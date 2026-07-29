@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { cn } from "@/shared/lib/cn";
 import { useWorkflowTree, useWorkflowVersions, useWorkflows } from "./hooks";
 import {
   WorkflowControls,
@@ -14,18 +16,17 @@ import {
 import { WorkflowDetail } from "./workflow-detail";
 import { WorkflowGraphView } from "./workflow-graph-view";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
-import type { WorkflowStage, WorkflowTreeQuery } from "./types";
+import type { WorkflowStage, WorkflowTree, WorkflowTreeQuery } from "./types";
 
 const STANDARD_WORKFLOW = "customer_credit_journey";
 
 /**
- * Lienzo del recorrido: el árbol de decisión del proceso, tal como lo declara
- * el catálogo de flujos del backend (`/api/v1/workflows`).
+ * Vista del recorrido: el árbol de decisión del proceso, tal como lo declara el
+ * catálogo de flujos del backend (`/api/v1/workflows`).
  *
- * No se dibuja un flujo inventado ni derivado del portal: se lee el catálogo
- * versionado —etapas, subetapas, pasos con su endpoint real, transiciones con
- * su condición y dependencias— y se pinta. Si el backend publica una versión
- * nueva del flujo, esta vista la refleja sin tocar código.
+ * El lienzo manda: ocupa todo el ancho y la ficha del elemento seleccionado se
+ * abre FLOTANDO encima. Cuando la ficha era una columna del grid, el grafo
+ * quedaba encajonado y no se veían ni tres etapas seguidas.
  */
 export function WorkflowCanvas() {
   const [workflowCode, setWorkflowCode] = useState(STANDARD_WORKFLOW);
@@ -34,6 +35,7 @@ export function WorkflowCanvas() {
   });
   const [selection, setSelection] = useState<WorkflowSelection>(null);
   const [showDependencies, setShowDependencies] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const workflows = useWorkflows();
   const versions = useWorkflowVersions(workflowCode);
@@ -43,6 +45,60 @@ export function WorkflowCanvas() {
     () => (tree.data ? collectModules(tree.data.stages) : []),
     [tree.data],
   );
+
+  // En pantalla completa, Escape sale: es lo que espera cualquiera que haya
+  // entrado sin fijarse en el botón.
+  useEffect(() => {
+    if (!expanded) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [expanded]);
+
+  const controls = (
+    <div data-tutorial-id="workflow-controls">
+      <WorkflowControls
+        workflows={workflows.data ?? []}
+        workflowCode={workflowCode}
+        versions={versions.data ?? []}
+        filters={filters}
+        modules={modules}
+        showDependencies={showDependencies}
+        onShowDependenciesChange={setShowDependencies}
+        onWorkflowChange={(code) => {
+          setWorkflowCode(code);
+          setFilters({ version: "latest" });
+          setSelection(null);
+        }}
+        onFiltersChange={(next) => {
+          setFilters(next);
+          setSelection(null);
+        }}
+      />
+    </div>
+  );
+
+  const body = (
+    <WorkflowBody
+      tree={tree}
+      selection={selection}
+      showDependencies={showDependencies}
+      expanded={expanded}
+      onSelect={setSelection}
+      onToggleExpanded={() => setExpanded((value) => !value)}
+    />
+  );
+
+  if (expanded) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-atlas-soft p-4">
+        {controls}
+        <div className="min-h-0 flex-1">{body}</div>
+      </div>
+    );
+  }
 
   return (
     <div data-tutorial-id="workflow-canvas">
@@ -55,33 +111,8 @@ export function WorkflowCanvas() {
           />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div data-tutorial-id="workflow-controls">
-            <WorkflowControls
-              workflows={workflows.data ?? []}
-              workflowCode={workflowCode}
-              versions={versions.data ?? []}
-              filters={filters}
-              modules={modules}
-              showDependencies={showDependencies}
-              onShowDependenciesChange={setShowDependencies}
-              onWorkflowChange={(code) => {
-                setWorkflowCode(code);
-                setFilters({ version: "latest" });
-                setSelection(null);
-              }}
-              onFiltersChange={(next) => {
-                setFilters(next);
-                setSelection(null);
-              }}
-            />
-          </div>
-
-          <WorkflowBody
-            tree={tree}
-            selection={selection}
-            showDependencies={showDependencies}
-            onSelect={setSelection}
-          />
+          {controls}
+          {body}
         </CardContent>
       </Card>
     </div>
@@ -92,12 +123,16 @@ function WorkflowBody({
   tree,
   selection,
   showDependencies,
+  expanded,
   onSelect,
+  onToggleExpanded,
 }: Readonly<{
   tree: ReturnType<typeof useWorkflowTree>;
   selection: WorkflowSelection;
   showDependencies: boolean;
+  expanded: boolean;
   onSelect: (selection: WorkflowSelection) => void;
+  onToggleExpanded: () => void;
 }>) {
   if (tree.isLoading) return <LoadingSkeleton rows={6} />;
   if (tree.error) {
@@ -127,13 +162,14 @@ function WorkflowBody({
   }
 
   return (
-    <>
-      <WorkflowTotals tree={tree.data} />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_21rem]">
+    <div className={cn("flex flex-col gap-3", expanded && "h-full min-h-0")}>
+      {expanded ? null : <WorkflowTotals tree={tree.data} />}
+      <div className={cn("relative", expanded && "min-h-0 flex-1")}>
         <WorkflowGraphView
           tree={tree.data}
           selection={selection}
           showDependencies={showDependencies}
+          expanded={expanded}
           onSelect={(next) =>
             onSelect(
               selection &&
@@ -144,23 +180,82 @@ function WorkflowBody({
                 : next,
             )
           }
+          onToggleExpanded={onToggleExpanded}
         />
-        <div className="space-y-3">
-          <div data-tutorial-id="workflow-detail">
-            <WorkflowDetail tree={tree.data} selection={selection} />
+        <SidePanel
+          tree={tree.data}
+          selection={selection}
+          onClose={() => onSelect(null)}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Ficha y leyenda flotando sobre el lienzo, sin robarle ancho. */
+function SidePanel({
+  tree,
+  selection,
+  onClose,
+}: Readonly<{
+  tree: WorkflowTree;
+  selection: WorkflowSelection;
+  onClose: () => void;
+}>) {
+  const [legendOpen, setLegendOpen] = useState(false);
+
+  return (
+    <div className="pointer-events-none absolute inset-y-3 right-3 flex w-[21rem] max-w-[calc(100%-1.5rem)] flex-col gap-2 overflow-hidden">
+      <div className="pointer-events-auto flex justify-end">
+        <button
+          type="button"
+          onClick={() => setLegendOpen((open) => !open)}
+          aria-expanded={legendOpen}
+          className="rounded-lg border border-atlas-border bg-white/95 px-3 py-1.5 text-xs font-medium text-atlas-text shadow-subtle hover:bg-atlas-soft"
+        >
+          {legendOpen ? "Ocultar leyenda" : "Cómo leer el flujo"}
+        </button>
+      </div>
+
+      {legendOpen ? (
+        <div
+          data-tutorial-id="workflow-legend"
+          className="pointer-events-auto rounded-2xl border border-atlas-border bg-white/97 p-3 shadow-lg backdrop-blur"
+        >
+          <WorkflowLegend />
+        </div>
+      ) : null}
+
+      {selection ? null : (
+        <div className="pointer-events-none flex justify-end">
+          <p className="max-w-[18rem] rounded-lg border border-atlas-border bg-white/90 px-3 py-2 text-[0.6875rem] leading-4 text-atlas-muted shadow-subtle">
+            Pulsa un nodo, la cabecera de una etapa o una flecha para ver qué
+            declara el catálogo.
+          </p>
+        </div>
+      )}
+
+      {selection ? (
+        <div
+          data-tutorial-id="workflow-detail"
+          className="atlas-scrollbar pointer-events-auto min-h-0 flex-1 overflow-y-auto rounded-2xl border border-atlas-border bg-white/97 shadow-lg backdrop-blur"
+        >
+          <div className="sticky top-0 z-10 flex justify-end bg-white/90 p-2 backdrop-blur">
+            <button
+              type="button"
+              aria-label="Cerrar la ficha"
+              onClick={onClose}
+              className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <div
-            data-tutorial-id="workflow-legend"
-            className="rounded-2xl border border-atlas-border bg-white p-3"
-          >
-            <p className="mb-2 text-xs font-semibold text-atlas-text">
-              Cómo leer el flujo
-            </p>
-            <WorkflowLegend />
+          <div className="px-4 pb-4">
+            <WorkflowDetail tree={tree} selection={selection} />
           </div>
         </div>
-      </div>
-    </>
+      ) : null}
+    </div>
   );
 }
 

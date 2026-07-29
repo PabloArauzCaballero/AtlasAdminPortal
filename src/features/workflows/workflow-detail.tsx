@@ -21,15 +21,7 @@ export function WorkflowDetail({
   tree,
   selection,
 }: Readonly<{ tree: WorkflowTree; selection: WorkflowSelection }>) {
-  if (!selection) {
-    return (
-      <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-xs leading-5 text-atlas-muted">
-        Pulsa una etapa, un paso o una flecha del flujo para ver qué declara el
-        catálogo: quién lo ejecuta, en qué estado del cliente, de qué depende y
-        qué deja para los siguientes.
-      </p>
-    );
-  }
+  if (!selection) return null;
 
   const body =
     selection.kind === "transition"
@@ -38,11 +30,8 @@ export function WorkflowDetail({
         ? renderStage(tree, selection.code)
         : renderStep(tree, selection.code);
 
-  return (
-    <div className="space-y-3 rounded-2xl border border-atlas-border bg-white p-4 shadow-subtle">
-      {body}
-    </div>
-  );
+  // Sin marco propio: va dentro del panel flotante del lienzo, que ya lo pone.
+  return <div className="space-y-3">{body}</div>;
 }
 
 function renderStage(tree: WorkflowTree, code: string) {

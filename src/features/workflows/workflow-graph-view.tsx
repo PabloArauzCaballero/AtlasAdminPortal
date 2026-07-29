@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Maximize2, Minus, Plus, Scan } from "lucide-react";
+import { cn } from "@/shared/lib/cn";
 import { EdgeMarkers } from "./workflow-edges";
+import { GraphControls } from "./workflow-graph-controls";
 import {
   DependencyLayer,
   TerminalLayer,
@@ -24,6 +25,7 @@ import {
   INITIAL_VIEWPORT,
   type Viewport,
 } from "./workflow-viewport";
+import { WorkflowMinimap } from "./workflow-minimap";
 import type { WorkflowTree } from "./types";
 
 /**
@@ -36,12 +38,16 @@ export function WorkflowGraphView({
   tree,
   selection,
   showDependencies,
+  expanded,
   onSelect,
+  onToggleExpanded,
 }: Readonly<{
   tree: WorkflowTree;
   selection: WorkflowSelection;
   showDependencies: boolean;
+  expanded: boolean;
   onSelect: (selection: WorkflowSelection) => void;
+  onToggleExpanded: () => void;
 }>) {
   const layout = useMemo(
     () => layoutWorkflowGraph(tree.stages, tree.transitions),
@@ -58,12 +64,34 @@ export function WorkflowGraphView({
 
   const hostRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
+  const [hostSize, setHostSize] = useState({ width: 0, height: 0 });
   const dragRef = useRef<{ x: number; y: number } | null>(null);
+
+  // El tamaño del lienzo cambia al entrar en pantalla completa o al redimensionar
+  // la ventana; sin observarlo, el encuadre y el minimapa quedarían desfasados.
+  // `ResizeObserver` no existe en jsdom (ni en algún navegador viejo): sin este
+  // repliegue, el lienzo entero reventaba en las pruebas.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const measure = () => {
+      const box = host.getBoundingClientRect();
+      setHostSize({ width: box.width, height: box.height });
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
 
   const applyFit = useCallback(
     (mode: "height" | "all") => {
       const host = hostRef.current?.getBoundingClientRect();
-      if (!host) return;
+      if (!host || host.width === 0) return;
       const content = { width: layout.width, height: layout.height };
       const view = { width: host.width, height: host.height };
       setViewport(
@@ -73,11 +101,20 @@ export function WorkflowGraphView({
     [layout.width, layout.height],
   );
 
-  // Al abrir (y al cambiar el flujo o su filtro) se encuadra por alto: los
-  // nodos se leen y el recorrido se explora a lo ancho.
+  // Al abrir (y al cambiar el flujo, su filtro o el tamaño del lienzo) se
+  // encuadra por alto: los nodos se leen y el recorrido se explora a lo ancho.
   useEffect(() => {
     applyFit("height");
-  }, [applyFit]);
+  }, [applyFit, hostSize.width, hostSize.height]);
+
+  /** Centra el lienzo en un punto del contenido (usado por el minimapa). */
+  function jumpTo(point: { x: number; y: number }) {
+    setViewport((current) => ({
+      ...current,
+      x: hostSize.width / 2 - point.x * current.scale,
+      y: hostSize.height / 2 - point.y * current.scale,
+    }));
+  }
 
   function handleWheel(event: React.WheelEvent) {
     if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
@@ -99,11 +136,14 @@ export function WorkflowGraphView({
   }
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div
         ref={hostRef}
         data-tutorial-id="workflow-graph"
-        className="h-[70vh] min-h-[26rem] cursor-grab overflow-hidden rounded-2xl border border-atlas-border bg-[radial-gradient(circle,#e2e8f0_1px,transparent_1px)] bg-white [background-size:22px_22px] active:cursor-grabbing"
+        className={cn(
+          "cursor-grab overflow-hidden rounded-2xl border border-atlas-border bg-[radial-gradient(circle,#e2e8f0_1px,transparent_1px)] bg-white [background-size:22px_22px] active:cursor-grabbing",
+          expanded ? "h-full" : "h-[calc(100vh-19rem)] min-h-[30rem]",
+        )}
         onWheel={handleWheel}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
@@ -223,33 +263,23 @@ export function WorkflowGraphView({
         </svg>
       </div>
 
-      <div className="absolute bottom-3 right-3 flex items-center gap-1 rounded-lg border border-atlas-border bg-white/95 p-1 shadow-subtle">
-        <ZoomButton
-          label="Alejar"
-          onClick={() =>
-            setViewport((v) => zoomAt(v, 1 / 1.2, center(hostRef)))
-          }
-        >
-          <Minus className="h-4 w-4" />
-        </ZoomButton>
-        <span className="w-12 text-center text-[0.6875rem] tabular-nums text-atlas-muted">
-          {Math.round(viewport.scale * 100)}%
-        </span>
-        <ZoomButton
-          label="Acercar"
-          onClick={() => setViewport((v) => zoomAt(v, 1.2, center(hostRef)))}
-        >
-          <Plus className="h-4 w-4" />
-        </ZoomButton>
-        <ZoomButton
-          label="Encuadrar a tamaño de lectura"
-          onClick={() => applyFit("height")}
-        >
-          <Scan className="h-4 w-4" />
-        </ZoomButton>
-        <ZoomButton label="Ver el flujo entero" onClick={() => applyFit("all")}>
-          <Maximize2 className="h-4 w-4" />
-        </ZoomButton>
+      <GraphControls
+        viewport={viewport}
+        expanded={expanded}
+        onZoom={(factor) =>
+          setViewport((current) => zoomAt(current, factor, center(hostRef)))
+        }
+        onFit={applyFit}
+        onToggleExpanded={onToggleExpanded}
+      />
+
+      <div className="absolute bottom-3 left-3">
+        <WorkflowMinimap
+          layout={layout}
+          viewport={viewport}
+          host={hostSize}
+          onJump={jumpTo}
+        />
       </div>
     </div>
   );
@@ -258,26 +288,4 @@ export function WorkflowGraphView({
 function center(ref: React.RefObject<HTMLDivElement | null>) {
   const box = ref.current?.getBoundingClientRect();
   return { x: (box?.width ?? 0) / 2, y: (box?.height ?? 0) / 2 };
-}
-
-function ZoomButton({
-  label,
-  onClick,
-  children,
-}: Readonly<{
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}>) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className="rounded-md p-1.5 text-atlas-muted transition-colors hover:bg-atlas-soft hover:text-atlas-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
-    >
-      {children}
-    </button>
-  );
 }

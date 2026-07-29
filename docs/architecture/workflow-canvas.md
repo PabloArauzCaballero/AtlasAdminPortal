@@ -29,11 +29,17 @@ produciría flechas huérfanas.
   `panBy`, `fitHeight` (encuadre de apertura, tamaño de lectura) y `fitToView`
   (ver el flujo entero). Escala acotada a 0.2–2.
 - `workflow-graph-view.tsx` — lienzo navegable: arrastrar para mover, rueda para
-  desplazar, Ctrl/⌘/Shift + rueda para zoom. **Solo lectura**: no se arrastran
-  ni se editan los nodos, porque el catálogo es del backend.
+  desplazar, Ctrl/⌘/Shift + rueda para zoom, pantalla completa (Esc para salir)
+  y minimapa para saltar de zona. **Solo lectura**: no se arrastran ni se editan
+  los nodos, porque el catálogo es del backend.
+- `workflow-minimap.tsx` — vista general con la ventana actual marcada. Con 22
+  columnas, al zoom de lectura sólo se ve un tramo y sin minimapa se pierde el
+  norte.
 - `workflow-graph-layers.tsx` — capas de transiciones, dependencias y los
   distintivos ENTRADA/SALIDA (las transiciones con un extremo nulo).
-- `workflow-detail.tsx` — ficha del elemento seleccionado: roles, estados
+- `workflow-detail.tsx` — ficha del elemento seleccionado, FLOTANDO sobre el
+  lienzo (cuando era una columna del grid, el grafo quedaba encajonado y no se
+  veían ni tres etapas seguidas): roles, estados
   requeridos y resultantes, eventos, errores, dependencias y la regla de
   completitud de la etapa traducida a lenguaje llano.
 
