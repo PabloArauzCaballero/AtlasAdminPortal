@@ -2,17 +2,17 @@
 
 ## 1. Matriz de tutoriales por módulo y pestaña
 
-| id                     | Módulo      | Pestaña           | Nivel      | Objetivo                      | Pasos |
-| ---------------------- | ----------- | ----------------- | ---------- | ----------------------------- | ----- |
-| `qa-lab-overview`      | Laboratorio | —                 | Básico     | Entender la plataforma        | 4     |
-| `qa-lab-functional`    | Laboratorio | Prueba unitaria   | Básico     | Probar una API                | 6     |
-| `qa-lab-stress`        | Laboratorio | Prueba unitaria   | Intermedio | Rendimiento bajo carga        | 3     |
-| `qa-lab-journey`       | Laboratorio | Journey           | Avanzado   | Prueba de flujo/interfaz      | 3     |
-| `qa-lab-decision-tree` | Laboratorio | Árbol de decisión | Intermedio | Qué se rompe si un paso falla | 8     |
-| `qa-suites-list`       | Suites      | Lista             | Básico     | Crear primera suite           | 5     |
-| `qa-suite-detail`      | Suites      | Detalle           | Intermedio | Ejecutar suite y casos        | 4     |
-| `qa-runs-interpret`    | Runs        | Detalle           | Básico     | Analizar prueba fallida       | 3     |
-| `qa-stress-profile`    | Stress      | Perfiles          | Avanzado   | Uso avanzado de carga         | 4     |
+| id                     | Módulo      | Pestaña           | Nivel      | Objetivo                               | Pasos |
+| ---------------------- | ----------- | ----------------- | ---------- | -------------------------------------- | ----- |
+| `qa-lab-overview`      | Laboratorio | —                 | Básico     | Entender la plataforma                 | 4     |
+| `qa-lab-functional`    | Laboratorio | Prueba unitaria   | Básico     | Probar una API                         | 6     |
+| `qa-lab-stress`        | Laboratorio | Prueba unitaria   | Intermedio | Rendimiento bajo carga                 | 3     |
+| `qa-lab-journey`       | Laboratorio | Journey           | Avanzado   | Prueba de flujo/interfaz               | 3     |
+| `qa-lab-decision-tree` | Laboratorio | Árbol de decisión | Intermedio | Entender el recorrido real del cliente | 8     |
+| `qa-suites-list`       | Suites      | Lista             | Básico     | Crear primera suite                    | 5     |
+| `qa-suite-detail`      | Suites      | Detalle           | Intermedio | Ejecutar suite y casos                 | 4     |
+| `qa-runs-interpret`    | Runs        | Detalle           | Básico     | Analizar prueba fallida                | 3     |
+| `qa-stress-profile`    | Stress      | Perfiles          | Avanzado   | Uso avanzado de carga                  | 4     |
 
 Cada paso cubre (según aplique): qué es · para qué sirve · cuándo usarlo · qué
 necesitas · qué significa cada campo/botón · resultado esperado · cómo
@@ -29,8 +29,8 @@ Rendimiento y carga · Análisis de errores. (`learning-paths.ts`)
 ### Demos visuales dentro de la tarjeta (`TutorialStep.demo`)
 
 - `latency` — curva de latencia animada con el umbral p95 (`qa-lab-stress`).
-- `decision-tree` — árbol de decisión animado: camino feliz y efecto dominó
-  cuando el primer paso falla (`qa-lab-decision-tree`).
+- `decision-tree` — flujo animado de tres etapas con su bifurcación de
+  excepción, como el que publica el catálogo de flujos (`qa-lab-decision-tree`).
 
 ### Launcher por objetivo («¿Qué quieres hacer?»)
 

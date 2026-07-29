@@ -1,31 +1,31 @@
 import type { TutorialDefinition } from "../types";
 
 /**
- * Recorrido de la pestaña «Árbol de decisión» del Laboratorio. Explica el
- * dibujo antes que la herramienta: qué es una bifurcación, qué significa que un
- * dato viaje entre pasos y qué se rompe cuando uno responde mal.
+ * Recorrido de la pestaña «Árbol de decisión» del Laboratorio, que dibuja el
+ * catálogo de flujos del backend (`/api/v1/workflows`). Explica primero qué es
+ * el flujo declarado y después cómo leer el lienzo.
  */
 export const decisionTreeTutorial: TutorialDefinition = {
   id: "qa-lab-decision-tree",
   module: "Laboratorio",
   tab: "Árbol de decisión",
   tool: "Árbol de decisión",
-  title: "Leer el árbol de decisión de un recorrido",
+  title: "Leer el árbol de decisión del recorrido",
   description:
-    "Ve el journey como lo que es: una cadena de decisiones. Qué pasa en cada bifurcación y qué se rompe aguas abajo cuando un paso responde mal.",
+    "El proceso estándar del negocio tal como lo publica el backend: etapas, endpoints, condiciones de paso y dependencias.",
   level: "intermediate",
-  version: 1,
+  version: 2,
   route: "/internal/qa/lab",
-  estimatedMinutes: 6,
-  goal: "Entender qué se rompe si un paso falla",
+  estimatedMinutes: 7,
+  goal: "Entender el recorrido real del cliente",
   steps: [
     {
       id: "what",
-      title: "Un recorrido es una cadena de decisiones",
+      title: "El recorrido no se inventa: se consulta",
       content:
-        "Un journey no es una lista de llamadas: en cada paso hay una pregunta («¿respondió lo esperado?») y un dato que se pasa al siguiente.\n\nEl árbol dibuja esas dos cosas. Mirándolo sabes, sin ejecutar nada, qué parte del negocio se cae si un endpoint concreto se rompe.",
+        "El backend ya sabía QUÉ endpoints expone. El catálogo de flujos responde lo que faltaba: en qué ORDEN se recorren, bajo qué CONDICIÓN se pasa de uno al siguiente y qué estado del cliente habilita cada paso.\n\nEsta pestaña dibuja ese catálogo. No es un diagrama pintado a mano: si el backend publica una versión nueva del flujo, el dibujo cambia solo.",
       example:
-        "Alta de cliente: si el paso que crea el cliente devuelve 500, nunca se extrae su identificador — y los pasos de sesión y riesgo salen con el hueco sin rellenar.",
+        "El flujo sembrado hoy es «customer_credit_journey»: del registro del cliente hasta la decisión de crédito, con 22 etapas y 57 endpoints reales.",
       demo: "decision-tree",
     },
     {
@@ -33,77 +33,76 @@ export const decisionTreeTutorial: TutorialDefinition = {
       target: "qa-lab-tabs",
       title: "Abre la pestaña «Árbol de decisión»",
       content:
-        "Es la tercera pestaña del Lab. Dibuja exactamente la secuencia que tengas en «Journey (encadenado)»: no hay que copiar nada, las dos pestañas comparten el mismo recorrido.",
-      example:
-        "Edita un paso en la pestaña Journey, vuelve al árbol y el dibujo ya refleja el cambio.",
+        "Es la tercera pestaña del Lab. Al abrirla, el portal pide el flujo al backend y lo dibuja como un lienzo de nodos: se arrastra para moverse y se hace zoom con Ctrl + rueda. Es de solo lectura: el catálogo lo publica el backend.",
       position: "bottom",
       requiredAction: {
         type: "element-appears",
-        targetId: "qa-lab-tree-panel",
+        targetId: "workflow-canvas",
       },
-      validation: {
-        hint: "Pulsa «Árbol de decisión» para continuar…",
-      },
+      validation: { hint: "Pulsa «Árbol de decisión» para continuar…" },
     },
     {
-      id: "map",
-      target: "qa-lab-tree-diagram",
-      title: "Cómo se lee el dibujo",
+      id: "stages",
+      target: "workflow-graph",
+      title: "Cada columna es una etapa",
       content:
-        "Cada caja es un paso: su método, su ruta y las etiquetas de lo que usa y lo que deja.\n\nDebajo de cada caja hay un rombo — la decisión. Si el estado HTTP entra en los esperados, el recorrido baja por la rama verde «sí». Si no, se va por la roja «no», y a la derecha se lee la consecuencia concreta.",
+        "Las etapas van en orden de ejecución y llevan su módulo y su actor: quién la ejecuta — el cliente desde la app, un usuario interno desde el portal, o el sistema.\n\nEl color del borde es el actor; el borde punteado marca las etapas opcionales. Las subetapas se dibujan anidadas dentro de su etapa madre.",
       example:
-        "«¿responde 200 · 201?» → sí baja al siguiente paso; no dispara «Se pierde customerId: el paso 3 sale con el marcador sin resolver».",
+        "«Captura de datos (KYC)» es del cliente y contiene siete subetapas: contacto, datos personales, perfil económico, domicilio, documentos, referencias y consentimientos.",
       position: "right",
       waitForElement: true,
     },
     {
-      id: "flow",
-      target: "qa-lab-tree-diagram",
-      title: "Las curvas de la izquierda son datos",
+      id: "steps",
+      target: "workflow-graph",
+      title: "Cada nodo es un endpoint real",
       content:
-        "Cada curva es una variable que un paso extrae de su respuesta y otro consume como {{variable}}. Es lo que convierte pasos sueltos en un flujo de negocio.\n\nSi una curva sale roja y punteada, ese dato no llegará: o el paso que lo produce falló, o nadie lo extrae.",
+        "Dentro de la etapa, cada fila es un paso: su método, su ruta y su nombre de negocio. Es el endpoint que hay que llamar de verdad — el mismo que puedes probar en la pestaña «Prueba unitaria».\n\nLa fila punteada es un paso opcional; las etiquetas «entrada» y «salida» marcan por dónde empieza y termina el recorrido.",
       example:
-        "La curva «customerId» va del paso que crea el cliente al que consulta su riesgo: son dependientes, no independientes.",
+        "La entrada del flujo es POST /customer-onboarding/start y la salida, POST /operations/credit/applications/:id/decision.",
       position: "right",
       waitForElement: true,
     },
     {
-      id: "play",
-      target: "qa-lab-tree-controls",
-      title: "Reproduce el recorrido",
+      id: "edges",
+      target: "workflow-legend",
+      title: "Las flechas son las decisiones",
       content:
-        "«Reproducir recorrido» evalúa los pasos uno a uno, como haría el runner.\n\nEl selector dry-run / ejecución real importa: en dry-run el runner NO extrae variables, así que todo lo encadenado aparece en riesgo. Es el comportamiento real, no un fallo del dibujo.",
+        "Aquí está el árbol de decisión: cada flecha lleva la condición bajo la que se toma.\n\nVerde «si sale bien», roja «si falla», azul «según el estado del cliente», ámbar «condicional». Las curvas del carril derecho son los saltos — las ramas de excepción que un listado ordenado no puede mostrar. Las moradas punteadas son dependencias: qué paso exige que otro esté hecho antes.",
       example:
-        "¿Ya corriste el journey? Pulsa «Cargar la última corrida» y el árbol se pinta con los estados HTTP reales de esa ejecución.",
-      position: "bottom",
-      waitForElement: true,
-    },
-    {
-      id: "simulate",
-      target: "qa-lab-tree-detail",
-      title: "Simula un fallo antes de que ocurra",
-      content:
-        "Pulsa un paso del árbol y su ficha aparece aquí: de dónde le llegan los datos, qué deja para los siguientes y qué se rompería si respondiera mal.\n\nCon «Simular que este paso falla» marcas la rama «no» y ves el efecto dominó pintado: rojo el que falla, ámbar los que se ejecutan igual pero con datos sin resolver.",
-      example:
-        "Antes de publicar un cambio en el endpoint de alta, simula su fallo: si se tiñen tres pasos, ese endpoint es crítico y merece prueba de carga además de funcional.",
+        "Si la verificación de identidad falla, una flecha roja deriva a evidencia externa en vez de seguir al siguiente paso.",
       position: "left",
       waitForElement: true,
     },
     {
-      id: "read",
-      title: "Ojo con el matiz: nadie se detiene",
+      id: "detail",
+      target: "workflow-detail",
+      title: "La ficha de lo que selecciones",
       content:
-        "El runner no aborta el recorrido en el primer fallo: sigue ejecutando los pasos siguientes. Lo que se rompe es el DATO.\n\nPor eso el árbol distingue dos cosas: «falla» (el estado HTTP no era el esperado) y «en riesgo» (se ejecuta, pero con un {{marcador}} que nadie resolvió). Un paso en riesgo suele terminar en 400 o 404 confusos: la causa raíz está arriba.",
+        "Pulsa una etapa, un paso o una flecha y aquí se explica lo que el catálogo declara: roles autorizados, estados requeridos y resultantes, eventos que produce, errores posibles y de qué pasos depende.\n\nDe una etapa verás además su regla de completitud: cuándo el backend la da por terminada.",
       example:
-        "Si ves un 404 en el paso 3 y el paso 1 falló, no investigues el 3: arregla el 1 y vuelve a correr.",
+        "«Envío del paquete» sólo se da por completada cuando el cliente pasa a under_review, active, suspended o rejected.",
+      position: "left",
+      waitForElement: true,
     },
     {
-      id: "next",
-      title: "Para qué te sirve esto",
+      id: "filters",
+      target: "workflow-controls",
+      title: "Versión y filtros",
       content:
-        "El árbol responde tres preguntas de negocio: qué endpoints son críticos (los que alimentan a muchos), dónde empieza un fallo en cascada, y qué pasos escriben de verdad en el ambiente.\n\nÚsalo antes de ejecutar un journey real y después de una corrida fallida.",
+        "El catálogo está versionado: puedes ver la vigente o una versión concreta, sin que publicar una nueva cambie lo que ven los demás.\n\nLos filtros por módulo y actor los aplica el BACKEND, no el navegador: así el recorte nunca deja una flecha apuntando a un paso que ya no está en pantalla.",
       example:
-        "Los pasos marcados «escribe» o «destructivo» son los que no conviene lanzar fuera de LOCAL sin dry-run previo.",
+        "Filtra por actor «interno» para ver sólo lo que hace el back office: revisión de identidad, cumplimiento, fraude y la decisión final.",
+      position: "bottom",
+      waitForElement: true,
+    },
+    {
+      id: "why",
+      title: "Para qué te sirve en QA",
+      content:
+        "Te dice qué probar y en qué orden: los pasos obligatorios del camino principal son los que no pueden fallar, y las dependencias te dicen qué hay que dejar hecho antes de probar uno suelto.\n\nAdemás, el backend compara este flujo declarado con las rutas realmente montadas: si alguien borra un endpoint del proceso, el informe de consistencia lo detecta.",
+      example:
+        "¿Vas a armar un journey en la pestaña anterior? Copia de aquí el orden de los pasos y sus rutas: es el recorrido real, no uno inventado.",
       optional: true,
     },
   ],

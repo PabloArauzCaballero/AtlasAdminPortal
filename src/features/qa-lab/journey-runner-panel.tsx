@@ -17,7 +17,9 @@ import { JourneyStepsEditor } from "./journey-steps-editor";
 import { parseSteps } from "./journey-form";
 import { runJourney } from "./journey-runner";
 import { JourneyStepResults } from "./journey-step-results";
-import { useJourneyWorkspace } from "./journey-workspace";
+import { JOURNEY_EXAMPLE_SPEC } from "./journey-types";
+
+const DEFAULT_STEPS_TEXT = JSON.stringify(JOURNEY_EXAMPLE_SPEC, null, 2);
 
 const DEFAULT_CONFIG: JourneyRunnerConfig = {
   environment: "LOCAL",
@@ -33,9 +35,7 @@ const DEFAULT_CONFIG: JourneyRunnerConfig = {
 };
 
 export function JourneyRunnerPanel() {
-  // La secuencia vive en el workspace: la pestaña «Árbol de decisión» dibuja
-  // ESTE mismo recorrido, y el resultado de la corrida alimenta su simulación.
-  const { stepsText, setStepsText, setLastRun } = useJourneyWorkspace();
+  const [stepsText, setStepsText] = useState(DEFAULT_STEPS_TEXT);
   const [parseError, setParseError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [config, setConfig] = useState<JourneyRunnerConfig>(DEFAULT_CONFIG);
@@ -57,10 +57,7 @@ export function JourneyRunnerPanel() {
       if (!parsedSteps.ok) throw new Error(parsedSteps.error);
       return runJourney(parsedSteps.value, config, endpoints.byId);
     },
-    onSuccess: (result) => {
-      setConfirmOpen(false);
-      setLastRun(result);
-    },
+    onSuccess: () => setConfirmOpen(false),
   });
 
   function tryExecute() {

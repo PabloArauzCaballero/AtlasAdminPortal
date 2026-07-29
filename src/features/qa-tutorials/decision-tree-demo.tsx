@@ -3,54 +3,47 @@
 import { useEffect, useState } from "react";
 
 /**
- * Demo animada del árbol de decisión: primero recorre el camino feliz (cada
- * paso responde lo esperado y el dato viaja al siguiente) y después repite el
- * recorrido con el primer paso fallando, para que se vea el efecto dominó —
- * los pasos siguientes se ejecutan igual, pero con la variable sin resolver.
- * No consume backend: es un ejemplo dentro de la tarjeta del tutorial.
+ * Demo animada del árbol de decisión del recorrido: tres etapas del catálogo
+ * de flujos, cada una con su endpoint, y la bifurcación declarada — si la
+ * verificación sale bien el proceso avanza; si falla, se deriva por la rama de
+ * excepción. No consume backend: es el ejemplo visual de la tarjeta.
  */
 const W = 300;
-const H = 206;
-const ROW_H = 62;
-const BOX_X = 8;
-const BOX_W = 184;
-const BOX_H = 32;
-const FRAME_MS = 1150;
-const FRAMES = 10;
+const H = 194;
+const ROW_H = 58;
+const BOX_X = 6;
+const BOX_W = 196;
+const BOX_H = 44;
+const FRAME_MS = 1200;
+const FRAMES = 8;
 
-type State = "pending" | "ok" | "failed" | "at-risk";
+const OK = "#10b981";
+const ERR = "#ef4444";
+const IDLE = "#cbd5e1";
 
-const STEPS = [
-  { method: "POST", route: "/onboarding/start", note: "extrae customerId" },
-  { method: "GET", route: "/customers/{{customerId}}", note: "usa customerId" },
-  { method: "POST", route: "/operations/sessions", note: "usa customerId" },
+const STAGES = [
+  {
+    name: "Registro",
+    actor: "cliente",
+    color: "#6366f1",
+    method: "POST",
+    route: "/customer-onboarding/start",
+  },
+  {
+    name: "Verificación de identidad",
+    actor: "interno",
+    color: "#0ea5e9",
+    method: "POST",
+    route: "/identity-verification",
+  },
+  {
+    name: "Decisión de crédito",
+    actor: "interno",
+    color: "#0ea5e9",
+    method: "POST",
+    route: "/credit/applications/:id/decision",
+  },
 ];
-
-const COLOR: Record<State, { stroke: string; fill: string; ink: string }> = {
-  pending: { stroke: "#cbd5e1", fill: "#ffffff", ink: "#64748b" },
-  ok: { stroke: "#10b981", fill: "#ecfdf5", ink: "#047857" },
-  failed: { stroke: "#ef4444", fill: "#fef2f2", ink: "#b91c1c" },
-  "at-risk": { stroke: "#f59e0b", fill: "#fffbeb", ink: "#b45309" },
-};
-
-/** Guion de la animación: qué estado tiene cada paso en cada fotograma. */
-function statesAt(frame: number): State[] {
-  const happy: State[][] = [
-    ["pending", "pending", "pending"],
-    ["ok", "pending", "pending"],
-    ["ok", "ok", "pending"],
-    ["ok", "ok", "ok"],
-    ["ok", "ok", "ok"],
-  ];
-  const broken: State[][] = [
-    ["pending", "pending", "pending"],
-    ["failed", "pending", "pending"],
-    ["failed", "at-risk", "pending"],
-    ["failed", "at-risk", "at-risk"],
-    ["failed", "at-risk", "at-risk"],
-  ];
-  return frame < 5 ? happy[frame] : broken[frame - 5];
-}
 
 function boxY(index: number): number {
   return 6 + index * ROW_H;
@@ -67,15 +60,16 @@ export function DecisionTreeDemo() {
     return () => window.clearInterval(id);
   }, []);
 
-  const states = statesAt(frame);
-  const failing = frame >= 5;
+  // 0-3: camino principal. 4-7: la verificación falla y se toma la rama roja.
+  const failing = frame >= 4;
+  const reached = failing ? Math.min(frame - 4, 2) : Math.min(frame, 2);
 
   return (
     <div className="mt-3 rounded-lg border border-atlas-border bg-atlas-soft/50 p-2.5">
       <p className="mb-1 text-[0.6875rem] font-medium text-atlas-muted">
         {failing
-          ? "Con el paso 1 fallando: el dato nunca se extrae"
-          : "Camino feliz: cada paso responde y el dato viaja"}
+          ? "Si la verificación falla: rama de excepción declarada"
+          : "Camino principal: cada etapa habilita la siguiente"}
       </p>
       <svg
         viewBox={`0 0 ${W} ${H}`}
@@ -83,13 +77,13 @@ export function DecisionTreeDemo() {
         role="img"
         aria-label={
           failing
-            ? "Árbol de decisión con el primer paso fallando y los siguientes en riesgo"
-            : "Árbol de decisión con los tres pasos respondiendo lo esperado"
+            ? "Flujo con la verificación fallando y derivando a evidencia externa"
+            : "Flujo con las tres etapas avanzando por el camino principal"
         }
       >
         <defs>
           <marker
-            id="demo-arrow"
+            id="wf-demo-arrow"
             viewBox="0 0 10 10"
             refX={9}
             refY={5}
@@ -101,126 +95,145 @@ export function DecisionTreeDemo() {
           </marker>
         </defs>
 
-        {STEPS.map((step, index) => {
-          const state = states[index];
-          const color = COLOR[state];
+        {STAGES.map((stage, index) => {
           const y = boxY(index);
-          const isLast = index === STEPS.length - 1;
-          const dy = y + BOX_H + 13;
-          const taken = state === "ok";
+          const active = index <= reached;
+          const isFailing = failing && index === 1 && reached >= 1;
+          const stroke = isFailing ? ERR : active ? stage.color : IDLE;
           return (
-            <g key={step.route} opacity={state === "pending" ? 0.6 : 1}>
+            <g key={stage.name} opacity={active ? 1 : 0.5}>
               <rect
                 x={BOX_X}
                 y={y}
                 width={BOX_W}
                 height={BOX_H}
-                rx={8}
-                fill={color.fill}
-                stroke={color.stroke}
+                rx={9}
+                fill={isFailing ? "#fef2f2" : "#ffffff"}
+                stroke={stroke}
                 strokeWidth={1.4}
               />
+              <rect
+                x={BOX_X}
+                y={y}
+                width={3.5}
+                height={BOX_H}
+                rx={2}
+                fill={stroke}
+              />
               <text
-                x={BOX_X + 9}
-                y={y + 14}
-                fontSize={8}
+                x={BOX_X + 10}
+                y={y + 15}
+                fontSize={8.5}
                 fontWeight={700}
-                fill={color.ink}
+                fill="#0f172a"
               >
-                {`${index + 1}. ${step.method}`}
-              </text>
-              <text
-                x={BOX_X + 9}
-                y={y + 25}
-                fontSize={8}
-                fontFamily="ui-monospace, monospace"
-                fill="#475569"
-              >
-                {step.route}
+                {stage.name}
               </text>
               <text
                 x={BOX_X + BOX_W - 8}
-                y={y + 14}
-                fontSize={7.5}
+                y={y + 15}
+                fontSize={7}
                 textAnchor="end"
-                fill={color.ink}
+                fill={stroke}
               >
-                {step.note}
+                {stage.actor}
               </text>
-
-              <polygon
-                points={`${BOX_X + 40},${dy - 10} ${BOX_X + 74},${dy} ${BOX_X + 40},${dy + 10} ${BOX_X + 6},${dy}`}
-                fill="#ffffff"
-                stroke={
-                  taken ? "#10b981" : state === "failed" ? "#ef4444" : "#cbd5e1"
-                }
-                strokeWidth={1.2}
+              <rect
+                x={BOX_X + 10}
+                y={y + 22}
+                width={30}
+                height={13}
+                rx={4}
+                fill="#059669"
               />
               <text
-                x={BOX_X + 40}
-                y={dy + 2.5}
+                x={BOX_X + 25}
+                y={y + 31}
                 textAnchor="middle"
                 fontSize={7}
-                fill="#334155"
+                fontWeight={700}
+                fontFamily="ui-monospace, monospace"
+                fill="#ffffff"
               >
-                ¿200?
+                {stage.method}
+              </text>
+              <text
+                x={BOX_X + 45}
+                y={y + 31.5}
+                fontSize={7.5}
+                fontFamily="ui-monospace, monospace"
+                fill="#475569"
+              >
+                {stage.route}
               </text>
 
-              {isLast ? null : (
+              {index < STAGES.length - 1 ? (
                 <line
-                  x1={BOX_X + 40}
-                  y1={dy + 10}
-                  x2={BOX_X + 40}
+                  x1={BOX_X + 26}
+                  y1={y + BOX_H}
+                  x2={BOX_X + 26}
                   y2={boxY(index + 1)}
-                  stroke={taken ? "#10b981" : "#cbd5e1"}
-                  strokeWidth={taken ? 1.8 : 1}
-                  markerEnd="url(#demo-arrow)"
+                  stroke={
+                    index < reached && !(failing && index === 1) ? OK : IDLE
+                  }
+                  strokeWidth={index < reached ? 1.8 : 1}
+                  markerEnd="url(#wf-demo-arrow)"
                 />
-              )}
-              <line
-                x1={BOX_X + 74}
-                y1={dy}
-                x2={BOX_X + 110}
-                y2={dy}
-                stroke={state === "failed" ? "#ef4444" : "#e2e8f0"}
-                strokeWidth={state === "failed" ? 1.8 : 1}
-                strokeDasharray={state === "failed" ? undefined : "3 3"}
-              />
-              <text
-                x={BOX_X + 114}
-                y={dy + 3}
-                fontSize={7.5}
-                fill={state === "failed" ? "#b91c1c" : "#cbd5e1"}
-              >
-                {index === 0
-                  ? "no → se pierde customerId"
-                  : "no → paso marcado"}
-              </text>
+              ) : null}
+              {index < STAGES.length - 1 ? (
+                <text
+                  x={BOX_X + 32}
+                  y={y + BOX_H + 9}
+                  fontSize={7}
+                  fill="#64748b"
+                >
+                  {index === 1 && failing ? "" : "si sale bien"}
+                </text>
+              ) : null}
             </g>
           );
         })}
 
+        {/* Rama de excepción: sólo se ilumina cuando la verificación falla. */}
         <path
-          d={`M ${BOX_X + BOX_W + 2} ${boxY(0) + 22} C 288 ${boxY(0) + 22}, 288 ${boxY(2) + 10}, ${BOX_X + BOX_W + 2} ${boxY(2) + 10}`}
+          d={`M ${BOX_X + BOX_W} ${boxY(1) + 22} C 250 ${boxY(1) + 22}, 250 ${boxY(1) + 68}, ${BOX_X + BOX_W} ${boxY(1) + 68}`}
           fill="none"
-          stroke={failing ? "#ef4444" : "#6366f1"}
-          strokeWidth={1.4}
-          strokeDasharray={failing ? "4 3" : undefined}
+          stroke={failing && reached >= 1 ? ERR : IDLE}
+          strokeWidth={failing && reached >= 1 ? 1.8 : 1}
+          strokeDasharray="5 4"
+        />
+        <rect
+          x={214}
+          y={boxY(1) + 30}
+          width={80}
+          height={30}
+          rx={8}
+          fill={failing && reached >= 1 ? "#fef2f2" : "#f8fafc"}
+          stroke={failing && reached >= 1 ? ERR : IDLE}
         />
         <text
-          x={262}
-          y={boxY(1) + 20}
-          fontSize={7.5}
+          x={254}
+          y={boxY(1) + 44}
           textAnchor="middle"
-          fontFamily="ui-monospace, monospace"
-          fill={failing ? "#b91c1c" : "#4338ca"}
+          fontSize={7.5}
+          fontWeight={600}
+          fill={failing && reached >= 1 ? "#b91c1c" : "#94a3b8"}
         >
-          customerId
+          si falla →
+        </text>
+        <text
+          x={254}
+          y={boxY(1) + 54}
+          textAnchor="middle"
+          fontSize={7.5}
+          fill={failing && reached >= 1 ? "#b91c1c" : "#94a3b8"}
+        >
+          evidencia externa
         </text>
       </svg>
       <p className="mt-1 text-[0.625rem] leading-4 text-atlas-muted">
-        Verde: el estado HTTP era el esperado. Rojo: no lo era. Ámbar: el paso
-        se ejecuta igual, pero con una variable que nadie llegó a extraer.
+        Cada caja es una etapa del catálogo con su endpoint real. Las flechas
+        llevan la condición: verde si sale bien, roja la rama de excepción.
       </p>
     </div>
   );

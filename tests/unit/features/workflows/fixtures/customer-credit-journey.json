@@ -1,0 +1,4409 @@
+{
+  "workflowId": "1",
+  "workflowCode": "customer_credit_journey",
+  "version": "v1",
+  "name": "Recorrido estándar del cliente hasta la decisión de crédito",
+  "description": "Árbol real de endpoints del proceso de Atlas: registro, captura KYC, evidencia externa, envío a revisión, evaluación de riesgo, decisiones de operaciones, habilitación crediticia, solicitud y decisión final. Cada paso corresponde a un endpoint implementado.",
+  "processType": "customer_journey",
+  "ownerDomain": "customer_lifecycle",
+  "status": "active",
+  "isDefault": true,
+  "entryStageCode": "registration",
+  "terminalStageCodes": [
+    "credit_decision"
+  ],
+  "source": "seed",
+  "effectiveFrom": null,
+  "effectiveUntil": null,
+  "createdBy": "seed:20260728140000-seed-standard-customer-credit-workflow",
+  "updatedBy": "seed:20260728140000-seed-standard-customer-credit-workflow",
+  "createdAt": "2026-07-28T14:20:24.354Z",
+  "updatedAt": "2026-07-28T14:20:30.564Z",
+  "successCriteria": {
+    "indicator": "credit_applications.status = 'approved'",
+    "description": "El recorrido termina bien cuando una solicitud del cliente queda aprobada."
+  },
+  "failureCriteria": {
+    "indicator": "customers.lifecycle_status IN ('rejected','blocked','closed') OR credit_applications.status = 'rejected'",
+    "description": "Rechazo de habilitación, bloqueo por fraude/cumplimiento o rechazo de la solicitud."
+  },
+  "metadata": {
+    "documentation": "docs/endpoints/workflow-catalog.md",
+    "lifecycleStatuses": [
+      "registered",
+      "onboarding_in_progress",
+      "under_review",
+      "observed",
+      "active",
+      "suspended",
+      "rejected",
+      "blocked",
+      "closed"
+    ],
+    "eligibilityRuleVersion": "eligibility-v1"
+  },
+  "stages": [
+    {
+      "stageId": "1",
+      "stageCode": "credit_catalog",
+      "parentStageCode": null,
+      "name": "Catálogo de productos crediticios",
+      "description": "Prerrequisito operativo del crédito: sin al menos un producto activo, ningún cliente habilitado puede solicitar nada. El catálogo es dato de negocio, no código.",
+      "moduleCode": "credit",
+      "actorType": "internal_user",
+      "displayOrder": 5,
+      "isOptional": true,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "internal_operator",
+        "risk_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "1",
+          "stepCode": "ops.credit_products_list",
+          "name": "Listar los productos del tenant",
+          "description": "Catálogo completo para administración, incluidos borradores y retirados.",
+          "endpointCode": "GET_OPERATIONS_CREDIT_PRODUCTS",
+          "httpMethod": "GET",
+          "routePath": "/operations/credit/products",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "2",
+          "stepCode": "ops.credit_product_create",
+          "name": "Crear un producto crediticio",
+          "description": "Nace en `draft`: activarlo es una decisión aparte y auditable.",
+          "endpointCode": "POST_OPERATIONS_CREDIT_PRODUCTS",
+          "httpMethod": "POST",
+          "routePath": "/operations/credit/products",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "409 CREDIT_PRODUCT_CODE_ALREADY_EXISTS",
+            "422 INVALID_PRODUCT_RANGES"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "3",
+          "stepCode": "ops.credit_product_status",
+          "name": "Cambiar el estado de un producto",
+          "description": "Activar, suspender o retirar. Solo los activos son ofrecibles.",
+          "endpointCode": "PATCH_OPERATIONS_CREDIT_PRODUCTS_BY_PRODUCTID_STATUS",
+          "httpMethod": "PATCH",
+          "routePath": "/operations/credit/products/:productId/status",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "404 CREDIT_PRODUCT_NOT_FOUND",
+            "422 INVALID_PRODUCT_STATUS_TRANSITION"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "2",
+      "stageCode": "registration",
+      "parentStageCode": null,
+      "name": "Registro y acceso",
+      "description": "Crea el cliente, sus credenciales y el flujo de onboarding, y obtiene el token con el que se recorre el resto del proceso.",
+      "moduleCode": "customer_onboarding",
+      "actorType": "customer",
+      "displayOrder": 10,
+      "isOptional": false,
+      "isEntryStage": true,
+      "isTerminalStage": false,
+      "allowedRoles": [],
+      "requiredStates": [],
+      "resultingStates": [
+        "registered"
+      ],
+      "completionRule": {
+        "type": "no_blockers",
+        "blockerCodes": [
+          "NO_CREDENTIALS"
+        ]
+      },
+      "steps": [
+        {
+          "stepId": "4",
+          "stepCode": "registration.consent_documents",
+          "name": "Consultar los documentos legales vigentes",
+          "description": "Versión publicada y vigente de los textos que el cliente debe aceptar. Es público a propósito: se muestra antes de registrarse.",
+          "endpointCode": "GET_CONSENT_DOCUMENTS_ACTIVE",
+          "httpMethod": "GET",
+          "routePath": "/consent-documents/active",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {
+            "documents": "ConsentDocumentDto[]"
+          },
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "5",
+          "stepCode": "registration.start",
+          "name": "Iniciar el onboarding",
+          "description": "Crea cliente, credenciales y flujo de onboarding de forma idempotente. Punto de entrada del recorrido completo.",
+          "endpointCode": "POST_CUSTOMER_ONBOARDING_START",
+          "httpMethod": "POST",
+          "routePath": "/customer-onboarding/start",
+          "executionOrder": 20,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": true,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [
+            "registered"
+          ],
+          "inputContract": {
+            "channel": "phone|email",
+            "password": "string",
+            "identifier": "string",
+            "deviceFingerprint": "string?"
+          },
+          "outputContract": {
+            "customerId": "string",
+            "onboardingFlowId": "string"
+          },
+          "validationRules": [
+            "startOnboardingSchema (Zod)",
+            "Identificador único por tenant (índice parcial de email/teléfono)"
+          ],
+          "possibleErrors": [
+            "409 CUSTOMER_ALREADY_EXISTS",
+            "422 INVALID_IDENTIFIER",
+            "429 THROTTLED"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "customer.registered"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "indicator": "customerId presente",
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              409,
+              422
+            ]
+          },
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": [
+            "registration.login",
+            "registration.login_pin"
+          ]
+        },
+        {
+          "stepId": "6",
+          "stepCode": "registration.login",
+          "name": "Autenticarse",
+          "description": "Devuelve el access token con el que se autorizan todos los pasos siguientes.",
+          "endpointCode": "POST_AUTH_LOGIN",
+          "httpMethod": "POST",
+          "routePath": "/auth/login",
+          "executionOrder": 30,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {
+            "password": "string",
+            "identifier": "string"
+          },
+          "outputContract": {
+            "accessToken": "string",
+            "mfaRequired": "boolean",
+            "refreshToken": "string"
+          },
+          "validationRules": [],
+          "possibleErrors": [
+            "401 INVALID_CREDENTIALS",
+            "429 THROTTLED"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [
+            "auth.login_succeeded",
+            "auth.login_failed"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              401,
+              429
+            ]
+          },
+          "dependsOn": [
+            {
+              "stepCode": "registration.start",
+              "dependencyType": "requires_completion",
+              "description": "No hay credenciales que autenticar antes de crear el cliente."
+            }
+          ],
+          "previousStepCodes": [
+            "registration.start"
+          ],
+          "nextStepCodes": [
+            "registration.mfa",
+            "contact.add_method"
+          ]
+        },
+        {
+          "stepId": "7",
+          "stepCode": "registration.mfa",
+          "name": "Completar el segundo factor",
+          "description": "Solo si el login respondió `mfaRequired`. Canjea el desafío por un token de sesión completo.",
+          "endpointCode": "POST_AUTH_MFA",
+          "httpMethod": "POST",
+          "routePath": "/auth/mfa",
+          "executionOrder": 40,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {
+            "code": "string",
+            "challengeId": "string"
+          },
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "401 INVALID_MFA_CODE",
+            "410 MFA_CHALLENGE_EXPIRED"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [
+            "registration.login"
+          ],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "8",
+          "stepCode": "registration.login_pin",
+          "name": "Autenticarse con PIN",
+          "description": "Alternativa de acceso para clientes que configuraron PIN. Sustituye a `registration.login`, no lo complementa.",
+          "endpointCode": "POST_AUTH_LOGIN_PIN",
+          "httpMethod": "POST",
+          "routePath": "/auth/login/pin",
+          "executionOrder": 45,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "401 INVALID_PIN",
+            "429 THROTTLED"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [
+            "registration.start"
+          ],
+          "nextStepCodes": [
+            "contact.add_method"
+          ]
+        },
+        {
+          "stepId": "9",
+          "stepCode": "registration.me",
+          "name": "Consultar el actor autenticado",
+          "description": "Identidad y rol del token vigente. La app la usa para decidir qué recorrido mostrar.",
+          "endpointCode": "GET_AUTH_ME",
+          "httpMethod": "GET",
+          "routePath": "/auth/me",
+          "executionOrder": 50,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "10",
+          "stepCode": "registration.refresh",
+          "name": "Renovar el token de acceso",
+          "description": "Mantiene viva la sesión durante un recorrido largo sin obligar a volver a autenticarse.",
+          "endpointCode": "POST_AUTH_REFRESH",
+          "httpMethod": "POST",
+          "routePath": "/auth/refresh",
+          "executionOrder": 60,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "401 INVALID_REFRESH_TOKEN",
+            "401 TOKEN_REVOKED"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "11",
+          "stepCode": "registration.logout",
+          "name": "Cerrar la sesión de acceso",
+          "description": "Revoca el refresh token. Es el cierre del recorrido de acceso, no del proceso de negocio.",
+          "endpointCode": "POST_AUTH_LOGOUT",
+          "httpMethod": "POST",
+          "routePath": "/auth/logout",
+          "executionOrder": 70,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": false,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [],
+          "requiredStates": [],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200,
+              204
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "3",
+      "stageCode": "session_bootstrap",
+      "parentStageCode": null,
+      "name": "Sesión y telemetría",
+      "description": "Abre la sesión observada y alimenta las señales anti-fraude. Es opcional para completar el trámite, pero su ausencia empobrece la evaluación de riesgo.",
+      "moduleCode": "sessions",
+      "actorType": "customer",
+      "displayOrder": 20,
+      "isOptional": true,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "compliance_analyst",
+        "fraud_analyst",
+        "admin",
+        "platform_admin",
+        "system"
+      ],
+      "requiredStates": [
+        "registered",
+        "onboarding_in_progress",
+        "observed",
+        "active"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "12",
+          "stepCode": "session.start",
+          "name": "Abrir sesión",
+          "description": "Registra dispositivo, GPS y contexto de la sesión del cliente.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_SESSIONS_START",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/sessions/start",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {
+            "sessionId": "string"
+          },
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "session.started"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "13",
+          "stepCode": "session.heartbeat",
+          "name": "Mantener viva la sesión",
+          "description": "Latido periódico con la posición y el estado del dispositivo.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_SESSIONS_BY_SESSIONID_HEARTBEAT",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/sessions/:sessionId/heartbeat",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "14",
+          "stepCode": "session.telemetry",
+          "name": "Enviar telemetría de comportamiento",
+          "description": "Lote validado y acotado de señales de interacción y dispositivo.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_TELEMETRY_BATCH",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/telemetry/batch",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              202,
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "15",
+          "stepCode": "session.state",
+          "name": "Consultar el estado de la sesión",
+          "description": "Sesión vigente del cliente, si la hay.",
+          "endpointCode": "GET_CUSTOMERS_BY_CUSTOMERID_SESSION_STATE",
+          "httpMethod": "GET",
+          "routePath": "/customers/:customerId/session-state",
+          "executionOrder": 40,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "16",
+          "stepCode": "session.end",
+          "name": "Cerrar sesión",
+          "description": "Cierre explícito. Sin él, la sesión caduca por el job de expiración.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_SESSIONS_BY_SESSIONID_END",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/sessions/:sessionId/end",
+          "executionOrder": 50,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "session.ended"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "4",
+      "stageCode": "data_capture",
+      "parentStageCode": null,
+      "name": "Captura de datos y evidencia (KYC)",
+      "description": "Las seis secciones obligatorias del onboarding más los consentimientos. Cada subetapa se da por cerrada con la MISMA regla que decide la habilitación crediticia.",
+      "moduleCode": "customer_onboarding",
+      "actorType": "customer",
+      "displayOrder": 30,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "registered",
+        "onboarding_in_progress",
+        "observed"
+      ],
+      "resultingStates": [
+        "onboarding_in_progress"
+      ],
+      "completionRule": {
+        "type": "no_blockers",
+        "blockerCodes": [
+          "CONTACT_NOT_VERIFIED",
+          "PROFILE_INCOMPLETE",
+          "FINANCIAL_PROFILE_INCOMPLETE",
+          "ADDRESS_MISSING",
+          "IDENTITY_DOCUMENT_MISSING",
+          "IDENTITY_DOCUMENT_EXPIRED",
+          "REFERENCES_INSUFFICIENT",
+          "CONSENT_MISSING"
+        ]
+      },
+      "steps": [
+        {
+          "stepId": "17",
+          "stepCode": "onboarding.status",
+          "name": "Consultar el avance del onboarding",
+          "description": "Secciones, porcentaje, `canSubmit`, `nextStep` y bloqueadores. Es el punto de reanudación del proceso.",
+          "endpointCode": "GET_CUSTOMER_ONBOARDING_BY_CUSTOMERID_STATUS",
+          "httpMethod": "GET",
+          "routePath": "/customer-onboarding/:customerId/status",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {
+            "blockers": "EligibilityBlocker[]",
+            "nextStep": "string",
+            "sections": "OnboardingSection[]"
+          },
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": [
+        {
+          "stageId": "5",
+          "stageCode": "contact_verification",
+          "parentStageCode": "data_capture",
+          "name": "Verificación de contacto",
+          "description": "Alta del método de contacto y verificación por código de un solo uso. Solo se almacena el hash del código.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 10,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [
+            "onboarding_in_progress"
+          ],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "contact_verification"
+          },
+          "steps": [
+            {
+              "stepId": "18",
+              "stepCode": "contact.add_method",
+              "name": "Registrar un método de contacto",
+              "description": "Teléfono o correo sobre el que se hará la verificación.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_CONTACT_METHODS",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/contact-methods",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {
+                "value": "string",
+                "isPrimary": "boolean?",
+                "contactType": "phone|email"
+              },
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "409 CONTACT_ALREADY_REGISTERED",
+                "422 INVALID_CONTACT_VALUE"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "registration.login",
+                "registration.login_pin"
+              ],
+              "nextStepCodes": [
+                "contact.request_code"
+              ]
+            },
+            {
+              "stepId": "19",
+              "stepCode": "contact.request_code",
+              "name": "Solicitar el código de verificación",
+              "description": "Emite un código real por el canal configurado, con cooldown por destino.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_CONTACT_VERIFICATION_REQUEST",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/contact-verification/request",
+              "executionOrder": 20,
+              "isMandatory": true,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "429 VERIFICATION_COOLDOWN_ACTIVE",
+                "404 CONTACT_METHOD_NOT_FOUND"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "contact.verification_requested"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  202,
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [
+                {
+                  "stepCode": "contact.add_method",
+                  "dependencyType": "requires_completion",
+                  "description": "El código se envía al método de contacto registrado."
+                }
+              ],
+              "previousStepCodes": [
+                "contact.add_method"
+              ],
+              "nextStepCodes": [
+                "contact.submit_code"
+              ]
+            },
+            {
+              "stepId": "20",
+              "stepCode": "contact.submit_code",
+              "name": "Enviar el código recibido",
+              "description": "Valida TTL, número de intentos y consumo único. No existe código de bypass.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_CONTACT_VERIFICATION_SUBMIT",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/contact-verification/submit",
+              "executionOrder": 30,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [
+                "onboarding_in_progress"
+              ],
+              "inputContract": {
+                "code": "string",
+                "contactMethodId": "string"
+              },
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "410 VERIFICATION_CODE_EXPIRED",
+                "422 INVALID_VERIFICATION_CODE",
+                "429 TOO_MANY_ATTEMPTS"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "contact.verified"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "indicator": "sección contact_verification completada",
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {
+                "statusCodes": [
+                  410,
+                  422,
+                  429
+                ]
+              },
+              "dependsOn": [
+                {
+                  "stepCode": "contact.request_code",
+                  "dependencyType": "requires_completion",
+                  "description": "Sin código emitido no hay nada que validar."
+                }
+              ],
+              "previousStepCodes": [
+                "contact.request_code"
+              ],
+              "nextStepCodes": [
+                "profile.update"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "6",
+          "stageCode": "personal_data",
+          "parentStageCode": "data_capture",
+          "name": "Datos personales",
+          "description": "Nombre, apellido y fecha de nacimiento. La edad se valida contra el rango operable.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 20,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "personal_data"
+          },
+          "steps": [
+            {
+              "stepId": "21",
+              "stepCode": "profile.update",
+              "name": "Guardar el perfil personal",
+              "description": "Autoguardado parcial: valida formato, no obligatoriedad. La completitud se exige al enviar el paquete.",
+              "endpointCode": "PATCH_CUSTOMER_ONBOARDING_BY_CUSTOMERID_PROFILE",
+              "httpMethod": "PATCH",
+              "routePath": "/customer-onboarding/:customerId/profile",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {
+                "lastName": "string?",
+                "birthDate": "YYYY-MM-DD?",
+                "firstName": "string?"
+              },
+              "outputContract": {},
+              "validationRules": [
+                "Edad entre 18 y 100 años (MINIMUM/MAXIMUM_CUSTOMER_AGE_YEARS)"
+              ],
+              "possibleErrors": [
+                "422 INVALID_BIRTH_DATE"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "contact.submit_code"
+              ],
+              "nextStepCodes": [
+                "financial.update"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "7",
+          "stageCode": "financial_profile",
+          "parentStageCode": "data_capture",
+          "name": "Perfil económico",
+          "description": "Los seis atributos económicos obligatorios, persistidos en el modelo EAV versionado de atributos del cliente.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 30,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "financial_profile"
+          },
+          "steps": [
+            {
+              "stepId": "22",
+              "stepCode": "financial.update",
+              "name": "Guardar el perfil económico",
+              "description": "Situación laboral, antigüedad, ingresos, egresos, actividad económica y origen de fondos.",
+              "endpointCode": "PUT_CUSTOMER_ONBOARDING_BY_CUSTOMERID_FINANCIAL_PROFILE",
+              "httpMethod": "PUT",
+              "routePath": "/customer-onboarding/:customerId/financial-profile",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {
+                "sourceOfFunds": "enum",
+                "employmentStatus": "enum",
+                "economicActivityCode": "string",
+                "monthlyIncomeDeclared": "number",
+                "monthlyExpensesDeclared": "number",
+                "employmentSeniorityMonths": "number"
+              },
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "422 ATTRIBUTE_CATALOG_NOT_SEEDED",
+                "422 INVALID_ATTRIBUTE_VALUE"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "profile.update"
+              ],
+              "nextStepCodes": [
+                "address.package"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "8",
+          "stageCode": "address",
+          "parentStageCode": "data_capture",
+          "name": "Domicilio",
+          "description": "Dirección declarada con su observación GPS asociada.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 40,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "address"
+          },
+          "steps": [
+            {
+              "stepId": "23",
+              "stepCode": "address.package",
+              "name": "Registrar el domicilio",
+              "description": "Alta o reemplazo de la dirección vigente, versionada, con la evidencia de geolocalización.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_ADDRESS_PACKAGE",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/address-package",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "422 INVALID_ADDRESS_PACKAGE"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "customer.address_registered"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201,
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "financial.update"
+              ],
+              "nextStepCodes": [
+                "identity.upload_url"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "9",
+          "stageCode": "identity_documents",
+          "parentStageCode": "data_capture",
+          "name": "Documentos de identidad",
+          "description": "Carga del documento y verificación de identidad contra el proveedor configurado.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 50,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "identity_documents"
+          },
+          "steps": [
+            {
+              "stepId": "24",
+              "stepCode": "identity.upload_url",
+              "name": "Obtener URL firmada de carga",
+              "description": "URL temporal para subir el archivo al almacenamiento sin que pase por el backend.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_DOCUMENTS_UPLOAD_URL",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/documents/upload-url",
+              "executionOrder": 10,
+              "isMandatory": false,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {
+                "expiresAt": "ISO-8601",
+                "objectKey": "string",
+                "uploadUrl": "string"
+              },
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "safe_retry",
+                "maxAttempts": 3
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201,
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "address.package"
+              ],
+              "nextStepCodes": [
+                "identity.package"
+              ]
+            },
+            {
+              "stepId": "25",
+              "stepCode": "identity.package",
+              "name": "Registrar el documento de identidad",
+              "description": "Tipo, número, vigencia y referencia a la evidencia cargada.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_IDENTITY_PACKAGE",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/identity-package",
+              "executionOrder": 20,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "409 IDENTITY_DOCUMENT_ALREADY_REGISTERED",
+                "422 IDENTITY_DOCUMENT_EXPIRED"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "customer.identity_document_registered"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201,
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [
+                {
+                  "stepCode": "identity.upload_url",
+                  "dependencyType": "requires_data",
+                  "description": "El registro del documento referencia el objeto cargado con la URL firmada."
+                }
+              ],
+              "previousStepCodes": [
+                "identity.upload_url"
+              ],
+              "nextStepCodes": [
+                "identity.verification"
+              ]
+            },
+            {
+              "stepId": "26",
+              "stepCode": "identity.verification",
+              "name": "Verificar la identidad",
+              "description": "Contrasta el documento contra el proveedor de identidad y deja el intento registrado, favorable o no.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_IDENTITY_VERIFICATION",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/identity-verification",
+              "executionOrder": 30,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "422 IDENTITY_VERIFICATION_FAILED",
+                "503 PROVIDER_UNAVAILABLE"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "customer.identity_verification_attempted"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "indicator": "result = 'verified'",
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {
+                "statusCodes": [
+                  422,
+                  503
+                ]
+              },
+              "dependsOn": [
+                {
+                  "stepCode": "identity.package",
+                  "dependencyType": "requires_completion",
+                  "description": "La verificación contrasta el documento ya registrado."
+                }
+              ],
+              "previousStepCodes": [
+                "identity.package"
+              ],
+              "nextStepCodes": [
+                "references.add",
+                "external.request"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "10",
+          "stageCode": "reference_contacts",
+          "parentStageCode": "data_capture",
+          "name": "Referencias personales",
+          "description": "Mínimo dos referencias personales; el máximo aceptado son cinco.",
+          "moduleCode": "customer_onboarding",
+          "actorType": "customer",
+          "displayOrder": 60,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "onboarding_section",
+            "sectionCode": "reference_contacts"
+          },
+          "steps": [
+            {
+              "stepId": "27",
+              "stepCode": "references.add",
+              "name": "Agregar una referencia",
+              "description": "Contacto de referencia con su relación declarada.",
+              "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_REFERENCE_CONTACTS",
+              "httpMethod": "POST",
+              "routePath": "/customer-onboarding/:customerId/reference-contacts",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [
+                "Mínimo 2 y máximo 5 referencias (REQUIRED/MAXIMUM_REFERENCE_CONTACTS)"
+              ],
+              "possibleErrors": [
+                "422 TOO_MANY_REFERENCE_CONTACTS"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "identity.verification"
+              ],
+              "nextStepCodes": [
+                "consents.decisions"
+              ]
+            },
+            {
+              "stepId": "28",
+              "stepCode": "references.list",
+              "name": "Listar las referencias cargadas",
+              "description": "Referencias vigentes del cliente.",
+              "endpointCode": "GET_CUSTOMER_ONBOARDING_BY_CUSTOMERID_REFERENCE_CONTACTS",
+              "httpMethod": "GET",
+              "routePath": "/customer-onboarding/:customerId/reference-contacts",
+              "executionOrder": 20,
+              "isMandatory": false,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "safe_retry",
+                "maxAttempts": 3
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": []
+            },
+            {
+              "stepId": "29",
+              "stepCode": "references.remove",
+              "name": "Eliminar una referencia",
+              "description": "Corrección de una referencia cargada por error.",
+              "endpointCode": "DELETE_CUSTOMER_ONBOARDING_BY_CUSTOMERID_REFERENCE_CONTACTS_BY_REFERENCEID",
+              "httpMethod": "DELETE",
+              "routePath": "/customer-onboarding/:customerId/reference-contacts/:referenceId",
+              "executionOrder": 30,
+              "isMandatory": false,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "404 REFERENCE_CONTACT_NOT_FOUND"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200,
+                  204
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": []
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "11",
+          "stageCode": "privacy_consents",
+          "parentStageCode": "data_capture",
+          "name": "Consentimientos de privacidad",
+          "description": "Decisiones del titular sobre cada finalidad de tratamiento, contra la versión legal vigente.",
+          "moduleCode": "customer_privacy",
+          "actorType": "customer",
+          "displayOrder": 70,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "no_blockers",
+            "blockerCodes": [
+              "CONSENT_MISSING"
+            ]
+          },
+          "steps": [
+            {
+              "stepId": "30",
+              "stepCode": "consents.decisions",
+              "name": "Registrar las decisiones de consentimiento",
+              "description": "Otorga o revoca consentimientos contra el documento publicado vigente, dejando el evento inmutable.",
+              "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_PRIVACY_CONSENT_DECISIONS",
+              "httpMethod": "POST",
+              "routePath": "/customers/:customerId/privacy/consent-decisions",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "404 CONSENT_DOCUMENT_NOT_FOUND",
+                "422 CONSENT_DOCUMENT_NOT_PUBLISHED"
+              ],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "privacy.consent_recorded"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201,
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "references.add"
+              ],
+              "nextStepCodes": [
+                "onboarding.submit"
+              ]
+            },
+            {
+              "stepId": "31",
+              "stepCode": "consents.data_subject_request",
+              "name": "Ejercer un derecho del titular",
+              "description": "Acceso, rectificación, portabilidad o supresión. No forma parte del camino feliz, pero sí del proceso.",
+              "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_PRIVACY_DATA_SUBJECT_REQUESTS",
+              "httpMethod": "POST",
+              "routePath": "/customers/:customerId/privacy/data-subject-requests",
+              "executionOrder": 20,
+              "isMandatory": false,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "customer",
+                "internal_operator",
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "registered",
+                "onboarding_in_progress",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "privacy.data_subject_request_created"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  201
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": []
+            }
+          ],
+          "subStages": []
+        }
+      ]
+    },
+    {
+      "stageId": "12",
+      "stageCode": "external_evidence",
+      "parentStageCode": null,
+      "name": "Evidencia externa",
+      "description": "Consulta controlada a proveedores externos (identidad, buró, telco, huella digital) con consentimiento, costo y resiliencia. Enriquece la decisión sin ser obligatoria para completar el trámite.",
+      "moduleCode": "external_data",
+      "actorType": "system",
+      "displayOrder": 40,
+      "isOptional": true,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "compliance_analyst",
+        "fraud_analyst",
+        "admin",
+        "platform_admin",
+        "system"
+      ],
+      "requiredStates": [
+        "onboarding_in_progress",
+        "under_review",
+        "observed"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "32",
+          "stepCode": "external.consent",
+          "name": "Registrar el consentimiento de consulta externa",
+          "description": "Sin consentimiento vigente, la ejecución de la consulta se rechaza.",
+          "endpointCode": "POST_EXTERNAL_DATA_CONSENTS",
+          "httpMethod": "POST",
+          "routePath": "/external-data/consents",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [
+            "external_data.consent_granted"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "33",
+          "stepCode": "external.preview",
+          "name": "Previsualizar costo y elegibilidad de la consulta",
+          "description": "Devuelve costo estimado, política aplicable y si la consulta puede ejecutarse, sin ejecutarla.",
+          "endpointCode": "POST_EXTERNAL_DATA_REQUESTS_PREVIEW",
+          "httpMethod": "POST",
+          "routePath": "/external-data/requests/preview",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "34",
+          "stepCode": "external.request",
+          "name": "Ejecutar la consulta externa",
+          "description": "Ejecuta contra el proveedor con caché, circuit breaker y auditoría de la respuesta.",
+          "endpointCode": "POST_EXTERNAL_DATA_REQUESTS",
+          "httpMethod": "POST",
+          "routePath": "/external-data/requests",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "403 EXTERNAL_DATA_CONSENT_MISSING",
+            "503 PROVIDER_UNAVAILABLE",
+            "429 PROVIDER_RATE_LIMITED"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "external_data.request_completed"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200,
+              202
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              403,
+              429,
+              503
+            ]
+          },
+          "dependsOn": [],
+          "previousStepCodes": [
+            "identity.verification"
+          ],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "35",
+          "stepCode": "external.features",
+          "name": "Consultar las variables derivadas",
+          "description": "Variables construidas a partir de las respuestas externas, listas para el motor de riesgo.",
+          "endpointCode": "GET_EXTERNAL_DATA_USERS_BY_CUSTOMERID_FEATURES",
+          "httpMethod": "GET",
+          "routePath": "/external-data/users/:customerId/features",
+          "executionOrder": 40,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "13",
+      "stageCode": "submission",
+      "parentStageCode": null,
+      "name": "Envío a revisión",
+      "description": "Verifica la completitud del paquete y mueve al cliente a `under_review` con su evento de historial en la misma transacción.",
+      "moduleCode": "customer_onboarding",
+      "actorType": "customer",
+      "displayOrder": 50,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "registered",
+        "onboarding_in_progress",
+        "observed"
+      ],
+      "resultingStates": [
+        "under_review"
+      ],
+      "completionRule": {
+        "type": "lifecycle_status",
+        "statuses": [
+          "under_review",
+          "active",
+          "suspended",
+          "rejected"
+        ]
+      },
+      "steps": [
+        {
+          "stepId": "36",
+          "stepCode": "onboarding.submit",
+          "name": "Enviar el paquete a revisión",
+          "description": "Reevalúa la completitud en el servidor; si falta algo responde `ONBOARDING_INCOMPLETE` con las secciones pendientes y no cambia nada.",
+          "endpointCode": "POST_CUSTOMER_ONBOARDING_BY_CUSTOMERID_SUBMIT",
+          "httpMethod": "POST",
+          "routePath": "/customer-onboarding/:customerId/submit",
+          "executionOrder": 10,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "observed"
+          ],
+          "resultingStates": [
+            "under_review"
+          ],
+          "inputContract": {},
+          "outputContract": {
+            "blockers": "EligibilityBlocker[]",
+            "eligible": "boolean",
+            "nextStep": "string",
+            "lifecycleStatus": "string"
+          },
+          "validationRules": [],
+          "possibleErrors": [
+            "422 ONBOARDING_INCOMPLETE",
+            "422 ONBOARDING_ALREADY_SUBMITTED"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "customer_onboarding.submitted",
+            "customer.status_changed"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "indicator": "lifecycleStatus = 'under_review'",
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              422
+            ]
+          },
+          "dependsOn": [
+            {
+              "stepCode": "contact.submit_code",
+              "dependencyType": "requires_completion",
+              "description": "Sección `contact_verification` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "profile.update",
+              "dependencyType": "requires_completion",
+              "description": "Sección `personal_data` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "financial.update",
+              "dependencyType": "requires_completion",
+              "description": "Sección `financial_profile` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "address.package",
+              "dependencyType": "requires_completion",
+              "description": "Sección `address` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "identity.package",
+              "dependencyType": "requires_completion",
+              "description": "Sección `identity_documents` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "references.add",
+              "dependencyType": "requires_completion",
+              "description": "Sección `reference_contacts` obligatoria para enviar el paquete."
+            },
+            {
+              "stepCode": "consents.decisions",
+              "dependencyType": "requires_completion",
+              "description": "Los consentimientos requeridos bloquean la habilitación mientras falten."
+            }
+          ],
+          "previousStepCodes": [
+            "consents.decisions"
+          ],
+          "nextStepCodes": [
+            "risk.create_assessment",
+            "onboarding.observations"
+          ]
+        },
+        {
+          "stepId": "37",
+          "stepCode": "onboarding.observations",
+          "name": "Consultar las observaciones abiertas",
+          "description": "Qué le están pidiendo al cliente, en su lenguaje. Es el camino de vuelta desde `observed`.",
+          "endpointCode": "GET_CUSTOMER_ONBOARDING_BY_CUSTOMERID_OBSERVATIONS",
+          "httpMethod": "GET",
+          "routePath": "/customer-onboarding/:customerId/observations",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "observed",
+            "under_review"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [
+            "onboarding.submit",
+            "ops.manual_decision"
+          ],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "14",
+      "stageCode": "risk_assessment",
+      "parentStageCode": null,
+      "name": "Evaluación de riesgo",
+      "description": "Calcula el score con la política vigente y deja la corrida explicable. Su recomendación es condición de la habilitación.",
+      "moduleCode": "risk",
+      "actorType": "system",
+      "displayOrder": 60,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "system",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "onboarding_in_progress",
+        "under_review",
+        "observed",
+        "active"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "no_blockers",
+        "blockerCodes": [
+          "RISK_NOT_APPROVED",
+          "RISK_ASSESSMENT_STALE"
+        ]
+      },
+      "steps": [
+        {
+          "stepId": "38",
+          "stepCode": "risk.create_assessment",
+          "name": "Ejecutar la evaluación de riesgo",
+          "description": "Corre el ruleset activo y persiste corrida, reglas disparadas y contribuciones de cada variable.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_RISK_ASSESSMENTS",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/risk-assessments",
+          "executionOrder": 10,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "system",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {
+            "modelCode": "string",
+            "rulesetVersion": "string",
+            "recommendedAction": "string",
+            "riskAssessmentRunId": "string"
+          },
+          "validationRules": [],
+          "possibleErrors": [
+            "422 RISK_RULESET_NOT_ACTIVE"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "risk.assessment_completed"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "indicator": "recommendedAction = 'approved_for_next_step'",
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [
+            {
+              "stepCode": "onboarding.submit",
+              "dependencyType": "requires_data",
+              "description": "La evaluación de riesgo se apoya en el paquete completo enviado a revisión."
+            }
+          ],
+          "previousStepCodes": [
+            "onboarding.submit"
+          ],
+          "nextStepCodes": [
+            "ops.identity_decision"
+          ]
+        },
+        {
+          "stepId": "39",
+          "stepCode": "risk.detail",
+          "name": "Consultar la corrida de riesgo",
+          "description": "Detalle de la corrida para operaciones.",
+          "endpointCode": "GET_OPERATIONS_RISK_ASSESSMENTS_BY_RISKASSESSMENTRUNID",
+          "httpMethod": "GET",
+          "routePath": "/operations/risk-assessments/:riskAssessmentRunId",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "40",
+          "stepCode": "risk.explanation",
+          "name": "Consultar la explicación del score",
+          "description": "Reglas disparadas y contribución de cada variable. Es lo que hace defendible una decisión adversa.",
+          "endpointCode": "GET_OPERATIONS_RISK_ASSESSMENTS_BY_RISKASSESSMENTRUNID_EXPLANATION",
+          "httpMethod": "GET",
+          "routePath": "/operations/risk-assessments/:riskAssessmentRunId/explanation",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "onboarding_in_progress",
+            "under_review",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "15",
+      "stageCode": "back_office_review",
+      "parentStageCode": null,
+      "name": "Revisión de operaciones",
+      "description": "Decisiones humanas sobre identidad, cumplimiento, observaciones y fraude. Sin señal automática de cierre: la resuelve un analista.",
+      "moduleCode": "operations",
+      "actorType": "internal_user",
+      "displayOrder": 70,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "internal_operator",
+        "risk_analyst",
+        "compliance_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "under_review",
+        "observed"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "41",
+          "stepCode": "ops.work_queue",
+          "name": "Consultar la cola de trabajo",
+          "description": "Casos pendientes de intervención humana, priorizados.",
+          "endpointCode": "GET_OPERATIONS_WORK_QUEUE",
+          "httpMethod": "GET",
+          "routePath": "/operations/work-queue",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "42",
+          "stepCode": "ops.investigation_summary",
+          "name": "Consultar el resumen de investigación del cliente",
+          "description": "Vista consolidada de identidad, riesgo, dispositivos y casos abiertos del cliente.",
+          "endpointCode": "GET_OPERATIONS_CUSTOMERS_BY_CUSTOMERID_INVESTIGATION_SUMMARY",
+          "httpMethod": "GET",
+          "routePath": "/operations/customers/:customerId/investigation-summary",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": [
+        {
+          "stageId": "16",
+          "stageCode": "identity_decision",
+          "parentStageCode": "back_office_review",
+          "name": "Decisión de identidad",
+          "description": "Un analista acepta o rechaza la verificación de identidad y su evidencia.",
+          "moduleCode": "operations",
+          "actorType": "internal_user",
+          "displayOrder": 10,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "no_blockers",
+            "blockerCodes": [
+              "IDENTITY_NOT_VERIFIED",
+              "EVIDENCE_PENDING_REVIEW"
+            ]
+          },
+          "steps": [
+            {
+              "stepId": "43",
+              "stepCode": "ops.identity_decision",
+              "name": "Decidir la verificación de identidad",
+              "description": "Registra la decisión y su motivo; el resultado alimenta la regla de habilitación.",
+              "endpointCode": "POST_OPERATIONS_CUSTOMERS_BY_CUSTOMERID_IDENTITY_VERIFICATION_DECISION",
+              "httpMethod": "POST",
+              "routePath": "/operations/customers/:customerId/identity-verification/decision",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "internal_operator",
+                "risk_analyst",
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [
+                "404 CUSTOMER_NOT_FOUND",
+                "422 INVALID_DECISION"
+              ],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [
+                "customer.identity_decision_recorded"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "risk.create_assessment"
+              ],
+              "nextStepCodes": [
+                "ops.compliance_screening"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "17",
+          "stageCode": "compliance_screening",
+          "parentStageCode": "back_office_review",
+          "name": "Cribado de cumplimiento",
+          "description": "Contraste contra listas de vigilancia y resolución de coincidencias.",
+          "moduleCode": "operations",
+          "actorType": "internal_user",
+          "displayOrder": 20,
+          "isOptional": false,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "compliance_analyst",
+            "risk_analyst",
+            "admin",
+            "platform_admin",
+            "system"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "no_blockers",
+            "blockerCodes": [
+              "COMPLIANCE_MATCH_PENDING"
+            ]
+          },
+          "steps": [
+            {
+              "stepId": "44",
+              "stepCode": "ops.compliance_screening",
+              "name": "Ejecutar el cribado",
+              "description": "Genera coincidencias contra listas; cada coincidencia bloquea la habilitación hasta resolverse.",
+              "endpointCode": "POST_OPERATIONS_CUSTOMERS_BY_CUSTOMERID_COMPLIANCE_SCREENING",
+              "httpMethod": "POST",
+              "routePath": "/operations/customers/:customerId/compliance/screening",
+              "executionOrder": 10,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "compliance_analyst",
+                "risk_analyst",
+                "admin",
+                "platform_admin",
+                "system"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [
+                "compliance.screening_completed"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200,
+                  201
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "ops.identity_decision"
+              ],
+              "nextStepCodes": [
+                "ops.compliance_clear",
+                "eligibility.get"
+              ]
+            },
+            {
+              "stepId": "45",
+              "stepCode": "ops.compliance_clear",
+              "name": "Resolver las coincidencias",
+              "description": "Un analista de cumplimiento descarta o confirma cada coincidencia, con motivo registrado.",
+              "endpointCode": "POST_OPERATIONS_CUSTOMERS_BY_CUSTOMERID_COMPLIANCE_CLEAR_MATCHES",
+              "httpMethod": "POST",
+              "routePath": "/operations/customers/:customerId/compliance/clear-matches",
+              "executionOrder": 20,
+              "isMandatory": false,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+                "strategy": "no_retry"
+              },
+              "producesEvents": [
+                "compliance.matches_cleared"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [
+                "ops.compliance_screening"
+              ],
+              "nextStepCodes": [
+                "eligibility.get"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "18",
+          "stageCode": "manual_review",
+          "parentStageCode": "back_office_review",
+          "name": "Revisión manual",
+          "description": "Casos abiertos por reglas o por observaciones de calidad de datos.",
+          "moduleCode": "operations",
+          "actorType": "internal_user",
+          "displayOrder": 30,
+          "isOptional": true,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "no_blockers",
+            "blockerCodes": [
+              "OPEN_OBSERVATIONS"
+            ]
+          },
+          "steps": [
+            {
+              "stepId": "46",
+              "stepCode": "ops.manual_cases",
+              "name": "Listar casos de revisión manual",
+              "description": "Casos abiertos con su prioridad y motivo.",
+              "endpointCode": "GET_OPERATIONS_MANUAL_REVIEW_CASES",
+              "httpMethod": "GET",
+              "routePath": "/operations/manual-review-cases",
+              "executionOrder": 10,
+              "isMandatory": false,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "internal_operator",
+                "risk_analyst",
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "safe_retry",
+                "maxAttempts": 3
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": []
+            },
+            {
+              "stepId": "47",
+              "stepCode": "ops.manual_decision",
+              "name": "Decidir un caso de revisión manual",
+              "description": "Aprobar, rechazar o pedir más información. Pedir información deja al cliente en `observed`.",
+              "endpointCode": "POST_OPERATIONS_MANUAL_REVIEW_CASES_BY_CASEID_DECISION",
+              "httpMethod": "POST",
+              "routePath": "/operations/manual-review-cases/:caseId/decision",
+              "executionOrder": 20,
+              "isMandatory": true,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "internal_operator",
+                "risk_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed"
+              ],
+              "resultingStates": [
+                "observed",
+                "under_review"
+              ],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "manual_review.case_decided"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": [
+                "onboarding.observations"
+              ]
+            }
+          ],
+          "subStages": []
+        },
+        {
+          "stageId": "19",
+          "stageCode": "fraud_review",
+          "parentStageCode": "back_office_review",
+          "name": "Revisión de fraude",
+          "description": "Casos de fraude abiertos. Un caso abierto bloquea la habilitación mientras dure.",
+          "moduleCode": "operations",
+          "actorType": "internal_user",
+          "displayOrder": 40,
+          "isOptional": true,
+          "isEntryStage": false,
+          "isTerminalStage": false,
+          "allowedRoles": [
+            "fraud_analyst",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed",
+            "active"
+          ],
+          "resultingStates": [],
+          "completionRule": {
+            "type": "no_blockers",
+            "blockerCodes": [
+              "FRAUD_CASE_OPEN"
+            ]
+          },
+          "steps": [
+            {
+              "stepId": "48",
+              "stepCode": "ops.fraud_cases",
+              "name": "Listar casos de fraude",
+              "description": "Casos de fraude con su estado y prioridad.",
+              "endpointCode": "GET_OPERATIONS_FRAUD_CASES",
+              "httpMethod": "GET",
+              "routePath": "/operations/fraud-cases",
+              "executionOrder": 10,
+              "isMandatory": false,
+              "isRepeatable": true,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": false,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "fraud_analyst",
+                "internal_operator",
+                "risk_analyst",
+                "compliance_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed",
+                "active"
+              ],
+              "resultingStates": [],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "safe_retry",
+                "maxAttempts": 3
+              },
+              "producesEvents": [],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": []
+            },
+            {
+              "stepId": "49",
+              "stepCode": "ops.fraud_decision",
+              "name": "Decidir un caso de fraude",
+              "description": "Confirma o descarta el fraude; confirmar bloquea al cliente.",
+              "endpointCode": "POST_OPERATIONS_FRAUD_CASES_BY_CASEID_DECISION",
+              "httpMethod": "POST",
+              "routePath": "/operations/fraud-cases/:caseId/decision",
+              "executionOrder": 20,
+              "isMandatory": false,
+              "isRepeatable": false,
+              "requiresAuth": true,
+              "requiresIdempotencyKey": true,
+              "isFlowEntry": false,
+              "isFlowExit": false,
+              "allowedRoles": [
+                "fraud_analyst",
+                "admin",
+                "platform_admin"
+              ],
+              "requiredStates": [
+                "under_review",
+                "observed",
+                "active"
+              ],
+              "resultingStates": [
+                "blocked",
+                "under_review"
+              ],
+              "inputContract": {},
+              "outputContract": {},
+              "validationRules": [],
+              "possibleErrors": [],
+              "retryStrategy": {
+                "backoff": "exponential",
+                "strategy": "client_retry_with_idempotency_key",
+                "maxAttempts": 3
+              },
+              "producesEvents": [
+                "fraud.case_decided"
+              ],
+              "consumesEvents": [],
+              "successCriteria": {
+                "statusCodes": [
+                  200
+                ]
+              },
+              "failureCriteria": {},
+              "dependsOn": [],
+              "previousStepCodes": [],
+              "nextStepCodes": [
+                "eligibility.get"
+              ]
+            }
+          ],
+          "subStages": []
+        }
+      ]
+    },
+    {
+      "stageId": "20",
+      "stageCode": "eligibility",
+      "parentStageCode": null,
+      "name": "Habilitación crediticia",
+      "description": "Única puerta de entrada al crédito. Evalúa la regla vigente, deja evidencia y promueve a `active` cuando lo único que faltaba era el estado.",
+      "moduleCode": "customers",
+      "actorType": "system",
+      "displayOrder": 80,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "compliance_analyst",
+        "fraud_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "under_review",
+        "observed",
+        "active",
+        "suspended"
+      ],
+      "resultingStates": [
+        "active"
+      ],
+      "completionRule": {
+        "type": "lifecycle_status",
+        "statuses": [
+          "active"
+        ]
+      },
+      "steps": [
+        {
+          "stepId": "50",
+          "stepCode": "eligibility.get",
+          "name": "Evaluar y consultar la habilitación",
+          "description": "Calcula la regla, persiste la evaluación como evidencia con su versión y devuelve bloqueadores, secciones y siguiente paso.",
+          "endpointCode": "GET_CUSTOMERS_BY_CUSTOMERID_ELIGIBILITY",
+          "httpMethod": "GET",
+          "routePath": "/customers/:customerId/eligibility",
+          "executionOrder": 10,
+          "isMandatory": true,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "fraud_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "registered",
+            "onboarding_in_progress",
+            "under_review",
+            "observed",
+            "active",
+            "suspended"
+          ],
+          "resultingStates": [
+            "active"
+          ],
+          "inputContract": {},
+          "outputContract": {
+            "blockers": "EligibilityBlocker[]",
+            "eligible": "boolean",
+            "nextStep": "string",
+            "sections": "OnboardingSection[]",
+            "ruleVersion": "string",
+            "completionPercentage": "number"
+          },
+          "validationRules": [],
+          "possibleErrors": [
+            "403 FORBIDDEN_OTHER_CUSTOMER",
+            "404 CUSTOMER_NOT_FOUND"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "customer.eligibility_evaluated"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "indicator": "eligible = true",
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [
+            {
+              "stepCode": "risk.create_assessment",
+              "dependencyType": "requires_data",
+              "description": "Sin una corrida de riesgo favorable y vigente, la habilitación queda bloqueada."
+            }
+          ],
+          "previousStepCodes": [
+            "ops.compliance_screening",
+            "ops.compliance_clear",
+            "ops.fraud_decision",
+            "ops.eligibility_decision"
+          ],
+          "nextStepCodes": [
+            "credit.list_products",
+            "ops.eligibility_decision"
+          ]
+        },
+        {
+          "stepId": "51",
+          "stepCode": "ops.eligibility_decision",
+          "name": "Decidir la habilitación (operaciones)",
+          "description": "Aprueba, rechaza, observa, suspende o reincorpora. Aprobar con bloqueadores se registra como excepción autorizada.",
+          "endpointCode": "POST_OPERATIONS_CUSTOMERS_BY_CUSTOMERID_ELIGIBILITY_DECISION",
+          "httpMethod": "POST",
+          "routePath": "/operations/customers/:customerId/eligibility/decision",
+          "executionOrder": 20,
+          "isMandatory": false,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed",
+            "active",
+            "suspended",
+            "rejected",
+            "blocked"
+          ],
+          "resultingStates": [
+            "active",
+            "observed",
+            "rejected",
+            "suspended",
+            "under_review"
+          ],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "422 INVALID_STATUS_TRANSITION",
+            "404 CUSTOMER_NOT_FOUND"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [
+            "customer.status_changed",
+            "customer.eligibility_decided"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              422
+            ]
+          },
+          "dependsOn": [],
+          "previousStepCodes": [
+            "eligibility.get"
+          ],
+          "nextStepCodes": [
+            "eligibility.get"
+          ]
+        },
+        {
+          "stepId": "52",
+          "stepCode": "customer.me",
+          "name": "Consultar el resumen del cliente",
+          "description": "Perfil, contactos, onboarding y elegibilidad en una sola lectura para la pantalla principal de la app.",
+          "endpointCode": "GET_CUSTOMERS_BY_CUSTOMERID_ME",
+          "httpMethod": "GET",
+          "routePath": "/customers/:customerId/me",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "compliance_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "under_review",
+            "observed",
+            "active",
+            "suspended"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "21",
+      "stageCode": "credit_application",
+      "parentStageCode": null,
+      "name": "Solicitud de crédito",
+      "description": "El cliente habilitado elige producto, monto y plazo. El servidor reevalúa la elegibilidad antes de escribir nada.",
+      "moduleCode": "credit",
+      "actorType": "customer",
+      "displayOrder": 90,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": false,
+      "allowedRoles": [
+        "customer",
+        "internal_operator",
+        "risk_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "active"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "53",
+          "stepCode": "credit.list_products",
+          "name": "Listar los productos disponibles para el cliente",
+          "description": "`canApply` refleja la elegibilidad real, de modo que el catálogo y la puerta de entrada no puedan discrepar.",
+          "endpointCode": "GET_CUSTOMERS_BY_CUSTOMERID_CREDIT_PRODUCTS",
+          "httpMethod": "GET",
+          "routePath": "/customers/:customerId/credit-products",
+          "executionOrder": 10,
+          "isMandatory": true,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {
+            "blockers": "EligibilityBlocker[]",
+            "canApply": "boolean",
+            "products": "CreditProductDto[]"
+          },
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [
+            "eligibility.get"
+          ],
+          "nextStepCodes": [
+            "credit.create_application"
+          ]
+        },
+        {
+          "stepId": "54",
+          "stepCode": "credit.create_application",
+          "name": "Crear la solicitud de crédito",
+          "description": "Revalida elegibilidad, rangos de monto y plazo, y congela el snapshot de la evaluación que la autorizó. Un cliente no puede tener dos solicitudes vivas.",
+          "endpointCode": "POST_CUSTOMERS_BY_CUSTOMERID_CREDIT_APPLICATIONS",
+          "httpMethod": "POST",
+          "routePath": "/customers/:customerId/credit-applications",
+          "executionOrder": 20,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": true,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {
+            "purposeCode": "string?",
+            "creditProductId": "string",
+            "requestedAmount": "number",
+            "requestedTermMonths": "number"
+          },
+          "outputContract": {
+            "status": "submitted",
+            "applicationCode": "string"
+          },
+          "validationRules": [],
+          "possibleErrors": [
+            "404 CREDIT_PRODUCT_NOT_FOUND",
+            "409 CREDIT_APPLICATION_ALREADY_OPEN",
+            "422 CUSTOMER_NOT_ELIGIBLE",
+            "422 REQUESTED_AMOUNT_OUT_OF_RANGE",
+            "422 REQUESTED_TERM_OUT_OF_RANGE"
+          ],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "client_retry_with_idempotency_key",
+            "maxAttempts": 3
+          },
+          "producesEvents": [
+            "credit.application_submitted"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              201
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              409,
+              422
+            ]
+          },
+          "dependsOn": [
+            {
+              "stepCode": "eligibility.get",
+              "dependencyType": "requires_completion",
+              "description": "Solo un cliente habilitado puede abrir una solicitud."
+            },
+            {
+              "stepCode": "credit.list_products",
+              "dependencyType": "requires_data",
+              "description": "La solicitud referencia un producto vigente del catálogo."
+            },
+            {
+              "stepCode": "ops.credit_product_status",
+              "dependencyType": "soft",
+              "description": "Sin al menos un producto activo no hay nada que solicitar."
+            }
+          ],
+          "previousStepCodes": [
+            "credit.list_products"
+          ],
+          "nextStepCodes": [
+            "ops.credit_decision"
+          ]
+        },
+        {
+          "stepId": "55",
+          "stepCode": "credit.list_applications",
+          "name": "Listar las solicitudes del cliente",
+          "description": "Historial de solicitudes, más recientes primero.",
+          "endpointCode": "GET_CUSTOMERS_BY_CUSTOMERID_CREDIT_APPLICATIONS",
+          "httpMethod": "GET",
+          "routePath": "/customers/:customerId/credit-applications",
+          "executionOrder": 30,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "customer",
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    },
+    {
+      "stageId": "22",
+      "stageCode": "credit_decision",
+      "parentStageCode": null,
+      "name": "Decisión de crédito",
+      "description": "Cierre del recorrido: operaciones aprueba o rechaza la solicitud y el evento queda en el historial inmutable.",
+      "moduleCode": "operations",
+      "actorType": "internal_user",
+      "displayOrder": 100,
+      "isOptional": false,
+      "isEntryStage": false,
+      "isTerminalStage": true,
+      "allowedRoles": [
+        "internal_operator",
+        "risk_analyst",
+        "admin",
+        "platform_admin"
+      ],
+      "requiredStates": [
+        "active"
+      ],
+      "resultingStates": [],
+      "completionRule": {
+        "type": "manual"
+      },
+      "steps": [
+        {
+          "stepId": "56",
+          "stepCode": "ops.credit_application_detail",
+          "name": "Consultar la solicitud",
+          "description": "Detalle con la evidencia de elegibilidad congelada al momento de solicitar.",
+          "endpointCode": "GET_OPERATIONS_CREDIT_APPLICATIONS_BY_APPLICATIONID",
+          "httpMethod": "GET",
+          "routePath": "/operations/credit/applications/:applicationId",
+          "executionOrder": 10,
+          "isMandatory": false,
+          "isRepeatable": true,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": false,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [],
+          "retryStrategy": {
+            "backoff": "exponential",
+            "strategy": "safe_retry",
+            "maxAttempts": 3
+          },
+          "producesEvents": [],
+          "consumesEvents": [],
+          "successCriteria": {
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {},
+          "dependsOn": [],
+          "previousStepCodes": [],
+          "nextStepCodes": []
+        },
+        {
+          "stepId": "57",
+          "stepCode": "ops.credit_decision",
+          "name": "Decidir la solicitud",
+          "description": "Aprueba o rechaza con motivo. Genera el evento de la solicitud y cierra el recorrido.",
+          "endpointCode": "POST_OPERATIONS_CREDIT_APPLICATIONS_BY_APPLICATIONID_DECISION",
+          "httpMethod": "POST",
+          "routePath": "/operations/credit/applications/:applicationId/decision",
+          "executionOrder": 20,
+          "isMandatory": true,
+          "isRepeatable": false,
+          "requiresAuth": true,
+          "requiresIdempotencyKey": false,
+          "isFlowEntry": false,
+          "isFlowExit": true,
+          "allowedRoles": [
+            "internal_operator",
+            "risk_analyst",
+            "admin",
+            "platform_admin"
+          ],
+          "requiredStates": [
+            "active"
+          ],
+          "resultingStates": [],
+          "inputContract": {},
+          "outputContract": {},
+          "validationRules": [],
+          "possibleErrors": [
+            "404 CREDIT_APPLICATION_NOT_FOUND",
+            "422 INVALID_APPLICATION_STATUS_TRANSITION"
+          ],
+          "retryStrategy": {
+            "reason": "Comando no idempotente: reintentar puede duplicar el efecto.",
+            "strategy": "no_retry"
+          },
+          "producesEvents": [
+            "credit.application_decided"
+          ],
+          "consumesEvents": [],
+          "successCriteria": {
+            "indicator": "status = 'approved' | 'rejected'",
+            "statusCodes": [
+              200
+            ]
+          },
+          "failureCriteria": {
+            "statusCodes": [
+              422
+            ]
+          },
+          "dependsOn": [
+            {
+              "stepCode": "credit.create_application",
+              "dependencyType": "requires_completion",
+              "description": "No hay decisión sin solicitud."
+            }
+          ],
+          "previousStepCodes": [
+            "credit.create_application"
+          ],
+          "nextStepCodes": []
+        }
+      ],
+      "subStages": []
+    }
+  ],
+  "transitions": [
+    {
+      "transitionId": "1",
+      "transitionCode": "entry.start",
+      "fromStepCode": null,
+      "toStepCode": "registration.start",
+      "conditionType": "always",
+      "conditionExpression": {},
+      "description": "Entrada del flujo: el recorrido empieza registrando al cliente.",
+      "displayOrder": 10,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "2",
+      "transitionCode": "start.to_login",
+      "fromStepCode": "registration.start",
+      "toStepCode": "registration.login",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Con el cliente creado se obtiene el token de acceso.",
+      "displayOrder": 20,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "4",
+      "transitionCode": "start.to_login_pin",
+      "fromStepCode": "registration.start",
+      "toStepCode": "registration.login_pin",
+      "conditionType": "conditional",
+      "conditionExpression": {
+        "customerHasPin": true
+      },
+      "description": "Camino alternativo de acceso para clientes con PIN configurado.",
+      "displayOrder": 25,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "3",
+      "transitionCode": "login.to_mfa",
+      "fromStepCode": "registration.login",
+      "toStepCode": "registration.mfa",
+      "conditionType": "conditional",
+      "conditionExpression": {
+        "field": "mfaRequired",
+        "equals": true
+      },
+      "description": "Solo si el login exigió segundo factor.",
+      "displayOrder": 30,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "6",
+      "transitionCode": "login.to_contact_method",
+      "fromStepCode": "registration.login",
+      "toStepCode": "contact.add_method",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Autenticado, el cliente empieza la captura de datos por la verificación de contacto.",
+      "displayOrder": 40,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "5",
+      "transitionCode": "login_pin.to_contact_method",
+      "fromStepCode": "registration.login_pin",
+      "toStepCode": "contact.add_method",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Autenticado por PIN, el recorrido continúa igual que con contraseña.",
+      "displayOrder": 45,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "7",
+      "transitionCode": "contact_method.to_request",
+      "fromStepCode": "contact.add_method",
+      "toStepCode": "contact.request_code",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Registrado el método, se pide el código.",
+      "displayOrder": 50,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "8",
+      "transitionCode": "request.to_submit",
+      "fromStepCode": "contact.request_code",
+      "toStepCode": "contact.submit_code",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Emitido el código, el cliente lo envía.",
+      "displayOrder": 60,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "9",
+      "transitionCode": "submit_code.to_profile",
+      "fromStepCode": "contact.submit_code",
+      "toStepCode": "profile.update",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Contacto verificado: sigue el perfil personal.",
+      "displayOrder": 70,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "10",
+      "transitionCode": "profile.to_financial",
+      "fromStepCode": "profile.update",
+      "toStepCode": "financial.update",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Perfil guardado: sigue el perfil económico.",
+      "displayOrder": 80,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "11",
+      "transitionCode": "financial.to_address",
+      "fromStepCode": "financial.update",
+      "toStepCode": "address.package",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Perfil económico guardado: sigue el domicilio.",
+      "displayOrder": 90,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "12",
+      "transitionCode": "address.to_identity_upload",
+      "fromStepCode": "address.package",
+      "toStepCode": "identity.upload_url",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Domicilio registrado: sigue la carga del documento de identidad.",
+      "displayOrder": 100,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "13",
+      "transitionCode": "identity_upload.to_identity_package",
+      "fromStepCode": "identity.upload_url",
+      "toStepCode": "identity.package",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Con el archivo cargado se registra el documento.",
+      "displayOrder": 110,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "14",
+      "transitionCode": "identity_package.to_verification",
+      "fromStepCode": "identity.package",
+      "toStepCode": "identity.verification",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Documento registrado: se verifica contra el proveedor.",
+      "displayOrder": 120,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "15",
+      "transitionCode": "identity_verification.to_references",
+      "fromStepCode": "identity.verification",
+      "toStepCode": "references.add",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Identidad verificada: siguen las referencias personales.",
+      "displayOrder": 130,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "16",
+      "transitionCode": "identity_verification.to_external_request",
+      "fromStepCode": "identity.verification",
+      "toStepCode": "external.request",
+      "conditionType": "on_error",
+      "conditionExpression": {
+        "errorCodes": [
+          "IDENTITY_VERIFICATION_FAILED",
+          "PROVIDER_UNAVAILABLE"
+        ]
+      },
+      "description": "Si el proveedor de identidad falla, se recurre a evidencia externa complementaria.",
+      "displayOrder": 140,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "17",
+      "transitionCode": "references.to_consents",
+      "fromStepCode": "references.add",
+      "toStepCode": "consents.decisions",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Referencias cargadas: quedan los consentimientos.",
+      "displayOrder": 150,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "18",
+      "transitionCode": "consents.to_submit",
+      "fromStepCode": "consents.decisions",
+      "toStepCode": "onboarding.submit",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Paquete completo: se envía a revisión.",
+      "displayOrder": 160,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "19",
+      "transitionCode": "submit.to_risk",
+      "fromStepCode": "onboarding.submit",
+      "toStepCode": "risk.create_assessment",
+      "conditionType": "on_state",
+      "conditionExpression": {
+        "lifecycleStatus": "under_review"
+      },
+      "description": "En revisión: se ejecuta la evaluación de riesgo.",
+      "displayOrder": 170,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "20",
+      "transitionCode": "submit.to_observations",
+      "fromStepCode": "onboarding.submit",
+      "toStepCode": "onboarding.observations",
+      "conditionType": "on_error",
+      "conditionExpression": {
+        "errorCodes": [
+          "ONBOARDING_INCOMPLETE"
+        ]
+      },
+      "description": "Paquete incompleto: el cliente consulta qué le falta y vuelve a la captura.",
+      "displayOrder": 180,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "21",
+      "transitionCode": "risk.to_identity_decision",
+      "fromStepCode": "risk.create_assessment",
+      "toStepCode": "ops.identity_decision",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Con el riesgo evaluado, operaciones decide sobre la identidad.",
+      "displayOrder": 190,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "22",
+      "transitionCode": "identity_decision.to_screening",
+      "fromStepCode": "ops.identity_decision",
+      "toStepCode": "ops.compliance_screening",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Identidad resuelta: se ejecuta el cribado de cumplimiento.",
+      "displayOrder": 200,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "23",
+      "transitionCode": "screening.to_clear",
+      "fromStepCode": "ops.compliance_screening",
+      "toStepCode": "ops.compliance_clear",
+      "conditionType": "conditional",
+      "conditionExpression": {
+        "blockerCodes": [
+          "COMPLIANCE_MATCH_PENDING"
+        ]
+      },
+      "description": "Si hubo coincidencias, hay que resolverlas antes de continuar.",
+      "displayOrder": 210,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "24",
+      "transitionCode": "screening.to_eligibility",
+      "fromStepCode": "ops.compliance_screening",
+      "toStepCode": "eligibility.get",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Sin coincidencias pendientes: se evalúa la habilitación.",
+      "displayOrder": 220,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "25",
+      "transitionCode": "clear.to_eligibility",
+      "fromStepCode": "ops.compliance_clear",
+      "toStepCode": "eligibility.get",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Resueltas las coincidencias, se evalúa la habilitación.",
+      "displayOrder": 230,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "26",
+      "transitionCode": "manual_decision.to_observations",
+      "fromStepCode": "ops.manual_decision",
+      "toStepCode": "onboarding.observations",
+      "conditionType": "on_state",
+      "conditionExpression": {
+        "lifecycleStatus": "observed"
+      },
+      "description": "Si el analista pide más información, el cliente vuelve al circuito de observaciones.",
+      "displayOrder": 240,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "27",
+      "transitionCode": "fraud_decision.to_eligibility",
+      "fromStepCode": "ops.fraud_decision",
+      "toStepCode": "eligibility.get",
+      "conditionType": "on_state",
+      "conditionExpression": {
+        "lifecycleStatus": "under_review"
+      },
+      "description": "Descartado el fraude, el cliente vuelve a evaluarse.",
+      "displayOrder": 250,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "28",
+      "transitionCode": "eligibility.to_products",
+      "fromStepCode": "eligibility.get",
+      "toStepCode": "credit.list_products",
+      "conditionType": "on_state",
+      "conditionExpression": {
+        "eligible": true,
+        "lifecycleStatus": "active"
+      },
+      "description": "Cliente habilitado: puede ver los productos que puede solicitar.",
+      "displayOrder": 260,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "29",
+      "transitionCode": "eligibility.to_decision",
+      "fromStepCode": "eligibility.get",
+      "toStepCode": "ops.eligibility_decision",
+      "conditionType": "conditional",
+      "conditionExpression": {
+        "eligible": false
+      },
+      "description": "Con bloqueadores vigentes, la habilitación pasa por una decisión humana.",
+      "displayOrder": 270,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "30",
+      "transitionCode": "eligibility_decision.to_eligibility",
+      "fromStepCode": "ops.eligibility_decision",
+      "toStepCode": "eligibility.get",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Aplicada la decisión, se reevalúa para dejar la evidencia actualizada.",
+      "displayOrder": 280,
+      "isDefaultPath": false
+    },
+    {
+      "transitionId": "31",
+      "transitionCode": "products.to_application",
+      "fromStepCode": "credit.list_products",
+      "toStepCode": "credit.create_application",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "Elegido el producto, se crea la solicitud.",
+      "displayOrder": 290,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "32",
+      "transitionCode": "application.to_decision",
+      "fromStepCode": "credit.create_application",
+      "toStepCode": "ops.credit_decision",
+      "conditionType": "on_success",
+      "conditionExpression": {},
+      "description": "La solicitud entra en la cola de decisión de operaciones.",
+      "displayOrder": 300,
+      "isDefaultPath": true
+    },
+    {
+      "transitionId": "33",
+      "transitionCode": "exit.decision",
+      "fromStepCode": "ops.credit_decision",
+      "toStepCode": null,
+      "conditionType": "always",
+      "conditionExpression": {},
+      "description": "Salida del flujo: la solicitud queda aprobada o rechazada.",
+      "displayOrder": 310,
+      "isDefaultPath": true
+    }
+  ],
+  "totals": {
+    "stages": 22,
+    "steps": 57,
+    "transitions": 33,
+    "dependencies": 18
+  }
+}

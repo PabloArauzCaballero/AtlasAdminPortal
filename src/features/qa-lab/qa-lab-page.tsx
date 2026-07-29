@@ -19,8 +19,7 @@ import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-bu
 import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
-import { JourneyWorkspaceProvider } from "./journey-workspace";
-import { JourneyDecisionTreePanel } from "./journey-tree/journey-tree-panel";
+import { WorkflowCanvas } from "@/features/workflows/workflow-canvas";
 import { QaLabDocsPanel } from "./qa-lab-docs";
 import { StressTestCard } from "./stress-test-card";
 
@@ -56,11 +55,11 @@ function AuthorizedQaLabPage({
   const endpoint = useEndpoint(endpointId);
 
   return (
-    <JourneyWorkspaceProvider>
+    <>
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Prueba unitaria de un endpoint (funcional + stress), un journey de varios endpoints encadenados simulando un flujo real de negocio, y su árbol de decisión para ver qué pasa cuando un paso responde mal."
+        description="Prueba unitaria de un endpoint (funcional + stress), un journey de varios endpoints encadenados, y el árbol de decisión del recorrido estándar que publica el backend."
         actions={
           <>
             <TutorialLaunchButton
@@ -96,8 +95,8 @@ function AuthorizedQaLabPage({
           <JourneyRunnerPanel />
         </div>
       ) : null}
-      {activeTab === TREE ? <JourneyDecisionTreePanel /> : null}
-    </JourneyWorkspaceProvider>
+      {activeTab === TREE ? <WorkflowCanvas /> : null}
+    </>
   );
 }
 
