@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
+import { DecisionTreeDemo } from "./decision-tree-demo";
 import { LatencyDemoChart } from "./latency-demo-chart";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
@@ -113,6 +114,7 @@ export function TutorialCard({
         </p>
       ) : null}
       {step.demo === "latency" ? <LatencyDemoChart /> : null}
+      {step.demo === "decision-tree" ? <DecisionTreeDemo /> : null}
 
       {missing ? (
         <p className="mt-3 flex items-center gap-1.5 text-xs text-atlas-muted">

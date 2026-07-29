@@ -45,7 +45,7 @@ export type TutorialStep = Readonly<{
   /** Ejemplo práctico opcional mostrado en un bloque destacado. */
   example?: string;
   /** Demo visual interactiva a incrustar en la tarjeta (clave del registro de demos). */
-  demo?: "latency";
+  demo?: "latency" | "decision-tree";
   position?: "top" | "right" | "bottom" | "left" | "auto";
   requiredAction?: TutorialAction;
   /** Cambia de ruta automáticamente al entrar al paso. */

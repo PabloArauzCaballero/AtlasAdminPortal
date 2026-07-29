@@ -1,4 +1,5 @@
 import type { TutorialDefinition } from "../types";
+import { decisionTreeTutorial } from "./qa-lab-tree-tutorial";
 
 /**
  * Recorridos del Laboratorio de testing (`/internal/qa/lab`). Explicaciones
@@ -30,9 +31,9 @@ const overview: TutorialDefinition = {
     {
       id: "tabs",
       target: "qa-lab-tabs",
-      title: "Dos formas de probar",
+      title: "Tres formas de mirar una prueba",
       content:
-        "«Prueba unitaria» comprueba UN endpoint (funcional + carga). «Journey» encadena VARIOS endpoints simulando un caso de negocio completo.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
+        "«Prueba unitaria» comprueba UN endpoint (funcional + carga). «Journey» encadena VARIOS endpoints simulando un caso de negocio completo. «Árbol de decisión» dibuja ese journey como una cadena de bifurcaciones para ver qué se rompe si un paso responde mal.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
       example:
         "¿Se cae el login? → Prueba unitaria del endpoint de login. ¿Falla el alta completa de un cliente? → Journey que encadena crear cliente + sesión + riesgo.",
       position: "bottom",
@@ -242,4 +243,5 @@ export const qaLabTutorials: readonly TutorialDefinition[] = [
   functional,
   stress,
   journey,
+  decisionTreeTutorial,
 ];

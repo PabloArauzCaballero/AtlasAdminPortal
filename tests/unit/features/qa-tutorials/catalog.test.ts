@@ -39,6 +39,7 @@ describe("catálogo de tutoriales · integridad", () => {
         "qa-lab-functional",
         "qa-lab-stress",
         "qa-lab-journey",
+        "qa-lab-decision-tree",
         "qa-suites-list",
         "qa-suite-detail",
         "qa-runs-interpret",

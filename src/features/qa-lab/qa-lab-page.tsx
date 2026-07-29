@@ -19,10 +19,23 @@ import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-bu
 import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
+import { JourneyWorkspaceProvider } from "./journey-workspace";
+import { JourneyDecisionTreePanel } from "./journey-tree/journey-tree-panel";
 import { QaLabDocsPanel } from "./qa-lab-docs";
 import { StressTestCard } from "./stress-test-card";
 
-const tabs = ["Prueba unitaria", "Journey (encadenado)"];
+const UNIT = "Prueba unitaria";
+const JOURNEY = "Journey (encadenado)";
+const TREE = "Árbol de decisión";
+
+const tabs = [UNIT, JOURNEY, TREE];
+
+/** Cada pestaña abre el recorrido que explica esa herramienta, no uno genérico. */
+const tutorialByTab: Record<string, string> = {
+  [UNIT]: "qa-lab-functional",
+  [JOURNEY]: "qa-lab-journey",
+  [TREE]: "qa-lab-decision-tree",
+};
 
 export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -43,19 +56,15 @@ function AuthorizedQaLabPage({
   const endpoint = useEndpoint(endpointId);
 
   return (
-    <>
+    <JourneyWorkspaceProvider>
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Prueba unitaria de un endpoint (funcional + stress) o un journey de varios endpoints encadenados simulando un flujo real de negocio."
+        description="Prueba unitaria de un endpoint (funcional + stress), un journey de varios endpoints encadenados simulando un flujo real de negocio, y su árbol de decisión para ver qué pasa cuando un paso responde mal."
         actions={
           <>
             <TutorialLaunchButton
-              tutorialId={
-                activeTab === "Prueba unitaria"
-                  ? "qa-lab-functional"
-                  : "qa-lab-journey"
-              }
+              tutorialId={tutorialByTab[activeTab] ?? "qa-lab-overview"}
             />
             <Link href="/internal/qa/aprender">
               <Button>Centro de aprendizaje</Button>
@@ -75,36 +84,56 @@ function AuthorizedQaLabPage({
       <div data-tutorial-id="qa-lab-tabs">
         <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
       </div>
-      {activeTab === "Prueba unitaria" ? (
-        <div className="space-y-6">
-          <QaLabDocsPanel />
-          <div data-tutorial-id="qa-lab-endpoint-picker">
-            <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
-          </div>
-          {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
-          {endpoint.data ? (
-            <div className="grid gap-6 xl:grid-cols-2">
-              <div data-tutorial-id="qa-lab-functional-card">
-                <EndpointTestCard
-                  endpointId={endpointId}
-                  endpoint={endpoint.data.endpoint}
-                />
-              </div>
-              <div data-tutorial-id="qa-lab-stress-card">
-                <StressTestCard
-                  endpointId={endpointId}
-                  endpoint={endpoint.data.endpoint}
-                />
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : (
+      {activeTab === UNIT ? (
+        <UnitTestTab
+          endpointId={endpointId}
+          onSelect={setEndpointId}
+          endpoint={endpoint}
+        />
+      ) : null}
+      {activeTab === JOURNEY ? (
         <div data-tutorial-id="qa-lab-journey-panel">
           <JourneyRunnerPanel />
         </div>
-      )}
-    </>
+      ) : null}
+      {activeTab === TREE ? <JourneyDecisionTreePanel /> : null}
+    </JourneyWorkspaceProvider>
+  );
+}
+
+function UnitTestTab({
+  endpointId,
+  onSelect,
+  endpoint,
+}: Readonly<{
+  endpointId: string;
+  onSelect: (id: string) => void;
+  endpoint: ReturnType<typeof useEndpoint>;
+}>) {
+  return (
+    <div className="space-y-6">
+      <QaLabDocsPanel />
+      <div data-tutorial-id="qa-lab-endpoint-picker">
+        <EndpointPicker selectedId={endpointId} onSelect={onSelect} />
+      </div>
+      {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
+      {endpoint.data ? (
+        <div className="grid gap-6 xl:grid-cols-2">
+          <div data-tutorial-id="qa-lab-functional-card">
+            <EndpointTestCard
+              endpointId={endpointId}
+              endpoint={endpoint.data.endpoint}
+            />
+          </div>
+          <div data-tutorial-id="qa-lab-stress-card">
+            <StressTestCard
+              endpointId={endpointId}
+              endpoint={endpoint.data.endpoint}
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

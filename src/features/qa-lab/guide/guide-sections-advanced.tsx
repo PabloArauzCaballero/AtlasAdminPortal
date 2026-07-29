@@ -88,6 +88,13 @@ export function Journey() {
         , el <code className="font-mono">context</code> acumulado de variables
         y, por paso, método, URL final, HTTP status, latencia y lo que extrajo.
       </p>
+
+      <Note tone="tip" tag="Tercera pestaña">
+        <strong>Árbol de decisión</strong> dibuja este mismo journey como una
+        cadena de bifurcaciones: en cada paso, ¿responde lo esperado? Marca un
+        fallo y verás pintado qué pasos se quedan sin su dato — sin tener que
+        provocar el fallo de verdad.
+      </Note>
     </Section>
   );
 }

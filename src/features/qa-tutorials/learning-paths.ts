@@ -29,6 +29,17 @@ export const learningPaths: readonly LearningPath[] = [
     tutorialIds: ["qa-lab-functional", "qa-lab-journey"],
   },
   {
+    id: "recorridos-y-dependencias",
+    title: "Recorridos y dependencias",
+    summary:
+      "Diseñar un journey, leer su árbol de decisión y saber qué se cae si un paso falla.",
+    tutorialIds: [
+      "qa-lab-journey",
+      "qa-lab-decision-tree",
+      "qa-runs-interpret",
+    ],
+  },
+  {
     id: "rendimiento",
     title: "Rendimiento y carga",
     summary: "Medir carga en el Lab y con perfiles de stress reutilizables.",
