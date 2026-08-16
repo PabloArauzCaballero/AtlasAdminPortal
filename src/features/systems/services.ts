@@ -2,6 +2,7 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   ActionLog,
+  ActionLogFilterCatalog,
   ActionLogListResponse,
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
@@ -107,6 +108,19 @@ export async function listActionLogs(query: QueryParams) {
     response,
     ["actionLogs", "logs", "records", "results"],
   );
+}
+
+/**
+ * Qué se puede filtrar en la auditoría y con qué valores.
+ *
+ * El catálogo lo publica el backend porque es quien conoce las dos mitades: los
+ * conjuntos cerrados están en su esquema de consulta y los abiertos —módulos,
+ * tipos de actor— sólo existen en la bitácora. Fijarlos aquí fue el defecto que
+ * esto corrige: la pantalla ofrecía tres filtros de los once que el endpoint
+ * acepta, con las opciones copiadas a mano.
+ */
+export function getActionLogFilterCatalog() {
+  return apiRequest<ActionLogFilterCatalog>("/systems/action-logs/filter-catalog");
 }
 
 export function getActionLogsByRequest(requestId: string) {
