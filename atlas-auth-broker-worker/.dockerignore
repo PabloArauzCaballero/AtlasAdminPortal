@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+test
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+.git

@@ -14,7 +14,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
   description:
     "El proceso estándar del negocio tal como lo publica el backend: etapas, endpoints, condiciones de paso y dependencias.",
   level: "intermediate",
-  version: 2,
+  version: 3,
   route: "/internal/qa/lab",
   estimatedMinutes: 7,
   goal: "Entender el recorrido real del cliente",
@@ -25,7 +25,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       content:
         "El backend ya sabía QUÉ endpoints expone. El catálogo de flujos responde lo que faltaba: en qué ORDEN se recorren, bajo qué CONDICIÓN se pasa de uno al siguiente y qué estado del cliente habilita cada paso.\n\nEsta pestaña dibuja ese catálogo. No es un diagrama pintado a mano: si el backend publica una versión nueva del flujo, el dibujo cambia solo.",
       example:
-        "El flujo sembrado hoy es «customer_credit_journey»: del registro del cliente hasta la decisión de crédito, con 22 etapas y 57 endpoints reales.",
+        "Hoy hay tres flujos publicados: el alta de cuenta hasta la sesión iniciada, el arranque de la app hasta la primera pantalla, y el recorrido completo hasta la decisión de crédito.",
       demo: "decision-tree",
     },
     {
@@ -81,7 +81,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       content:
         "Pulsa una etapa, un paso o una flecha y aquí se explica lo que el catálogo declara: roles autorizados, estados requeridos y resultantes, eventos que produce, errores posibles y de qué pasos depende.\n\nDe una etapa verás además su regla de completitud: cuándo el backend la da por terminada.",
       example:
-        "«Envío del paquete» sólo se da por completada cuando el cliente pasa a under_review, active, suspended o rejected.",
+        "Selecciona GET /auth/me y pulsa «Enviar GET»: responde 200 con tu propio actor, o 401 si tu sesión caducó.",
       position: "left",
       waitForElement: true,
     },
@@ -92,7 +92,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       content:
         "El catálogo está versionado: puedes ver la vigente o una versión concreta, sin que publicar una nueva cambie lo que ven los demás.\n\nLos filtros por módulo y actor los aplica el BACKEND, no el navegador: así el recorte nunca deja una flecha apuntando a un paso que ya no está en pantalla.",
       example:
-        "Filtra por actor «interno» para ver sólo lo que hace el back office: revisión de identidad, cumplimiento, fraude y la decisión final.",
+        "«Alta de cuenta» responde qué endpoints toca un usuario para registrarse y quedar logueado; «primera pantalla», qué se llama entre el login y el inicio.",
       position: "bottom",
       waitForElement: true,
     },

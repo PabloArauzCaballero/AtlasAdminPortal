@@ -7,6 +7,7 @@ import {
   DetailList,
   DetailSection,
 } from "./workflow-detail-primitives";
+import { WorkflowStepTrial } from "./workflow-step-trial";
 
 /**
  * Ficha del paso: el endpoint concreto que el flujo recorre, con lo que el
@@ -117,6 +118,8 @@ export function WorkflowStepDetail({ step }: Readonly<{ step: WorkflowStep }>) {
           mono
         />
       </div>
+
+      <WorkflowStepTrial step={step} />
 
       {step.possibleErrors.length > 0 ? (
         <DetailSection title="Errores posibles" isEmpty={false} empty="">

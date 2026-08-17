@@ -187,6 +187,14 @@ function WorkflowBody({
           selection={selection}
           onClose={() => onSelect(null)}
         />
+        {/* Abajo al centro: es la única banda del lienzo que no tapa nodos ni
+            pisa el minimapa o los controles de zoom. */}
+        {selection ? null : (
+          <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-atlas-border bg-white/90 px-3 py-1.5 text-[0.6875rem] text-atlas-muted shadow-subtle">
+            Pasa el ratón por un nodo para ver su detalle; púlsalo para abrir su
+            ficha y probarlo.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -225,15 +233,6 @@ function SidePanel({
           <WorkflowLegend />
         </div>
       ) : null}
-
-      {selection ? null : (
-        <div className="pointer-events-none flex justify-end">
-          <p className="max-w-[18rem] rounded-lg border border-atlas-border bg-white/90 px-3 py-2 text-[0.6875rem] leading-4 text-atlas-muted shadow-subtle">
-            Pulsa un nodo, la cabecera de una etapa o una flecha para ver qué
-            declara el catálogo.
-          </p>
-        </div>
-      )}
 
       {selection ? (
         <div

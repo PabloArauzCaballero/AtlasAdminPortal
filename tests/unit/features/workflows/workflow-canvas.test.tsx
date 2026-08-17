@@ -13,7 +13,10 @@ const getWorkflowVersions = vi.hoisted(() => vi.fn());
 const getWorkflowGraph = vi.hoisted(() => vi.fn());
 const validateWorkflowTransition = vi.hoisted(() => vi.fn());
 
-vi.mock("@/features/workflows/services", () => ({
+// Parcial: la ficha del paso usa además los ayudantes de ruta del módulo, y
+// un mock total los borraría.
+vi.mock("@/features/workflows/services", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   listWorkflows,
   getWorkflowTree,
   getWorkflowVersions,

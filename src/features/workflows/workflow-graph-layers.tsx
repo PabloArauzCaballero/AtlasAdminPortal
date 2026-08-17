@@ -5,7 +5,12 @@ import {
   CONDITION_LABEL,
   DEPENDENCY_COLOR,
 } from "./workflow-edges";
-import type { GraphEdge, GraphTerminal } from "./workflow-graph-layout";
+import type {
+  GraphEdge,
+  GraphTerminal,
+  WorkflowLane,
+} from "./workflow-graph-layout";
+import { WorkflowLaneGroup } from "./workflow-node";
 import type {
   DependencyPath,
   RelatedNodes,
@@ -190,5 +195,59 @@ function EdgeTag({
         {label}
       </text>
     </g>
+  );
+}
+
+/**
+ * Cajas de etapa. Sólo la cabecera es pulsable: un área del tamaño de la
+ * columna robaría los clics de arrastrar el lienzo.
+ */
+export function LaneLayer({
+  lanes,
+  related,
+  onSelect,
+}: Readonly<{
+  lanes: readonly WorkflowLane[];
+  related: RelatedNodes | null;
+  onSelect: (selection: WorkflowSelection) => void;
+}>) {
+  return (
+    <>
+      {lanes.map((lane) => {
+        const select = () =>
+          onSelect({ kind: "stage", code: lane.stage.stageCode });
+        return (
+          <g key={lane.stage.stageCode}>
+            <WorkflowLaneGroup
+              lane={lane}
+              dimmed={
+                Boolean(related) && !related?.stages.has(lane.stage.stageCode)
+              }
+            />
+            <rect
+              role="button"
+              tabIndex={0}
+              aria-label={`Etapa ${lane.stage.name}, módulo ${lane.stage.moduleCode}, actor ${lane.stage.actorType}`}
+              className="cursor-pointer"
+              x={lane.x - 16}
+              y={lane.top}
+              width={lane.width + 32}
+              height={40}
+              fill="transparent"
+              onClick={(event) => {
+                event.stopPropagation();
+                select();
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  select();
+                }
+              }}
+            />
+          </g>
+        );
+      })}
+    </>
   );
 }

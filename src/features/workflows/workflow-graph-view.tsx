@@ -6,6 +6,7 @@ import { EdgeMarkers } from "./workflow-edges";
 import { GraphControls } from "./workflow-graph-controls";
 import {
   DependencyLayer,
+  LaneLayer,
   TerminalLayer,
   TransitionLayer,
 } from "./workflow-graph-layers";
@@ -15,7 +16,7 @@ import {
   relatedNodes,
   type WorkflowSelection,
 } from "./workflow-graph-helpers";
-import { WorkflowLaneGroup, WorkflowNodeCard } from "./workflow-node";
+import { WorkflowNodeCard } from "./workflow-node";
 import {
   fitHeight,
   fitToView,
@@ -26,6 +27,7 @@ import {
   type Viewport,
 } from "./workflow-viewport";
 import { WorkflowMinimap } from "./workflow-minimap";
+import { WorkflowNodeTooltip } from "./workflow-node-tooltip";
 import type { WorkflowTree } from "./types";
 
 /**
@@ -65,6 +67,7 @@ export function WorkflowGraphView({
   const hostRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
   const [hostSize, setHostSize] = useState({ width: 0, height: 0 });
+  const [hovered, setHovered] = useState<string | null>(null);
   const dragRef = useRef<{ x: number; y: number } | null>(null);
 
   // El tamaño del lienzo cambia al entrar en pantalla completa o al redimensionar
@@ -115,6 +118,8 @@ export function WorkflowGraphView({
       y: hostSize.height / 2 - point.y * current.scale,
     }));
   }
+
+  const hoveredNode = hovered ? (layout.nodeById.get(hovered) ?? null) : null;
 
   function handleWheel(event: React.WheelEvent) {
     if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
@@ -176,44 +181,11 @@ export function WorkflowGraphView({
         >
           <EdgeMarkers />
           <g transform={toTransform(viewport)}>
-            {layout.lanes.map((lane) => {
-              const width = lane.width;
-              const headerTop = lane.top;
-              return (
-                <g key={lane.stage.stageCode}>
-                  <WorkflowLaneGroup
-                    lane={lane}
-                    dimmed={
-                      Boolean(related) &&
-                      !related?.stages.has(lane.stage.stageCode)
-                    }
-                  />
-                  {/* Sólo la cabecera es pulsable: un área del tamaño de la
-                      columna robaría los clics de arrastrar el lienzo. */}
-                  <rect
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Etapa ${lane.stage.name}, módulo ${lane.stage.moduleCode}, actor ${lane.stage.actorType}`}
-                    className="cursor-pointer"
-                    x={lane.x - 16}
-                    y={headerTop}
-                    width={width + 32}
-                    height={40}
-                    fill="transparent"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect({ kind: "stage", code: lane.stage.stageCode });
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onSelect({ kind: "stage", code: lane.stage.stageCode });
-                      }
-                    }}
-                  />
-                </g>
-              );
-            })}
+            <LaneLayer
+              lanes={layout.lanes}
+              related={related}
+              onSelect={onSelect}
+            />
 
             <DependencyLayer
               dependencies={dependencies}
@@ -247,6 +219,18 @@ export function WorkflowGraphView({
                     onSelect({ kind: "step", code: node.id });
                   }
                 }}
+                onPointerEnter={() => setHovered(node.id)}
+                onPointerLeave={() =>
+                  setHovered((current) =>
+                    current === node.id ? null : current,
+                  )
+                }
+                onFocus={() => setHovered(node.id)}
+                onBlur={() =>
+                  setHovered((current) =>
+                    current === node.id ? null : current,
+                  )
+                }
               >
                 <WorkflowNodeCard
                   node={node}
@@ -262,6 +246,14 @@ export function WorkflowGraphView({
           </g>
         </svg>
       </div>
+
+      {hoveredNode ? (
+        <WorkflowNodeTooltip
+          node={hoveredNode}
+          viewport={viewport}
+          host={hostSize}
+        />
+      ) : null}
 
       <GraphControls
         viewport={viewport}

@@ -22,10 +22,10 @@ export type ToolHealth = {
   isWorker?: boolean;
   isConfigured?: boolean;
   missingEnvVars?: string[];
-  /** Estado vivo: true = operativa, false = caída, null = sin probe activo (solo configuración). */
+  /** Estado vivo: true = operativa, false = caída, null = sin chequeo en vivo (config o no-aplica). */
   isHealthy?: boolean | null;
   healthMessage?: string | null;
-  checkType?: "LIVE" | "CONFIGURATION" | string;
+  checkType?: "LIVE" | "CONFIGURATION" | "NOT_APPLICABLE" | string;
   [key: string]: unknown;
 };
 

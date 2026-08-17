@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Nunca versionar material sensible: este worker custodia credenciales de proveedor.
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key

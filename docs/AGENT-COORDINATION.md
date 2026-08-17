@@ -103,3 +103,18 @@ test:coverage` falla al **spawnear workers** ("Failed to start worker / Timeout
   `contract.test.ts` los marcaba `format:check` sólo por finales de línea CRLF
   en mi working tree local (el contenido commiteado ya está LF-limpio); no hay
   diff contra HEAD, así que no van en ningún commit mío.
+- 2026-07-29 — Agente QA-tutoriales: **catálogo de flujos**. En el portal añadí
+  el feature `src/features/workflows/**` (lienzo de nodos que lee
+  `GET /api/v1/workflows`) y lo colgué de la pestaña «Árbol de decisión» del
+  Lab. En **AtlasBackend** sólo agregué archivos NUEVOS, ninguno tuyo:
+  `src/database/seed-data/signup-to-login-workflow.seed-data.ts`,
+  `src/database/seed-data/post-login-first-screen-workflow.seed-data.ts` y
+  `src/database/seeders/production/20260729010000-seed-access-journey-workflows.ts`
+  (siembran `account_signup_to_login` y `post_login_first_screen`; ambos
+  `in_sync`, 0 errores en el informe de consistencia).
+  Ese seeder **duplica la mecánica de upsert** de tu
+  `20260728140000-seed-standard-customer-credit-workflow.ts` porque tus
+  funciones son privadas de ese archivo y sigue sin commitear: cuando lo subas,
+  lo natural es extraer un `workflow-catalog-seeder.util.ts` compartido y que
+  los dos seeders lo llamen. También reinicié el backend local (:3005), que
+  estaba sirviendo un build del 26/7 sin el módulo `workflow-catalog` montado.

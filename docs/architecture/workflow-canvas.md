@@ -55,9 +55,30 @@ produciría flechas huérfanas.
   interruptor «Ver todas las dependencias» — las 18 del flujo estándar cruzando
   a la vez tapaban el resto.
 
+## Flujos publicados
+
+| Código                    | Qué responde                                                           | Etapas / pasos |
+| ------------------------- | ---------------------------------------------------------------------- | -------------- |
+| `account_signup_to_login` | qué endpoints toca un usuario para crearse la cuenta y quedar logueado | 8 / 15         |
+| `post_login_first_screen` | qué se llama entre el login y la primera pantalla pintada              | 4 / 15         |
+| `customer_credit_journey` | el proceso completo hasta la decisión de crédito                       | 22 / 57        |
+
+Los dos primeros los siembra
+`20260729010000-seed-access-journey-workflows` (AtlasBackend). El selector de
+flujo del lienzo lista lo que devuelva `GET /workflows`: publicar uno nuevo lo
+hace aparecer sin tocar el portal.
+
+## Probar un paso
+
+La ficha de un paso trae «Probar este paso»: parámetros de ruta, payload
+propuesto a partir de `inputContract` y envío real. Va por el cliente de API del
+portal (misma sesión, mismo host configurado), no por un canal nuevo, y un
+método que escribe pide confirmación. La respuesta se muestra tal cual —incluido
+el 401 o el 422—, porque ahí está el valor de la prueba.
+
 ## Verificación contra el backend
 
-El flujo sembrado (`customer_credit_journey` v1) trae 22 etapas, 57 pasos, 33
+El flujo `customer_credit_journey` v1 trae 22 etapas, 57 pasos, 33
 transiciones y 18 dependencias. El fixture de
 `tests/unit/features/workflows/fixtures/customer-credit-journey.json` es la
 respuesta real capturada de ese endpoint, así que las pruebas del lienzo corren

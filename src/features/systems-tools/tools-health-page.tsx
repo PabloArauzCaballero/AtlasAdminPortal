@@ -32,7 +32,11 @@ function AuthorizedToolsHealthPage() {
   const tools = health.data ?? [];
   const downTools = tools.filter((tool) => toolLiveState(tool) === "DOWN");
   const upCount = tools.filter((tool) => toolLiveState(tool) === "UP").length;
-  const noProbeCount = tools.length - upCount - downTools.length;
+  const notApplicableCount = tools.filter(
+    (tool) => toolLiveState(tool) === "NOT_APPLICABLE",
+  ).length;
+  const noProbeCount =
+    tools.length - upCount - downTools.length - notApplicableCount;
 
   return (
     <>
@@ -55,7 +59,7 @@ function AuthorizedToolsHealthPage() {
           Última actualización:{" "}
           {formatDateTime(new Date(health.dataUpdatedAt).toISOString())} ·{" "}
           {upCount} operativas · {downTools.length} caídas · {noProbeCount} sin
-          probe
+          chequeo en vivo · {notApplicableCount} no aplican
         </p>
       ) : null}
       {downTools.length > 0 ? (
@@ -120,8 +124,10 @@ function AuthorizedToolsHealthPage() {
                     {tool.checkType ? (
                       <span className="font-mono">
                         {tool.checkType === "LIVE"
-                          ? "probe en vivo"
-                          : "solo configuración"}
+                          ? "chequeo en vivo"
+                          : tool.checkType === "NOT_APPLICABLE"
+                            ? "no aplica monitoreo"
+                            : "solo configuración"}
                       </span>
                     ) : null}
                   </div>

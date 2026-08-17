@@ -4,12 +4,16 @@ import { useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import { ProviderAuthSection } from "./provider-auth-section";
 import { ProviderCostPoliciesSection } from "./provider-cost-policies-section";
 import { ProviderRuntimeForm } from "./provider-runtime-form";
 import { ProviderTestForm } from "./provider-test-form";
 import type { ProviderRow } from "./provider-columns";
 
-const tabs = ["Resumen", "Runtime", "Costos", "Probar"];
+// "Autenticación" va justo después de "Runtime": ambas responden a "¿por qué este proveedor no
+// está respondiendo?", y separarlas del bloque de costos evita confundir un fallo de credencial
+// con un bloqueo por política de gasto.
+const tabs = ["Resumen", "Runtime", "Autenticación", "Costos", "Probar"];
 
 export function ProviderDetailDrawer({
   provider,
@@ -49,6 +53,9 @@ export function ProviderDetailDrawer({
       ) : null}
       {activeTab === "Runtime" ? (
         <ProviderRuntimeForm provider={provider} />
+      ) : null}
+      {activeTab === "Autenticación" ? (
+        <ProviderAuthSection providerCode={provider.code} />
       ) : null}
       {activeTab === "Costos" ? (
         <ProviderCostPoliciesSection providerCode={provider.code} />

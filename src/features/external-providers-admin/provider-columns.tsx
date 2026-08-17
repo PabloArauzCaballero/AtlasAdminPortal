@@ -8,10 +8,15 @@ import {
 } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatNumber, safeText } from "@/shared/lib/format";
-import type { Provider, ProviderHealth } from "./types";
+import {
+  CredentialStatusBadge,
+  TokenStatusBadge,
+} from "./provider-auth-badges";
+import type { Provider, ProviderAuthState, ProviderHealth } from "./types";
 
 export type ProviderRow = Provider & {
   health?: ProviderHealth;
+  authState?: ProviderAuthState;
 };
 
 export function buildProviderColumns(
@@ -51,6 +56,31 @@ export function buildProviderColumns(
       cell: ({ row }) =>
         row.original.health ? (
           <StatusBadge value={row.original.health.status} />
+        ) : (
+          <span className="text-atlas-muted">—</span>
+        ),
+    },
+    {
+      // Separada de "Salud" a propósito: un proveedor puede responder perfectamente y aun así
+      // tener la credencial vencida. Fundirlas en una sola columna es lo que hacía imposible
+      // distinguir "el proveedor está caído" de "hay que rotar nuestra credencial".
+      header: "Credencial",
+      accessorKey: "authState",
+      cell: ({ row }) =>
+        row.original.authState ? (
+          <CredentialStatusBadge
+            value={row.original.authState.credentialStatus}
+          />
+        ) : (
+          <span className="text-atlas-muted">—</span>
+        ),
+    },
+    {
+      header: "Token",
+      accessorKey: "tokenStatus",
+      cell: ({ row }) =>
+        row.original.authState ? (
+          <TokenStatusBadge value={row.original.authState.tokenStatus} />
         ) : (
           <span className="text-atlas-muted">—</span>
         ),

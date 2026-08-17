@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import { isAtlasApiError } from "@/shared/api/errors";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   WorkflowGraph,
@@ -81,4 +82,89 @@ export function validateWorkflowTransition(
     `/workflows/${workflowCode}/transitions/validate`,
     { method: "POST", body },
   );
+}
+
+export type WorkflowStepTrial = Readonly<{
+  method: string;
+  path: string;
+  status: number;
+  ok: boolean;
+  latencyMs: number;
+  body: unknown;
+  requestId?: string;
+}>;
+
+/** Sustituye `:param` por su valor; lo que no se rellena se queda literal y se avisa. */
+export function resolveRoutePath(
+  routePath: string,
+  pathParams: Readonly<Record<string, string>>,
+): string {
+  return routePath.replace(/:([a-zA-Z0-9_]+)/g, (match, name: string) => {
+    const value = pathParams[name]?.trim();
+    return value ? encodeURIComponent(value) : match;
+  });
+}
+
+export function pathParamNames(routePath: string): string[] {
+  return [...routePath.matchAll(/:([a-zA-Z0-9_]+)/g)].map((match) => match[1]);
+}
+
+/**
+ * Prueba un paso del flujo contra el MISMO backend que el resto del portal.
+ *
+ * No abre un canal nuevo ni acepta un host arbitrario: usa el cliente de API
+ * con la sesión del portal, así que sólo puede llegar donde ya llega el resto
+ * de la aplicación. Devuelve el estado tal cual —incluido el error— porque el
+ * valor de la prueba está justamente en ver el 401 o el 422 que responde.
+ */
+export async function runWorkflowStepTrial(
+  input: Readonly<{
+    method: string;
+    routePath: string;
+    pathParams?: Record<string, string>;
+    payload?: unknown;
+  }>,
+): Promise<WorkflowStepTrial> {
+  const path = resolveRoutePath(input.routePath, input.pathParams ?? {});
+  const method = input.method.toUpperCase();
+  const startedAt = performance.now();
+  const base = { method, path } as const;
+
+  try {
+    const body = await apiRequest<unknown>(path, {
+      method,
+      body:
+        method === "GET" || method === "HEAD"
+          ? undefined
+          : (input.payload ?? {}),
+      // Una prueba que renueva la sesión enmascara el 401 que se está probando.
+      skipRefresh: true,
+    });
+    return {
+      ...base,
+      status: 200,
+      ok: true,
+      latencyMs: Math.round(performance.now() - startedAt),
+      body,
+    };
+  } catch (error) {
+    const latencyMs = Math.round(performance.now() - startedAt);
+    if (isAtlasApiError(error)) {
+      return {
+        ...base,
+        status: error.status,
+        ok: false,
+        latencyMs,
+        body: error.payload ?? { message: error.message },
+        requestId: error.requestId,
+      };
+    }
+    return {
+      ...base,
+      status: 0,
+      ok: false,
+      latencyMs,
+      body: { message: error instanceof Error ? error.message : String(error) },
+    };
+  }
 }
