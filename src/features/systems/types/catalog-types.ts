@@ -270,6 +270,16 @@ export type ToolItem = {
   type: string | null;
   provider: string | null;
   purpose: string | null;
+  /**
+   * Metadata de gobierno que el backend guarda por herramienta. Es opcional en el tipo porque una
+   * herramienta sembrada antes de que el backend empezara a devolverla llega sin estos campos, y
+   * un portal que asuma su presencia rompería la ficha entera por un texto que falta.
+   */
+  description?: string | null;
+  businessValue?: string | null;
+  technicalUsage?: string | null;
+  auditNotes?: string | null;
+  failureRisks?: string | null;
   requiredEnvVars: string[];
   hasSandbox: boolean;
   healthcheckRoute: string | null;

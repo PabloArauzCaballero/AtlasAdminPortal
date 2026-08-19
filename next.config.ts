@@ -39,6 +39,24 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
+  /**
+   * El portal hace de PROXY de su propia API en vez de que el navegador la
+   * llame directo.
+   *
+   * Con `NEXT_PUBLIC_API_BASE_URL` apuntando a un origen externo, la petición
+   * sale del navegador del usuario: eso obliga a publicar el backend en
+   * Internet, a mantener su lista de CORS al día y a que la cookie de sesión
+   * viaje entre dominios. Reescribiendo aquí, el navegador habla SOLO con el
+   * portal —mismo origen, sin CORS, sin cookie de terceros— y el salto al
+   * backend lo da el servidor de Next desde la red donde el backend ya vive.
+   *
+   * Es lo que hace utilizable un túnel de desarrollo: se expone el front y el
+   * backend se queda donde está.
+   */
+  async rewrites() {
+    const origin = process.env.INTERNAL_API_ORIGIN ?? 'http://127.0.0.1:3005';
+    return [{ source: '/api/v1/:path*', destination: `${origin}/api/v1/:path*` }];
+  },
 };
 
 export default nextConfig;

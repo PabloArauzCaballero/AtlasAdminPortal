@@ -10,6 +10,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { ToolGovernanceNotes } from "./tool-governance-notes";
 
 export function ToolDetailPage(props: Readonly<{ toolId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -76,6 +77,7 @@ function AuthorizedToolDetailPage({ toolId }: Readonly<{ toolId: string }>) {
                 },
               ]}
             />
+            <ToolGovernanceNotes tool={tool.data} />
             <Card>
               <CardContent>
                 <JsonViewer
