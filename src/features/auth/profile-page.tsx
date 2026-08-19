@@ -10,6 +10,7 @@ import {
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
+import { PasswordChangeCard } from "./password-change-card";
 
 export function ProfilePage() {
   const { user, roles, permissions } = useAuth();
@@ -41,6 +42,7 @@ export function ProfilePage() {
               },
             ]}
           />
+          <PasswordChangeCard />
           <Card>
             <CardContent>
               <SectionHeader title="Roles" />{" "}

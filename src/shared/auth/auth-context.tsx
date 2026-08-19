@@ -16,8 +16,19 @@ import {
 } from "./session-storage";
 import { subscribeToSessionChanges } from "./session-events";
 import { normalizeInternalSession } from "./auth-normalizers";
-import { getInternalMe, loginInternal, logoutInternal } from "./auth-service";
-import type { InternalSession, InternalUser, LoginInput } from "./types";
+import {
+  getInternalMe,
+  loginInternal,
+  logoutInternal,
+  verifyLoginPinInternal,
+} from "./auth-service";
+import type {
+  InternalSession,
+  InternalUser,
+  LoginInput,
+  LoginOutcome,
+} from "./types";
+import { isPinChallenge } from "./types";
 
 type AuthContextValue = {
   session: InternalSession | null;
@@ -26,7 +37,12 @@ type AuthContextValue = {
   roles: string[];
   isHydrated: boolean;
   isRefreshingProfile: boolean;
-  login: (input: LoginInput) => Promise<void>;
+  /**
+   * Devuelve el desenlace en vez de `void`: con segundo factor obligatorio, "el login terminó" y
+   * "hay sesión" dejaron de ser lo mismo, y la pantalla necesita distinguirlos para pedir el PIN.
+   */
+  login: (input: LoginInput) => Promise<LoginOutcome>;
+  verifyLoginPin: (challengeToken: string, pin: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<InternalSession | null>;
   restoreSessionFromServer: () => Promise<InternalSession | null>;
@@ -61,7 +77,18 @@ export function AuthProvider({
 
   const login = useCallback(
     async (input: LoginInput) => {
-      setAndStoreSession(await loginInternal(input));
+      const outcome = await loginInternal(input);
+      // Sólo se guarda sesión cuando hay sesión. Guardar el desafío dejaría al portal creyéndose
+      // autenticado con un usuario vacío, que es peor que no entrar.
+      if (!isPinChallenge(outcome)) setAndStoreSession(outcome);
+      return outcome;
+    },
+    [setAndStoreSession],
+  );
+
+  const verifyLoginPin = useCallback(
+    async (challengeToken: string, pin: string) => {
+      setAndStoreSession(await verifyLoginPinInternal(challengeToken, pin));
     },
     [setAndStoreSession],
   );
@@ -132,6 +159,7 @@ export function AuthProvider({
       isHydrated,
       isRefreshingProfile,
       login,
+      verifyLoginPin,
       logout,
       refreshProfile,
       restoreSessionFromServer,
@@ -147,6 +175,7 @@ export function AuthProvider({
     isHydrated,
     isRefreshingProfile,
     login,
+    verifyLoginPin,
     logout,
     refreshProfile,
     restoreSessionFromServer,

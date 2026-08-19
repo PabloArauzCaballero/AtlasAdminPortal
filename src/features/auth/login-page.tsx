@@ -3,9 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/shared/auth/auth-context";
+import { isPinChallenge } from "@/shared/auth/types";
+import type { PinChallenge } from "@/shared/auth/types";
+import { LoginPinForm } from "./login-pin-form";
 import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
@@ -23,7 +27,10 @@ type LoginForm = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, verifyLoginPin } = useAuth();
+  // El desafío pendiente ES el estado de la pantalla: mientras exista, la contraseña ya se validó
+  // pero todavía no hay sesión.
+  const [challenge, setChallenge] = useState<PinChallenge | null>(null);
   const {
     register,
     handleSubmit,
@@ -38,10 +45,17 @@ export function LoginPage() {
     },
   });
 
+  const goToPortal = () =>
+    router.replace(sanitizeInternalReturnTo(searchParams.get("returnTo")));
+
   const onSubmit = handleSubmit(async (values) => {
     try {
-      await login(values);
-      router.replace(sanitizeInternalReturnTo(searchParams.get("returnTo")));
+      const outcome = await login(values);
+      if (isPinChallenge(outcome)) {
+        setChallenge(outcome);
+        return;
+      }
+      goToPortal();
     } catch (error) {
       if (isAtlasApiError(error)) {
         setError("root", {
@@ -93,54 +107,74 @@ export function LoginPage() {
               </h1>
             </div>
           </div>
-          <div className="mb-6 hidden lg:block">
-            <h1 className="text-2xl font-bold tracking-tight text-atlas-text">
-              Bienvenido de vuelta
-            </h1>
-            <p className="mt-1 text-sm text-atlas-muted">
-              Ingresa tus credenciales para continuar.
-            </p>
-          </div>
+          {challenge ? (
+            <LoginPinForm
+              expiresInMinutes={challenge.expiresInMinutes}
+              onVerify={async (pin) => {
+                await verifyLoginPin(challenge.challengeToken, pin);
+                goToPortal();
+              }}
+              onCancel={() => setChallenge(null)}
+            />
+          ) : (
+            <>
+              <div className="mb-6 hidden lg:block">
+                <h1 className="text-2xl font-bold tracking-tight text-atlas-text">
+                  Bienvenido de vuelta
+                </h1>
+                <p className="mt-1 text-sm text-atlas-muted">
+                  Ingresa tus credenciales para continuar.
+                </p>
+              </div>
 
-          {errors.root?.message ? (
-            <div className="mb-4">
-              <ErrorState
-                title="No se pudo iniciar sesión"
-                description={errors.root.message}
-              />
-            </div>
-          ) : null}
+              {errors.root?.message ? (
+                <div className="mb-4">
+                  <ErrorState
+                    title="No se pudo iniciar sesión"
+                    description={errors.root.message}
+                  />
+                </div>
+              ) : null}
 
-          <form
-            className="space-y-4"
-            onSubmit={(event) => void onSubmit(event)}
-          >
-            <Field
-              label="Tenant"
-              error={errors.tenantId?.message}
-              hint="Usa el tenant configurado para el ambiente interno."
-            >
-              <Input {...register("tenantId")} autoComplete="organization" />
-            </Field>
-            <Field label="Correo interno" error={errors.email?.message}>
-              <Input {...register("email")} type="email" autoComplete="email" />
-            </Field>
-            <Field label="Contraseña" error={errors.password?.message}>
-              <Input
-                {...register("password")}
-                type="password"
-                autoComplete="current-password"
-              />
-            </Field>
-            <Button
-              className="w-full"
-              variant="primary"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Validando…" : "Entrar al portal interno"}
-            </Button>
-          </form>
+              <form
+                className="space-y-4"
+                onSubmit={(event) => void onSubmit(event)}
+              >
+                <Field
+                  label="Tenant"
+                  error={errors.tenantId?.message}
+                  hint="Usa el tenant configurado para el ambiente interno."
+                >
+                  <Input
+                    {...register("tenantId")}
+                    autoComplete="organization"
+                  />
+                </Field>
+                <Field label="Correo interno" error={errors.email?.message}>
+                  <Input
+                    {...register("email")}
+                    type="email"
+                    autoComplete="email"
+                  />
+                </Field>
+                <Field label="Contraseña" error={errors.password?.message}>
+                  <Input
+                    {...register("password")}
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </Field>
+                <Button
+                  className="w-full"
+                  variant="primary"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Validando…" : "Entrar al portal interno"}
+                </Button>
+              </form>
+            </>
+          )}
         </div>
       </section>
     </main>

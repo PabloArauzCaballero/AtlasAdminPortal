@@ -6,11 +6,15 @@ vi.mock("@/shared/api/client", () => ({
 
 import { apiRequest } from "@/shared/api/client";
 import {
+  confirmPasswordChange,
   getInternalMe,
   loginInternal,
   logoutInternal,
   refreshInternal,
+  requestPasswordChange,
+  verifyLoginPinInternal,
 } from "@/shared/auth/auth-service";
+import { isPinChallenge } from "@/shared/auth/types";
 
 const mockedApiRequest = vi.mocked(apiRequest);
 
@@ -82,10 +86,29 @@ describe("loginInternal", () => {
     // arranque y expulsaría al operador.
     mockedApiRequest.mockResolvedValue(authPayload());
 
-    const session = await loginInternal(credentials);
+    const outcome = await loginInternal(credentials);
 
-    expect(session.user.permissions).toEqual(["internal.users.manage"]);
-    expect(session.user.roles).toEqual(["INTERNAL_ADMIN"]);
+    // Estrechar antes de leer el usuario no es ceremonia del tipo: es la comprobación que la
+    // pantalla tiene que hacer de verdad, porque el login también puede terminar en desafío.
+    expect(isPinChallenge(outcome)).toBe(false);
+    if (isPinChallenge(outcome)) return;
+    expect(outcome.user.permissions).toEqual(["internal.users.manage"]);
+    expect(outcome.user.roles).toEqual(["INTERNAL_ADMIN"]);
+  });
+
+  it("devuelve el desafío de segundo factor sin convertirlo en una sesión vacía", async () => {
+    // Antes esto se normalizaba como sesión: el portal guardaba un objeto sin usuario y se creía
+    // autenticado, así que los gates decidían con cero permisos en vez de pedir el PIN.
+    mockedApiRequest.mockResolvedValue({
+      pinChallengeRequired: true,
+      challengeToken: "desafio-opaco-1234567890",
+      expiresInMinutes: 10,
+    });
+
+    const outcome = await loginInternal(credentials);
+
+    expect(isPinChallenge(outcome)).toBe(true);
+    expect(outcome).not.toHaveProperty("user");
   });
 
   it("propaga el error del backend sin envolverlo", async () => {
@@ -196,5 +219,57 @@ describe("logoutInternal", () => {
     mockedApiRequest.mockResolvedValue({ loggedOut: true });
 
     await expect(logoutInternal("rt_1")).resolves.toEqual({ loggedOut: true });
+  });
+});
+
+describe("segundo factor y cambio de contraseña", () => {
+  it("canjea el desafío y el PIN por la sesión", async () => {
+    mockedApiRequest.mockResolvedValue(authPayload());
+
+    const session = await verifyLoginPinInternal(
+      "desafio-opaco-1234567890",
+      "123456",
+    );
+
+    const { path, options } = lastCall();
+    expect(path).toBe("/internal/auth/login/pin");
+    expect(options.body).toEqual({
+      challengeToken: "desafio-opaco-1234567890",
+      pin: "123456",
+    });
+    // Sin token de una sesión previa: todavía no hay ninguna.
+    expect(options.skipAuth).toBe(true);
+    expect(session.user.roles).toEqual(["INTERNAL_ADMIN"]);
+  });
+
+  it("pide el código de cambio de contraseña mandando sólo la contraseña actual", async () => {
+    mockedApiRequest.mockResolvedValue({
+      pinChallengeRequired: true,
+      challengeToken: "desafio-opaco-1234567890",
+      expiresInMinutes: 10,
+    });
+
+    await requestPasswordChange("la-actual");
+
+    const { path, options } = lastCall();
+    expect(path).toBe("/auth/password/change/request");
+    // Ni email ni id: quién cambia la contraseña lo decide la sesión, no el cuerpo.
+    expect(options.body).toEqual({ currentPassword: "la-actual" });
+    expect(options.skipAuth).toBeUndefined();
+  });
+
+  it("confirma el cambio con el desafío, el código y la contraseña nueva", async () => {
+    mockedApiRequest.mockResolvedValue({ passwordChanged: true });
+    const input = {
+      challengeToken: "desafio-opaco-1234567890",
+      code: "123456",
+      newPassword: "NuevaClave#2026",
+    };
+
+    await confirmPasswordChange(input);
+
+    const { path, options } = lastCall();
+    expect(path).toBe("/auth/password/change/confirm");
+    expect(options.body).toEqual(input);
   });
 });
