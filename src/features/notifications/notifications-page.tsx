@@ -16,6 +16,7 @@ import { MessageDetailDrawer } from "./message-detail-drawer";
 import { PreferencesSection } from "./preferences-section";
 import { TemplatesSection } from "./templates-section";
 import type { NotificationMessage } from "./types";
+import { MessageSquare } from "lucide-react";
 
 const tabs = ["Mensajes", "Plantillas", "Preferencias", "Enviar notificación"];
 
@@ -88,6 +89,7 @@ function AuthorizedNotificationsPage() {
   return (
     <>
       <PageHeader
+        icon={MessageSquare}
         eyebrow="Mensajería interna"
         title="Notificaciones"
         description="Mensajes enviados a clientes, operaciones y usuarios internos a través de in-app, push, email, SMS y WhatsApp, con su historial de entrega."

@@ -14,6 +14,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
 import { useInvestigationSummary } from "./hooks";
+import { Search } from "lucide-react";
 
 export function InvestigationSummaryPage({
   customerId,
@@ -23,6 +24,7 @@ export function InvestigationSummaryPage({
   return (
     <>
       <PageHeader
+        icon={Search}
         eyebrow="Operaciones"
         title={`Investigación del cliente #${customerId}`}
         description="Perfil, contactos, consentimientos, última evaluación de riesgo y casos abiertos — vista consolidada para revisión manual o de fraude."

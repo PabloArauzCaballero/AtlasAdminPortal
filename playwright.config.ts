@@ -1,4 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
+
+/**
+ * Las credenciales del E2E viven en `.env.local` (ignorado por git), igual que las de la app.
+ *
+ * Playwright corre en su propio proceso Node y NO carga los `.env*` de Next: `TEST_EMAIL` y
+ * `TEST_PASSWORD` llegaban siempre vacías y la suite entera se SALTABA con el motivo «define
+ * TEST_EMAIL…» aun teniéndolas puestas. Un E2E que se salta en silencio se lee en CI como un E2E
+ * que pasa, que es el peor de los dos fallos posibles.
+ */
+loadEnvConfig(process.cwd(), true, { info: () => {}, error: console.error });
 
 const PORT = 5273;
 /**

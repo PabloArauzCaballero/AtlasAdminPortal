@@ -22,6 +22,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Route } from "lucide-react";
 
 const riskOptions = [
   { label: "Riesgo bajo", value: "LOW" },
@@ -179,6 +180,7 @@ function AuthorizedEndpointsPage() {
   return (
     <>
       <PageHeader
+        icon={Route}
         title="Catálogo de endpoints"
         description="Rutas de LOS TRES bloques del ecosistema, desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
       />

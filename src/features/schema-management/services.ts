@@ -5,6 +5,7 @@ import type {
   ApproveSchemaChangeInput,
   ProposeSchemaTableInput,
   SchemaChangeLog,
+  SchemaNameSummary,
   SchemaTable,
   SchemaVersion,
 } from "./types";
@@ -42,6 +43,15 @@ export async function listSchemaVersions(
     response.limit,
     response.offset,
   );
+}
+
+export async function listSchemaNames(
+  versionId: string,
+): Promise<SchemaNameSummary[]> {
+  const response = await apiRequest<{ schemas: SchemaNameSummary[] }>(
+    `/operations/schema/versions/${encodeURIComponent(versionId)}/schemas`,
+  );
+  return response.schemas ?? [];
 }
 
 export function getSchemaVersion(versionId: string) {

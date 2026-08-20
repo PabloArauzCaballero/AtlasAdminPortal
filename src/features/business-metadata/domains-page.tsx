@@ -25,6 +25,7 @@ import { ReviewStatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Boxes } from "lucide-react";
 
 type DomainSummary = {
   key: string;
@@ -129,6 +130,7 @@ function AuthorizedBusinessDomainsPage() {
   return (
     <>
       <PageHeader
+        icon={Boxes}
         eyebrow="Metadata de negocio"
         title="Dominios del sistema"
         description="Mapa derivado desde módulos reportados por endpoints, tablas y suites QA. No se fija una lista cerrada en la interfaz."

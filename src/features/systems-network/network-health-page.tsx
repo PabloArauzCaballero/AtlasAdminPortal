@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCw, Share2 } from "lucide-react";
+import { AlertTriangle, Network, RefreshCw, Share2 } from "lucide-react";
 import {
   useFederateBlocksMutation,
   useNetworkHealth,
@@ -38,6 +38,7 @@ function AuthorizedNetworkHealthPage() {
   return (
     <>
       <PageHeader
+        icon={Network}
         title="Salud de la red"
         description="Estado de LOS TRES bloques del ecosistema desde `/systems/health/network`: si responden, qué aportan al catálogo y qué se pierde cuando falta uno. Se actualiza cada 30s."
         actions={

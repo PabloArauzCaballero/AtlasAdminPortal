@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, Cpu, RefreshCw } from "lucide-react";
 import { useActiveDecisionArtifacts } from "@/features/systems/hooks";
 import type { ActiveArtifact } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -169,6 +169,7 @@ function AuthorizedActiveArtifactsPage() {
   return (
     <>
       <PageHeader
+        icon={Cpu}
         title="Artefactos activos del motor"
         description="Todo lo que el ATLAS Decision Engine tiene DESPLEGADO ahora mismo, desde `/systems/decision-engine/artifacts`."
         actions={

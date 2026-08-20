@@ -22,6 +22,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { MongoLogsSection } from "./mongo-logs-section";
+import { Terminal } from "lucide-react";
 
 const tabs = ["Terminal backend", "Auditoría SQL"];
 
@@ -133,6 +134,7 @@ function AuthorizedAuditPage() {
   return (
     <>
       <PageHeader
+        icon={Terminal}
         title="Terminal y auditoría del backend"
         description="Eventos registrados por Systems Ops desde `/systems/action-logs`, más el tail crudo de `Archivo.log` sincronizado a MongoDB."
       />

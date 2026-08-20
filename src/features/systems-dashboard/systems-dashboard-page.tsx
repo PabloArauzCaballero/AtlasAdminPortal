@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { Activity, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useDashboard, useToolsHealth } from "@/features/systems/hooks";
 import {
@@ -42,6 +42,7 @@ function AuthorizedSystemsDashboardPage() {
   return (
     <>
       <PageHeader
+        icon={Activity}
         eyebrow="Systems Ops"
         title="Panel de control del sistema"
         description="Vista consolidada de `/systems/dashboard` y `/systems/health/tools` para monitoreo operativo en un solo lugar."

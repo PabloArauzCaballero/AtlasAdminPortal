@@ -23,6 +23,7 @@ import {
 } from "./policy-tables";
 import { PolicyConfigSummary } from "./policy-config-summary";
 import { PolicyScopeTable } from "./policy-scope-table";
+import { Scale } from "lucide-react";
 
 export function GovernancePolicyDetailPage(
   props: Readonly<{ policyId: string }>,
@@ -46,6 +47,7 @@ function AuthorizedGovernancePolicyDetailPage({
   return (
     <>
       <PageHeader
+        icon={Scale}
         eyebrow="Gobierno"
         title={data?.name ?? "Detalle de política"}
         description="Política de gobierno con alcance, controles y acciones configurables."

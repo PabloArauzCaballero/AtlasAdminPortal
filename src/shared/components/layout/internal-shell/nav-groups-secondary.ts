@@ -17,6 +17,10 @@ import {
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
+import {
+  INTERNAL_PORTAL_ROLE_LIST,
+  RUNTIME_JOB_ROLE_LIST,
+} from "@/shared/auth/portal-roles";
 
 export const navGroupsSecondary: InternalNavGroup[] = [
   {
@@ -45,19 +49,25 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         label: "Jobs internos",
         href: "/internal/jobs",
         icon: ListChecks,
-        permissions: ["internal.jobs.read"],
+        // Igual que "Cola de trabajo": el backend gatea por @Roles, no por permiso granular.
+        // Con `internal.jobs.read` —que no existe en /internal/permissions— el ítem no salía
+        // en el menú de NADIE y la pantalla quedaba inalcanzable salvo escribiendo la URL.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
         label: "Jobs de runtime",
         href: "/internal/operations/runtime-jobs",
         icon: PlayCircle,
-        permissions: ["internal.jobs.execute"],
+        permissions: [],
+        roles: RUNTIME_JOB_ROLE_LIST,
       },
       {
         label: "Alertas",
         href: "/internal/alerts",
         icon: Bell,
-        permissions: ["internal.alerts.read"],
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
         label: "Mensajería interna",
@@ -77,7 +87,8 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         label: "Exportaciones",
         href: "/internal/exports",
         icon: Download,
-        permissions: ["internal.exports.read"],
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
     ],
   },

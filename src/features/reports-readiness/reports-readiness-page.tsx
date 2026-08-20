@@ -19,6 +19,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Rocket } from "lucide-react";
 
 export function ReportsReadinessPage({
   embedded = false,
@@ -88,6 +89,7 @@ function AuthorizedReportsReadinessPage({
     <>
       {!embedded ? (
         <PageHeader
+          icon={Rocket}
           eyebrow="Reporterías"
           title="Readiness Release"
           description="Esta vista mide si el catálogo, los endpoints y QA ya tienen suficiente metadata para construir reportes y widgets reales, sin inventar métricas."

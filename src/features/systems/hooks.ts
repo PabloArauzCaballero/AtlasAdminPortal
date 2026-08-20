@@ -5,7 +5,6 @@ import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
-  getActionLogsByRequest,
   getDomain,
   getTool,
   inferDataImpacts,
@@ -18,9 +17,7 @@ import {
   getToolsHealth,
   getTrafficLatencyReport,
   getTrafficLatencyTimeseries,
-  listActionLogs,
   listDomains,
-  listMongoLogs,
   listReviewQueue,
   listTools,
   listDataEntities,
@@ -29,6 +26,11 @@ import {
   reviewCatalogTarget,
   updateDataEntityMetadata,
 } from "./services";
+import {
+  getActionLogsByRequest,
+  listActionLogs,
+  listMongoLogs,
+} from "./log-services";
 import type {
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,

@@ -108,7 +108,7 @@ export function StressTestCard({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="3. Prueba de stress por endpoint"
+          title="Prueba de carga"
           description="Ejecuta carga sintética con límites duros, pacing por RPS, métricas p50/p95/p99 y umbrales de aprobación. Producción queda bloqueada."
           className="mb-0"
         />

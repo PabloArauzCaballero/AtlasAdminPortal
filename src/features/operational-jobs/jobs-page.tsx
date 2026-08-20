@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { MetricCard } from "@/shared/components/layout/metric-card";
@@ -12,15 +13,16 @@ import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildJobRunColumns } from "./job-columns";
 import { useJobRuns } from "./hooks";
+import { ListChecks } from "lucide-react";
 
 export function JobsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
   // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
   return (
-    <PermissionGate permissions={["internal.jobs.read"]}>
+    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST}>
       <AuthorizedJobsPage />
-    </PermissionGate>
+    </RoleGate>
   );
 }
 
@@ -44,6 +46,7 @@ function AuthorizedJobsPage() {
   return (
     <>
       <PageHeader
+        icon={ListChecks}
         eyebrow="Jobs operativos"
         title="Jobs internos"
         description="Seguimiento operativo de procesos asíncronos, colas, reintentos y ejecuciones pesadas del sistema."

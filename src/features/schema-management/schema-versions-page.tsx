@@ -14,6 +14,7 @@ import { useSchemaVersions } from "./hooks";
 import { ProposeTableForm } from "./propose-table-form";
 import { buildSchemaVersionColumns } from "./schema-version-columns";
 import { SchemaChangeLogTable } from "./schema-change-log-table";
+import { Database } from "lucide-react";
 
 export function SchemaVersionsPage() {
   const [page, setPage] = useState(1);
@@ -24,6 +25,7 @@ export function SchemaVersionsPage() {
   return (
     <>
       <PageHeader
+        icon={Database}
         eyebrow="Operaciones"
         title="Versiones de esquema"
         description="Catálogo DDL de solo-lectura: versiones, tablas, columnas y relaciones registradas. No ejecuta DDL físico — proponer una tabla solo registra un cambio pendiente de aprobación."

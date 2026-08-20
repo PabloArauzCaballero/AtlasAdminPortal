@@ -21,6 +21,7 @@ import { buildIssueColumns } from "./issue-columns";
 import { ResolutionDialog } from "./resolution-dialog";
 import type { ResolutionForm } from "./resolution-schema";
 import type { DataQualityIssue } from "@/features/operations/types";
+import { TriangleAlert } from "lucide-react";
 
 export function DataQualityIssuesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -63,6 +64,7 @@ function AuthorizedDataQualityIssuesPage() {
   return (
     <>
       <PageHeader
+        icon={TriangleAlert}
         eyebrow="Calidad de datos"
         title="Issues de calidad de datos"
         description="Bandeja conectada a `/operations/data-quality/issues`. La resolución se maneja en componentes pequeños y auditables."

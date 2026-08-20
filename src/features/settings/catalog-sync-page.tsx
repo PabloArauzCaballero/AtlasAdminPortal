@@ -19,6 +19,7 @@ import {
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { RefreshCw } from "lucide-react";
 
 type ActionKey = "discover" | "seed" | "infer" | "inferImpacts";
 
@@ -84,6 +85,7 @@ export function CatalogSyncPage() {
       ]}
     >
       <PageHeader
+        icon={RefreshCw}
         eyebrow="Sincronización"
         title="Sincronización de catálogo"
         description="Acciones controladas sobre Systems Ops. No ejecuta seeds destructivos ni toca secretos. Toda acción crítica requiere confirmación."

@@ -38,7 +38,7 @@ export function EndpointPicker({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="1. Seleccionar endpoint"
+          title="Seleccionar endpoint"
           description="Busca una ruta registrada o pega el identificador exacto del endpoint para ejecutar pruebas funcionales y de carga controlada."
           className="mb-0"
         />

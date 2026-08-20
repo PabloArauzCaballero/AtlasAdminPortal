@@ -1,8 +1,6 @@
 import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
-  ActionLog,
-  ActionLogListResponse,
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
   QueueStressRunInput,
@@ -21,7 +19,6 @@ import type {
   Domain,
   DomainListResponse,
   EndpointListResponse,
-  MongoLogListResponse,
   SystemsDashboard,
   ToolHealth,
   TrafficLatencyReport,
@@ -129,24 +126,6 @@ export async function getImpactByTable(schemaName: string, tableName: string) {
     `/systems/impact/by-table/${encodeURIComponent(schemaName)}/${encodeURIComponent(tableName)}`,
   );
   return normalizeTableImpact(response);
-}
-
-export async function listActionLogs(query: QueryParams) {
-  const response = await apiRequest<unknown>("/systems/action-logs", { query });
-  return normalizePaginatedResponse<ActionLogListResponse["items"][number]>(
-    response,
-    ["actionLogs", "logs", "records", "results"],
-  );
-}
-
-export function getActionLogsByRequest(requestId: string) {
-  return apiRequest<ActionLog[]>(
-    `/systems/action-logs/by-request/${encodeURIComponent(requestId)}`,
-  );
-}
-
-export function listMongoLogs(query: QueryParams) {
-  return apiRequest<MongoLogListResponse>("/systems/logs/mongo", { query });
 }
 
 export function getTrafficLatencyReport(windowHours: number) {

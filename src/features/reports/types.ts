@@ -40,15 +40,6 @@ export type ReportFilter = {
   defaultValue: unknown;
 };
 
-export type ReportSnapshot = {
-  snapshotId: string;
-  reportId: string;
-  status: string;
-  generatedAt: string | null;
-  generatedBy: string | null;
-  summary: JsonRecord | null;
-};
-
 export type ReportRunResult = {
   reportId: string;
   executionId: string | null;
@@ -63,4 +54,3 @@ export type ReportRunResult = {
 };
 
 export type ReportListResponse = PaginatedResponse<ReportDefinition>;
-export type ReportSnapshotListResponse = PaginatedResponse<ReportSnapshot>;

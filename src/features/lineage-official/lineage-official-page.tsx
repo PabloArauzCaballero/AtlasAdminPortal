@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LayoutGrid, TableProperties } from "lucide-react";
+import { LayoutGrid, TableProperties, Waypoints } from "lucide-react";
 import { useLineageGraph } from "./hooks";
 import {
   buildLineageEdgeColumns,
@@ -83,6 +83,7 @@ function AuthorizedLineageOfficialPage() {
   return (
     <>
       <PageHeader
+        icon={Waypoints}
         eyebrow="Linaje oficial"
         title="Lineage oficial"
         description="Grafo oficial de dependencias provisto por el servicio interno. La vista derivada anterior queda como apoyo operativo."

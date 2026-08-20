@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useEndpoints } from "@/features/systems/hooks";
+import { useAllEndpoints } from "@/features/systems/all-endpoints";
 import { useUpsertStressProfileMutation } from "@/features/systems/stress-hooks";
 import type { StressProfile } from "@/features/systems/types";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -30,7 +30,7 @@ export function StressProfileForm({
   const isEdit = Boolean(profile);
   const mutation = useUpsertStressProfileMutation();
   // Solo para elegir endpoint en el alta; al editar el endpoint ya viene fijado.
-  const endpoints = useEndpoints({ page: 1, limit: 200 });
+  const endpoints = useAllEndpoints();
 
   const {
     control,
@@ -58,7 +58,7 @@ export function StressProfileForm({
         >
           <Select disabled={isEdit} {...register("endpointId")}>
             <option value="">Selecciona un endpoint…</option>
-            {(endpoints.data?.items ?? []).map((endpoint) => (
+            {(endpoints.data ?? []).map((endpoint) => (
               <option key={endpoint.endpointId} value={endpoint.endpointId}>
                 {endpoint.method} {endpoint.fullPath}
               </option>

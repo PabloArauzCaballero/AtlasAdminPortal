@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Gauge, History, TestTube, Waves } from "lucide-react";
 import { useEndpoint } from "@/features/systems/hooks";
-import {
-  MethodBadge,
-  RiskBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
@@ -19,9 +14,11 @@ import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
 import { QaLabDocsPanel } from "./qa-lab-docs";
+import { SelectedEndpointBar } from "./selected-endpoint-bar";
 import { StressTestCard } from "./stress-test-card";
 
-const tabs = ["Prueba unitaria", "Journey (encadenado)"];
+const TABS = ["Prueba unitaria", "Journey (encadenado)"];
+const UNIT_TABS = ["Funcional", "Carga"];
 
 export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -37,45 +34,82 @@ export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
 function AuthorizedQaLabPage({
   initialEndpointId,
 }: Readonly<{ initialEndpointId: string }>) {
-  const [activeTab, setActiveTab] = useState(tabs[0]);
+  const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [unitTab, setUnitTab] = useState(UNIT_TABS[0]);
   const [endpointId, setEndpointId] = useState(initialEndpointId);
+  const [picking, setPicking] = useState(!initialEndpointId);
   const endpoint = useEndpoint(endpointId);
+  const item = endpoint.data?.endpoint;
+
+  function select(nextId: string) {
+    setEndpointId(nextId);
+    setPicking(false);
+  }
 
   return (
     <>
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Prueba unitaria de un endpoint (funcional + stress) o un journey de varios endpoints encadenados simulando un flujo real de negocio."
+        description="Prueba un endpoint suelto — funcional y de carga — o encadena varios en un journey que reproduce un flujo real de negocio."
         actions={
           <>
             <Link href="/internal/qa/runs">
-              <Button>Historial QA</Button>
+              <Button>
+                <History className="h-4 w-4" aria-hidden />
+                Historial
+              </Button>
             </Link>
             <Link href="/internal/qa/stress/runs">
-              <Button>Stress runs</Button>
+              <Button>
+                <Waves className="h-4 w-4" aria-hidden />
+                Stress runs
+              </Button>
             </Link>
           </>
         }
       />
-      <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-      {activeTab === "Prueba unitaria" ? (
-        <div className="space-y-6">
+      <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+
+      {activeTab === TABS[0] ? (
+        <div className="space-y-5">
           <QaLabDocsPanel />
-          <EndpointPicker selectedId={endpointId} onSelect={setEndpointId} />
-          {endpointId ? <SelectedEndpointState endpoint={endpoint} /> : null}
-          {endpoint.data ? (
-            <div className="grid gap-6 xl:grid-cols-2">
-              <EndpointTestCard
-                endpointId={endpointId}
-                endpoint={endpoint.data.endpoint}
-              />
-              <StressTestCard
-                endpointId={endpointId}
-                endpoint={endpoint.data.endpoint}
-              />
-            </div>
+
+          {picking || !item ? (
+            <EndpointPicker selectedId={endpointId} onSelect={select} />
+          ) : (
+            <SelectedEndpointBar
+              endpoint={item}
+              onChange={() => setPicking(true)}
+            />
+          )}
+
+          {endpointId && !picking ? (
+            <EndpointState endpoint={endpoint} />
           ) : null}
+
+          {item && !picking ? (
+            <>
+              {/*
+                Funcional y carga eran DOS columnas simultáneas de unos treinta campos cada una: la
+                pantalla pedía configurar las dos pruebas a la vez para lanzar una sola. Como
+                pestañas, cada una ocupa el ancho completo, sus campos respiran y no compiten por la
+                atención con la que no se está usando.
+              */}
+              <DetailTabs
+                tabs={UNIT_TABS}
+                active={unitTab}
+                onChange={setUnitTab}
+              />
+              {unitTab === UNIT_TABS[0] ? (
+                <EndpointTestCard endpointId={endpointId} endpoint={item} />
+              ) : (
+                <StressTestCard endpointId={endpointId} endpoint={item} />
+              )}
+            </>
+          ) : null}
+
+          {!endpointId ? <PickPrompt /> : null}
         </div>
       ) : (
         <JourneyRunnerPanel />
@@ -84,10 +118,20 @@ function AuthorizedQaLabPage({
   );
 }
 
-function SelectedEndpointState({
+function PickPrompt() {
+  return (
+    <p className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-atlas-muted">
+      <TestTube className="h-4 w-4 text-atlas-accent" aria-hidden />
+      Elige un endpoint arriba para configurar su prueba funcional y su prueba
+      de carga.
+    </p>
+  );
+}
+
+function EndpointState({
   endpoint,
 }: Readonly<{ endpoint: ReturnType<typeof useEndpoint> }>) {
-  if (endpoint.isLoading) return <LoadingSkeleton rows={3} />;
+  if (endpoint.isLoading) return <LoadingSkeleton rows={2} />;
   if (endpoint.error) {
     return (
       <ErrorState
@@ -103,31 +147,13 @@ function SelectedEndpointState({
       />
     );
   }
-  if (!endpoint.data) return null;
-  const item = endpoint.data.endpoint;
-  return (
-    <section className="rounded-2xl border border-atlas-border bg-white p-5 shadow-subtle">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <MethodBadge method={item.method} />
-        <RiskBadge value={item.riskLevel} />
-        <StatusBadge value={item.status} />
-        <Link
-          className="ml-auto text-sm font-medium text-blue-700 underline"
-          href={`/internal/systems/endpoints/${item.endpointId}`}
-        >
-          Ver ficha completa
-        </Link>
-      </div>
-      <KeyValueGrid
-        items={[
-          { label: "Ruta", value: item.fullPath ?? item.routePath, mono: true },
-          { label: "Módulo", value: item.module },
-          { label: "Acción", value: item.businessAction ?? item.routeName },
-          { label: "Testable", value: item.isTestableFromPortal },
-          { label: "Stress requerido", value: item.requiresStressTest },
-          { label: "Owner", value: item.ownerTeam },
-        ]}
-      />
-    </section>
-  );
+  if (!endpoint.data) {
+    return (
+      <p className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        <Gauge className="h-4 w-4 shrink-0" aria-hidden />
+        No se encontró ningún endpoint con ese identificador en el catálogo.
+      </p>
+    );
+  }
+  return null;
 }

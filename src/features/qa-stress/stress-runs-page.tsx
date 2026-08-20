@@ -15,6 +15,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Waves } from "lucide-react";
 
 const statusOptions = [
   "QUEUED",
@@ -104,6 +105,7 @@ function AuthorizedStressRunsPage() {
   return (
     <>
       <PageHeader
+        icon={Waves}
         title="Historial de stress runs"
         description="Runs encolados como jobs internos. El servicio interno registra payload sanitizado y bloquea producción para stress."
       />

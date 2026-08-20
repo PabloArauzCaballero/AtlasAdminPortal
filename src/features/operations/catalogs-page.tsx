@@ -22,6 +22,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
+import { Boxes } from "lucide-react";
 export function OperationCatalogsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -131,6 +132,7 @@ function AuthorizedOperationCatalogsPage() {
   return (
     <>
       <PageHeader
+        icon={Boxes}
         eyebrow="Catálogos"
         title="Catálogos operativos"
         description="Conectado a `/operations/catalogs`. Verifica catálogos, versiones, dueños y estados antes de generar reportes o reglas nuevas."

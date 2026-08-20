@@ -112,9 +112,19 @@ export function AuthProvider({
       setAndStoreSession(nextSession);
       return nextSession;
     } catch (error) {
-      clearStoredInternalSession();
-      setSession(null);
+      /*
+       * La sesión se borra SOLO ante un veredicto de autorización.
+       *
+       * Antes se borraba ante cualquier fallo y luego se relanzaba el error. Un 429 del limitador
+       * —cien peticiones por minuto y por IP, y el portal pide `/internal/auth/me` en CADA
+       * navegación— o un 500 pasajero deslogueaba al operador de verdad, sin haber dejado de estar
+       * autorizado; y como el `.then()` del shell nunca corría sobre una promesa rechazada, tampoco
+       * llegaba a la pantalla de login: se quedaba en el cargador a pantalla completa, para
+       * siempre. Un fallo transitorio no es una respuesta sobre quién eres.
+       */
       if (isAtlasApiError(error) && [401, 403].includes(error.status)) {
+        clearStoredInternalSession();
+        setSession(null);
         return null;
       }
       throw error;
@@ -150,6 +160,16 @@ export function AuthProvider({
   const value = useMemo<AuthContextValue>(() => {
     const permissions = session?.user.permissions ?? [];
     const roles = session?.user.roles ?? [];
+    /**
+     * El backend habla DOS vocabularios de rol y autoriza con los dos.
+     *
+     * `roles` son los códigos RBAC (`SUPER_ADMIN`, `SYSTEMS_ADMIN`…) y `legacyRoles` el rol del
+     * token (`admin`, `platform_admin`…), que es justo el que miran los `@Roles()` de
+     * `InternalPortalController` y `RuntimeJobsController`. Comparando solo contra `roles`, un
+     * `RoleGate(["admin"])` no acertaba NUNCA —ni siquiera para un superadministrador— y la
+     * pantalla mostraba "Acceso restringido" sobre un endpoint que le habría contestado 200.
+     */
+    const allRoles = [...roles, ...(session?.user.legacyRoles ?? [])];
 
     return {
       session,
@@ -168,7 +188,8 @@ export function AuthProvider({
         required.length === 0 ||
         required.some((permission) => permissions.includes(permission)),
       hasAnyRole: (required: string[]) =>
-        required.length === 0 || required.some((role) => roles.includes(role)),
+        required.length === 0 ||
+        required.some((role) => allRoles.includes(role)),
     };
   }, [
     session,

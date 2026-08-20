@@ -18,6 +18,7 @@ import {
 } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
+import { Scale } from "lucide-react";
 type PolicyRow = {
   id: string;
   type: string;
@@ -104,6 +105,7 @@ function AuthorizedDataGovernancePoliciesPage() {
   return (
     <>
       <PageHeader
+        icon={Scale}
         eyebrow="Políticas de gobierno"
         title="Políticas reales de gobierno"
         description="Consume `/operations/data-governance/policies`; no deriva gobierno solo desde flags técnicos."

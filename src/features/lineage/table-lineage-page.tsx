@@ -18,6 +18,7 @@ import { ReviewStatusBadge, RiskBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Table2 } from "lucide-react";
 
 export function TableLineagePage(
   props: Readonly<{ schemaName: string; tableName: string }>,
@@ -115,6 +116,7 @@ function AuthorizedTableLineagePage({
   return (
     <>
       <PageHeader
+        icon={Table2}
         eyebrow="Lineage por tabla"
         title={`${schemaName}.${tableName}`}
         description="Impacto por endpoint obtenido desde `/systems/impact/by-table/:schemaName/:tableName`."

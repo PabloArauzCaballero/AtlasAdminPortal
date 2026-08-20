@@ -21,6 +21,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Database } from "lucide-react";
 
 const reviewOptions = [
   { label: "Auto detectado", value: "AUTO_DETECTED" },
@@ -152,6 +153,7 @@ function AuthorizedDataEntitiesPage() {
   return (
     <>
       <PageHeader
+        icon={Database}
         title="Catálogo de datos"
         description="Tablas y entidades de LOS TRES bloques del ecosistema, desde `/systems/data-entities`."
       />

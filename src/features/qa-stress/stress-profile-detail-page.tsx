@@ -25,6 +25,7 @@ import {
   formatNumber,
 } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Gauge } from "lucide-react";
 
 export function StressProfileDetailPage(
   props: Readonly<{ profileId: string }>,
@@ -91,6 +92,7 @@ function AuthorizedStressProfileDetailPage({
       {profile.data ? (
         <>
           <PageHeader
+            icon={Gauge}
             eyebrow={`Stress profile #${profile.data.profileId}`}
             title={profile.data.name}
             description={

@@ -1,8 +1,10 @@
 "use client";
+
+import { FileText } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useDefinitions } from "@/features/operations/hooks";
-import type { DefinitionListResponse } from "@/features/operations/types";
+import { toRows, type DefinitionRow } from "./definition-rows";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
@@ -17,88 +19,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
-type DefinitionRow = {
-  id: string;
-  type: string;
-  code: string;
-  name: string;
-  family: string | null;
-  dataType: string | null;
-  riskDimension: string | null;
-  flags: string;
-  isActive: boolean;
-  ownerTeam: string | null;
-  domainCode: string | null;
-  reviewStatus: string;
-  relatedTables: string[];
-};
-function toRows(data: DefinitionListResponse): DefinitionRow[] {
-  return [
-    ...data.events.map((i) => ({
-      id: i.eventDefinitionId,
-      type: "Evento",
-      code: i.eventCode,
-      name: i.eventName,
-      family: i.eventFamily ?? i.sourcePackage,
-      dataType: null,
-      riskDimension: i.riskDimension,
-      flags: i.isHighVolume ? "Alto volumen" : "—",
-      isActive: i.isActive,
-      ownerTeam: i.ownerTeam,
-      domainCode: i.domainCode,
-      reviewStatus: i.reviewStatus,
-      relatedTables: i.relatedTables,
-    })),
-    ...data.observations.map((i) => ({
-      id: i.observationDefinitionId,
-      type: "Observación",
-      code: i.observationCode,
-      name: i.observationName,
-      family: i.sourceGroup,
-      dataType: i.dataType,
-      riskDimension: i.riskDimension,
-      flags: "—",
-      isActive: i.isActive,
-      ownerTeam: i.ownerTeam,
-      domainCode: i.domainCode,
-      reviewStatus: i.reviewStatus,
-      relatedTables: [],
-    })),
-    ...data.attributes.map((i) => ({
-      id: i.attributeDefinitionId,
-      type: "Atributo",
-      code: i.attributeCode,
-      name: i.attributeName,
-      family: i.entityScope,
-      dataType: i.dataType,
-      riskDimension: i.riskDimension,
-      flags: i.isSensitive ? "Sensible" : "—",
-      isActive: i.isActive,
-      ownerTeam: i.ownerTeam,
-      domainCode: i.domainCode,
-      reviewStatus: i.reviewStatus,
-      relatedTables: [],
-    })),
-    ...data.features.map((i) => ({
-      id: i.featureDefinitionId,
-      type: "Feature",
-      code: i.featureCode,
-      name: i.featureName,
-      family: i.featureFamily,
-      dataType: i.dataType,
-      riskDimension: i.riskDimension,
-      flags:
-        [i.isModelInput ? "Modelo" : null, i.isPolicyRuleInput ? "Regla" : null]
-          .filter(Boolean)
-          .join(", ") || "—",
-      isActive: i.isActive,
-      ownerTeam: i.ownerTeam,
-      domainCode: i.domainCode,
-      reviewStatus: i.reviewStatus,
-      relatedTables: [],
-    })),
-  ];
-}
+
 export function DefinitionsPage() {
   // Los hooks viven en el hijo: aquí saldrían antes de que el gate decidiera.
   return (
@@ -188,6 +109,7 @@ function AuthorizedDefinitionsPage() {
   return (
     <>
       <PageHeader
+        icon={FileText}
         eyebrow="Definiciones"
         title="Definiciones de negocio"
         description="Eventos, observaciones, atributos y features reales desde `/operations/definitions`."

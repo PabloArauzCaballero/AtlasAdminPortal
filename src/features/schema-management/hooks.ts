@@ -8,6 +8,7 @@ import {
   getSchemaTable,
   getSchemaVersion,
   listSchemaChangeLog,
+  listSchemaNames,
   listSchemaTables,
   listSchemaVersions,
   proposeSchemaTable,
@@ -28,6 +29,14 @@ export function useSchemaVersion(versionId: string) {
   return useQuery({
     queryKey: queryKeys.schemaVersion(versionId),
     queryFn: () => getSchemaVersion(versionId),
+    enabled: Boolean(versionId),
+  });
+}
+
+export function useSchemaNames(versionId: string) {
+  return useQuery({
+    queryKey: queryKeys.schemaVersionSchemas(versionId),
+    queryFn: () => listSchemaNames(versionId),
     enabled: Boolean(versionId),
   });
 }

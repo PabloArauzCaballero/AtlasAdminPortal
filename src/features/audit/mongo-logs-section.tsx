@@ -2,8 +2,10 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { FileText, RefreshCw, Table2, Terminal, Upload, X } from "lucide-react";
 import { useLogFileUpload } from "./use-log-file-upload";
+import { LogTerminal } from "./log-terminal";
+import { parseBackendLogBlock } from "./backend-log-line";
 import { useMongoLogs } from "@/features/systems/hooks";
 import type { MongoLogEntry } from "@/features/systems/types";
 import { Button } from "@/shared/components/ui/button";
@@ -13,12 +15,21 @@ import { Badge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { cn } from "@/shared/lib/cn";
 
 const typeOptions = ["startup", "append", "rotation"].map((value) => ({
   label: value,
   value,
 }));
 
+/**
+ * El tail de `Archivo.log` sincronizado a MongoDB, leído como un log y no como un volcado.
+ *
+ * Cada documento de Mongo agrupa VARIAS líneas del archivo en su campo `content`; antes se pintaba
+ * ese campo entero dentro de un `<pre>`, así que la terminal enseñaba bloques de JSON pegados con
+ * las llaves a la vista. Aquí los documentos se aplanan en la secuencia de líneas que realmente
+ * son, se ordenan por hora y se entregan a `LogTerminal`, que ya sabe leerlas.
+ */
 export function MongoLogsSection() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
@@ -27,6 +38,25 @@ export function MongoLogsSection() {
   const [view, setView] = useState<"terminal" | "table">("terminal");
   const logs = useMongoLogs({ page, limit: 20, q, type }, { live });
   const upload = useLogFileUpload(() => setView("terminal"));
+
+  const terminalLines = useMemo(() => {
+    const entries = logs.data?.items ?? [];
+    // Los documentos llegan de más reciente a más antiguo; el log se lee al revés.
+    return parseBackendLogBlock(
+      [...entries]
+        .reverse()
+        .map((entry) => entry.content ?? "")
+        .join("\n"),
+    );
+  }, [logs.data?.items]);
+
+  const uploadedLines = useMemo(
+    () =>
+      upload.uploadedLog
+        ? parseBackendLogBlock(upload.uploadedLog.content)
+        : [],
+    [upload.uploadedLog],
+  );
 
   const columns = useMemo<ColumnDef<MongoLogEntry>[]>(
     () => [
@@ -66,12 +96,6 @@ export function MongoLogsSection() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-atlas-muted">
-        Logs sincronizados desde <code>Archivo.log</code> hacia MongoDB (
-        <code>{"GET /systems/logs/mongo"}</code>). Si el backend no tiene{" "}
-        <code>MONGO_DB_URL_CONNECTION</code> configurado, esta sección devolverá
-        un error 503 esperado.
-      </p>
       <FilterBar
         search={q}
         searchPlaceholder="Buscar en el contenido del log…"
@@ -92,39 +116,24 @@ export function MongoLogsSection() {
           { name: "type", label: "Tipo", value: type, options: typeOptions },
         ]}
       />
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="flex w-fit items-center gap-2 rounded-lg border border-atlas-border px-3 py-2 text-sm">
+
+      <div className="flex flex-wrap items-center gap-2">
+        <ViewToggle view={view} onChange={setView} />
+        <label className="inline-flex items-center gap-2 rounded-lg border border-atlas-border bg-white px-3 py-2 text-sm">
           <input
             type="checkbox"
             checked={live}
             onChange={(event) => setLive(event.target.checked)}
           />
-          Actualizar en vivo cada 10s
+          <RefreshCw
+            className={cn(
+              "h-3.5 w-3.5",
+              live && "animate-spin text-emerald-600",
+            )}
+            aria-hidden
+          />
+          En vivo (10s)
         </label>
-        <div className="inline-flex overflow-hidden rounded-lg border border-atlas-border text-sm">
-          <button
-            type="button"
-            onClick={() => setView("terminal")}
-            className={
-              view === "terminal"
-                ? "bg-slate-900 px-3 py-2 font-medium text-white"
-                : "px-3 py-2 text-atlas-muted hover:bg-atlas-soft"
-            }
-          >
-            Terminal
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("table")}
-            className={
-              view === "table"
-                ? "bg-slate-900 px-3 py-2 font-medium text-white"
-                : "px-3 py-2 text-atlas-muted hover:bg-atlas-soft"
-            }
-          >
-            Tabla
-          </button>
-        </div>
         <input
           ref={upload.fileInputRef}
           type="file"
@@ -136,42 +145,61 @@ export function MongoLogsSection() {
           variant="secondary"
           onClick={() => upload.fileInputRef.current?.click()}
         >
-          <Upload className="h-4 w-4" />
+          <Upload className="h-4 w-4" aria-hidden />
           Cargar Archivo.log
+        </Button>
+        <Button
+          variant="ghost"
+          isLoading={logs.isFetching}
+          onClick={() => void logs.refetch()}
+        >
+          <RefreshCw className="h-4 w-4" aria-hidden />
+          Refrescar
         </Button>
       </div>
 
       {upload.notice ? (
         <p
           role="status"
-          className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-atlas-text"
+          className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
         >
+          <FileText className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           {upload.notice}
         </p>
       ) : null}
+
       {upload.uploadedLog ? (
-        <UploadedLogTerminal
-          name={upload.uploadedLog.name}
-          content={upload.uploadedLog.content}
-          onClear={upload.clear}
+        <LogTerminal
+          title={`${upload.uploadedLog.name} · archivo local`}
+          lines={uploadedLines}
+          actions={
+            <button
+              type="button"
+              onClick={upload.clear}
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[11px] text-slate-400 hover:bg-slate-800 hover:text-white"
+            >
+              <X className="h-3 w-3" aria-hidden />
+              cerrar
+            </button>
+          }
         />
       ) : null}
+
       {logs.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {logs.error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(logs.error)
-              ? logs.error.message
-              : "No se pudo cargar logs de MongoDB."
-          }
-          requestId={
-            isAtlasApiError(logs.error) ? logs.error.requestId : undefined
-          }
+        <MongoLogsError
+          error={logs.error}
           onRetry={() => void logs.refetch()}
         />
       ) : null}
+
       {logs.data && view === "terminal" ? (
-        <TerminalLogView entries={logs.data.items} live={live} />
+        <LogTerminal
+          title="atlas-backend — Archivo.log › mongo"
+          lines={terminalLines}
+          live={live}
+          emptyText="Sin logs sincronizados en MongoDB para el filtro aplicado."
+        />
       ) : null}
       {logs.data && view === "table" ? (
         <DataTable
@@ -186,103 +214,67 @@ export function MongoLogsSection() {
   );
 }
 
-function UploadedLogTerminal({
-  name,
-  content,
-  onClear,
-}: Readonly<{ name: string; content: string; onClear: () => void }>) {
-  const lines = useMemo(() => content.split(/\r?\n/), [content]);
+function ViewToggle({
+  view,
+  onChange,
+}: Readonly<{
+  view: "terminal" | "table";
+  onChange: (value: "terminal" | "table") => void;
+}>) {
+  const options = [
+    { key: "terminal" as const, label: "Terminal", Icon: Terminal },
+    { key: "table" as const, label: "Documentos", Icon: Table2 },
+  ];
   return (
-    <div className="overflow-hidden rounded-lg border border-emerald-800 bg-slate-950 shadow-subtle">
-      <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900 px-4 py-2">
-        <span className="h-3 w-3 rounded-full bg-red-500/80" />
-        <span className="h-3 w-3 rounded-full bg-amber-400/80" />
-        <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
-        <span className="ml-2 truncate font-mono text-xs text-emerald-300">
-          {name} · {formatNumber(lines.length)} líneas
-        </span>
+    <div className="inline-flex overflow-hidden rounded-lg border border-atlas-border bg-white text-sm">
+      {options.map((option) => (
         <button
+          key={option.key}
           type="button"
-          onClick={onClear}
-          className="ml-auto inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[11px] text-slate-400 hover:bg-slate-800 hover:text-white"
+          aria-pressed={view === option.key}
+          onClick={() => onChange(option.key)}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-2 transition-colors",
+            view === option.key
+              ? "bg-slate-900 font-medium text-white"
+              : "text-atlas-muted hover:bg-atlas-soft",
+          )}
         >
-          <X className="h-3 w-3" />
-          cerrar
+          <option.Icon className="h-3.5 w-3.5" aria-hidden />
+          {option.label}
         </button>
-      </div>
-      <pre className="atlas-scrollbar max-h-[560px] overflow-auto p-4 font-mono text-xs leading-5 text-emerald-200">
-        {highlightLog(content)}
-      </pre>
+      ))}
     </div>
   );
 }
 
-// Colorea niveles de log comunes para que se lea como una terminal real.
-function highlightLog(content: string) {
-  return content.split(/\r?\n/).map((line, index) => {
-    let tone = "text-emerald-200";
-    if (/\b(ERROR|FATAL)\b/.test(line)) tone = "text-red-400";
-    else if (/\bWARN(ING)?\b/.test(line)) tone = "text-amber-300";
-    else if (/\bINFO\b/.test(line)) tone = "text-sky-300";
-    else if (/\bDEBUG|TRACE\b/.test(line)) tone = "text-slate-400";
-    return (
-      <div key={index} className={tone}>
-        {line || " "}
-      </div>
-    );
-  });
-}
-
-function TerminalLogView({
-  entries,
-  live,
-}: Readonly<{ entries: MongoLogEntry[]; live: boolean }>) {
-  if (entries.length === 0) {
-    return (
-      <div className="rounded-lg border border-slate-800 bg-slate-950 p-6 text-center font-mono text-xs text-slate-500">
-        Sin logs registrados en MongoDB para el filtro aplicado.
-      </div>
-    );
-  }
+/**
+ * El 503 de este endpoint tiene UNA causa concreta y accionable, así que se dice cuál es en vez de
+ * pintar el error genérico: el backend no tiene `MONGO_DB_URL_CONNECTION` y por tanto no hay
+ * colección que leer. Antes esa explicación vivía en un párrafo permanente sobre la pantalla, que
+ * es peor de las dos maneras: estorbaba cuando todo iba bien y no destacaba cuando fallaba.
+ */
+function MongoLogsError({
+  error,
+  onRetry,
+}: Readonly<{ error: unknown; onRetry: () => void }>) {
+  const apiError = isAtlasApiError(error) ? error : null;
+  const notConfigured =
+    apiError?.status === 503 || apiError?.message?.includes("MONGO");
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-950 shadow-subtle">
-      <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900 px-4 py-2">
-        <span className="h-3 w-3 rounded-full bg-red-500/80" />
-        <span className="h-3 w-3 rounded-full bg-amber-400/80" />
-        <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
-        <span className="ml-2 font-mono text-xs text-slate-400">
-          atlas — logs/mongo
-        </span>
-        {live ? (
-          <span className="ml-auto flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            live
-          </span>
-        ) : null}
-      </div>
-      <div className="atlas-scrollbar max-h-[560px] overflow-auto p-4 font-mono text-xs leading-5">
-        {entries.map((entry) => (
-          <div key={entry.id} className="mb-3 last:mb-0">
-            <div className="text-slate-500">
-              <span className="text-sky-400">
-                {formatDateTime(entry.capturedAt)}
-              </span>{" "}
-              <span className="text-fuchsia-400">
-                {entry.service ?? "service"}
-              </span>
-              <span className="text-slate-600">:</span>{" "}
-              <span className="text-amber-400">{entry.type}</span>
-              <span className="text-slate-600">
-                {" "}
-                ({formatNumber(entry.lineCount)} líneas)
-              </span>
-            </div>
-            <pre className="whitespace-pre-wrap break-words text-emerald-200">
-              {safeText(entry.content)}
-            </pre>
-          </div>
-        ))}
-      </div>
-    </div>
+    <ErrorState
+      title={
+        notConfigured
+          ? "La sincronización de logs a MongoDB está apagada."
+          : "No se pudieron cargar los logs de MongoDB."
+      }
+      description={
+        notConfigured
+          ? "El backend responde 503 MONGO_LOGS_NOT_CONFIGURED: sin MONGO_DB_URL_CONNECTION no hay colección que leer. Levanta el stack con `docker compose --profile app --profile logs up -d`. Mientras tanto, puedes cargar un Archivo.log a mano con el botón de arriba."
+          : (apiError?.message ?? "Error desconocido.")
+      }
+      requestId={apiError?.requestId}
+      onRetry={onRetry}
+    />
   );
 }

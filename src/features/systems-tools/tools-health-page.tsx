@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, HeartPulse, RefreshCw } from "lucide-react";
 import { useToolsHealth } from "@/features/systems/hooks";
 import {
   ToolLiveBadge,
@@ -37,6 +37,7 @@ function AuthorizedToolsHealthPage() {
   return (
     <>
       <PageHeader
+        icon={HeartPulse}
         title="Salud de herramientas"
         description="Estado vivo reportado por `/systems/health/tools` — la misma fuente que dispara las notificaciones de servicio caído/recuperado. Se actualiza automáticamente cada 30s."
         actions={

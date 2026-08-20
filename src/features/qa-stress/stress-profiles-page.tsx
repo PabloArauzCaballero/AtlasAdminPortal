@@ -20,6 +20,7 @@ import {
 } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Gauge } from "lucide-react";
 
 const statusOptions = ["ACTIVE", "DISABLED", "NEEDS_REVIEW", "DEPRECATED"].map(
   (value) => ({ label: value, value }),
@@ -138,6 +139,7 @@ function AuthorizedStressProfilesPage() {
   return (
     <>
       <PageHeader
+        icon={Gauge}
         eyebrow="QA Stress"
         title="Stress backend-driven"
         description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"

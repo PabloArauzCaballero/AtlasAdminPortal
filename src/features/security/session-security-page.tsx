@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
+import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
@@ -25,6 +25,7 @@ export function SessionSecurityPage() {
   return (
     <PermissionGate permissions={[]}>
       <PageHeader
+        icon={LockKeyhole}
         eyebrow="Seguridad de sesiones"
         title="Seguridad de sesión"
         description="Revisión operativa de autenticación interna, cookies, MFA y permisos efectivos antes de producción."

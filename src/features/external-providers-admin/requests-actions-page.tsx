@@ -10,6 +10,7 @@ import {
   RetryRequestTab,
 } from "./approve-retry-request-tabs";
 import { PolicyPreviewTab } from "./policy-preview-tab";
+import { Inbox } from "lucide-react";
 
 const tabs = [
   "Aprobar",
@@ -24,6 +25,7 @@ export function RequestsActionsPage() {
   return (
     <>
       <PageHeader
+        icon={Inbox}
         eyebrow="Proveedores externos"
         title="Solicitudes a proveedores"
         description="Acciones sobre solicitudes individuales a proveedores externos, identificadas por su ID."

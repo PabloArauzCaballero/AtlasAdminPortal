@@ -22,6 +22,9 @@ import { jsonText } from "./json-utils";
 import { findPayloadPreset } from "./payload-presets";
 import { QaJsonFields } from "./qa-json-fields";
 import { QaLogDownload } from "./qa-log-download";
+import { pathParamFields, readContract } from "./contract-fields";
+import { generateCases } from "./qa-case-generator";
+import { QaSampleBar } from "./qa-sample-bar";
 import { RunResultSummary } from "./qa-result-summary";
 import { useEndpointRunMutation } from "./hooks";
 
@@ -92,13 +95,29 @@ export function EndpointTestCard({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="2. Prueba funcional del endpoint"
-          description="Configura host, request, payload de entrada y criterios de salida antes de ejecutar."
+          title="Prueba funcional"
+          description="Genera la entrada desde el contrato, ajusta host y criterios de salida, y ejecuta contra el endpoint real."
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="space-y-4">
         <EndpointSafetyHints endpoint={endpoint} />
+        {/*
+          El generador va ARRIBA del todo, antes de la configuración: llenar la entrada es el primer
+          paso de la prueba, y tenerlo al final —después de treinta campos de host, timeouts y
+          umbrales— era la razón práctica de que casi nadie probara la clase inválida.
+        */}
+        <QaSampleBar
+          endpoint={endpoint}
+          onLoad={(sample) =>
+            patchForm({
+              payload: jsonText(sample.payload),
+              ...(Object.keys(sample.pathParams).length
+                ? { pathParams: jsonText(sample.pathParams) }
+                : {}),
+            })
+          }
+        />
         <RunControls form={form} endpoint={endpoint} onChange={patchForm} />
         {preset ? (
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
@@ -192,9 +211,13 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     dryRun: true,
     timeoutMs: 20000,
     allowMutations: false,
-    payload: jsonText(endpoint?.minPayloadSchema),
-    queryParams: jsonText(endpoint?.queryParamsSchema),
-    pathParams: jsonText(endpoint?.pathParamsSchema),
+    payload: jsonText(sampleFrom(endpoint?.minPayloadSchema)),
+    queryParams: jsonText(sampleFrom(endpoint?.queryParamsSchema)),
+    pathParams: jsonText(
+      sampleFromFields(
+        pathParamFields(endpoint?.fullPath ?? endpoint?.routePath),
+      ) ?? sampleFrom(endpoint?.pathParamsSchema),
+    ),
     headers: jsonText(endpoint?.headersSchema),
     expectedStatusCodes: expectedStatusesText(endpoint?.expectedStatusCodes),
     expectedHeaders: "{}",
@@ -209,4 +232,25 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     includeIdempotencyKey: true,
     deviceProfile: "none",
   };
+}
+
+/**
+ * El formulario abría con el CONTRATO metido en la caja del payload.
+ *
+ * `jsonText(endpoint.minPayloadSchema)` dejaba escrito `{"email":"string|required"}` en «Payload de
+ * entrada», que no es un payload: es la descripción de uno. Pulsar «Ejecutar» sin tocarlo mandaba
+ * literalmente esa cadena al endpoint y devolvía un 400 de validación — un fallo del formulario que
+ * se leía como un fallo del endpoint. Ahora se abre con un caso VÁLIDO derivado de ese mismo
+ * contrato, con la semilla de referencia, así que lo que se ve en la caja es lo que se va a enviar.
+ */
+function sampleFrom(schema: unknown): Record<string, unknown> | undefined {
+  const contract = readContract(schema);
+  return sampleFromFields(contract.fields);
+}
+
+function sampleFromFields(
+  fields: ReturnType<typeof readContract>["fields"],
+): Record<string, unknown> | undefined {
+  if (fields.length === 0) return undefined;
+  return generateCases(fields, "valid", 1, "qa-base")[0]?.payload;
 }
