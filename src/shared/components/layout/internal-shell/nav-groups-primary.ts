@@ -1,5 +1,7 @@
 import {
   Activity,
+  Boxes,
+  Network,
   BarChart3,
   BookOpen,
   ClipboardCheck,
@@ -43,6 +45,18 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         href: "/internal/systems/tools/health",
         icon: Stethoscope,
         permissions: ["systems.tools.health.read"],
+      },
+      {
+        label: "Salud de la red",
+        href: "/internal/systems/network-health",
+        icon: Network,
+        permissions: ["systems.network.read"],
+      },
+      {
+        label: "Artefactos del motor",
+        href: "/internal/systems/decision-engine/artifacts",
+        icon: Boxes,
+        permissions: ["systems.decisionEngine.artifacts.read"],
       },
       {
         label: "Cola de revisión",

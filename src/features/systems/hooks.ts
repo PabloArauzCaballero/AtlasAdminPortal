@@ -39,6 +39,12 @@ import type {
 
 export { useEndpointsByIds } from "./endpoint-reference-hooks";
 export {
+  usePlatformBlocks,
+  useNetworkHealth,
+  useFederateBlocksMutation,
+  useActiveDecisionArtifacts,
+} from "./network-hooks";
+export {
   useStressProfiles,
   useStressProfile,
   useStressMatrix,

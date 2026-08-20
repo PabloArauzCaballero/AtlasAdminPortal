@@ -4,13 +4,19 @@ export function Card({
   className,
   children,
   interactive = false,
+  // Identificador estable para las pruebas E2E. Se declara explícito en vez de abrir la tarjeta a
+  // todos los props de `section`: lo que se quiere es poder señalar UNA tarjeta concreta en una
+  // rejilla de tarjetas iguales, no convertir el componente en un `div` con estilos.
+  testId,
 }: Readonly<{
   className?: string;
   children: React.ReactNode;
   interactive?: boolean;
+  testId?: string;
 }>) {
   return (
     <section
+      data-testid={testId}
       className={cn(
         "rounded-2xl border border-atlas-border bg-white shadow-card transition-all duration-200",
         interactive &&

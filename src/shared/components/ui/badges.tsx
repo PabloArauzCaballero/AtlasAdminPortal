@@ -214,6 +214,34 @@ export function ModuleBadge({ value }: Readonly<{ value?: string | null }>) {
   );
 }
 
+/**
+ * El BLOQUE del ecosistema al que pertenece la fila.
+ *
+ * Cada bloque lleva su propio tono para que la mezcla se lea de un vistazo en una tabla larga: el
+ * problema que esta insignia resuelve es que el catálogo no dejaba ver, en ninguna columna, que
+ * todo lo que había venía de un solo producto.
+ */
+const blockTones: Record<string, "info" | "success" | "warning"> = {
+  ATLAS_BACKEND: "info",
+  DECISION_ENGINE: "success",
+  ERP_BACKEND: "warning",
+};
+
+const blockLabels: Record<string, string> = {
+  ATLAS_BACKEND: "Atlas Backend",
+  DECISION_ENGINE: "Decision Engine",
+  ERP_BACKEND: "ERP Backend",
+};
+
+export function BlockBadge({ value }: Readonly<{ value?: string | null }>) {
+  if (!value) return <Badge tone="muted">Sin bloque</Badge>;
+  return (
+    <Badge tone={blockTones[value] ?? "default"}>
+      {blockLabels[value] ?? value}
+    </Badge>
+  );
+}
+
 export function PiiBadge({ value }: Readonly<{ value?: boolean | null }>) {
   return (
     <Badge tone={value ? "pii" : "muted"}>{value ? "PII" : "Sin PII"}</Badge>

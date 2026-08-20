@@ -57,7 +57,9 @@ describe("ToolGovernanceNotes", () => {
   });
 
   it("un texto en blanco cuenta como ausente: espacios no son documentación", () => {
-    render(<ToolGovernanceNotes tool={{ ...BASE_TOOL, businessValue: "   " }} />);
+    render(
+      <ToolGovernanceNotes tool={{ ...BASE_TOOL, businessValue: "   " }} />,
+    );
     expect(screen.queryByText("Valor de negocio")).not.toBeInTheDocument();
     expect(
       screen.getByText(/no tiene metadata de gobierno registrada/i),

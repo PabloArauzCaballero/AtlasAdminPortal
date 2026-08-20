@@ -2,6 +2,9 @@ export const queryKeys = {
   me: ["internal-auth", "me"] as const,
   dashboard: ["systems", "dashboard"] as const,
   toolsHealth: ["systems", "tools-health"] as const,
+  platformBlocks: ["systems", "blocks"] as const,
+  networkHealth: ["systems", "network-health"] as const,
+  decisionArtifacts: ["systems", "decision-engine-artifacts"] as const,
   endpoints: (params: unknown) => ["systems", "endpoints", params] as const,
   endpoint: (endpointId: string) =>
     ["systems", "endpoint", endpointId] as const,

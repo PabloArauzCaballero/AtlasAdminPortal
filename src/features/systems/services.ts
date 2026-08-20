@@ -26,6 +26,10 @@ import type {
   ToolHealth,
   TrafficLatencyReport,
   TrafficLatencyTimeseries,
+  ActiveArtifactReport,
+  FederationOutcome,
+  NetworkHealth,
+  PlatformBlock,
 } from "./types";
 import {
   normalizeDataEntity,
@@ -43,6 +47,32 @@ export async function getToolsHealth() {
   const response = await apiRequest<unknown>("/systems/health/tools");
   return normalizePaginatedResponse<ToolHealth>(response, ["tools", "health"])
     .items;
+}
+
+/**
+ * Los bloques del ecosistema, con lo que cada uno aporta al catálogo.
+ *
+ * Alimenta el filtro «bloque» del catálogo de datos y del inventario de endpoints. Devuelve SIEMPRE
+ * los tres, aunque alguno traiga cero filas: un bloque ausente del desplegable es indistinguible de
+ * un bloque que no existe, y era justamente esa ausencia la que hacía parecer completo un catálogo
+ * que sólo contenía Atlas Backend.
+ */
+export function listBlocks() {
+  return apiRequest<PlatformBlock[]>("/systems/blocks");
+}
+
+export function getNetworkHealth() {
+  return apiRequest<NetworkHealth>("/systems/health/network");
+}
+
+export function federateBlocks() {
+  return apiRequest<FederationOutcome[]>("/systems/blocks/federate", {
+    method: "POST",
+  });
+}
+
+export function listActiveDecisionArtifacts() {
+  return apiRequest<ActiveArtifactReport>("/systems/decision-engine/artifacts");
 }
 
 export async function listEndpoints(query: QueryParams) {
