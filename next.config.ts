@@ -28,6 +28,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  /**
+   * Salida autónoma: `.next/standalone` trae su propio `server.js` con SÓLO las dependencias que
+   * el servidor usa de verdad. Es lo que permite que la imagen del portal no arrastre el
+   * `node_modules` entero —cientos de megas de herramientas de construcción que en tiempo de
+   * ejecución no pinta nada— y lo que hace que el contenedor arranque con `node server.js` sin
+   * necesitar yarn ni el código fuente.
+   */
+  output: 'standalone',
   outputFileTracingRoot: path.resolve(__dirname),
   experimental: {
     // Build más estable para este portal interno: limita workers de generación estática.
