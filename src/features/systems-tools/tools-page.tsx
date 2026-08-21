@@ -44,7 +44,7 @@ function AuthorizedToolsPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/tools/${row.original.toolId}`}
           >
             {row.original.code}

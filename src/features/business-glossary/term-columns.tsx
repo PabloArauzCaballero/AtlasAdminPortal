@@ -13,7 +13,7 @@ export function buildBusinessTermColumns(): ColumnDef<BusinessTerm>[] {
       accessorKey: "name",
       cell: ({ row }) => (
         <Link
-          className="font-semibold text-blue-700 underline"
+          className="font-semibold text-atlas-accent underline"
           href={`/internal/business-metadata/glossary/${row.original.termId}`}
         >
           {row.original.name}

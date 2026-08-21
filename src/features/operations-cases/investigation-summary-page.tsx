@@ -117,7 +117,7 @@ export function InvestigationSummaryPage({
                   </span>
                   <Link
                     href={`/internal/operations/risk-assessments/${summary.data.latestRiskAssessment.riskAssessmentRunId}`}
-                    className="ml-auto font-mono text-xs text-blue-700 underline"
+                    className="ml-auto font-mono text-xs text-atlas-accent underline"
                   >
                     run #{summary.data.latestRiskAssessment.riskAssessmentRunId}
                   </Link>

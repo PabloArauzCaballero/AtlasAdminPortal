@@ -161,7 +161,7 @@ function ToolsHealthSummary({
             Herramientas monitoreadas
           </p>
           <Link
-            className="text-sm font-medium text-blue-700 underline"
+            className="text-sm font-medium text-atlas-accent underline"
             href="/internal/systems/tools/health"
           >
             Ver salud completa

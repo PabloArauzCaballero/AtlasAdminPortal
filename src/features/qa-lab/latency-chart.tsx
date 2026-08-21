@@ -87,7 +87,7 @@ export function StressLatencyChart({
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
-          className="text-blue-700"
+          className="text-atlas-accent"
         />
         <path
           d={avgPath}

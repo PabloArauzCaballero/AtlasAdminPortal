@@ -60,7 +60,7 @@ function AuthorizedPiiRegistryPage() {
         accessorKey: "tableName",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/data-catalog/tables/${row.original.entityId}`}
           >
             {row.original.schemaName}.{row.original.tableName}
@@ -123,7 +123,7 @@ function AuthorizedPiiRegistryPage() {
         accessorKey: "fullPath",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpointId}`}
           >
             {row.original.method} {row.original.fullPath}

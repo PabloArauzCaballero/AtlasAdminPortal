@@ -52,7 +52,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/qa/stress/${row.original.profileId}`}
           >
             {row.original.code}
@@ -65,7 +65,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpointId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpointId}`}
           >
             #{row.original.endpointId}
@@ -108,7 +108,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpoint.fullPath",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpoint.endpointId}`}
           >
             {row.original.endpoint.fullPath}

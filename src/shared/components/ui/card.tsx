@@ -18,7 +18,7 @@ export function Card({
     <section
       data-testid={testId}
       className={cn(
-        "rounded-2xl border border-atlas-border bg-white shadow-card transition-all duration-200",
+        "rounded-2xl border border-atlas-border bg-white/80 shadow-card backdrop-blur-[2px] transition-all duration-200",
         interactive &&
           "hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-card-hover",
         className,

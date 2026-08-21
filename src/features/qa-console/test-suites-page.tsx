@@ -52,7 +52,7 @@ function AuthorizedTestSuitesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             {row.original.code}

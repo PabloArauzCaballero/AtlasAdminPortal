@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AmbientBackground } from "@/shared/ambient/AmbientBackground";
 import { Check, LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -76,7 +77,14 @@ export function LoginPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-stretch bg-atlas-bg">
+    /*
+     * El fondo ambiental va también aquí: el acceso es la primera pantalla del portal y la única
+     * que ve alguien que aún no entró, así que es donde el lenguaje visual tiene que quedar dicho.
+     * La variante `auth` es más calmada que la del escritorio — el trabajo aquí es leer un
+     * formulario corto, no acompañar una sesión larga.
+     */
+    <main className="relative flex min-h-screen items-stretch bg-atlas-bg">
+      <AmbientBackground variant="auth" />
       <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-atlas-mesh p-10 text-white lg:flex">
         <div className="pointer-events-none absolute inset-0 bg-atlas-radial opacity-60" />
         <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#006a61]/25 blur-3xl" />
@@ -122,7 +130,7 @@ export function LoginPage() {
       </section>
 
       <section className="flex w-full flex-1 items-center justify-center p-4 lg:w-1/2">
-        <div className="w-full max-w-md animate-fade-in rounded-2xl border border-atlas-border bg-white p-6 shadow-card lg:border-0 lg:shadow-none">
+        <div className="w-full max-w-md animate-fade-in rounded-2xl border border-atlas-border bg-white/90 p-6 shadow-card backdrop-blur-xl lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-0">
           <div className="mb-6 flex items-center gap-3 lg:hidden">
             <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-[#006a61] to-slate-900 text-white">
               <LockKeyhole className="h-5 w-5" />

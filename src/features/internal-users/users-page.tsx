@@ -55,7 +55,7 @@ function AuthorizedUsersPage() {
         accessorKey: "email",
         cell: ({ row }) => (
           <Link
-            className="text-blue-700 underline"
+            className="text-atlas-accent underline"
             href={`/internal/settings/users/${row.original.id}`}
           >
             {row.original.email}

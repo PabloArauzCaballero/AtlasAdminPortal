@@ -82,7 +82,7 @@ export function SchemaVersionsPage() {
         <p className="mb-3 mt-1 text-sm text-atlas-muted">
           Propuestas de cambio de esquema a la espera de aprobación de 4 ojos.{" "}
           <Link
-            className="font-medium text-blue-700 underline"
+            className="font-medium text-atlas-accent underline"
             href="/internal/schema/change-log"
           >
             Ver historial completo

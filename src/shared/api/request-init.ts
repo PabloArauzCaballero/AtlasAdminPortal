@@ -111,6 +111,10 @@ function buildHeaders(
     process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID;
   const headers: Record<string, string> = {
     Accept: "application/json",
+    // Identifica al portal ante el backend. Los correos de código y de cambio de contraseña los
+    // redacta AtlasBackend, así que sin esto su membrete sale con un rótulo genérico y quien
+    // recibe un PIN pedido desde aquí no puede confirmar a qué portal está entrando.
+    "x-atlas-product": "admin-portal",
     ...(tenantId ? { "x-tenant-id": tenantId } : {}),
     ...options.headers,
   };

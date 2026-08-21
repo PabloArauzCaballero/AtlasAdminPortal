@@ -107,7 +107,7 @@ export function JourneyStepCard({
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-medium text-blue-700 underline"
+          className="text-xs font-medium text-atlas-accent underline"
         >
           {expanded
             ? "Ocultar avanzado"

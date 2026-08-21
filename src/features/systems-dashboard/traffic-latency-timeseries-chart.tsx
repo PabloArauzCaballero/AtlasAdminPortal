@@ -154,7 +154,7 @@ export function TrafficLatencyTimeseriesChart({
           Requests (max {formatNumber(maxHits)})
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-0.5 w-3 rounded-full bg-blue-600" />
+          <span className="h-0.5 w-3 rounded-full bg-atlas-accent" />
           p95 latencia (max {formatNumber(maxLatency)} ms)
         </span>
       </div>

@@ -106,7 +106,7 @@ export function QaSampleBar({
   return (
     <section className="space-y-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3.5">
       <header className="flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-white">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-atlas-accent to-atlas-primary text-white">
           <FlaskConical className="h-4 w-4" aria-hidden />
         </span>
         <p className="text-sm font-semibold text-atlas-text">

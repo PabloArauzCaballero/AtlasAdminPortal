@@ -65,7 +65,7 @@ function AuthorizedAuditPage() {
         accessorKey: "requestId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/audit/request/${encodeURIComponent(row.original.requestId)}`}
           >
             {row.original.requestId}

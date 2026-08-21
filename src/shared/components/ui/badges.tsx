@@ -8,7 +8,7 @@ const toneClasses: Record<Tone, string> = {
   success: "border-emerald-200 bg-emerald-50 text-emerald-700",
   warning: "border-amber-200 bg-amber-50 text-amber-700",
   critical: "border-red-200 bg-red-50 text-red-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
+  info: "border-blue-200 bg-blue-50 text-atlas-accent",
   pii: "border-indigo-200 bg-indigo-50 text-indigo-700",
   muted: "border-slate-200 bg-slate-100 text-slate-500",
 };

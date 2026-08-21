@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { AmbientBackground } from "@/shared/ambient/AmbientBackground";
 import { AppSidebar } from "./internal-shell/app-sidebar";
 import { AppTopbar } from "./internal-shell/app-topbar";
 import { ViewExplainer } from "./view-explainer";
@@ -10,9 +11,16 @@ export function AppShell({
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   return (
-    <div className="min-h-screen bg-atlas-bg text-atlas-text">
+    /*
+     * El fondo ambiental envuelve al armazón entero y no a cada vista: se monta una sola vez por
+     * sesión, así que navegar no lo reinicia y su deriva es continua. Va detrás de todo, sin
+     * eventos de puntero y marcado `aria-hidden`; se apaga solo con la pestaña oculta, en equipos
+     * de gama baja y con movimiento reducido.
+     */
+    <div className="relative min-h-screen bg-atlas-bg text-atlas-text">
+      <AmbientBackground variant="dashboard" />
       <AppSidebar />
-      <div className="lg:pl-[268px]">
+      <div className="relative lg:pl-[268px]">
         <AppTopbar />
         {/* key={pathname} remonta el contenido en cada navegación para que toda
             vista entre con la misma transición de fade/slide. */}

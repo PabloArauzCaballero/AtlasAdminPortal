@@ -176,7 +176,7 @@ function AuthorizedStressProfileDetailPage({
                   el perfil.
                 </p>
                 <Link
-                  className="text-sm font-medium text-blue-700 underline"
+                  className="text-sm font-medium text-atlas-accent underline"
                   href={`/internal/systems/endpoints/${profile.data.endpointId}`}
                 >
                   Ver endpoint asociado

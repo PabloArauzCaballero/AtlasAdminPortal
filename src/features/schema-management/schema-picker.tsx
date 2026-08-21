@@ -132,7 +132,7 @@ function SchemaCard({
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors",
           active
-            ? "bg-gradient-to-br from-indigo-500 to-indigo-700 text-white"
+            ? "bg-gradient-to-br from-atlas-accent to-atlas-primary text-white"
             : "bg-atlas-soft text-atlas-muted group-hover:bg-slate-200",
         )}
       >

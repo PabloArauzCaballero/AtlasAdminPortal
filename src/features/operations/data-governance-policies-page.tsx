@@ -188,7 +188,7 @@ function PolicyCard({ row }: Readonly<{ row: PolicyRow }>) {
         <StatusBadge value={row.active ? "active" : "inactive"} />
       </div>
       <Link
-        className="font-mono text-xs font-semibold text-blue-700 underline"
+        className="font-mono text-xs font-semibold text-atlas-accent underline"
         href={`/internal/governance/policies/${encodeURIComponent(row.id)}`}
       >
         {row.code}

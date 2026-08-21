@@ -120,11 +120,11 @@ export function EndpointTestCard({
         />
         <RunControls form={form} endpoint={endpoint} onChange={patchForm} />
         {preset ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3">
             <Button variant="secondary" onClick={applyPreset}>
               Usar payload de ejemplo: {preset.label}
             </Button>
-            <p className="text-xs text-blue-900">{preset.notes}</p>
+            <p className="text-xs text-atlas-text">{preset.notes}</p>
           </div>
         ) : null}
         <QaJsonFields
