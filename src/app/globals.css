@@ -101,3 +101,110 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Capa premium: movimiento, superficies de vidrio y comportamiento táctil.
+ *
+ * Son los mismos tokens y las mismas clases que el ERP, y eso es deliberado: las dos consolas se
+ * abren desde el mismo escritorio, y un cajón que sale con otra curva en cada una se percibe como
+ * dos productos. Se copian en vez de compartirse por un paquete por la misma razón que el fondo
+ * ambiental: los portales no comparten build ni despliegue.
+ *
+ * `--ease-ios` sale rápido y frena largo —es lo que hace que un panel se sienta empujado y no
+ * interpolado—; `--ease-spring` rebota un punto y sólo va en elementos pequeños, donde el rebote se
+ * lee como respuesta al dedo y no como un desajuste.
+ */
+:root {
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-sheet: 360ms;
+}
+
+/* El alto de la ventana en un móvil CAMBIA cuando la barra del navegador se retrae: con `100vh`
+   el armazón mide siempre el alto máximo y deja un hueco muerto al final. `dvh` sigue al alto real. */
+.atlas-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/**
+ * Cajón de navegación.
+ *
+ * El menú vive SIEMPRE en el árbol: en escritorio es la barra lateral fija y en móvil el mismo
+ * elemento desplazado fuera de la pantalla. Cerrado hay que retirarlo del recorrido del teclado
+ * —desplazado sigue siendo tabulable, y quien navegue con teclado recorrería medio centenar de
+ * enlaces invisibles antes de llegar al contenido—. `visibility` los retira, y se retrasa hasta que
+ * la animación termina para que la salida se vea.
+ */
+.atlas-drawer {
+  transition-property: transform, visibility;
+  transition-duration: var(--dur-sheet), 0s;
+  transition-timing-function: var(--ease-ios), linear;
+  transition-delay: 0s, var(--dur-sheet);
+}
+.atlas-drawer[data-open="true"] {
+  transition-delay: 0s, 0s;
+}
+@media (max-width: 1023.98px) {
+  .atlas-drawer[data-open="false"] {
+    visibility: hidden;
+  }
+}
+
+/* Mientras el cajón cubre la pantalla, el fondo no debe desplazarse: si lo hace, el dedo mueve la
+   página de debajo y el cajón parece flotar sobre algo que se escapa. */
+body.atlas-nav-open {
+  overflow: hidden;
+}
+
+/* Un desenfoque sin `saturate` deja el fondo gris y el vidrio parece plástico sucio. */
+.atlas-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Respuesta al toque: la escala confirma el gesto ANTES de que la navegación responda, que es de
+   donde sale la sensación de que la interfaz es rápida aunque la red no lo sea. */
+.atlas-press {
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+.atlas-press:active {
+  transform: scale(0.96);
+}
+
+/* Un objetivo táctil mide 44 px; debajo de eso el dedo falla y el usuario culpa a la app. Sólo en
+   punteros gruesos: en ratón, 44 px por icono desperdicia la barra entera. */
+@media (pointer: coarse) {
+  .atlas-tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/*
+ * Zonas seguras del dispositivo: la muesca y la barra de gestos de iOS.
+ *
+ * Estas dos clases DECLARAN el padding, no lo suman: van sobre elementos que no lo tienen ya por
+ * una utilidad de Tailwind. Donde sí lo tienen, el hueco se suma en la propia clase del elemento
+ * (`pb-[calc(1rem+env(safe-area-inset-bottom,0px))]`), porque ambas reglas tienen la misma
+ * especificidad y la última declarada gana: puestas juntas, ésta anulaba el `p-4` de al lado y el
+ * elemento se quedaba sin margen alguno.
+ */
+.atlas-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.atlas-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.atlas-rail {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.atlas-rail::-webkit-scrollbar {
+  display: none;
+}

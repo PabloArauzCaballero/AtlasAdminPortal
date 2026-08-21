@@ -101,7 +101,7 @@ export function ForbiddenState({
 
 export function FullPageLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-atlas-mesh text-white">
+    <div className="atlas-viewport flex items-center justify-center bg-atlas-mesh text-white">
       <div className="flex flex-col items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur">
           <Loader2 className="h-6 w-6 animate-spin" />

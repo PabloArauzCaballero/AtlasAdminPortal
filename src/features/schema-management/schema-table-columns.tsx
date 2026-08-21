@@ -75,7 +75,7 @@ export function buildSchemaTableColumns(): ColumnDef<SchemaTable>[] {
               </span>
             </span>
             <ChevronRight
-              className="h-3.5 w-3.5 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-atlas-accent"
+              className="h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-atlas-accent"
               aria-hidden
             />
           </Link>

@@ -22,7 +22,7 @@ export function PageHeader({
     <header className="relative mb-6 animate-fade-in overflow-hidden rounded-2xl border border-atlas-border bg-white shadow-card">
       <div className="pointer-events-none absolute inset-0 bg-atlas-radial" />
       {/* Filo superior de acento: da profundidad a la tarjeta sin añadir una línea de texto más. */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-atlas-accent via-indigo-400 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-atlas-accent via-teal-400 to-transparent" />
       <div className="relative border-b border-atlas-border bg-gradient-to-br from-white via-slate-50 to-slate-100 px-5 py-5 md:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 gap-4">
@@ -38,7 +38,7 @@ export function PageHeader({
                   {eyebrow}
                 </p>
               ) : null}
-              <h1 className="break-words text-2xl font-bold tracking-tight text-atlas-text md:text-3xl">
+              <h1 className="text-pretty break-words text-xl font-bold leading-tight tracking-tight text-atlas-text sm:text-2xl md:text-3xl">
                 {title}
               </h1>
               {description ? (
@@ -49,7 +49,7 @@ export function PageHeader({
             </div>
           </div>
           {actions ? (
-            <div className="flex shrink-0 flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/80 p-2 shadow-sm backdrop-blur">
+            <div className="atlas-rail flex shrink-0 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-sm backdrop-blur sm:flex-wrap sm:overflow-visible">
               {actions}
             </div>
           ) : null}

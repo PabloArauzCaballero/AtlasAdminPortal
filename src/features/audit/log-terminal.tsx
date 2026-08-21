@@ -58,14 +58,14 @@ const LEVEL_STYLE: Record<
   },
   debug: {
     label: "DEBUG",
-    text: "text-slate-400",
+    text: "text-slate-300",
     chip: "bg-slate-500/15 text-slate-300 ring-1 ring-inset ring-slate-400/30",
     Icon: Bug,
   },
   verbose: {
     label: "TRACE",
     text: "text-slate-500",
-    chip: "bg-slate-500/10 text-slate-400 ring-1 ring-inset ring-slate-500/25",
+    chip: "bg-slate-500/10 text-slate-300 ring-1 ring-inset ring-slate-500/25",
     Icon: CircleDot,
   },
   unknown: {
@@ -181,7 +181,7 @@ export function LogTerminal({
             >
               <style.Icon className="h-3 w-3" aria-hidden />
               {style.label}
-              <span className="text-slate-400">{counts[level]}</span>
+              <span className="text-slate-300">{counts[level]}</span>
             </button>
           );
         })}
