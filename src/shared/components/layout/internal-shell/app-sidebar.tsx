@@ -33,7 +33,7 @@ function NavLink({
     >
       <span
         className={cn(
-          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-indigo-400 transition-all duration-200",
+          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-atlas-accent transition-all duration-200",
           active && "h-5",
         )}
       />

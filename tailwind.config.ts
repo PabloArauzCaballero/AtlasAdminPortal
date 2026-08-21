@@ -5,22 +5,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /*
+         * El lenguaje visual de ATLAS, traído desde el motor de decisión.
+         *
+         * Los valores salen de `AtlasDecisionEngineFrontend/src/styles/parts/theme.css`, donde
+         * `theme-contrast.test.ts` los mide contra TODAS las superficies del sistema y falla si
+         * alguno baja de 4,5:1. Aclarar uno aquí rompe esa garantía en silencio.
+         *
+         * Este portal ya pintaba con tokens semánticos —581 usos de `atlas-*`— así que cambiar sus
+         * VALORES traslada el aspecto entero sin editar un solo componente. Es justo lo que un
+         * sistema de tokens existe para permitir.
+         */
         atlas: {
-          bg: "#F8FAFC",
-          card: "#FFFFFF",
-          border: "#E2E8F0",
-          muted: "#64748B",
-          text: "#0F172A",
-          soft: "#F1F5F9",
-          primary: "#111827",
-          accent: "#4F46E5",
-          accentSoft: "#EEF2FF",
-          success: "#10B981",
-          warning: "#F59E0B",
-          critical: "#EF4444",
-          info: "#3B82F6",
-          pii: "#6366F1",
-          sensitive: "#EC4899",
+          bg: "#f5f5f7", // --canvas
+          card: "#ffffff", // --surface
+          border: "#e4e4e7", // --line
+          muted: "#5a5a63", // --muted
+          text: "#1d1d1f", // --ink
+          soft: "#f0f0f3", // --surface-hover
+          primary: "#1d1d1f", // --ink
+          /*
+           * El acento deja de ser el índigo `#4F46E5` y pasa al verde azulado del motor:
+           * profundo y poco saturado a propósito, porque en este sistema el color es SEÑAL y un
+           * acento que grita compite con los estados que sí tienen algo que decir.
+           */
+          accent: "#006a61", // --accent
+          accentSoft: "#d9ebe8", // --accent-soft
+          accentWash: "#f0f8f7", // --accent-wash
+          success: "#0f7b52",
+          warning: "#a34a05",
+          critical: "#b42318", // --danger
+          info: "#1f6fb2",
+          pii: "#6b3fa0",
+          sensitive: "#a3195b",
+        },
+        /*
+         * La rampa neutra del motor sustituye a la de Tailwind: los 121 `slate-*` que ya existen
+         * en los componentes quedan pintados con el gris de ATLAS sin tocarlos.
+         */
+        slate: {
+          50: "#fafafa",
+          100: "#f5f5f7",
+          200: "#e4e4e7",
+          300: "#c9c9cf",
+          400: "#9a9aa3",
+          500: "#6b6b75",
+          600: "#5a5a63",
+          700: "#38383d",
+          800: "#26262a",
+          900: "#1d1d1f",
+          950: "#0b0b0c",
         },
       },
       fontFamily: {
@@ -45,13 +79,18 @@ const config: Config = {
         card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -12px rgba(15, 23, 42, 0.12)",
         "card-hover":
           "0 4px 10px rgba(15, 23, 42, 0.06), 0 20px 40px -16px rgba(15, 23, 42, 0.18)",
-        glow: "0 0 0 1px rgba(79, 70, 229, 0.08), 0 8px 24px -8px rgba(79, 70, 229, 0.35)",
+        glow: "0 0 0 1px rgba(0, 106, 97, 0.10), 0 8px 24px -8px rgba(0, 106, 97, 0.30)",
       },
       backgroundImage: {
+        /*
+         * El adorno lleva tonos del propio acento, no un color nuevo. Antes era una malla índigo
+         * (`#1e1b4b` → `#312e81`) que no aparecía en ninguna otra parte del producto: la portada
+         * del acceso pertenecía a otra marca que el resto del portal.
+         */
         "atlas-radial":
-          "radial-gradient(circle at top left, rgba(79,70,229,0.12), transparent 55%)",
+          "radial-gradient(circle at top left, rgba(0,106,97,0.14), transparent 55%)",
         "atlas-mesh":
-          "linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%)",
+          "linear-gradient(135deg, #12181a 0%, #10322f 48%, #00544d 100%)",
       },
       keyframes: {
         "fade-in": {
