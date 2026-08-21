@@ -38,24 +38,36 @@ test.describe("laboratorio de QA", () => {
 
     const payload = page.getByLabel("Payload de entrada");
     // Abre con un caso generado, no con el contrato: `string|required` en la caja del payload
-    // significaba enviar la DESCRIPCIÓN del campo como su valor.
+    // significaba enviar la DESCRIPCIÓN del campo como su valor. El contrato de `/auth/login` lo
+    // publica ahora el propio backend desde su esquema Zod, y declara `identifier`, no `email`.
     await expect(payload).not.toContainText("string|required");
     await expect(payload).toContainText("@atlas.test");
+    await expect(payload).toContainText("identifier");
 
     // Clase inválida: debe faltar un campo obligatorio, que es lo que el endpoint tiene que
     // rechazar y lo que casi nadie probaba porque había que escribirlo a mano.
     await page.getByLabel("Clase de caso").selectOption("invalid");
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
-    await expect(
-      page.getByRole("button", { name: /^Sin /i }).first(),
-    ).toBeVisible();
+    const primerCaso = page.getByRole("button", { name: /^Sin /i }).first();
+    await expect(primerCaso).toBeVisible();
     await capture(page, testInfo, "2 casos invalidos generados");
-    await expect(payload).not.toContainText('"email"');
+
+    /*
+     * El caso cargado es el que el chip nombra, y le FALTA ese campo. Se comprueba contra el
+     * nombre que la interfaz muestra y no contra un campo fijo: el contrato lo publica ahora el
+     * backend desde su propio esquema, así que qué campo cae primero depende del contrato y no de
+     * lo que esta prueba supusiera.
+     */
+    const faltante = ((await primerCaso.textContent()) ?? "")
+      .replace(/^\s*Sin\s+/, "")
+      .trim();
+    expect(faltante.length).toBeGreaterThan(0);
+    await expect(payload).not.toContainText(`"${faltante}"`);
 
     // Vuelta a válidos y previsualización (dry-run, no ejecuta nada real).
     await page.getByLabel("Clase de caso").selectOption("valid");
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
-    await expect(payload).toContainText('"email"');
+    await expect(payload).toContainText('"identifier"');
 
     await page.getByRole("button", { name: /previsualizar request/i }).click();
     await page.getByRole("button", { name: /^previsualizar$/i }).click();

@@ -86,7 +86,13 @@ function validValue(field: ContractField, random: () => number): unknown {
   const first = pick(random, FIRST_NAMES);
   const last = pick(random, LAST_NAMES);
 
-  if (name.includes("email")) {
+  /*
+   * `identifier` es el nombre que usa la autenticación de este ecosistema para la identidad con la
+   * que alguien entra: un correo o un teléfono. Sin reconocerlo, el caso «válido» de un login salía
+   * con `qa-identifier-417`, que el endpoint rechaza por formato — y la prueba habría medido el
+   * validador de formato en vez del login.
+   */
+  if (name.includes("email") || name === "identifier") {
     return `${first.toLowerCase()}.${last.toLowerCase()}@atlas.test`;
   }
   if (name.includes("password")) return "Atlas_Qa#2026!";

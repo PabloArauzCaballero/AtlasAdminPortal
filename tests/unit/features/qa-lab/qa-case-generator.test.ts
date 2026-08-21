@@ -102,6 +102,13 @@ describe("generateCases", () => {
     expect(String(first.payload.email)).toMatch(/^[a-z.]+@atlas\.test$/);
   });
 
+  /** `identifier` es la identidad con la que se entra en este ecosistema: correo o teléfono. */
+  it("reconoce `identifier` como identidad de acceso", () => {
+    const fields = readContract({ identifier: "string|required" }).fields;
+    const [first] = generateCases(fields, "valid", 1, "qa-base");
+    expect(String(first.payload.identifier)).toMatch(/^[a-z.]+@atlas\.test$/);
+  });
+
   it("un teléfono sale con prefijo boliviano", () => {
     const phoneFields = readContract({ phone: "string|required" }).fields;
     const [first] = generateCases(phoneFields, "valid", 1, "qa-base");
