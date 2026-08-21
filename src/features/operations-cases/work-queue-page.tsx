@@ -14,6 +14,7 @@ import { DecisionDialog } from "./decision-dialog";
 import { useWorkQueue } from "./hooks";
 import { buildWorkQueueColumns } from "./work-queue-columns";
 import type { WorkQueueItem } from "./types";
+import { ShieldAlert } from "lucide-react";
 
 const queueOptions = [
   { label: "Revisión manual", value: "manual_review" },
@@ -53,6 +54,7 @@ export function WorkQueuePage() {
   return (
     <>
       <PageHeader
+        icon={ShieldAlert}
         eyebrow="Operaciones"
         title="Cola de trabajo"
         description="Casos de revisión manual y de fraude pendientes de decisión, combinados en una sola cola priorizada."

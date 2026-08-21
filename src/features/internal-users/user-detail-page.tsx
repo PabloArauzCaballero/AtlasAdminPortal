@@ -15,6 +15,7 @@ import {
 } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { UserCog } from "lucide-react";
 
 export function UserDetailPage(props: Readonly<{ internalUserId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -50,6 +51,7 @@ function AuthorizedUserDetailPage({
       {user.data ? (
         <>
           <PageHeader
+            icon={UserCog}
             eyebrow={`Usuario interno #${user.data.user.id}`}
             title={user.data.user.fullName}
             description={user.data.user.email}

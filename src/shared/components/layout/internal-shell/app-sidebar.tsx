@@ -33,7 +33,7 @@ function NavLink({
     >
       <span
         className={cn(
-          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-indigo-400 transition-all duration-200",
+          "absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-atlas-accent transition-all duration-200",
           active && "h-5",
         )}
       />
@@ -81,7 +81,7 @@ export function AppSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[268px] border-r border-slate-800 bg-atlas-mesh lg:block">
       <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-sm font-bold text-white shadow-glow">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-atlas-accent to-atlas-primary text-sm font-bold text-white shadow-glow">
           A
         </div>
         <div>
@@ -150,7 +150,7 @@ export function AppSidebar() {
       </nav>
       <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-black/20 p-4">
         <div className="mb-3 flex min-w-0 items-center gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 text-xs font-semibold text-white">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-atlas-accent to-atlas-primary text-xs font-semibold text-white">
             {(user?.fullName ?? "U").slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0">

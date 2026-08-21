@@ -98,7 +98,7 @@ export function TrafficLatencyCharts({
                     }}
                   />
                   <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-blue-600"
+                    className="absolute inset-y-0 left-0 rounded-full bg-atlas-accent"
                     style={{
                       width: `${Math.max(2, (avg / maxLatency) * 100)}%`,
                     }}

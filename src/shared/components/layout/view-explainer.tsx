@@ -96,7 +96,7 @@ function ExplanationBlock({
         "rounded-lg border p-3",
         tone === "business"
           ? "border-amber-200 bg-amber-50/60"
-          : "border-sky-200 bg-sky-50/60",
+          : "border-atlas-accentSoft bg-atlas-accentWash",
       )}
     >
       <p

@@ -26,12 +26,20 @@ export function getInternalUser(internalUserId: string) {
 }
 
 /**
- * El backend no tiene un endpoint dedicado "crear usuario interno": el alta
- * real es POST /internal/auth/signup (ver PENDIENTE_ATLAS en
- * docs/contracts/frontend-backend-contracts.md sobre su DTO exacto), y los
- * roles se asignan aparte con PATCH /internal/users/:id/roles. Encadenamos
- * ambas llamadas y forzamos mustChangePassword para que la contraseña
- * temporal generada acá quede invalidada en el primer login real.
+ * Alta de usuario interno: UNA sola llamada a `POST /internal/auth/signup`.
+ *
+ * Estaba rota de raíz. El portal mandaba sólo `email`, `password`, `fullName`, `department` y
+ * `jobTitle`, y `createInternalUserSchema` del backend exige además `roles` (mínimo uno) y `reason`
+ * (mínimo ocho caracteres). El alta respondía SIEMPRE 400 «Entrada inválida en body.»: dar de alta
+ * a alguien desde el portal no funcionaba en ningún caso, y el formulario ya pedía los dos campos
+ * que faltaban —se rellenaban y se tiraban.
+ *
+ * Con el contrato completo desaparecen también las dos llamadas de después (asignar roles y forzar
+ * el cambio de contraseña) y con ellas los `warnings` de «la cuenta se creó a medias»: el backend
+ * crea la cuenta, le asigna los roles y marca `mustChangePassword` en la misma transacción, así que
+ * o existe entera o no existe. Un alta a medias no era un riesgo teórico: dejaba una cuenta sin
+ * permisos, con una contraseña que sólo vivía en la memoria de esa pestaña, y con el correo ya
+ * tomado para volver a intentarlo.
  */
 export async function createInternalUser(
   input: CreateInternalUserInput,
@@ -46,40 +54,17 @@ export async function createInternalUser(
       password: temporaryPassword,
       fullName: input.fullName,
       department: input.department,
-      jobTitle: input.jobTitle,
+      ...(input.jobTitle ? { jobTitle: input.jobTitle } : {}),
+      roles: input.roles,
+      reason: input.reason,
+      // Explícito aunque el backend ya lo tenga por defecto: la contraseña temporal la generó este
+      // navegador y no debe sobrevivir al primer login.
+      mustChangePassword: true,
     },
   });
   const user = "user" in signupResult ? signupResult.user : signupResult;
 
-  // A partir de aquí la cuenta YA existe. Si un paso posterior falla y dejamos
-  // propagar el error, `onSuccess` no corre y la contraseña temporal —que solo
-  // vive en memoria de este cliente— se pierde: queda una cuenta creada a la
-  // que nadie puede entrar y que tampoco se puede volver a dar de alta (el
-  // email ya está tomado). Por eso los pasos de abajo degradan a warning.
-  const warnings: string[] = [];
-
-  if (input.roles.length > 0) {
-    try {
-      await updateInternalUserRoles(user.id, input.roles);
-    } catch {
-      warnings.push(
-        "La cuenta se creó, pero no se pudieron asignar los roles: no tendrá permisos hasta que los asignes desde el detalle del usuario.",
-      );
-    }
-  }
-
-  try {
-    await updateInternalUser(user.id, {
-      mustChangePassword: true,
-      reason: input.reason,
-    });
-  } catch {
-    warnings.push(
-      "La cuenta se creó, pero no se pudo forzar el cambio de contraseña: la temporal seguirá siendo válida hasta que lo actives en el detalle del usuario.",
-    );
-  }
-
-  return { user, temporaryPassword, warnings };
+  return { user, temporaryPassword };
 }
 
 export function updateInternalUser(

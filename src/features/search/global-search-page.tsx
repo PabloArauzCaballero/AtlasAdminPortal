@@ -25,6 +25,7 @@ import {
 } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
+import { Search } from "lucide-react";
 
 export function GlobalSearchPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -46,6 +47,7 @@ function AuthorizedGlobalSearchPage() {
   return (
     <>
       <PageHeader
+        icon={Search}
         eyebrow="Búsqueda"
         title="Búsqueda global"
         description="Busca en el índice oficial del servicio interno. No se agregan consultas paralelas ni cálculos client-side para alto volumen."

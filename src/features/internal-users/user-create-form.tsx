@@ -54,7 +54,6 @@ export function UserCreateForm() {
     return (
       <TemporaryPasswordReveal
         temporaryPassword={created.temporaryPassword}
-        warnings={created.warnings}
         onContinue={() =>
           router.push(`/internal/settings/users/${created.user.id}`)
         }
@@ -180,11 +179,9 @@ export function UserCreateForm() {
 
 function TemporaryPasswordReveal({
   temporaryPassword,
-  warnings,
   onContinue,
 }: Readonly<{
   temporaryPassword: string;
-  warnings: string[];
   onContinue: () => void;
 }>) {
   const [copied, setCopied] = useState(false);
@@ -198,23 +195,14 @@ function TemporaryPasswordReveal({
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        {warnings.length > 0 ? (
-          <div
-            role="alert"
-            className="space-y-1 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-atlas-text"
-          >
-            <p className="font-semibold">
-              El alta se completó a medias: revisa estos puntos
-            </p>
-            <ul className="list-disc space-y-1 pl-5 text-atlas-muted">
-              {warnings.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
         <div className="flex items-center gap-2 rounded-lg border border-atlas-border bg-atlas-soft p-3 font-mono text-sm">
-          <span className="flex-1 select-all break-all">
+          {/* Identificador estable para el E2E: la prueba de mensajería necesita leer la clave
+              temporal para abrir la sesión del usuario recién creado, y hacerlo por el texto la
+              ataría al formato exacto de la contraseña. */}
+          <span
+            data-testid="temporary-password"
+            className="flex-1 select-all break-all"
+          >
             {temporaryPassword}
           </span>
           <Button

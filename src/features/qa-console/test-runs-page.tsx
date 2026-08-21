@@ -14,6 +14,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { FlaskConical } from "lucide-react";
 
 const statusOptions = [
   { label: "Queued", value: "QUEUED" },
@@ -46,7 +47,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "runId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/runs/${row.original.runId}`}
           >
             #{row.original.runId}
@@ -58,7 +59,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "suiteId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             #{row.original.suiteId}
@@ -98,6 +99,7 @@ function AuthorizedTestRunsPage() {
   return (
     <>
       <PageHeader
+        icon={FlaskConical}
         title="Runs QA registrados en backend"
         description="Historial dinámico desde `/systems/test-runs`. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={

@@ -19,6 +19,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatBoolean } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { ClipboardList } from "lucide-react";
 
 export function TestSuitesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -51,7 +52,7 @@ function AuthorizedTestSuitesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             {row.original.code}
@@ -112,6 +113,7 @@ function AuthorizedTestSuitesPage() {
   return (
     <>
       <PageHeader
+        icon={ClipboardList}
         title="Suites QA registradas en backend"
         description="Suites de prueba registradas en `/systems/test-suites`. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={

@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LockKeyhole } from "lucide-react";
+import { AmbientBackground } from "@/shared/ambient/AmbientBackground";
+import { Check, LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -23,6 +24,14 @@ const loginSchema = z.object({
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
+
+/** Lo que el portal interno hace, en la voz del producto. */
+const CAPACIDADES = [
+  "Catálogo de datos y su gobierno",
+  "Calidad, lineage e impacto",
+  "QA de endpoints y pruebas de carga",
+  "Auditoría de cada acción interna",
+];
 
 export function LoginPage() {
   const router = useRouter();
@@ -68,10 +77,17 @@ export function LoginPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-stretch bg-atlas-bg">
+    /*
+     * El fondo ambiental va también aquí: el acceso es la primera pantalla del portal y la única
+     * que ve alguien que aún no entró, así que es donde el lenguaje visual tiene que quedar dicho.
+     * La variante `auth` es más calmada que la del escritorio — el trabajo aquí es leer un
+     * formulario corto, no acompañar una sesión larga.
+     */
+    <main className="relative flex min-h-screen items-stretch bg-atlas-bg">
+      <AmbientBackground variant="auth" />
       <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-atlas-mesh p-10 text-white lg:flex">
         <div className="pointer-events-none absolute inset-0 bg-atlas-radial opacity-60" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#006a61]/25 blur-3xl" />
         <div className="relative flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
             <LockKeyhole className="h-5 w-5" />
@@ -89,6 +105,24 @@ export function LoginPage() {
             Monitorea catálogos, calidad de datos, lineage y auditoría
             conectados en tiempo real al servicio interno de ATLAS.
           </p>
+          {/*
+            La lista dice QUÉ se hace aquí dentro, que es lo que un titular solo no alcanza a
+            decir. Misma anatomía que el acceso del motor de decisión y el del ERP: quien pasa de
+            un portal a otro reconoce la casa.
+          */}
+          <ul className="mt-9 space-y-3.5">
+            {CAPACIDADES.map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-3 text-sm text-slate-200"
+              >
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white/10">
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         <p className="relative text-xs text-slate-400">
           © {new Date().getFullYear()} ATLAS · Uso interno
@@ -96,9 +130,9 @@ export function LoginPage() {
       </section>
 
       <section className="flex w-full flex-1 items-center justify-center p-4 lg:w-1/2">
-        <div className="w-full max-w-md animate-fade-in rounded-2xl border border-atlas-border bg-white p-6 shadow-card lg:border-0 lg:shadow-none">
+        <div className="w-full max-w-md animate-fade-in rounded-2xl border border-atlas-border bg-white/90 p-6 shadow-card backdrop-blur-xl lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-0">
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-slate-900 text-white">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-[#006a61] to-slate-900 text-white">
               <LockKeyhole className="h-5 w-5" />
             </div>
             <div>
@@ -119,11 +153,14 @@ export function LoginPage() {
           ) : (
             <>
               <div className="mb-6 hidden lg:block">
-                <h1 className="text-2xl font-bold tracking-tight text-atlas-text">
+                <p className="text-xs font-bold tracking-[0.02em] text-atlas-accent">
+                  Acceso corporativo
+                </p>
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-atlas-text">
                   Bienvenido de vuelta
                 </h1>
-                <p className="mt-1 text-sm text-atlas-muted">
-                  Ingresa tus credenciales para continuar.
+                <p className="mt-1.5 text-sm leading-6 text-atlas-muted">
+                  Ingresa tus credenciales para entrar al portal interno.
                 </p>
               </div>
 

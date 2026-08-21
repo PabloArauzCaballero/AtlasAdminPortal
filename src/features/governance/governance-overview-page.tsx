@@ -15,6 +15,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Scale } from "lucide-react";
 
 export function GovernanceOverviewPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -67,6 +68,7 @@ function AuthorizedGovernanceOverviewPage() {
   return (
     <>
       <PageHeader
+        icon={Scale}
         eyebrow="Gobierno de datos"
         title="Gobierno de datos"
         description="Resumen dinámico de sensibilidad, PII, criticidad y revisión. Esta fase no inventa políticas; expone lo disponible en catálogo real."

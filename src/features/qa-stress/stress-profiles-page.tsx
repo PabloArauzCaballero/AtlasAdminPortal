@@ -20,6 +20,7 @@ import {
 } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Gauge } from "lucide-react";
 
 const statusOptions = ["ACTIVE", "DISABLED", "NEEDS_REVIEW", "DEPRECATED"].map(
   (value) => ({ label: value, value }),
@@ -51,7 +52,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/qa/stress/${row.original.profileId}`}
           >
             {row.original.code}
@@ -64,7 +65,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpointId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpointId}`}
           >
             #{row.original.endpointId}
@@ -107,7 +108,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpoint.fullPath",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpoint.endpointId}`}
           >
             {row.original.endpoint.fullPath}
@@ -138,6 +139,7 @@ function AuthorizedStressProfilesPage() {
   return (
     <>
       <PageHeader
+        icon={Gauge}
         eyebrow="QA Stress"
         title="Stress backend-driven"
         description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"

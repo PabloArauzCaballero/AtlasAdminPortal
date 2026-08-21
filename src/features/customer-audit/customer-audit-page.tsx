@@ -8,6 +8,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { CustomerAuditEventsSection } from "./customer-audit-events-section";
 import { CustomerAuditFeedSection } from "./customer-audit-feed-section";
+import { UserSearch } from "lucide-react";
 
 const FEED_TAB = "Feed de auditoría";
 const EVENTS_TAB = "Historial filtrado (deprecado)";
@@ -27,13 +28,14 @@ export function CustomerAuditPage({
   return (
     <PermissionGate permissions={["audit.events.read"]}>
       <PageHeader
+        icon={UserSearch}
         eyebrow="Operaciones"
         title={`Auditoría del cliente #${customerId}`}
         description="Historial de auditoría del cliente unificado desde las 8 fuentes del backend: auditoría operativa, cambios de datos, autenticación, consentimientos, acciones del cliente, cambios de estado, fraude y revisión manual."
         actions={
           <Link
             href={`/internal/operations/customers/${encodeURIComponent(customerId)}/investigation-summary`}
-            className="text-sm font-medium text-blue-700 underline"
+            className="text-sm font-medium text-atlas-accent underline"
           >
             Ver investigación
           </Link>

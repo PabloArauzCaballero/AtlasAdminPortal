@@ -12,6 +12,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { PolicyConfigurationForm } from "./forms/policy-configuration-form";
+import { SlidersHorizontal } from "lucide-react";
 
 export function GovernancePolicyConfigPage(
   props: Readonly<{ policyId: string }>,
@@ -36,6 +37,7 @@ function AuthorizedGovernancePolicyConfigPage({
   return (
     <>
       <PageHeader
+        icon={SlidersHorizontal}
         eyebrow="Formulario de gobierno"
         title="Configurar política"
         description="Define acciones operativas como append only, delete, retención, masking, auditoría y aprobaciones."

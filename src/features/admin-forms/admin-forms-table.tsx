@@ -57,7 +57,7 @@ const columns: ColumnDef<FormRoute>[] = [
     accessorKey: "name",
     cell: ({ row }) => (
       <Link
-        className="font-semibold text-blue-700 underline"
+        className="font-semibold text-atlas-accent underline"
         href={row.original.entryPoint}
       >
         {row.original.name}

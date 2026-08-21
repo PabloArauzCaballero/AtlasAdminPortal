@@ -241,7 +241,7 @@ function SubmittedRun({
         <StatusBadge value={result.status ?? "SUBMITTED"} />
         {result.runId ? (
           <Link
-            className="text-sm font-medium text-blue-700 underline"
+            className="text-sm font-medium text-atlas-accent underline"
             href={`/internal/qa/runs/${result.runId}`}
           >
             Ver ejecucion #{result.runId}

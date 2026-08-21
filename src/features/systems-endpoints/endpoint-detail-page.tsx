@@ -25,6 +25,7 @@ import {
   buildToolColumns,
 } from "./detail/endpoint-detail-columns";
 import { EndpointSummary } from "./detail/endpoint-summary";
+import { Route } from "lucide-react";
 
 const tabs = [
   "Resumen",
@@ -71,6 +72,7 @@ function AuthorizedEndpointDetailPage({
       {data ? (
         <>
           <PageHeader
+            icon={Route}
             eyebrow={`Endpoint #${data.endpoint.endpointId}`}
             title={data.endpoint.routeName ?? data.endpoint.handlerName}
             description={

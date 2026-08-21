@@ -2,6 +2,9 @@ export const queryKeys = {
   me: ["internal-auth", "me"] as const,
   dashboard: ["systems", "dashboard"] as const,
   toolsHealth: ["systems", "tools-health"] as const,
+  platformBlocks: ["systems", "blocks"] as const,
+  networkHealth: ["systems", "network-health"] as const,
+  decisionArtifacts: ["systems", "decision-engine-artifacts"] as const,
   endpoints: (params: unknown) => ["systems", "endpoints", params] as const,
   endpoint: (endpointId: string) =>
     ["systems", "endpoint", endpointId] as const,
@@ -67,8 +70,6 @@ export const queryKeys = {
     ["internal", "data-quality", "rule", ruleId] as const,
   reports: (params: unknown) => ["internal", "reports", params] as const,
   report: (reportId: string) => ["internal", "report", reportId] as const,
-  reportSnapshots: (reportId: string, params: unknown) =>
-    ["internal", "report", reportId, "snapshots", params] as const,
   businessTerms: (params: unknown) =>
     ["internal", "business-metadata", "terms", params] as const,
   businessTerm: (termId: string) =>
@@ -108,6 +109,9 @@ export const queryKeys = {
   schemaVersions: (params: unknown) => ["schema", "versions", params] as const,
   schemaVersion: (versionId: string) =>
     ["schema", "version", versionId] as const,
+  /** Cuelga de la clave de la versión: al invalidarla se refrescan también sus esquemas. */
+  schemaVersionSchemas: (versionId: string) =>
+    ["schema", "version", versionId, "schemas"] as const,
   schemaTables: (params: unknown) => ["schema", "tables", params] as const,
   schemaTable: (tableId: string) => ["schema", "table", tableId] as const,
   schemaChangeLog: (params: unknown) =>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { isSafeExternalUrl } from "@/shared/lib/urls";
@@ -14,7 +15,7 @@ export function ExportDownloadAction({
   if (!downloadUrl || !isSafeExternalUrl(downloadUrl)) return null;
 
   return (
-    <PermissionGate permissions={["internal.exports.download"]} fallback={null}>
+    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST} fallback={null}>
       <Button variant="primary" onClick={() => setOpen(true)}>
         Abrir archivo
       </Button>
@@ -29,7 +30,7 @@ export function ExportDownloadAction({
           setOpen(false);
         }}
       />
-    </PermissionGate>
+    </RoleGate>
   );
 }
 

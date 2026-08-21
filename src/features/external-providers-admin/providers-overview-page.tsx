@@ -11,6 +11,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { useProviderHealth, useProviders } from "./hooks";
 import { buildProviderColumns, type ProviderRow } from "./provider-columns";
 import { ProviderDetailDrawer } from "./provider-detail-drawer";
+import { Plug } from "lucide-react";
 
 export function ProvidersOverviewPage() {
   const providers = useProviders();
@@ -36,6 +37,7 @@ export function ProvidersOverviewPage() {
   return (
     <>
       <PageHeader
+        icon={Plug}
         eyebrow="Proveedores externos"
         title="Proveedores externos"
         description="Catálogo de proveedores de datos externos (KYC, buró de crédito, telco, pagos, redes) con su salud en vivo, modo runtime y políticas de costo."

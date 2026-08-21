@@ -50,6 +50,8 @@ export type EndpointItem = {
   endpointId: string;
   code: string;
   module: string;
+  /** Bloque del ecosistema (PRODUCTO) que expone el endpoint; `backendService` es el PROCESO. */
+  systemCode?: string;
   /** Backend/servicio dueño del endpoint (ej. atlas-backend); soporta catálogos multi-backend. */
   backendService?: string;
   backendBaseUrl?: string | null;
@@ -203,6 +205,8 @@ export type DataEntityColumn = {
 
 export type DataEntity = {
   entityId: string;
+  /** Bloque del ecosistema dueño de la tabla: ATLAS_BACKEND, DECISION_ENGINE, ERP_BACKEND. */
+  systemCode?: string;
   schemaName: string;
   tableName: string;
   modelName: string | null;

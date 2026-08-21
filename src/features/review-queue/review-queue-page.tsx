@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { ClipboardCheck, RefreshCw } from "lucide-react";
 import {
   useReviewQueue,
   useReviewTargetMutation,
@@ -82,6 +82,7 @@ function AuthorizedReviewQueuePage() {
   return (
     <>
       <PageHeader
+        icon={ClipboardCheck}
         eyebrow="Cola de revisión"
         title="Cola de revisión"
         description="Revisión controlada de endpoints, tablas, impactos y herramientas detectadas por Systems Ops. Cada sección está separada para evitar componentes gigantes."

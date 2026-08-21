@@ -7,6 +7,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { useCreateRiskRulesetVersionMutation } from "./hooks";
 import { PackageEditor } from "./package-editor";
+import { Package } from "lucide-react";
 import {
   createRiskRulesetVersionSchema,
   riskRulesetPackageTemplate,
@@ -30,6 +31,7 @@ export function RiskRulesetPackagePage() {
   return (
     <PermissionGate permissions={["operations.riskPolicy.read"]}>
       <PageHeader
+        icon={Package}
         eyebrow="Política de riesgo"
         title="Nueva versión de ruleset"
         description="Conectado a `/operations/risk-policy/ruleset-versions`. Crea el modelo, el ruleset y sus reglas en borrador — no activa nada."

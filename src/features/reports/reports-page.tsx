@@ -16,6 +16,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildReportColumns } from "./report-columns";
 import { useReports } from "./hooks";
+import { ChartColumn } from "lucide-react";
 
 export function ReportsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -48,6 +49,7 @@ function AuthorizedReportsPage() {
   return (
     <>
       <PageHeader
+        icon={ChartColumn}
         eyebrow="Reportería"
         title="Reportería dinámica"
         description="Inventario real de `report_definitions`, widgets y fuentes autorizadas del servicio interno."

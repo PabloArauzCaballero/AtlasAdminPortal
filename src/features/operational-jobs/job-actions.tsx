@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { RUNTIME_JOB_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { useCancelJobRunMutation, useRetryJobRunMutation } from "./hooks";
@@ -15,7 +16,7 @@ export function JobActions({ jobRunId }: Readonly<{ jobRunId: string }>) {
   const isLoading = retry.isPending || cancel.isPending;
 
   return (
-    <PermissionGate permissions={["internal.jobs.execute"]}>
+    <RoleGate roles={RUNTIME_JOB_ROLE_LIST}>
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => setPendingAction("retry")}>Reintentar</Button>
         <Button variant="danger" onClick={() => setPendingAction("cancel")}>
@@ -34,6 +35,6 @@ export function JobActions({ jobRunId }: Readonly<{ jobRunId: string }>) {
           void action.mutateAsync().finally(() => setPendingAction(null));
         }}
       />
-    </PermissionGate>
+    </RoleGate>
   );
 }

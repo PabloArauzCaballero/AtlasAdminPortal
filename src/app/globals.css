@@ -2,7 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fondo ambiental, traído del motor de decisión junto con su componente. */
+@import "../shared/ambient/ambient.css";
+
+/*
+ * Vocabulario visual del motor de decisión.
+ *
+ * Son los mismos valores que usan el motor y el ERP: un solo acento verde, una sola tinta y una
+ * sola línea. Antes este portal iba por su cuenta con índigo y grises azulados, así que las tres
+ * aplicaciones de ATLAS se veían de tres empresas distintas.
+ */
 :root {
+  --accent: #006a61;
+  --accent-strong: #00544d;
+  --accent-rgb: 0, 106, 97;
+  --ink: #1d1d1f;
+  --text: #38383d;
+  --muted: #5a5a63;
+  --line: #e4e4e7;
+  --canvas: #f5f5f7;
+  --surface: #ffffff;
+
+  /* Movimiento: mismas curvas y duraciones que el motor. */
+  --dur-slow: 280ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
   --font-ui:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -15,22 +40,19 @@
 }
 
 html {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--canvas);
+  color: var(--text);
 }
 
+/*
+ * El cuerpo va PLANO: el movimiento lo pone `AmbientBackground`, que es una capa propia detrás del
+ * contenido. Los degradados fijos que había aquí competían con él y lo apagaban.
+ */
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 10% 0%, rgba(79, 70, 229, 0.06), transparent 45%),
-    radial-gradient(
-      circle at 90% 10%,
-      rgba(16, 185, 129, 0.05),
-      transparent 40%
-    ),
-    #f8fafc;
-  color: #0f172a;
+  background: var(--canvas);
+  color: var(--text);
 }
 
 button,
@@ -45,7 +67,7 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 2px;
 }

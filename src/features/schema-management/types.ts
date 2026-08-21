@@ -11,6 +11,19 @@ export type SchemaVersion = {
   relationshipsCount: number;
 };
 
+/**
+ * Un esquema de datos de Postgres dentro de una versión (`iam`, `risk`, `credit`…).
+ *
+ * El catálogo guarda el nombre cualificado de cada tabla (`iam.internal_users`), y este resumen es
+ * el índice por el que se entra: trece esquemas se abarcan de un vistazo; ciento cincuenta tablas
+ * en una sola lista paginada, no.
+ */
+export type SchemaNameSummary = {
+  schemaName: string;
+  tablesCount: number;
+  columnsCount: number;
+};
+
 export type SchemaTableType =
   "transactional" | "catalog" | "audit" | "operational";
 

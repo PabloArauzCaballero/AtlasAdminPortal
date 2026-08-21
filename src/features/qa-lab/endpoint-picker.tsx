@@ -38,7 +38,7 @@ export function EndpointPicker({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="1. Seleccionar endpoint"
+          title="Seleccionar endpoint"
           description="Busca una ruta registrada o pega el identificador exacto del endpoint para ejecutar pruebas funcionales y de carga controlada."
           className="mb-0"
         />
@@ -62,7 +62,7 @@ export function EndpointPicker({
           </Button>
         </div>
         {selectedId ? (
-          <p className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          <p className="rounded-xl border border-atlas-accentSoft bg-atlas-accentWash px-4 py-3 text-sm text-atlas-text">
             Endpoint seleccionado:{" "}
             <span className="font-mono">#{selectedId}</span>
           </p>
@@ -97,7 +97,7 @@ function buildColumns(
       header: "Ruta",
       cell: ({ row }) => (
         <Link
-          className="font-mono text-xs text-blue-700 underline"
+          className="font-mono text-xs text-atlas-accent underline"
           href={`/internal/systems/endpoints/${row.original.endpointId}`}
         >
           {safeText(row.original.fullPath ?? row.original.routePath)}

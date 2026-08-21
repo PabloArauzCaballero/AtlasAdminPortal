@@ -6,7 +6,7 @@ import {
   useCreateTestStepMutation,
   useUpdateTestStepMutation,
 } from "@/features/systems/qa-authoring-hooks";
-import { useEndpoints } from "@/features/systems/hooks";
+import { useAllEndpoints } from "@/features/systems/all-endpoints";
 import type { TestStep } from "@/features/systems/types";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
@@ -38,7 +38,7 @@ export function StepForm({
   const createMutation = useCreateTestStepMutation(suiteId);
   const updateMutation = useUpdateTestStepMutation(suiteId);
   const mutation = isEdit ? updateMutation : createMutation;
-  const endpoints = useEndpoints({ page: 1, limit: 200 });
+  const endpoints = useAllEndpoints();
 
   const {
     register,
@@ -128,7 +128,7 @@ export function StepForm({
       >
         <Select {...register("endpointId")}>
           <option value="">Sin endpoint asociado</option>
-          {(endpoints.data?.items ?? []).map((endpoint) => (
+          {(endpoints.data ?? []).map((endpoint) => (
             <option key={endpoint.endpointId} value={endpoint.endpointId}>
               {endpoint.method} {endpoint.fullPath}
             </option>

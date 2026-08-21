@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { RiskBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import type { ReportDefinition, ReportSnapshot } from "./types";
+import type { ReportDefinition } from "./types";
 
 export function buildReportColumns(): ColumnDef<ReportDefinition>[] {
   return [
@@ -13,7 +13,7 @@ export function buildReportColumns(): ColumnDef<ReportDefinition>[] {
       accessorKey: "name",
       cell: ({ row }) => (
         <Link
-          className="font-medium text-blue-700 underline"
+          className="font-medium text-atlas-accent underline"
           href={`/internal/reports/${row.original.reportId}`}
         >
           {row.original.name}
@@ -48,29 +48,6 @@ export function buildReportColumns(): ColumnDef<ReportDefinition>[] {
       header: "Actualizado",
       accessorKey: "updatedAt",
       cell: ({ row }) => formatDateTime(row.original.updatedAt),
-    },
-  ];
-}
-
-export function buildSnapshotColumns(): ColumnDef<ReportSnapshot>[] {
-  return [
-    {
-      header: "Snapshot",
-      accessorKey: "snapshotId",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.snapshotId}</span>
-      ),
-    },
-    {
-      header: "Estado",
-      accessorKey: "status",
-      cell: ({ row }) => <StatusBadge value={row.original.status} />,
-    },
-    { header: "Generado por", accessorKey: "generatedBy" },
-    {
-      header: "Generado",
-      accessorKey: "generatedAt",
-      cell: ({ row }) => formatDateTime(row.original.generatedAt),
     },
   ];
 }

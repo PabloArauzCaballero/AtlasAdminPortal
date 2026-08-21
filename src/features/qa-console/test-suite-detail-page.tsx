@@ -18,6 +18,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { SuiteExecutionPanel } from "./suite-execution-panel";
 import { SuiteForm } from "./suite-form";
 import { SuiteStepsSection } from "./suite-steps-section";
+import { ClipboardList } from "lucide-react";
 
 const tabs = ["Resumen", "Pasos", "Config", "Ejecución"];
 
@@ -60,6 +61,7 @@ function AuthorizedTestSuiteDetailPage({
       {suite.data ? (
         <>
           <PageHeader
+            icon={ClipboardList}
             eyebrow={`Suite #${suite.data.suite.suiteId}`}
             title={suite.data.suite.name}
             description={
