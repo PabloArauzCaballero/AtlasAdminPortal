@@ -3,7 +3,6 @@ import {
   BellRing,
   Database,
   Download,
-  FileText,
   History,
   ListChecks,
   LockKeyhole,
@@ -180,17 +179,6 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         href: "/internal/settings/permissions",
         icon: ShieldCheck,
         permissions: ["internal.permissions.read"],
-      },
-      {
-        /*
-         * El texto que el cliente acepta al registrarse. Vive en Configuración y no en Gobierno
-         * porque no es una política de datos interna: es lo que se le enseña a una persona, y lo
-         * edita quien lo escribe.
-         */
-        label: "Consentimientos",
-        href: "/internal/settings/consent-documents",
-        icon: FileText,
-        permissions: ["governance.policies.read"],
       },
       {
         label: "Sync catálogo",
