@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useAmbientMotion } from './useMotionPreferences';
-import { AMBIENT_LINKS, AMBIENT_NODES, pulsePoints } from './ambient-network';
+import { useEffect, useRef } from "react";
+import { useAmbientMotion } from "./useMotionPreferences";
+import { AMBIENT_LINKS, AMBIENT_NODES, pulsePoints } from "./ambient-network";
 
-export type AmbientVariant = 'auth' | 'dashboard' | 'lab' | 'editor' | 'results' | 'deploy';
-export type AmbientState = 'idle' | 'running' | 'success' | 'warning' | 'error';
+export type AmbientVariant =
+  "auth" | "dashboard" | "lab" | "editor" | "results" | "deploy";
+export type AmbientState = "idle" | "running" | "success" | "warning" | "error";
 
 interface AmbientBackgroundProps {
   variant?: AmbientVariant;
@@ -40,8 +41,8 @@ interface AmbientBackgroundProps {
  * Siempre va detrás del contenido (`aria-hidden`, sin eventos de puntero).
  */
 export function AmbientBackground({
-  variant = 'dashboard',
-  state = 'idle',
+  variant = "dashboard",
+  state = "idle",
   interactive = true,
 }: AmbientBackgroundProps) {
   const host = useRef<HTMLDivElement>(null);
@@ -53,7 +54,8 @@ export function AmbientBackground({
     // Un puntero grueso (dedo) no tiene posición de reposo: seguirlo produce
     // saltos, así que la reacción al cursor sólo se activa con ratón o lápiz.
     const finePointer =
-      typeof window.matchMedia === 'function' && window.matchMedia('(pointer: fine)').matches;
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(pointer: fine)").matches;
     if (!finePointer) return;
 
     let frame = 0;
@@ -65,10 +67,10 @@ export function AmbientBackground({
       // el foco de luz para ir exactamente donde está el cursor, y el desvío
       // respecto al centro (-0.5…0.5), que cada capa multiplica por su propio
       // factor para separarse en profundidad.
-      element.style.setProperty('--ambient-px', pending.x.toFixed(4));
-      element.style.setProperty('--ambient-py', pending.y.toFixed(4));
-      element.style.setProperty('--ambient-x', (pending.x - 0.5).toFixed(4));
-      element.style.setProperty('--ambient-y', (pending.y - 0.5).toFixed(4));
+      element.style.setProperty("--ambient-px", pending.x.toFixed(4));
+      element.style.setProperty("--ambient-py", pending.y.toFixed(4));
+      element.style.setProperty("--ambient-x", (pending.x - 0.5).toFixed(4));
+      element.style.setProperty("--ambient-y", (pending.y - 0.5).toFixed(4));
       pending = null;
     };
     // Un único listener global, agrupado en rAF: el trabajo por movimiento es
@@ -87,11 +89,11 @@ export function AmbientBackground({
       if (!frame) frame = requestAnimationFrame(apply);
     };
 
-    window.addEventListener('pointermove', onMove, { passive: true });
-    document.addEventListener('pointerleave', onLeave);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerleave", onLeave);
     return () => {
-      window.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerleave", onLeave);
       if (frame) cancelAnimationFrame(frame);
     };
   }, [animated, interactive]);
@@ -107,16 +109,22 @@ export function AmbientBackground({
     let frame = 0;
     const apply = () => {
       frame = 0;
-      const total = Math.max(1, document.body.scrollHeight - window.innerHeight);
-      element.style.setProperty('--ambient-scroll', (window.scrollY / total).toFixed(4));
+      const total = Math.max(
+        1,
+        document.body.scrollHeight - window.innerHeight,
+      );
+      element.style.setProperty(
+        "--ambient-scroll",
+        (window.scrollY / total).toFixed(4),
+      );
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(apply);
     };
     apply();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener("scroll", onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
   }, [animated]);
@@ -133,27 +141,31 @@ export function AmbientBackground({
     const element = host.current;
     if (!element || !animated || !interactive) return;
     const onDown = (event: PointerEvent) => {
-      element.querySelector('.ambient-ripple')?.remove();
-      const ripple = document.createElement('span');
-      ripple.className = 'ambient-ripple';
+      element.querySelector(".ambient-ripple")?.remove();
+      const ripple = document.createElement("span");
+      ripple.className = "ambient-ripple";
       ripple.style.left = `${event.clientX}px`;
       ripple.style.top = `${event.clientY}px`;
-      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      ripple.addEventListener("animationend", () => ripple.remove(), {
+        once: true,
+      });
       element.append(ripple);
     };
-    window.addEventListener('pointerdown', onDown, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
     return () => {
-      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener("pointerdown", onDown);
       // Las ondas se añaden al DOM fuera de React; hay que retirarlas a mano o
       // quedarían huérfanas si el fondo se desmonta a mitad de la animación.
-      element.querySelectorAll('.ambient-ripple').forEach((node) => node.remove());
+      element
+        .querySelectorAll(".ambient-ripple")
+        .forEach((node) => node.remove());
     };
   }, [animated, interactive]);
 
   return (
     <div
       ref={host}
-      className={`ambient-bg ambient-${variant} ${animated ? 'is-animated' : 'is-static'}`}
+      className={`ambient-bg ambient-${variant} ${animated ? "is-animated" : "is-static"}`}
       data-state={state}
       aria-hidden="true"
     >
@@ -204,7 +216,7 @@ export function AmbientBackground({
         {AMBIENT_NODES.map((node) => (
           <i
             key={node.id}
-            className={node.anchor ? 'is-anchor' : undefined}
+            className={node.anchor ? "is-anchor" : undefined}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
             data-ring={node.ring}
           />

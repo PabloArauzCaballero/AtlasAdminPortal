@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AmbientBackground } from "@/shared/ambient/AmbientBackground";
+import { ambientVariantFor } from "@/shared/ambient/ambient-routes";
 import { useNavDrawer } from "@/shared/hooks/use-nav-drawer";
 import { AppSidebar } from "./internal-shell/app-sidebar";
 import { AppTopbar } from "./internal-shell/app-topbar";
@@ -15,6 +16,7 @@ export function AppShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   useNavDrawer(menuOpen, closeMenu);
+  const ambiente = useMemo(() => ambientVariantFor(pathname), [pathname]);
 
   return (
     /*
@@ -25,9 +27,12 @@ export function AppShell({
      *
      * El estado del cajón vive AQUÍ y no dentro de la barra: la hamburguesa está en la cabecera y
      * el menú es su hermano, así que el único sitio donde ambos se ven es su padre común.
+     *
+     * La variante la decide la ruta (`ambient-routes`): la portada puede lucir el fondo, y una
+     * pantalla de trabajo no —ahí el lienzo va limpio—.
      */
     <div className="atlas-viewport relative bg-atlas-bg text-atlas-text">
-      <AmbientBackground variant="dashboard" />
+      <AmbientBackground variant={ambiente} />
       <AppSidebar open={menuOpen} onClose={closeMenu} />
       <div className="relative lg:pl-[268px]">
         <AppTopbar onMenu={() => setMenuOpen(true)} menuOpen={menuOpen} />

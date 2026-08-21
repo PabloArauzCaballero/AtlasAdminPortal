@@ -66,7 +66,9 @@ export const AMBIENT_LINKS: ReadonlyArray<readonly [number, number]> = [
  * curso —el fondo nunca simula actividad; el color de estado es lo único que
  * responde a lo que pasa de verdad—.
  */
-export const AMBIENT_PULSE_PATH: readonly number[] = [0, 1, 3, 6, 7, 10, 11, 12];
+export const AMBIENT_PULSE_PATH: readonly number[] = [
+  0, 1, 3, 6, 7, 10, 11, 12,
+];
 
 /** Puntos del camino del destello, en coordenadas del `viewBox` de 100×100. */
 export function pulsePoints(): string {
@@ -79,5 +81,5 @@ export function pulsePoints(): string {
   return AMBIENT_PULSE_PATH.map((id) => AMBIENT_NODES[id])
     .filter((node): node is AmbientNode => node !== undefined)
     .map((node) => `${node.x},${node.y}`)
-    .join(' ');
+    .join(" ");
 }

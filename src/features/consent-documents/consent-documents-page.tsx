@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useConsentDocuments,
-  useUpdateConsentDocument,
-} from "./hooks";
+import { useConsentDocuments, useUpdateConsentDocument } from "./hooks";
 import type { ConsentDocument } from "./types";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -47,7 +44,10 @@ export function ConsentDocumentsPage() {
       ) : null}
 
       {documents.data ? (
-        <div className="flex flex-col gap-4" data-testid="consent-documents-list">
+        <div
+          className="flex flex-col gap-4"
+          data-testid="consent-documents-list"
+        >
           {documents.data.items.map((document) => (
             <DocumentCard
               key={document.id}
@@ -122,7 +122,10 @@ function DocumentCard({
             {document.status}
           </span>
           {!editing ? (
-            <Button onClick={onEdit} data-testid={`edit-${document.documentCode}`}>
+            <Button
+              onClick={onEdit}
+              data-testid={`edit-${document.documentCode}`}
+            >
               Editar texto
             </Button>
           ) : null}
