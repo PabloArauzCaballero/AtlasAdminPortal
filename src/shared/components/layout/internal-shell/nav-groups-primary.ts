@@ -144,6 +144,28 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["governance.policies.read"],
       },
       {
+        /*
+         * El contenido de la app va JUNTO a los consentimientos y no en un apartado de marketing:
+         * las preguntas frecuentes explican como se calcula la linea y que pasa si te atrasas, que
+         * es informacion contractual con otro tono. Quien revisa lo que se le dice al cliente tiene
+         * que poder revisarlo todo desde el mismo sitio.
+         */
+        label: "Contenido de la app",
+        href: "/internal/settings/app-content",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
+      {
+        /*
+         * Y las politicas de aviso tambien: declarar que el aviso de mora es irrenunciable es una
+         * decision de cumplimiento, no un ajuste de producto.
+         */
+        label: "Políticas de notificación",
+        href: "/internal/settings/notification-policies",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
+      {
         label: "Gobierno de datos",
         href: "/internal/governance",
         icon: ShieldCheck,
