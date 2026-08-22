@@ -5,8 +5,6 @@ import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
-  getActionLogFilterCatalog,
-  getActionLogsByRequest,
   getDomain,
   getTool,
   inferDataImpacts,
@@ -19,9 +17,7 @@ import {
   getToolsHealth,
   getTrafficLatencyReport,
   getTrafficLatencyTimeseries,
-  listActionLogs,
   listDomains,
-  listMongoLogs,
   listReviewQueue,
   listTools,
   listDataEntities,
@@ -30,6 +26,11 @@ import {
   reviewCatalogTarget,
   updateDataEntityMetadata,
 } from "./services";
+import {
+  getActionLogsByRequest,
+  listActionLogs,
+  listMongoLogs,
+} from "./log-services";
 import type {
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
@@ -39,6 +40,12 @@ import type {
 } from "./types";
 
 export { useEndpointsByIds } from "./endpoint-reference-hooks";
+export {
+  usePlatformBlocks,
+  useNetworkHealth,
+  useFederateBlocksMutation,
+  useActiveDecisionArtifacts,
+} from "./network-hooks";
 export {
   useStressProfiles,
   useStressProfile,
@@ -138,22 +145,6 @@ export function useActionLogs(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.actionLogs(query),
     queryFn: () => listActionLogs(query),
-  });
-}
-
-/**
- * El catálogo de filtros de la auditoría.
- *
- * Cambia poco —sólo cuando aparece un módulo nuevo en la bitácora— así que se
- * mantiene fresco una hora en vez de volver a pedirse en cada visita: es una
- * petición que no aporta nada repetida y que retrasaría el pintado de la barra
- * de filtros, que es lo primero que se mira.
- */
-export function useActionLogFilterCatalog() {
-  return useQuery({
-    queryKey: queryKeys.actionLogFilterCatalog,
-    queryFn: getActionLogFilterCatalog,
-    staleTime: 60 * 60 * 1000,
   });
 }
 

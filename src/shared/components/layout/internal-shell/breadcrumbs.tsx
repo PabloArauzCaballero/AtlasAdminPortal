@@ -23,7 +23,7 @@ export function Breadcrumbs() {
       </Link>
       {segments.map((segment, index) => (
         <span key={`${segment}-${index}`} className="flex items-center gap-1">
-          <span className="text-slate-300">/</span>
+          <span className="text-slate-400">/</span>
           <span
             className={
               index === segments.length - 1

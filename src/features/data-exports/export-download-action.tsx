@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { getApiBaseUrl } from "@/shared/api/config";
@@ -37,13 +38,14 @@ export function ExportDownloadAction({
   if (estado.accion !== "descargar") {
     return (
       <p className="text-xs leading-5 text-atlas-muted" role="status">
-        <strong className="text-atlas-text">{estado.label}.</strong> {estado.help}
+        <strong className="text-atlas-text">{estado.label}.</strong>{" "}
+        {estado.help}
       </p>
     );
   }
 
   return (
-    <PermissionGate permissions={["internal.exports.download"]} fallback={null}>
+    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST} fallback={null}>
       <Button variant="primary" onClick={() => setOpen(true)}>
         Abrir archivo
       </Button>
@@ -58,7 +60,7 @@ export function ExportDownloadAction({
           setOpen(false);
         }}
       />
-    </PermissionGate>
+    </RoleGate>
   );
 }
 

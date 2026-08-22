@@ -93,8 +93,10 @@ function ExplanationBlock({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-white p-3",
-        tone === "business" ? "border-amber-200/80" : "border-sky-200/80",
+        "rounded-lg border p-3",
+        tone === "business"
+          ? "border-amber-200 bg-amber-50/60"
+          : "border-atlas-accentSoft bg-atlas-accentWash",
       )}
     >
       <p

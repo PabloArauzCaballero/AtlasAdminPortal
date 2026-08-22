@@ -1,5 +1,9 @@
 import { apiRequest } from "@/shared/api/client";
-import type { RuntimeJobBody, RuntimeJobCode, RuntimeJobRun } from "./types";
+import type {
+  RuntimeJobBody,
+  RuntimeJobDefinition,
+  RuntimeJobRun,
+} from "./types";
 
 function idempotencyKey(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto)
@@ -12,10 +16,18 @@ function idempotencyKey(prefix: string): string {
  * acá solo hace falta la idempotency key, que `RuntimeJobsController` exige
  * (mínimo 8 caracteres) para que un doble click no dispare el job dos veces.
  */
-export function runRuntimeJob(code: RuntimeJobCode, body: RuntimeJobBody) {
-  return apiRequest<RuntimeJobRun>(`/operations/jobs/${code}`, {
+export function runRuntimeJob(
+  definition: RuntimeJobDefinition,
+  body: RuntimeJobBody,
+) {
+  // Casi todos cuelgan de `/operations/jobs`; el que no, lo declara en el
+  // catálogo porque su regla de negocio vive en otro módulo del backend.
+  const path = definition.path ?? `/operations/jobs/${definition.code}`;
+  return apiRequest<RuntimeJobRun>(path, {
     method: "POST",
     body,
-    headers: { "x-idempotency-key": idempotencyKey(`runtime-job-${code}`) },
+    headers: {
+      "x-idempotency-key": idempotencyKey(`runtime-job-${definition.code}`),
+    },
   });
 }

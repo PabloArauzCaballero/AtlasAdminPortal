@@ -8,7 +8,7 @@ const toneClasses: Record<Tone, string> = {
   success: "border-emerald-200 bg-emerald-50 text-emerald-700",
   warning: "border-amber-200 bg-amber-50 text-amber-700",
   critical: "border-red-200 bg-red-50 text-red-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
+  info: "border-blue-200 bg-blue-50 text-atlas-accent",
   pii: "border-indigo-200 bg-indigo-50 text-indigo-700",
   muted: "border-slate-200 bg-slate-100 text-slate-500",
 };
@@ -210,6 +210,34 @@ export function ModuleBadge({ value }: Readonly<{ value?: string | null }>) {
   return (
     <Badge tone={value ? "info" : "muted"} className="font-mono normal-case">
       {value ?? "Sin módulo"}
+    </Badge>
+  );
+}
+
+/**
+ * El BLOQUE del ecosistema al que pertenece la fila.
+ *
+ * Cada bloque lleva su propio tono para que la mezcla se lea de un vistazo en una tabla larga: el
+ * problema que esta insignia resuelve es que el catálogo no dejaba ver, en ninguna columna, que
+ * todo lo que había venía de un solo producto.
+ */
+const blockTones: Record<string, "info" | "success" | "warning"> = {
+  ATLAS_BACKEND: "info",
+  DECISION_ENGINE: "success",
+  ERP_BACKEND: "warning",
+};
+
+const blockLabels: Record<string, string> = {
+  ATLAS_BACKEND: "Atlas Backend",
+  DECISION_ENGINE: "Decision Engine",
+  ERP_BACKEND: "ERP Backend",
+};
+
+export function BlockBadge({ value }: Readonly<{ value?: string | null }>) {
+  if (!value) return <Badge tone="muted">Sin bloque</Badge>;
+  return (
+    <Badge tone={blockTones[value] ?? "default"}>
+      {blockLabels[value] ?? value}
     </Badge>
   );
 }

@@ -18,6 +18,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { FileSearch } from "lucide-react";
 
 export function AuditRequestPage(props: Readonly<{ requestId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -100,6 +101,7 @@ function AuthorizedAuditRequestPage({
   return (
     <>
       <PageHeader
+        icon={FileSearch}
         eyebrow="Auditoría"
         title={`Request ${requestId}`}
         description="Eventos relacionados a un request específico."

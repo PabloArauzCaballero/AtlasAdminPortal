@@ -75,7 +75,10 @@ describe("sólo se ofrece descargar lo que de verdad se puede descargar", () => 
   it("completada SIN archivo se trata como fallida", () => {
     // Es la combinación que produce el botón que no lleva a ninguna parte: el
     // trabajo se dio por bueno pero no dejó archivo.
-    const estado = estadoDeExportacion({ status: "COMPLETED", downloadUrl: "  " }, HOY);
+    const estado = estadoDeExportacion(
+      { status: "COMPLETED", downloadUrl: "  " },
+      HOY,
+    );
     expect(estado.code).toBe("FALLIDA");
     expect(estado.accion).toBe("regenerar");
   });
@@ -88,9 +91,12 @@ describe("sólo se ofrece descargar lo que de verdad se puede descargar", () => 
 });
 
 describe("lo que no se puede descargar se puede volver a pedir", () => {
-  it.each(["FAILED", "ERROR", "CANCELLED"])("«%s» ofrece regenerar", (status) => {
-    expect(estadoDeExportacion({ status }, HOY).accion).toBe("regenerar");
-  });
+  it.each(["FAILED", "ERROR", "CANCELLED"])(
+    "«%s» ofrece regenerar",
+    (status) => {
+      expect(estadoDeExportacion({ status }, HOY).accion).toBe("regenerar");
+    },
+  );
 
   it("una fallida NO se presenta como caducada aunque su fecha pasara", () => {
     /*
@@ -99,7 +105,11 @@ describe("lo que no se puede descargar se puede volver a pedir", () => {
      * manda a buscar una copia que no existe.
      */
     const estado = estadoDeExportacion(
-      { status: "FAILED", expiresAt: "2026-01-01T00:00:00.000Z", downloadUrl: URL_OK },
+      {
+        status: "FAILED",
+        expiresAt: "2026-01-01T00:00:00.000Z",
+        downloadUrl: URL_OK,
+      },
       HOY,
     );
     expect(estado.code).toBe("FALLIDA");
@@ -113,7 +123,10 @@ describe("lo que no se puede descargar se puede volver a pedir", () => {
 describe("el sondeo se apaga cuando no hay nada vivo", () => {
   it("con algo en curso, consulta", () => {
     expect(
-      intervaloDeSondeo([{ status: "COMPLETED", downloadUrl: URL_OK }, { status: "RUNNING" }], HOY),
+      intervaloDeSondeo(
+        [{ status: "COMPLETED", downloadUrl: URL_OK }, { status: "RUNNING" }],
+        HOY,
+      ),
     ).toBe(5_000);
   });
 
@@ -124,10 +137,7 @@ describe("el sondeo se apaga cuando no hay nada vivo", () => {
      */
     expect(
       intervaloDeSondeo(
-        [
-          { status: "COMPLETED", downloadUrl: URL_OK },
-          { status: "FAILED" },
-        ],
+        [{ status: "COMPLETED", downloadUrl: URL_OK }, { status: "FAILED" }],
         HOY,
       ),
     ).toBe(false);
@@ -139,7 +149,9 @@ describe("el sondeo se apaga cuando no hay nada vivo", () => {
 
   it("sigueEnCurso responde la pregunta directamente", () => {
     expect(sigueEnCurso({ status: "PENDING" }, HOY)).toBe(true);
-    expect(sigueEnCurso({ status: "COMPLETED", downloadUrl: URL_OK }, HOY)).toBe(false);
+    expect(
+      sigueEnCurso({ status: "COMPLETED", downloadUrl: URL_OK }, HOY),
+    ).toBe(false);
   });
 });
 

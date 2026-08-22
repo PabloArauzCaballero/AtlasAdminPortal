@@ -13,6 +13,7 @@ import { AuditTrailTabs } from "./audit-trail-tabs";
 import { ExplanationSection } from "./explanation-section";
 import { useRiskAssessment } from "./hooks";
 import type { RiskAssessmentDetail } from "./types";
+import { ShieldAlert } from "lucide-react";
 
 function ResultMetrics({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
   const { result } = detail;
@@ -60,6 +61,7 @@ export function RiskAssessmentDetailPage({
   return (
     <div>
       <PageHeader
+        icon={ShieldAlert}
         eyebrow="Operaciones"
         title={`Evaluación de riesgo #${riskAssessmentRunId}`}
         description="Por qué el sistema decidió lo que decidió, y la traza completa que lo respalda."

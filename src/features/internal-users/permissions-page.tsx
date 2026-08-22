@@ -11,6 +11,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
+import { KeyRound } from "lucide-react";
 
 export function PermissionsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -58,6 +59,7 @@ function AuthorizedPermissionsPage() {
   return (
     <>
       <PageHeader
+        icon={KeyRound}
         eyebrow="RBAC"
         title="Permisos internos"
         description="Catálogo granular de permisos usados por el portal y el servicio interno."

@@ -111,14 +111,18 @@ describe("la consulta que sale hacia el endpoint", () => {
   });
 
   it("respeta una fecha que ya trae hora", () => {
-    const query = consultaDeAuditoria({ from: "2026-08-16T10:30:00.000Z" }, 1, 25);
+    const query = consultaDeAuditoria(
+      { from: "2026-08-16T10:30:00.000Z" },
+      1,
+      25,
+    );
     expect(query.from).toBe("2026-08-16T10:30:00.000Z");
   });
 
   it("pasa el resto de filtros tal cual", () => {
-    expect(consultaDeAuditoria({ module: "risk", riskLevel: "HIGH" }, 1, 25)).toEqual(
-      { page: 1, limit: 25, module: "risk", riskLevel: "HIGH" },
-    );
+    expect(
+      consultaDeAuditoria({ module: "risk", riskLevel: "HIGH" }, 1, 25),
+    ).toEqual({ page: 1, limit: 25, module: "risk", riskLevel: "HIGH" });
   });
 });
 

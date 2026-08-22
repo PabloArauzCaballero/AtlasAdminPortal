@@ -1,15 +1,18 @@
 "use client";
 
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { RUNTIME_JOB_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { RuntimeJobCard } from "./runtime-job-card";
 import { RUNTIME_JOBS } from "./runtime-job-catalog";
+import { PlayCircle } from "lucide-react";
 
 export function RuntimeJobsPage() {
   return (
-    <PermissionGate permissions={["internal.jobs.execute"]}>
+    <RoleGate roles={RUNTIME_JOB_ROLE_LIST}>
       <PageHeader
+        icon={PlayCircle}
         eyebrow="Operaciones"
         title="Jobs de runtime"
         description="Ejecución manual de los procesos de mantenimiento del backend: cola de outbox, eventos pendientes, expiración de sesiones, retención y recálculo de calidad."
@@ -31,6 +34,6 @@ export function RuntimeJobsPage() {
           <RuntimeJobCard key={definition.code} definition={definition} />
         ))}
       </div>
-    </PermissionGate>
+    </RoleGate>
   );
 }

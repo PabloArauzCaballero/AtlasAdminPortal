@@ -15,6 +15,7 @@ import {
   useMyUnreadNotificationsCount,
 } from "./hooks";
 import { buildMyNotificationColumns } from "./my-notifications-columns";
+import { BellRing } from "lucide-react";
 
 const statusOptions = [
   "pending",
@@ -53,6 +54,7 @@ export function MyNotificationsPage() {
   return (
     <>
       <PageHeader
+        icon={BellRing}
         eyebrow="Autoservicio"
         title="Mis notificaciones"
         description="Notificaciones dirigidas a vos: alertas automáticas del backend (ej. un servicio crítico caído o recuperado) y notificaciones personalizadas que un admin te haya enviado."

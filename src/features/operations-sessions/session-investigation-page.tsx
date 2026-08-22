@@ -11,6 +11,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { useSessionInvestigationSummary } from "./hooks";
 import { SessionDetailTabs } from "./session-detail-tabs";
 import { SessionSignalsSection } from "./session-signals-section";
+import { Fingerprint } from "lucide-react";
 
 export function SessionInvestigationPage({
   sessionId,
@@ -27,6 +28,7 @@ export function SessionInvestigationPage({
   return (
     <>
       <PageHeader
+        icon={Fingerprint}
         eyebrow="Operaciones"
         title={`Investigación de la sesión #${sessionId}`}
         description="¿Esta sesión es legítima? Señales de fraude, dispositivo, red, autenticación y actividad — todo lo que el backend registró sobre esta sesión."

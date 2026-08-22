@@ -18,15 +18,27 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/systems/endpoints": {
         systems:
-          "Lista paginada del catálogo `system_endpoint_catalog`, con método, ruta, backend de origen, riesgo, PII y estado de revisión. Los endpoints se descubren escaneando los controladores del backend.",
+          "Lista paginada del catálogo `system_endpoint_catalog`, con bloque, método, ruta, riesgo, PII y estado de revisión. Las rutas de este backend se descubren escaneando sus controladores; las del motor de decisión y el ERP llegan del manifiesto que cada uno publica sobre sí mismo.",
         business:
-          "Inventario de todas las operaciones que expone la plataforma: qué acciones existen, cuáles tocan datos sensibles y cuáles requieren pruebas antes de un release.",
+          "Inventario de todas las operaciones que expone el ECOSISTEMA, no sólo este backend: qué acciones existen en cada producto, cuáles tocan datos sensibles y cuáles requieren pruebas antes de un release.",
       },
       "/internal/systems/tools/health": {
         systems:
           "Estado vivo por herramienta (`isHealthy` de `/systems/health/tools`): probes reales a PostgreSQL/Redis y verificación de configuración para el resto. Es la misma señal que dispara las notificaciones de servicio caído/recuperado.",
         business:
           "Responde '¿está funcionando lo que la operación necesita ahora mismo?' — si el buró, WhatsApp o la base están caídos, aquí se confirma el incidente que avisó la campana.",
+      },
+      "/internal/systems/network-health": {
+        systems:
+          "Cruza `/systems/health/network`: el probe vivo de cada bloque del ecosistema (Atlas Backend, Decision Engine, ERP) con el estado de la federación de su catálogo. Un bloque federa publicando su propio manifiesto de rutas y tablas; esta vista dice si eso ocurrió, cuándo y con qué resultado.",
+        business:
+          "Responde '¿está completo el ecosistema?', que no es lo mismo que '¿responde cada pieza?'. Un bloque en pie que lleva días sin aportar su catálogo se veía antes igual que uno sano, y por eso el catálogo de datos parecía completo cuando sólo contenía un producto de tres.",
+      },
+      "/internal/systems/decision-engine/artifacts": {
+        systems:
+          "Cruza `/v1/deployments?status=ACTIVE` con `/v1/artifacts` del motor de decisión a través de `/systems/decision-engine/artifacts`: cada fila es un despliegue vigente con su versión, ambiente, autor y reparto de tráfico.",
+        business:
+          "Contesta desde el portal '¿qué política está decidiendo crédito ahora mismo?', que es la primera pregunta de cualquier investigación sobre una aprobación o un rechazo. Antes había que entrar al motor, con otra sesión y otro producto.",
       },
       "/internal/systems/tools": {
         systems:
@@ -56,7 +68,7 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
     views: {
       "/internal/data-catalog/tables": {
         systems:
-          "Lista las tablas catalogadas con módulo, dueño, flags de PII/financiero/riesgo y estado de revisión; el detalle muestra columnas, relaciones y los endpoints que la afectan directa o indirectamente.",
+          "Lista las tablas catalogadas de los tres bloques del ecosistema, con bloque, módulo, dueño, flags de PII/financiero/riesgo y estado de revisión; el detalle muestra columnas, relaciones y los endpoints que la afectan directa o indirectamente.",
         business:
           "Permite a un auditor o analista saber qué datos existen, qué tan sensibles son y quién responde por ellos, sin leer código.",
       },

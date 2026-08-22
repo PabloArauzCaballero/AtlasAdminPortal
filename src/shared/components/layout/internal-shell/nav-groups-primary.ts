@@ -1,5 +1,8 @@
 import {
+  FileText,
   Activity,
+  Boxes,
+  Network,
   BarChart3,
   BookOpen,
   ClipboardCheck,
@@ -44,6 +47,18 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         href: "/internal/systems/tools/health",
         icon: Stethoscope,
         permissions: ["systems.tools.health.read"],
+      },
+      {
+        label: "Salud de la red",
+        href: "/internal/systems/network-health",
+        icon: Network,
+        permissions: ["systems.network.read"],
+      },
+      {
+        label: "Artefactos del motor",
+        href: "/internal/systems/decision-engine/artifacts",
+        icon: Boxes,
+        permissions: ["systems.decisionEngine.artifacts.read"],
       },
       {
         label: "Cola de revisión",
@@ -117,6 +132,18 @@ export const navGroupsPrimary: InternalNavGroup[] = [
     label: "Gobierno y calidad",
     icon: ShieldCheck,
     items: [
+      {
+        /*
+         * Va con las politicas y no en «Administracion», que es donde estaba: quien busca el texto
+         * legal que acepta el cliente lo busca junto a las demas politicas, no al final de una lista
+         * de cuarenta y nueve enlaces. Estaba puesto, pero no se encontraba — que a efectos
+         * practicos es lo mismo que no estar.
+         */
+        label: "Consentimientos del cliente",
+        href: "/internal/settings/consent-documents",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
       {
         label: "Gobierno de datos",
         href: "/internal/governance",

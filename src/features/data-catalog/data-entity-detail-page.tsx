@@ -19,6 +19,7 @@ import { ColumnCatalogSection } from "./detail/column-catalog-section";
 import { EntitySummarySections } from "./detail/entity-summary-sections";
 import { RelatedEndpointsSection } from "./detail/related-endpoints-section";
 import { EntityGovernanceSummary } from "./entity-governance-summary";
+import { Table2 } from "lucide-react";
 
 const tabs = ["Vista general", "Columnas", "Endpoints", "Gobierno operativo"];
 
@@ -60,6 +61,7 @@ function AuthorizedDataEntityDetailPage({
       {entity.data ? (
         <>
           <PageHeader
+            icon={Table2}
             eyebrow="Catálogo de datos"
             title={`${entity.data.schemaName}.${entity.data.tableName}`}
             description={

@@ -20,6 +20,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import { Scale } from "lucide-react";
 type RuleRow = RiskPolicyCurrent["rulesetVersions"][number]["rules"][number] & {
   ruleset: string;
   rulesetStatus: string;
@@ -89,6 +90,7 @@ function AuthorizedCurrentRiskPolicyPage() {
   return (
     <>
       <PageHeader
+        icon={Scale}
         eyebrow="Política de riesgo"
         title="Política de riesgo actual"
         description="Consulta de `/operations/risk-policy/current`. Las versiones nuevas se crean en borrador y solo un administrador puede activarlas."

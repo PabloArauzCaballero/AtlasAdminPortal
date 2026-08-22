@@ -14,6 +14,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { RuleRunCard } from "./rule-run-card";
 import { useDataQualityRule } from "./hooks";
+import { ShieldCheck } from "lucide-react";
 
 export function DataQualityRuleDetailPage(props: Readonly<{ ruleId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -34,6 +35,7 @@ function AuthorizedDataQualityRuleDetailPage({
   return (
     <>
       <PageHeader
+        icon={ShieldCheck}
         eyebrow="Calidad de datos"
         title="Detalle de regla"
         description="Definición, target, configuración y ejecución controlada."

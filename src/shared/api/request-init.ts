@@ -1,8 +1,4 @@
-import {
-  assertApiBaseUrlConfigured,
-  getApiBaseUrl,
-  getCsrfHeaderName,
-} from "./config";
+import { getApiBaseUrl, getCsrfHeaderName } from "./config";
 import type { QueryParams } from "./types";
 import type { InternalSession } from "@/shared/auth/types";
 
@@ -35,11 +31,30 @@ function appendCsrfHeader(
   headers[headerName] = session.csrfToken;
 }
 
+/**
+ * El origen contra el que se resuelve una base RELATIVA.
+ *
+ * `NEXT_PUBLIC_API_BASE_URL` puede configurarse como `/api/v1` —es como se despliega el portal
+ * detrás de su propio proxy, y lo que permite exponerlo por un túnel sin exponer la API—, pero
+ * `new URL()` exige una URL absoluta y lanzaba `Failed to construct 'URL': Invalid URL` en CADA
+ * llamada: el portal entero quedaba inutilizable y el login sólo decía "No se pudo iniciar sesión".
+ *
+ * Una base relativa significa «el mismo origen que sirve esta página». Fuera del navegador no hay
+ * `location` que consultar, y entonces se falla diciendo qué variable configurar.
+ */
+function resolveOrigin(): string {
+  if (typeof window !== "undefined" && window.location?.origin)
+    return window.location.origin;
+  throw new Error(
+    "La API no está configurada para llamadas desde el servidor: define NEXT_PUBLIC_API_BASE_URL con una URL absoluta.",
+  );
+}
+
 export function buildUrl(path: string, query?: QueryParams): string {
-  // Falla ruidoso si en producción falta la base del API, en vez de dejar que el
-  // navegador del operador llame a su propio localhost.
-  assertApiBaseUrlConfigured();
-  const url = new URL(joinApiBaseAndPath(getApiBaseUrl(), path));
+  const joined = joinApiBaseAndPath(getApiBaseUrl(), path);
+  const url = /^https?:\/\//i.test(joined)
+    ? new URL(joined)
+    : new URL(joined.startsWith("/") ? joined : `/${joined}`, resolveOrigin());
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value === null || value === undefined || value === "") return;
     url.searchParams.set(key, String(value));
@@ -96,6 +111,10 @@ function buildHeaders(
     process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID;
   const headers: Record<string, string> = {
     Accept: "application/json",
+    // Identifica al portal ante el backend. Los correos de código y de cambio de contraseña los
+    // redacta AtlasBackend, así que sin esto su membrete sale con un rótulo genérico y quien
+    // recibe un PIN pedido desde aquí no puede confirmar a qué portal está entrando.
+    "x-atlas-product": "admin-portal",
     ...(tenantId ? { "x-tenant-id": tenantId } : {}),
     ...options.headers,
   };

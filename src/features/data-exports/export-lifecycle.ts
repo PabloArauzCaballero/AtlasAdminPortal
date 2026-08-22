@@ -137,7 +137,8 @@ export function estadoDeExportacion(
   const clave = entrada.status
     ? (SINONIMOS[entrada.status.trim().toUpperCase()] ?? "PROCESANDO")
     : "PROCESANDO";
-  const base = ESTADOS_DE_EXPORTACION[clave] ?? ESTADOS_DE_EXPORTACION.PROCESANDO;
+  const base =
+    ESTADOS_DE_EXPORTACION[clave] ?? ESTADOS_DE_EXPORTACION.PROCESANDO;
 
   if (base.code !== "COMPLETADA") return base;
 
@@ -157,7 +158,10 @@ function fecha(valor: string | null | undefined): Date | null {
 }
 
 /** Si la pantalla debe seguir consultando este trabajo. */
-export function sigueEnCurso(entrada: EntradaDeExportacion, ahora?: Date): boolean {
+export function sigueEnCurso(
+  entrada: EntradaDeExportacion,
+  ahora?: Date,
+): boolean {
   return estadoDeExportacion(entrada, ahora).enCurso;
 }
 
@@ -173,5 +177,7 @@ export function intervaloDeSondeo(
   entradas: readonly EntradaDeExportacion[],
   ahora?: Date,
 ): number | false {
-  return entradas.some((entrada) => sigueEnCurso(entrada, ahora)) ? 5_000 : false;
+  return entradas.some((entrada) => sigueEnCurso(entrada, ahora))
+    ? 5_000
+    : false;
 }

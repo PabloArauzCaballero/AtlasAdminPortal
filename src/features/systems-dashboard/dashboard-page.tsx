@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   Database,
   FileCheck2,
@@ -46,6 +47,7 @@ function AuthorizedDashboardPage() {
   return (
     <>
       <PageHeader
+        icon={Activity}
         eyebrow="Panel de sistemas"
         title="Centro interno ATLAS"
         description="Estado operativo de Systems Ops, catálogo, QA, gobierno, lineage y auditoría conectado al servicio interno real."

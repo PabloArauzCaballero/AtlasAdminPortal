@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useEndpoints } from "@/features/systems/hooks";
+import { usePlatformBlocks, useEndpoints } from "@/features/systems/hooks";
 import type { EndpointItem } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
+  BlockBadge,
   MethodBadge,
   ModuleBadge,
   PiiBadge,
@@ -20,8 +21,8 @@ import {
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatDateTime } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Route } from "lucide-react";
 
 const riskOptions = [
   { label: "Riesgo bajo", value: "LOW" },
@@ -55,21 +56,30 @@ function AuthorizedEndpointsPage() {
   const [q, setQ] = useState(initialQ);
   const [riskLevel, setRiskLevel] = useState("");
   const [reviewStatus, setReviewStatus] = useState("");
-  const [backendService, setBackendService] = useState("");
-  const query = { page, limit: 20, q, riskLevel, reviewStatus, backendService };
+  // Bloque, y ya no «backend». El filtro anterior derivaba sus opciones de los 20 endpoints de la
+  // página visible, así que sólo ofrecía filtrar por lo que ya se estaba viendo — y como todo venía
+  // de Atlas Backend, tenía una sola opción. El bloque llega de `/systems/blocks`, que enumera los
+  // tres siempre, aunque alguno todavía no aporte ninguna ruta.
+  const [block, setBlock] = useState(searchParams.get("block") ?? "");
+  const blocks = usePlatformBlocks();
+  const query = { page, limit: 20, q, riskLevel, reviewStatus, block };
   const endpoints = useEndpoints(query);
-  const backendOptions = useMemo(
+  const blockOptions = useMemo(
     () =>
-      uniqueTextOptions(
-        (endpoints.data?.items ?? []).map(
-          (item) => item.backendService ?? "atlas-backend",
-        ),
-      ),
-    [endpoints.data?.items],
+      (blocks.data ?? []).map((item) => ({
+        label: `${item.name} (${item.endpoints})`,
+        value: item.systemCode,
+      })),
+    [blocks.data],
   );
 
   const columns = useMemo<ColumnDef<EndpointItem>[]>(
     () => [
+      {
+        header: "Bloque",
+        accessorKey: "systemCode",
+        cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
+      },
       {
         header: "Método",
         accessorKey: "method",
@@ -81,7 +91,7 @@ function AuthorizedEndpointsPage() {
         cell: ({ row }) => (
           <div>
             <Link
-              className="font-mono text-xs font-semibold text-blue-700 underline"
+              className="font-mono text-xs font-semibold text-atlas-accent underline"
               href={`/internal/systems/endpoints/${row.original.endpointId}`}
             >
               {row.original.fullPath}
@@ -110,7 +120,7 @@ function AuthorizedEndpointsPage() {
         header: "QA",
         cell: ({ row }) => (
           <Link
-            className="text-xs font-semibold text-blue-700 underline"
+            className="text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/lab?endpointId=${row.original.endpointId}`}
           >
             Laboratorio
@@ -170,8 +180,9 @@ function AuthorizedEndpointsPage() {
   return (
     <>
       <PageHeader
+        icon={Route}
         title="Catálogo de endpoints"
-        description="Listado dinámico desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
+        description="Rutas de LOS TRES bloques del ecosistema, desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
       />
       <FilterBar
         search={q}
@@ -183,22 +194,22 @@ function AuthorizedEndpointsPage() {
         onFilterChange={(name, value) => {
           if (name === "riskLevel") setRiskLevel(value);
           if (name === "reviewStatus") setReviewStatus(value);
-          if (name === "backendService") setBackendService(value);
+          if (name === "block") setBlock(value);
           setPage(1);
         }}
         onClear={() => {
           setQ("");
           setRiskLevel("");
           setReviewStatus("");
-          setBackendService("");
+          setBlock("");
           setPage(1);
         }}
         filters={[
           {
-            name: "backendService",
-            label: "Backend",
-            value: backendService,
-            options: backendOptions,
+            name: "block",
+            label: "Bloque",
+            value: block,
+            options: blockOptions,
           },
           {
             name: "riskLevel",

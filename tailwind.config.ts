@@ -5,22 +5,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /*
+         * El lenguaje visual de ATLAS, traído desde el motor de decisión.
+         *
+         * Los valores salen de `AtlasDecisionEngineFrontend/src/styles/parts/theme.css`, donde
+         * `theme-contrast.test.ts` los mide contra TODAS las superficies del sistema y falla si
+         * alguno baja de 4,5:1. Aclarar uno aquí rompe esa garantía en silencio.
+         *
+         * Este portal ya pintaba con tokens semánticos —581 usos de `atlas-*`— así que cambiar sus
+         * VALORES traslada el aspecto entero sin editar un solo componente. Es justo lo que un
+         * sistema de tokens existe para permitir.
+         */
         atlas: {
-          bg: "#F6F7F8",
-          card: "#FFFFFF",
-          border: "#E1E3E8",
-          muted: "#686B73",
-          text: "#18191D",
-          soft: "#F1F2F4",
-          primary: "#18191D",
-          accent: "#405CCB",
-          accentSoft: "#EEF1FC",
-          success: "#16875A",
-          warning: "#B66A00",
-          critical: "#CE3E36",
-          info: "#356FC0",
-          pii: "#6656C7",
-          sensitive: "#B44A78",
+          bg: "#f5f5f7", // --canvas
+          card: "#ffffff", // --surface
+          border: "#e4e4e7", // --line
+          muted: "#5a5a63", // --muted
+          text: "#1d1d1f", // --ink
+          soft: "#f0f0f3", // --surface-hover
+          primary: "#1d1d1f", // --ink
+          /*
+           * El acento deja de ser el índigo `#4F46E5` y pasa al verde azulado del motor:
+           * profundo y poco saturado a propósito, porque en este sistema el color es SEÑAL y un
+           * acento que grita compite con los estados que sí tienen algo que decir.
+           */
+          accent: "#006a61", // --accent
+          accentSoft: "#d9ebe8", // --accent-soft
+          accentWash: "#f0f8f7", // --accent-wash
+          success: "#0f7b52",
+          warning: "#a34a05",
+          critical: "#b42318", // --danger
+          info: "#1f6fb2",
+          pii: "#6b3fa0",
+          sensitive: "#a3195b",
+        },
+        /*
+         * La rampa neutra del motor sustituye a la de Tailwind: los 121 `slate-*` que ya existen
+         * en los componentes quedan pintados con el gris de ATLAS sin tocarlos.
+         */
+        slate: {
+          50: "#fafafa",
+          100: "#f5f5f7",
+          200: "#e4e4e7",
+          300: "#c9c9cf",
+          400: "#9a9aa3",
+          500: "#6b6b75",
+          600: "#5a5a63",
+          700: "#38383d",
+          800: "#26262a",
+          900: "#1d1d1f",
+          950: "#0b0b0c",
         },
       },
       fontFamily: {
@@ -44,21 +78,19 @@ const config: Config = {
         subtle: "0 1px 2px rgba(24, 25, 29, 0.04)",
         card: "0 1px 2px rgba(24, 25, 29, 0.04), 0 6px 18px -14px rgba(24, 25, 29, 0.24)",
         "card-hover":
-          "0 1px 2px rgba(24, 25, 29, 0.06), 0 10px 24px -16px rgba(24, 25, 29, 0.28)",
-        glow: "0 0 0 3px rgba(64, 92, 203, 0.12)",
+          "0 4px 10px rgba(15, 23, 42, 0.06), 0 20px 40px -16px rgba(15, 23, 42, 0.18)",
+        glow: "0 0 0 1px rgba(0, 106, 97, 0.10), 0 8px 24px -8px rgba(0, 106, 97, 0.30)",
       },
       backgroundImage: {
+        /*
+         * El adorno lleva tonos del propio acento, no un color nuevo. Antes era una malla índigo
+         * (`#1e1b4b` → `#312e81`) que no aparecía en ninguna otra parte del producto: la portada
+         * del acceso pertenecía a otra marca que el resto del portal.
+         */
         "atlas-radial":
-          "radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 55%)",
-        "atlas-mesh": "linear-gradient(180deg, #191A1E 0%, #121316 100%)",
-        // Superficie del hero de autenticación: malla oscura con auroras sutiles.
-        "atlas-aurora":
-          "radial-gradient(60% 80% at 15% 10%, rgba(64,92,203,0.30), transparent 60%), radial-gradient(55% 70% at 85% 25%, rgba(102,86,199,0.26), transparent 60%), radial-gradient(60% 60% at 60% 100%, rgba(53,111,192,0.22), transparent 60%), linear-gradient(180deg, #16171C 0%, #101115 100%)",
-        // Degradado de marca reutilizable para acentos y botones destacados.
-        "brand-gradient": "linear-gradient(135deg, #405CCB 0%, #6656C7 100%)",
-        // Malla ambiental muy tenue para el fondo de la app (modo claro).
-        "app-ambient":
-          "radial-gradient(50% 60% at 100% 0%, rgba(64,92,203,0.06), transparent 55%), radial-gradient(45% 55% at 0% 100%, rgba(102,86,199,0.05), transparent 55%)",
+          "radial-gradient(circle at top left, rgba(0,106,97,0.14), transparent 55%)",
+        "atlas-mesh":
+          "linear-gradient(135deg, #12181a 0%, #10322f 48%, #00544d 100%)",
       },
       keyframes: {
         // Movimiento orgánico lento para formas abstractas del fondo (solo

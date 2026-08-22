@@ -16,6 +16,7 @@ import {
 } from "./hooks";
 import { buildProviderColumns, type ProviderRow } from "./provider-columns";
 import { ProviderDetailDrawer } from "./provider-detail-drawer";
+import { Plug } from "lucide-react";
 
 /**
  * Aviso sobre la delegación de autenticación.
@@ -33,16 +34,16 @@ function AuthBrokerNotice({
     return (
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
         La autenticación con proveedores aún no está delegada en el{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>; las columnas
-        &quot;Credencial&quot; y &quot;Token&quot; aparecerán vacías.
+        <span className="font-mono">atlas-auth-broker-worker</span>; las
+        columnas &quot;Credencial&quot; y &quot;Token&quot; aparecerán vacías.
       </div>
     );
   }
   if (!reachable) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-        El broker de autenticación no responde. Las llamadas a proveedores que exijan credencial
-        fallarán mientras dure la incidencia.
+        El broker de autenticación no responde. Las llamadas a proveedores que
+        exijan credencial fallarán mientras dure la incidencia.
       </div>
     );
   }
@@ -81,6 +82,7 @@ export function ProvidersOverviewPage() {
   return (
     <>
       <PageHeader
+        icon={Plug}
         eyebrow="Proveedores externos"
         title="Proveedores externos"
         description="Catálogo de proveedores de datos externos (KYC, buró de crédito, telco, pagos, redes) con su salud en vivo, modo runtime y políticas de costo."
@@ -100,10 +102,10 @@ export function ProvidersOverviewPage() {
         políticas de costo y una prueba real contra el proveedor. Reconfigurar
         runtime y editar costos está restringido a{" "}
         <span className="font-mono">admin</span>/
-        <span className="font-mono">platform_admin</span> en el backend. Las columnas
-        &quot;Credencial&quot; y &quot;Token&quot; vienen del{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>: describen nuestra
-        autenticación ante el proveedor, no la salud del proveedor.
+        <span className="font-mono">platform_admin</span> en el backend. Las
+        columnas &quot;Credencial&quot; y &quot;Token&quot; vienen del{" "}
+        <span className="font-mono">atlas-auth-broker-worker</span>: describen
+        nuestra autenticación ante el proveedor, no la salud del proveedor.
       </BusinessContextNote>
       <AuthBrokerNotice
         configured={authBroker.data?.configured}

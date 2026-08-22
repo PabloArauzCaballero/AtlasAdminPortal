@@ -16,6 +16,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildRuleColumns } from "./rule-columns";
 import { useDataQualityRules } from "./hooks";
+import { ShieldCheck } from "lucide-react";
 
 export function DataQualityRulesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -48,6 +49,7 @@ function AuthorizedDataQualityRulesPage() {
   return (
     <>
       <PageHeader
+        icon={ShieldCheck}
         eyebrow="Reglas de calidad"
         title="Reglas de calidad"
         description="Catálogo real de reglas de calidad, severidad, dueño, estado y última ejecución."

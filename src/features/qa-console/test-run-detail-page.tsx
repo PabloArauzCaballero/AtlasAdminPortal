@@ -18,6 +18,7 @@ import {
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { FlaskConical } from "lucide-react";
 
 export function TestRunDetailPage(props: Readonly<{ runId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -96,6 +97,7 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
       {run.data ? (
         <>
           <PageHeader
+            icon={FlaskConical}
             eyebrow={`Run #${run.data.run.runId}`}
             title={`Ejecución QA ${run.data.run.status}`}
             description={`Ambiente: ${run.data.run.environment}`}

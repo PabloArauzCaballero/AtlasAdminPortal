@@ -125,9 +125,9 @@ describe("las grafías del backend no dejan filas sin estado", () => {
   });
 
   it("una fecha ilegible se ignora en vez de tumbar la lectura", () => {
-    expect(estadoEfectivo({ status: "ACTIVE", effectiveUntil: "ayer" }, HOY)).toBe(
-      "ACTIVA",
-    );
+    expect(
+      estadoEfectivo({ status: "ACTIVE", effectiveUntil: "ayer" }, HOY),
+    ).toBe("ACTIVA");
   });
 });
 
@@ -144,9 +144,9 @@ describe("cada estado se puede pintar y explicar", () => {
 
   it("sólo UNO de los cinco cuenta como vigente", () => {
     // Es lo que impide que un informe sume como aplicables las suspendidas.
-    expect(ESTADOS_EN_ORDEN.filter((e) => e.vigente).map((e) => e.code)).toEqual([
-      "ACTIVA",
-    ]);
+    expect(
+      ESTADOS_EN_ORDEN.filter((e) => e.vigente).map((e) => e.code),
+    ).toEqual(["ACTIVA"]);
   });
 
   it("estaVigente responde la pregunta operativa directamente", () => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -11,15 +12,16 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
 import { useDataExport } from "./hooks";
 import { ExportDownloadAction } from "./export-download-action";
+import { Download } from "lucide-react";
 
 export function ExportDetailPage(props: Readonly<{ exportId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
   // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
   return (
-    <PermissionGate permissions={["internal.exports.read"]}>
+    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST}>
       <AuthorizedExportDetailPage {...props} />
-    </PermissionGate>
+    </RoleGate>
   );
 }
 
@@ -49,6 +51,7 @@ function AuthorizedExportDetailPage({
       {exportQuery.data ? (
         <div className="space-y-6">
           <PageHeader
+            icon={Download}
             eyebrow="Exportación"
             title={exportQuery.data.name}
             description="Detalle de política aplicada, filtros, vencimiento y auditoría de la exportación."

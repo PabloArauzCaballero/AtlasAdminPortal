@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { SectionHeader } from "@/shared/components/layout/page-header";
@@ -28,11 +28,16 @@ import type {
 export function RuntimeJobCard({
   definition,
 }: Readonly<{ definition: RuntimeJobDefinition }>) {
-  const mutation = useRunRuntimeJobMutation(definition.code);
+  const mutation = useRunRuntimeJobMutation(definition);
   const [lastRun, setLastRun] = useState<RuntimeJobRun | null>(null);
   const [pendingBody, setPendingBody] = useState<RuntimeJobBody | null>(null);
   const dryRunId = useId();
   const listId = useId();
+
+  // El esquema se construye PARA ESTE job: los rangos que acepta el backend
+  // cambian de uno a otro (500 mensajes de outbox, 10 000 claves de
+  // idempotencia, 2 000 flujos de onboarding).
+  const schema = useMemo(() => runtimeJobFormSchema(definition), [definition]);
 
   const {
     register,
@@ -40,11 +45,15 @@ export function RuntimeJobCard({
     watch,
     formState: { errors },
   } = useForm<RuntimeJobForm>({
-    resolver: zodResolver(runtimeJobFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: emptyRuntimeJobForm,
   });
 
-  const dryRun = watch("dryRun");
+  // Hay un job cuyo backend no admite ensayo: ofrecer la casilla sería prometer
+  // algo que no ocurre, así que se oculta y la ejecución pasa siempre por
+  // confirmación.
+  const supportsDryRun = definition.supportsDryRun !== false;
+  const dryRun = supportsDryRun && watch("dryRun");
 
   function run(body: RuntimeJobBody) {
     mutation.mutate(body, {
@@ -59,7 +68,7 @@ export function RuntimeJobCard({
   // pasa por confirmación: estos jobs borran, anonimizan y expiran sesiones.
   const onSubmit = handleSubmit((values) => {
     const body = buildRuntimeJobBody(definition, values);
-    if (body.dryRun) {
+    if (body.dryRun === true) {
       run(body);
       return;
     }
@@ -101,24 +110,30 @@ export function RuntimeJobCard({
             </Field>
           ))}
 
-          <label
-            htmlFor={dryRunId}
-            className="flex items-start gap-2 rounded-lg border border-atlas-border p-3 text-sm"
-          >
-            <input
-              id={dryRunId}
-              type="checkbox"
-              className="mt-0.5"
-              {...register("dryRun")}
-            />
-            <span>
-              <strong>Solo ensayo (dry-run)</strong>
-              <span className="block text-xs text-atlas-muted">
-                Calcula y reporta lo que haría, sin escribir nada. Desmarcar
-                ejecuta de verdad.
+          {supportsDryRun ? (
+            <label
+              htmlFor={dryRunId}
+              className="flex items-start gap-2 rounded-lg border border-atlas-border p-3 text-sm"
+            >
+              <input
+                id={dryRunId}
+                type="checkbox"
+                className="mt-0.5"
+                {...register("dryRun")}
+              />
+              <span>
+                <strong>Solo ensayo (dry-run)</strong>
+                <span className="block text-xs text-atlas-muted">
+                  Calcula y reporta lo que haría, sin escribir nada. Desmarcar
+                  ejecuta de verdad.
+                </span>
               </span>
-            </span>
-          </label>
+            </label>
+          ) : (
+            <p className="rounded-lg border border-atlas-border p-3 text-xs text-atlas-muted">
+              Este job no admite ensayo: se ejecuta de verdad o no se ejecuta.
+            </p>
+          )}
 
           {mutation.error ? (
             <ErrorState

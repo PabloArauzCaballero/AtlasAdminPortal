@@ -12,6 +12,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { EntityMetadataForm } from "./forms/entity-metadata-form";
+import { Tags } from "lucide-react";
 
 export function DataEntityMetadataPage(props: Readonly<{ entityId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -39,6 +40,7 @@ function AuthorizedDataEntityMetadataPage({
   return (
     <>
       <PageHeader
+        icon={Tags}
         eyebrow="Formulario de catálogo"
         title="Configurar tabla"
         description="Define metadata de negocio y reglas operativas para que el servicio interno las aplique desde backend."

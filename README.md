@@ -367,3 +367,15 @@ npm run clean && npm run validate && npm run build && npm audit --audit-level=hi
 ```
 
 Después de Fase 11, lo correcto es probar contra backend real levantado y crear pruebas E2E. No conviene seguir agregando pantallas sin contratos y datos reales.
+
+## Emulador de proveedores externos
+
+La carpeta `mock-server/` que vivía aquí se movió el 19-ago-2026 a su propio repositorio,
+[`AtlasExternalProvidersMock`](https://github.com/PabloArauzCaballero/AtlasExternalProvidersMock).
+
+Nunca dependió de este portal ni de `AtlasBackend`, y el resto del ecosistema ya lo trataba como
+repositorio independiente: el backend lo cita por rutas de ese repo y el hub de documentación lo
+declaraba en su lista, donde aparecía como «no encontrado» en cada importación.
+
+No confundir con `tests/helpers/mock-server.ts`, que sigue aquí: ese es el servidor de pruebas de
+este portal y no tiene relación con el emulador de proveedores.

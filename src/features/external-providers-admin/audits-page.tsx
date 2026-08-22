@@ -5,6 +5,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { QualityAuditTab, ReadinessTab } from "./audit-tabs-simple";
+import { ScrollText } from "lucide-react";
 import {
   ProductionGateTab,
   SlaReportTab,
@@ -33,6 +34,7 @@ export function AuditsPage() {
   return (
     <>
       <PageHeader
+        icon={ScrollText}
         eyebrow="Proveedores externos"
         title="Auditorías y diagnóstico"
         description="Reportes de solo lectura del backend sobre calidad de configuración, gate de producción, SLA, uso/costo, idempotencia, retención y sanitización de datos de proveedores externos."

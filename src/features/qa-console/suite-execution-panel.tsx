@@ -1,19 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Play, RefreshCw } from "lucide-react";
 import { useRunTestSuiteMutation, useTestRun } from "@/features/systems/hooks";
 import type { TestSuite } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
+import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
-import { ErrorState } from "@/shared/components/ui/states";
+import { JsonViewer } from "@/shared/components/ui/json-viewer";
+import { StatusBadge } from "@/shared/components/ui/badges";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { ErrorHelpCard } from "@/features/qa-tutorials/error-help-card";
-import { classifyHttpStatus } from "@/features/qa-tutorials/error-catalog";
-import { LiveRunStatus, SubmittedRun } from "./suite-run-status";
 import {
   DEFAULT_HEADERS,
   DEFAULT_LOCAL_BASE_URL,
@@ -97,14 +99,9 @@ export function SuiteExecutionPanel({
     );
   }
 
-  const errorHelpCode =
-    isAtlasApiError(runMutation.error) && runMutation.error.status
-      ? classifyHttpStatus(runMutation.error.status)
-      : undefined;
-
   return (
     <Card>
-      <CardContent className="space-y-5" data-tutorial-id="qa-suite-execution">
+      <CardContent className="space-y-5">
         <div className="grid gap-4 xl:grid-cols-2">
           <Field label="Ambiente">
             <Select
@@ -193,26 +190,10 @@ export function SuiteExecutionPanel({
             }
           />
         ) : null}
-        {errorHelpCode ? (
-          <ErrorHelpCard
-            code={errorHelpCode}
-            technicalDetail={
-              isAtlasApiError(runMutation.error)
-                ? runMutation.error.message
-                : undefined
-            }
-            supportId={
-              isAtlasApiError(runMutation.error)
-                ? runMutation.error.requestId
-                : undefined
-            }
-          />
-        ) : null}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="primary"
-            data-tutorial-id="qa-suite-run-button"
             disabled={!canSubmit}
             isLoading={runMutation.isPending}
             onClick={openConfirm}
@@ -248,5 +229,57 @@ export function SuiteExecutionPanel({
         />
       </CardContent>
     </Card>
+  );
+}
+
+function SubmittedRun({
+  result,
+}: Readonly<{ result: { runId?: string; status?: string } & object }>) {
+  return (
+    <div className="rounded-xl border border-atlas-border bg-atlas-soft p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge value={result.status ?? "SUBMITTED"} />
+        {result.runId ? (
+          <Link
+            className="text-sm font-medium text-atlas-accent underline"
+            href={`/internal/qa/runs/${result.runId}`}
+          >
+            Ver ejecucion #{result.runId}
+          </Link>
+        ) : null}
+      </div>
+      <div className="mt-3">
+        <JsonViewer title="Respuesta del backend" value={result} />
+      </div>
+    </div>
+  );
+}
+
+function LiveRunStatus({
+  run,
+}: Readonly<{ run: ReturnType<typeof useTestRun> }>) {
+  if (run.isLoading) return <LoadingSkeleton rows={2} />;
+  if (!run.data) return null;
+  return (
+    <div className="space-y-3 rounded-xl border border-atlas-border bg-white p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-semibold text-atlas-text">
+          Estado actual
+        </span>
+        <StatusBadge value={run.data.run.status} />
+      </div>
+      <KeyValueGrid
+        items={[
+          { label: "Run", value: `#${run.data.run.runId}`, mono: true },
+          { label: "Ambiente", value: run.data.run.environment },
+          {
+            label: "Duracion",
+            value: `${formatNumber(run.data.run.durationMs)} ms`,
+          },
+          { label: "Inicio", value: formatDateTime(run.data.run.startedAt) },
+          { label: "Fin", value: formatDateTime(run.data.run.finishedAt) },
+        ]}
+      />
+    </div>
   );
 }

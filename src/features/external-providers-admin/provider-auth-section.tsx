@@ -4,7 +4,7 @@ import { useState } from "react";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
@@ -13,23 +13,14 @@ import {
   useInvalidateTokenMutation,
   useProviderAuthStates,
   useRevokeCredentialMutation,
-  useRotateCredentialMutation,
 } from "./hooks";
 import {
   AuthMethodBadge,
   CredentialStatusBadge,
   TokenStatusBadge,
 } from "./provider-auth-badges";
-import type { CredentialField, ProviderAuthState } from "./types";
-
-/** Campos rotables por método. Ofrecer los que el proveedor no usa solo induce errores. */
-const FIELDS_BY_METHOD: Record<string, CredentialField[]> = {
-  oauth2_client_credentials: ["CLIENT_ID", "CLIENT_SECRET"],
-  jwt_bearer: ["CLIENT_ID", "PRIVATE_KEY"],
-  mtls: ["PRIVATE_KEY"],
-  api_key: ["API_KEY"],
-  none: [],
-};
+import { RotationForm } from "./provider-auth-rotation-form";
+import type { ProviderAuthState } from "./types";
 
 /**
  * `KeyValueGrid` normaliza cualquier valor a texto (`safeText`), así que los badges van en una
@@ -55,15 +46,25 @@ function AuthStateGrid({ state }: Readonly<{ state: ProviderAuthState }>) {
           },
           { label: "Alcances", value: state.scopes.join(", ") || "—" },
           { label: "Antigüedad (días)", value: state.credentialAgeDays ?? "—" },
-          { label: "Alta de la credencial", value: formatDateTime(state.issuedAt) },
+          {
+            label: "Alta de la credencial",
+            value: formatDateTime(state.issuedAt),
+          },
           { label: "Última rotación", value: formatDateTime(state.rotatedAt) },
           {
             label: "Rotación exigida el",
             value: formatDateTime(state.rotationDueAt),
-            tone: state.credentialStatus === "ROTATION_DUE" ? "warning" : "default",
+            tone:
+              state.credentialStatus === "ROTATION_DUE" ? "warning" : "default",
           },
-          { label: "Token expira", value: formatDateTime(state.tokenExpiresAt) },
-          { label: "Última renovación", value: formatDateTime(state.lastRefreshAt) },
+          {
+            label: "Token expira",
+            value: formatDateTime(state.tokenExpiresAt),
+          },
+          {
+            label: "Última renovación",
+            value: formatDateTime(state.lastRefreshAt),
+          },
           {
             label: "Último fallo",
             value: state.lastFailureCode ?? "—",
@@ -79,115 +80,6 @@ function AuthStateGrid({ state }: Readonly<{ state: ProviderAuthState }>) {
   );
 }
 
-function RotationForm({
-  state,
-}: Readonly<{ state: ProviderAuthState }>) {
-  const fields = FIELDS_BY_METHOD[state.authMethod] ?? [];
-  const [field, setField] = useState<CredentialField>(fields[0] ?? "CLIENT_SECRET");
-  const [material, setMaterial] = useState("");
-  const [reason, setReason] = useState("");
-  const [confirming, setConfirming] = useState(false);
-
-  const rotate = useRotateCredentialMutation(state.providerCode);
-
-  if (fields.length === 0) {
-    return (
-      <p className="text-sm text-atlas-muted">
-        Este proveedor no requiere credencial, así que no hay nada que rotar.
-      </p>
-    );
-  }
-
-  const canSubmit = material.trim().length >= 8 && reason.trim().length >= 3;
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Campo a rotar">
-          <Select
-            value={field}
-            onChange={(event) =>
-              setField(event.target.value as CredentialField)
-            }
-          >
-            {fields.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Motivo">
-          <Input
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            placeholder="Rotación programada, sospecha de compromiso…"
-          />
-        </Field>
-      </div>
-      <Field label="Material nuevo">
-        <Input
-          type="password"
-          autoComplete="off"
-          value={material}
-          onChange={(event) => setMaterial(event.target.value)}
-          placeholder="Se envía al broker, que lo sella. No se guarda en el backend."
-        />
-      </Field>
-      <p className="text-xs text-atlas-muted">
-        El material viaja al <span className="font-mono">atlas-auth-broker-worker</span>, que lo
-        cifra y descarta el token cacheado del proveedor. El backend no lo persiste y la respuesta
-        solo devuelve su huella: no podrá volver a consultarse desde aquí.
-      </p>
-      {rotate.error ? (
-        <ErrorState
-          title="No se pudo rotar la credencial"
-          description={
-            isAtlasApiError(rotate.error)
-              ? rotate.error.message
-              : "Error inesperado."
-          }
-          requestId={
-            isAtlasApiError(rotate.error) ? rotate.error.requestId : undefined
-          }
-        />
-      ) : null}
-      {rotate.isSuccess ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          Credencial rotada el {formatDateTime(rotate.data.rotatedAt)}. Huella activa:{" "}
-          <span className="font-mono">{rotate.data.fingerprint}</span>
-        </div>
-      ) : null}
-      <Button
-        variant="primary"
-        disabled={!canSubmit}
-        onClick={() => setConfirming(true)}
-      >
-        Rotar credencial
-      </Button>
-      <ConfirmDialog
-        open={confirming}
-        title={`Rotar ${field} de ${state.providerCode}`}
-        description="El proveedor pasará a autenticarse con el material nuevo de inmediato: el token vigente se descarta. Si el material es incorrecto, las llamadas a este proveedor fallarán hasta corregirlo."
-        confirmText="Rotar ahora"
-        isLoading={rotate.isPending}
-        onCancel={() => setConfirming(false)}
-        onConfirm={() =>
-          rotate.mutate(
-            { field, material, reason: reason.trim() },
-            {
-              onSettled: () => {
-                setConfirming(false);
-                setMaterial("");
-              },
-            },
-          )
-        }
-      />
-    </div>
-  );
-}
-
 function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
   const [confirmingRevoke, setConfirmingRevoke] = useState(false);
   const [reason, setReason] = useState("");
@@ -196,9 +88,14 @@ function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
 
   return (
     <div className="space-y-3 rounded-lg border border-red-200 bg-red-50/40 p-3">
-      <p className="text-sm font-semibold text-red-800">Acciones de contención</p>
+      <p className="text-sm font-semibold text-red-800">
+        Acciones de contención
+      </p>
       <Field label="Motivo">
-        <Input value={reason} onChange={(event) => setReason(event.target.value)} />
+        <Input
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+        />
       </Field>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -223,15 +120,17 @@ function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
       ) : null}
       {revoke.isSuccess ? (
         <p className="text-sm text-red-800">
-          Credencial revocada el {formatDateTime(revoke.data.revokedAt)}. El broker rechazará toda
-          llamada a este proveedor hasta que se rote.
+          Credencial revocada el {formatDateTime(revoke.data.revokedAt)}. El
+          broker rechazará toda llamada a este proveedor hasta que se rote.
         </p>
       ) : null}
       {revoke.error ? (
         <ErrorState
           title="No se pudo revocar"
           description={
-            isAtlasApiError(revoke.error) ? revoke.error.message : "Error inesperado."
+            isAtlasApiError(revoke.error)
+              ? revoke.error.message
+              : "Error inesperado."
           }
         />
       ) : null}
@@ -268,8 +167,8 @@ export function ProviderAuthSection({
         Este backend todavía no delega la autenticación de proveedores en el{" "}
         <span className="font-mono">atlas-auth-broker-worker</span>. Configure{" "}
         <span className="font-mono">AUTH_BROKER_BASE_URL</span> y{" "}
-        <span className="font-mono">AUTH_BROKER_SERVICE_TOKEN</span> para ver aquí el estado de las
-        credenciales.
+        <span className="font-mono">AUTH_BROKER_SERVICE_TOKEN</span> para ver
+        aquí el estado de las credenciales.
       </div>
     );
   }
@@ -319,7 +218,9 @@ export function ProviderAuthSection({
     <div className="space-y-5">
       <AuthStateGrid state={state} />
       <div className="border-t border-slate-200 pt-4">
-        <p className="mb-3 text-sm font-semibold text-atlas-text">Rotar credencial</p>
+        <p className="mb-3 text-sm font-semibold text-atlas-text">
+          Rotar credencial
+        </p>
         <RotationForm state={state} />
       </div>
       <DangerZone state={state} />

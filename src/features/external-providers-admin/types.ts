@@ -27,11 +27,7 @@ export type ProviderHealth = {
  * consumen los adaptadores del backend, nunca el portal.
  */
 export type ProviderAuthMethod =
-  | "oauth2_client_credentials"
-  | "jwt_bearer"
-  | "mtls"
-  | "api_key"
-  | "none";
+  "oauth2_client_credentials" | "jwt_bearer" | "mtls" | "api_key" | "none";
 
 export type CredentialStatus =
   | "ACTIVE"
@@ -42,11 +38,7 @@ export type CredentialStatus =
   | "NOT_REQUIRED";
 
 export type AccessTokenStatus =
-  | "VALID"
-  | "EXPIRING"
-  | "EXPIRED"
-  | "NONE"
-  | "REFRESH_FAILED";
+  "VALID" | "EXPIRING" | "EXPIRED" | "NONE" | "REFRESH_FAILED";
 
 export type ProviderAuthState = {
   providerCode: string;
@@ -77,10 +69,7 @@ export type AuthBrokerAvailability = {
 };
 
 export type CredentialField =
-  | "CLIENT_ID"
-  | "CLIENT_SECRET"
-  | "API_KEY"
-  | "PRIVATE_KEY";
+  "CLIENT_ID" | "CLIENT_SECRET" | "API_KEY" | "PRIVATE_KEY";
 
 export type RotateCredentialInput = {
   field: CredentialField;

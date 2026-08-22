@@ -2,7 +2,11 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { runRuntimeJob } from "./services";
-import type { RuntimeJobBody, RuntimeJobCode } from "./types";
+import type {
+  RuntimeJobBody,
+  RuntimeJobCode,
+  RuntimeJobDefinition,
+} from "./types";
 
 /**
  * Qué queda stale cuando cada job corre **en real**.
@@ -21,20 +25,29 @@ const AFFECTED_QUERY_ROOTS: Record<RuntimeJobCode, readonly string[][]> = {
     ["operations", "data-quality"],
     ["internal", "data-quality"],
   ],
+  "retry-stuck-notifications": [["notifications"]],
+  "deliver-pending-notifications": [["notifications"]],
+  "reclaim-stuck-events": [["notifications"], ["operations"]],
+  "purge-idempotency-keys": [["internal", "jobs"]],
+  "purge-processed-outbox": [["internal", "jobs"]],
+  // El cierre de flujos abandonados cambia el estado del onboarding de un
+  // cliente, que es lo que miran las bandejas de operaciones.
+  "mark-abandoned-onboardings": [["operations"], ["customers"]],
 };
 
-export function useRunRuntimeJobMutation(code: RuntimeJobCode) {
+export function useRunRuntimeJobMutation(definition: RuntimeJobDefinition) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: RuntimeJobBody) => runRuntimeJob(code, body),
+    mutationFn: (body: RuntimeJobBody) => runRuntimeJob(definition, body),
     onSuccess: async (_result, body) => {
       // El backend registra una fila de job run incluso en dry-run, así que la
       // bandeja de ejecuciones queda stale en ambos casos.
       await queryClient.invalidateQueries({ queryKey: ["internal", "jobs"] });
+      // Un job sin `dryRun` siempre ejecuta de verdad: no hay ensayo que saltar.
       if (body.dryRun) return;
 
       await Promise.all(
-        AFFECTED_QUERY_ROOTS[code].map((queryKey) =>
+        AFFECTED_QUERY_ROOTS[definition.code].map((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         ),
       );

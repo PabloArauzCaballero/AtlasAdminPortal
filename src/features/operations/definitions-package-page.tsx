@@ -12,6 +12,7 @@ import {
 } from "./definitions-package-schema";
 import { useUpsertDefinitionsPackageMutation } from "./hooks";
 import { PackageEditor } from "./package-editor";
+import { Package } from "lucide-react";
 
 /**
  * Publicación del paquete de definiciones semánticas.
@@ -27,6 +28,7 @@ export function DefinitionsPackagePage() {
   return (
     <PermissionGate permissions={["businessMetadata.read"]}>
       <PageHeader
+        icon={Package}
         eyebrow="Definiciones"
         title="Publicar paquete de definiciones"
         description="Conectado a `/operations/definitions/package`. Crea o actualiza en lote eventos, observaciones, atributos y features de un dominio."

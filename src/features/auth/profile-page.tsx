@@ -10,6 +10,8 @@ import {
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
+import { PasswordChangeCard } from "./password-change-card";
+import { UserCircle } from "lucide-react";
 
 export function ProfilePage() {
   const { user, roles, permissions } = useAuth();
@@ -17,6 +19,7 @@ export function ProfilePage() {
   return (
     <PermissionGate permissions={[]}>
       <PageHeader
+        icon={UserCircle}
         title="Perfil interno"
         description="Sesión, roles y permisos efectivos recibidos desde `/internal/auth/me`."
       />
@@ -41,6 +44,7 @@ export function ProfilePage() {
               },
             ]}
           />
+          <PasswordChangeCard />
           <Card>
             <CardContent>
               <SectionHeader title="Roles" />{" "}

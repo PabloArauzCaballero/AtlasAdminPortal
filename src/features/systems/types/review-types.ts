@@ -80,12 +80,7 @@ export type FilterOptionSource = "SCHEMA" | "DATA";
 
 /** Qué control necesita un filtro. Lo decide el backend, no la pantalla. */
 export type FilterControl =
-  | "select"
-  | "combobox"
-  | "boolean"
-  | "date-range"
-  | "text"
-  | "number";
+  "select" | "combobox" | "boolean" | "date-range" | "text" | "number";
 
 export type ActionLogFilterField = {
   name: string;

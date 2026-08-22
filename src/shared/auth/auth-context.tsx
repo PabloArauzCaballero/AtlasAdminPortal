@@ -16,8 +16,19 @@ import {
 } from "./session-storage";
 import { subscribeToSessionChanges } from "./session-events";
 import { normalizeInternalSession } from "./auth-normalizers";
-import { getInternalMe, loginInternal, logoutInternal } from "./auth-service";
-import type { InternalSession, InternalUser, LoginInput } from "./types";
+import {
+  getInternalMe,
+  loginInternal,
+  logoutInternal,
+  verifyLoginPinInternal,
+} from "./auth-service";
+import type {
+  InternalSession,
+  InternalUser,
+  LoginInput,
+  LoginOutcome,
+} from "./types";
+import { isPinChallenge } from "./types";
 
 type AuthContextValue = {
   session: InternalSession | null;
@@ -26,7 +37,12 @@ type AuthContextValue = {
   roles: string[];
   isHydrated: boolean;
   isRefreshingProfile: boolean;
-  login: (input: LoginInput) => Promise<void>;
+  /**
+   * Devuelve el desenlace en vez de `void`: con segundo factor obligatorio, "el login terminó" y
+   * "hay sesión" dejaron de ser lo mismo, y la pantalla necesita distinguirlos para pedir el PIN.
+   */
+  login: (input: LoginInput) => Promise<LoginOutcome>;
+  verifyLoginPin: (challengeToken: string, pin: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<InternalSession | null>;
   restoreSessionFromServer: () => Promise<InternalSession | null>;
@@ -61,7 +77,18 @@ export function AuthProvider({
 
   const login = useCallback(
     async (input: LoginInput) => {
-      setAndStoreSession(await loginInternal(input));
+      const outcome = await loginInternal(input);
+      // Sólo se guarda sesión cuando hay sesión. Guardar el desafío dejaría al portal creyéndose
+      // autenticado con un usuario vacío, que es peor que no entrar.
+      if (!isPinChallenge(outcome)) setAndStoreSession(outcome);
+      return outcome;
+    },
+    [setAndStoreSession],
+  );
+
+  const verifyLoginPin = useCallback(
+    async (challengeToken: string, pin: string) => {
+      setAndStoreSession(await verifyLoginPinInternal(challengeToken, pin));
     },
     [setAndStoreSession],
   );
@@ -85,9 +112,19 @@ export function AuthProvider({
       setAndStoreSession(nextSession);
       return nextSession;
     } catch (error) {
-      clearStoredInternalSession();
-      setSession(null);
+      /*
+       * La sesión se borra SOLO ante un veredicto de autorización.
+       *
+       * Antes se borraba ante cualquier fallo y luego se relanzaba el error. Un 429 del limitador
+       * —cien peticiones por minuto y por IP, y el portal pide `/internal/auth/me` en CADA
+       * navegación— o un 500 pasajero deslogueaba al operador de verdad, sin haber dejado de estar
+       * autorizado; y como el `.then()` del shell nunca corría sobre una promesa rechazada, tampoco
+       * llegaba a la pantalla de login: se quedaba en el cargador a pantalla completa, para
+       * siempre. Un fallo transitorio no es una respuesta sobre quién eres.
+       */
       if (isAtlasApiError(error) && [401, 403].includes(error.status)) {
+        clearStoredInternalSession();
+        setSession(null);
         return null;
       }
       throw error;
@@ -123,6 +160,16 @@ export function AuthProvider({
   const value = useMemo<AuthContextValue>(() => {
     const permissions = session?.user.permissions ?? [];
     const roles = session?.user.roles ?? [];
+    /**
+     * El backend habla DOS vocabularios de rol y autoriza con los dos.
+     *
+     * `roles` son los códigos RBAC (`SUPER_ADMIN`, `SYSTEMS_ADMIN`…) y `legacyRoles` el rol del
+     * token (`admin`, `platform_admin`…), que es justo el que miran los `@Roles()` de
+     * `InternalPortalController` y `RuntimeJobsController`. Comparando solo contra `roles`, un
+     * `RoleGate(["admin"])` no acertaba NUNCA —ni siquiera para un superadministrador— y la
+     * pantalla mostraba "Acceso restringido" sobre un endpoint que le habría contestado 200.
+     */
+    const allRoles = [...roles, ...(session?.user.legacyRoles ?? [])];
 
     return {
       session,
@@ -132,6 +179,7 @@ export function AuthProvider({
       isHydrated,
       isRefreshingProfile,
       login,
+      verifyLoginPin,
       logout,
       refreshProfile,
       restoreSessionFromServer,
@@ -140,13 +188,15 @@ export function AuthProvider({
         required.length === 0 ||
         required.some((permission) => permissions.includes(permission)),
       hasAnyRole: (required: string[]) =>
-        required.length === 0 || required.some((role) => roles.includes(role)),
+        required.length === 0 ||
+        required.some((role) => allRoles.includes(role)),
     };
   }, [
     session,
     isHydrated,
     isRefreshingProfile,
     login,
+    verifyLoginPin,
     logout,
     refreshProfile,
     restoreSessionFromServer,
