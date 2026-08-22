@@ -19,42 +19,50 @@ export function PageHeader({
   actions?: React.ReactNode;
 }>) {
   return (
-    <header className="relative mb-6 animate-fade-in overflow-hidden rounded-2xl border border-atlas-border bg-white shadow-card">
-      <div className="pointer-events-none absolute inset-0 bg-atlas-radial" />
-      {/* Filo superior de acento: da profundidad a la tarjeta sin añadir una línea de texto más. */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-atlas-accent via-teal-400 to-transparent" />
-      <div className="relative border-b border-atlas-border bg-gradient-to-br from-white via-slate-50 to-slate-100 px-5 py-5 md:px-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-w-0 gap-4">
-            {Icon ? (
-              <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-glow sm:flex">
-                <Icon className="h-6 w-6" aria-hidden />
-              </span>
-            ) : null}
-            <div className="min-w-0">
-              {eyebrow ? (
-                <p className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-atlas-accent">
-                  <span className="h-1.5 w-1.5 rounded-full bg-atlas-accent" />
-                  {eyebrow}
-                </p>
-              ) : null}
-              <h1 className="text-pretty break-words text-xl font-bold leading-tight tracking-tight text-atlas-text sm:text-2xl md:text-3xl">
-                {title}
-              </h1>
-              {description ? (
-                <p className="mt-2 max-w-4xl text-sm leading-6 text-atlas-muted">
-                  {description}
-                </p>
-              ) : null}
-            </div>
-          </div>
-          {actions ? (
-            <div className="atlas-rail flex shrink-0 items-center gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-sm backdrop-blur sm:flex-wrap sm:overflow-visible">
-              {actions}
-            </div>
+    /*
+     * La cabecera va SOBRE el lienzo, no dentro de una tarjeta.
+     *
+     * Era una tarjeta con filo de acento, degradado blanco→gris, radial de marca y una loseta
+     * negra con halo para el icono: cinco adornos compitiendo por delante del título, en todas
+     * las vistas del portal. En un sistema donde el color es señal, un bloque casi negro del
+     * tamaño de un pulgar es lo más llamativo de la pantalla y no significa nada.
+     *
+     * La composición es ahora la misma que la del ERP (`WorkspaceHeader`): eyebrow tenue, título
+     * en el verde de ATLAS y descripción sobre el fondo. Las dos aplicaciones abren la pantalla
+     * igual, que es lo que hace que se lean como un solo producto.
+     */
+    <header className="mb-6 flex animate-fade-in flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+      <div className="flex min-w-0 items-start gap-3">
+        {Icon ? (
+          <span className="mt-0.5 hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-atlas-accentSoft text-atlas-accent sm:flex">
+            <Icon className="h-5 w-5" aria-hidden />
+          </span>
+        ) : null}
+        <div className="min-w-0">
+          {eyebrow ? (
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-atlas-muted">
+              {eyebrow}
+            </p>
+          ) : null}
+          {/* El título se recompone en móvil en vez de encogerse: a 30 px sobre 360 px de ancho
+              parte en tres líneas y empuja el contenido fuera de la primera pantalla. */}
+          <h1 className="text-pretty break-words text-xl font-bold leading-tight tracking-tight text-atlas-accent sm:text-2xl md:text-[30px] md:leading-[38px]">
+            {title}
+          </h1>
+          {description ? (
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-atlas-muted">
+              {description}
+            </p>
           ) : null}
         </div>
       </div>
+      {/* Carril arrastrable en móvil: tres botones de cabecera se envolvían en tres líneas que
+          empujaban el contenido fuera de la primera pantalla. */}
+      {actions ? (
+        <div className="atlas-rail -mx-3 flex shrink-0 items-center gap-2 overflow-x-auto px-3 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          {actions}
+        </div>
+      ) : null}
     </header>
   );
 }

@@ -25,17 +25,28 @@ export function ViewExplainer() {
   if (!resolved) return null;
 
   return (
-    <section className="mb-4 animate-fade-in overflow-hidden rounded-xl border border-atlas-border bg-white shadow-sm">
+    /*
+     * Plegado no es una tarjeta: es una leyenda.
+     *
+     * Esta franja sale en las noventa vistas del portal, y justo debajo aparece a menudo la nota
+     * de la vista. Dos tarjetas blancas apiladas por delante del contenido convertían la primera
+     * pantalla en un índice de ayudas. Cerrada se lee como pie de foto; abierta sí se levanta
+     * como superficie, que es cuando tiene algo que enseñar.
+     */
+    <section
+      data-abierta={open}
+      className="mb-3 animate-fade-in overflow-hidden rounded-xl border border-transparent transition-colors data-[abierta=true]:border-atlas-border data-[abierta=true]:bg-white data-[abierta=true]:shadow-sm"
+    >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-atlas-soft"
+        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-atlas-soft"
       >
-        <span className="flex min-w-0 items-center gap-2 text-sm text-atlas-muted">
+        <span className="flex min-w-0 items-center gap-2 text-xs text-atlas-muted">
           <BookOpenText className="h-4 w-4 shrink-0 text-atlas-accent" />
           <span className="truncate">
-            <span className="font-semibold text-atlas-text">
+            <span className="font-semibold text-atlas-muted">
               {resolved.module.module}
             </span>{" "}
             — qué es este módulo y esta vista (negocio y sistemas)
@@ -102,7 +113,7 @@ function ExplanationBlock({
       <p
         className={cn(
           "flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide",
-          tone === "business" ? "text-amber-800" : "text-sky-800",
+          tone === "business" ? "text-amber-800" : "text-atlas-accent",
         )}
       >
         <Icon className="h-3.5 w-3.5" />

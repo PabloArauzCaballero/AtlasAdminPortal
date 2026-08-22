@@ -103,7 +103,9 @@ export function StressLatencyChart({
             cx={x(point.second, maxSecond)}
             cy={y(point.p95LatencyMs, maxLatency)}
             r={hoverSecond === point.second ? 4.5 : 3}
-            className={point.errorCount > 0 ? "fill-red-600" : "fill-blue-700"}
+            className={
+              point.errorCount > 0 ? "fill-red-600" : "fill-atlas-accent"
+            }
           />
         ))}
         {safePoints.map((point) => (
