@@ -124,7 +124,7 @@ export function LoginPage() {
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-slate-400">
+        <p className="relative text-xs text-slate-300">
           © {new Date().getFullYear()} ATLAS · Uso interno
         </p>
       </section>

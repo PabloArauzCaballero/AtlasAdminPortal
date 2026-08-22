@@ -150,7 +150,7 @@ function CatalogCount({
   return (
     <Link
       href={href}
-      className="rounded-lg border border-atlas-border bg-atlas-soft p-2 transition-colors hover:border-blue-300 hover:bg-blue-50"
+      className="rounded-lg border border-atlas-border bg-atlas-soft p-2 transition-colors hover:border-atlas-accent/40 hover:bg-atlas-accentWash"
     >
       <p className="text-xs text-atlas-muted">{label}</p>
       <p

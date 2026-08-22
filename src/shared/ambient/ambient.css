@@ -41,16 +41,16 @@
 }
 
 /* Estados reales de la plataforma: el color cambia, la geometría no. */
-.ambient-bg[data-state='running'] {
+.ambient-bg[data-state="running"] {
   --state-rgb: 21, 112, 239;
 }
-.ambient-bg[data-state='success'] {
+.ambient-bg[data-state="success"] {
   --state-rgb: 6, 118, 71;
 }
-.ambient-bg[data-state='warning'] {
+.ambient-bg[data-state="warning"] {
   --state-rgb: 181, 71, 8;
 }
-.ambient-bg[data-state='error'] {
+.ambient-bg[data-state="error"] {
   --state-rgb: 180, 35, 24;
 }
 
@@ -99,7 +99,8 @@
  */
 .ambient-spotlight {
   background: radial-gradient(
-    26vmax 26vmax at calc(var(--ambient-px) * 100%) calc(var(--ambient-py) * 100%),
+    26vmax 26vmax at calc(var(--ambient-px) * 100%)
+      calc(var(--ambient-py) * 100%),
     rgba(var(--state-rgb), 0.11),
     rgba(var(--accent-rgb), 0.05) 42%,
     transparent 68%
@@ -193,14 +194,18 @@
   border-radius: 50%;
   will-change: transform;
 }
-.ambient-aurora i[data-blob='1'] {
+.ambient-aurora i[data-blob="1"] {
   left: -14vmax;
   top: -16vmax;
   width: 74vmax;
   height: 62vmax;
-  background: radial-gradient(closest-side, rgba(var(--state-rgb), 0.3), transparent 80%);
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--state-rgb), 0.3),
+    transparent 80%
+  );
 }
-.ambient-aurora i[data-blob='2'] {
+.ambient-aurora i[data-blob="2"] {
   right: -16vmax;
   top: -12vmax;
   width: 82vmax;
@@ -208,25 +213,33 @@
   /* Era el menta luminoso escrito a mano (134, 242, 228): la mancha más grande
      de la escena, en el color más saturado de la paleta y en la esquina donde
      empieza a leerse la página. Ahora es el propio acento, y muy diluido. */
-  background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.22), transparent 82%);
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--accent-rgb), 0.22),
+    transparent 82%
+  );
 }
-.ambient-aurora i[data-blob='3'] {
+.ambient-aurora i[data-blob="3"] {
   left: 6vmax;
   bottom: -26vmax;
   width: 92vmax;
   height: 74vmax;
-  background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.24), transparent 82%);
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--accent-rgb), 0.24),
+    transparent 82%
+  );
 }
 
 /* Periodos deliberadamente sin múltiplos comunes (37 · 53 · 67 s): las tres
    curvas vuelven a coincidir cada ~36 horas, así que el bucle no se percibe. */
-.is-animated .ambient-aurora i[data-blob='1'] {
+.is-animated .ambient-aurora i[data-blob="1"] {
   animation: ambient-blob-a 37s var(--ease-standard) infinite;
 }
-.is-animated .ambient-aurora i[data-blob='2'] {
+.is-animated .ambient-aurora i[data-blob="2"] {
   animation: ambient-blob-b 53s var(--ease-standard) infinite;
 }
-.is-animated .ambient-aurora i[data-blob='3'] {
+.is-animated .ambient-aurora i[data-blob="3"] {
   animation: ambient-blob-c 67s var(--ease-standard) infinite;
 }
 
@@ -305,7 +318,8 @@
 .ambient-network {
   mask-image:
     radial-gradient(
-      22vmax 22vmax at calc(var(--ambient-px) * 100%) calc(var(--ambient-py) * 100%),
+      22vmax 22vmax at calc(var(--ambient-px) * 100%)
+        calc(var(--ambient-py) * 100%),
       #000 0%,
       rgba(0, 0, 0, 0.25) 70%,
       transparent 100%
@@ -381,11 +395,11 @@
 }
 /* Tres anillos de retardo: la red late desacompasada y parece viva sin que
    ninguna pulsación concreta llame la atención. */
-.is-animated .ambient-network i[data-ring='2'] {
+.is-animated .ambient-network i[data-ring="2"] {
   animation-delay: -2.5s;
   animation-duration: 9.5s;
 }
-.is-animated .ambient-network i[data-ring='3'] {
+.is-animated .ambient-network i[data-ring="3"] {
   animation-delay: -5s;
   animation-duration: 11.5s;
 }
@@ -417,8 +431,16 @@
   /* El velo central se mantiene bajo: subirlo apaga el foco que sigue al cursor
      justo donde más se mira, que era lo que hacía parecer el fondo inerte. */
   background:
-    radial-gradient(80% 62% at 50% 42%, rgba(255, 255, 255, 0.14), transparent 60%),
-    radial-gradient(140% 120% at 50% 50%, transparent 52%, rgba(15, 23, 42, 0.14));
+    radial-gradient(
+      80% 62% at 50% 42%,
+      rgba(255, 255, 255, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      140% 120% at 50% 50%,
+      transparent 52%,
+      rgba(15, 23, 42, 0.14)
+    );
   pointer-events: none;
 }
 /**
@@ -441,21 +463,51 @@
 }
 .ambient-auth .ambient-vignette {
   background:
-    radial-gradient(80% 60% at 68% 45%, rgba(255, 255, 255, 0.42), transparent 62%),
-    radial-gradient(150% 130% at 50% 50%, transparent 52%, rgba(15, 23, 42, 0.13));
+    radial-gradient(
+      80% 60% at 68% 45%,
+      rgba(255, 255, 255, 0.42),
+      transparent 62%
+    ),
+    radial-gradient(
+      150% 130% at 50% 50%,
+      transparent 52%,
+      rgba(15, 23, 42, 0.13)
+    );
 }
 
-/* Paneles y tarjetas: presencia media, la justa para dar profundidad.
-   Al 0.34 la deriva de las manchas ocurría pero no se veía —el fondo se leía
-   como una imagen fija—; el texto no sufre porque vive sobre superficies
-   opacas, así que el color puede subir sin restar legibilidad. */
+/**
+ * La portada: presencia, pero luz y no película.
+ *
+ * A 0,52 de aurora con la viñeta base —que cierra los bordes con un slate al
+ * 0,14— las tres manchas verdes y ese oscurecimiento se sumaban en un sepia
+ * verdoso que cubría la pantalla entera: no parecía un fondo con color, parecía
+ * la pantalla sucia. Y los nodos, al 0,75, dejaban de ser una red al fondo para
+ * leerse como motas sobre el papel.
+ *
+ * La corrección no es apagar el color, es levantarlo: menos carga de mancha,
+ * menos red, y sobre todo el velo blanco del centro que ya usa el acceso, que
+ * es lo que hace que el mismo verde se lea como luz en vez de como suciedad.
+ */
 .ambient-dashboard .ambient-aurora,
 .ambient-results .ambient-aurora {
-  opacity: 0.52;
+  opacity: 0.38;
 }
 .ambient-dashboard .ambient-network,
 .ambient-results .ambient-network {
-  opacity: 0.75;
+  opacity: 0.5;
+}
+.ambient-dashboard .ambient-vignette {
+  background:
+    radial-gradient(
+      85% 65% at 50% 38%,
+      rgba(255, 255, 255, 0.34),
+      transparent 64%
+    ),
+    radial-gradient(
+      150% 130% at 50% 50%,
+      transparent 56%,
+      rgba(15, 23, 42, 0.08)
+    );
 }
 
 /* Laboratorio y despliegues: la red se ve algo más, evocan flujo y tuberías. */

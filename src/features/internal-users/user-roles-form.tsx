@@ -109,7 +109,7 @@ export function UserRolesForm({
                     <ShieldCheck
                       className={cn(
                         "h-3.5 w-3.5 shrink-0",
-                        checked ? "text-atlas-accent" : "text-slate-400",
+                        checked ? "text-atlas-accent" : "text-slate-500",
                       )}
                       aria-hidden
                     />

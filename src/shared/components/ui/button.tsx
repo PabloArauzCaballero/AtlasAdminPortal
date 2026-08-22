@@ -21,7 +21,7 @@ export function Button({
 }) {
   const variants: Record<ButtonVariant, string> = {
     primary:
-      "border-transparent bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-sm hover:-translate-y-px hover:from-slate-800 hover:to-slate-600 hover:shadow-md active:translate-y-0 active:scale-[0.97] disabled:from-slate-300 disabled:to-slate-300",
+      "border-slate-900 bg-slate-900 text-white shadow-sm hover:-translate-y-px hover:bg-slate-950 hover:shadow-md active:translate-y-0 active:scale-[0.97] disabled:border-slate-300 disabled:bg-slate-300",
     secondary:
       "border-atlas-border bg-white text-atlas-text hover:-translate-y-px hover:border-slate-300 hover:bg-atlas-soft hover:shadow-sm active:translate-y-0 active:scale-[0.97] disabled:bg-slate-100",
     ghost:

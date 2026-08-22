@@ -176,7 +176,7 @@ export function MongoLogsSection() {
             <button
               type="button"
               onClick={upload.clear}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[11px] text-slate-400 hover:bg-slate-800 hover:text-white"
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[11px] text-slate-500 hover:bg-slate-800 hover:text-white"
             >
               <X className="h-3 w-3" aria-hidden />
               cerrar

@@ -107,7 +107,7 @@ function AffectationBadge({ impact }: Readonly<{ impact: DataEntityImpact }>) {
       className={
         indirect
           ? "inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600"
-          : "inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700"
+          : "inline-flex rounded-full border border-atlas-pii/25 bg-atlas-pii/10 px-2 py-0.5 text-[11px] font-semibold text-atlas-pii"
       }
       title={impact.notes ?? undefined}
     >

@@ -39,7 +39,7 @@ export function SessionUnavailable({
             : "Tu sesión no se ha cerrado; el portal no consiguió leer tu perfil. Puede ser el backend reiniciándose o un corte de red."}
         </p>
         {apiError?.requestId ? (
-          <p className="mt-3 font-mono text-xs text-slate-400">
+          <p className="mt-3 font-mono text-xs text-slate-300">
             Request ID: {apiError.requestId}
           </p>
         ) : null}
