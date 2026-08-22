@@ -29,7 +29,7 @@ export function RuntimeJobsPage() {
         historial de ejecuciones.
       </BusinessContextNote>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {RUNTIME_JOBS.map((definition) => (
           <RuntimeJobCard key={definition.code} definition={definition} />
         ))}

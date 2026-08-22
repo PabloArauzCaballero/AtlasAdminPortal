@@ -49,8 +49,12 @@ export function PageHeader({
           <h1 className="text-pretty break-words text-xl font-bold leading-tight tracking-tight text-atlas-accent sm:text-2xl md:text-[30px] md:leading-[38px]">
             {title}
           </h1>
+          {/* `break-words` por lo mismo que el título: casi todas estas descripciones citan la
+              ruta del backend a la que se conectan, y una ruta no tiene dónde partirse. La más
+              larga —`/operations/catalogs/:catalogCode/versions/:versionId`, 54 caracteres— se
+              salía de la pantalla a 320 px y arrastraba a la página entera. */}
           {description ? (
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-atlas-muted">
+            <p className="mt-1 max-w-3xl break-words text-sm leading-6 text-atlas-muted">
               {description}
             </p>
           ) : null}
