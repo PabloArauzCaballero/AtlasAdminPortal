@@ -28,7 +28,7 @@ function NavLink({
       className={cn(
         "atlas-press atlas-tap group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-all duration-200 ease-out hover:translate-x-0.5 hover:bg-white/5 hover:text-white",
         indent && "pl-9",
-        active && "bg-white/10 text-white",
+        active && "bg-white/[0.09] text-white",
       )}
     >
       <span
@@ -43,6 +43,7 @@ function NavLink({
           active && "text-teal-300",
         )}
       />
+      <Icon className={cn("h-4 w-4 shrink-0", active && "text-[#9AABEF]")} />
       <span className="truncate">{item.label}</span>
     </Link>
   );

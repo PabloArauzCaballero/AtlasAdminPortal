@@ -52,11 +52,11 @@ export function ConfirmDialog({
       open={open}
       labelledBy={titleId}
       onClose={onCancel}
-      overlayClassName="z-50 flex items-center justify-center bg-slate-950/40 p-4"
-      panelClassName="w-full max-w-md rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
+      overlayClassName="z-50 flex animate-fade-in items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+      panelClassName="w-full max-w-md animate-scale-in rounded-xl border border-atlas-border bg-white p-5 shadow-card"
     >
       <div className="flex items-start gap-3">
-        <div className="rounded-full bg-amber-50 p-2 text-amber-600">
+        <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
           <AlertTriangle className="h-5 w-5" aria-hidden="true" />
         </div>
         <div>

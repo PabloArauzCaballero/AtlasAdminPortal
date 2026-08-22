@@ -18,6 +18,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Gauge } from "lucide-react";
@@ -145,6 +146,7 @@ function AuthorizedStressProfilesPage() {
         description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
           <div className="flex gap-2">
+            <TutorialLaunchButton tutorialId="qa-stress-profile" />
             {/* No existe un permiso "systems.stress.manage" en el catálogo de
                 /internal/permissions; el backend restringe el upsert a
                 system_admin/platform_admin/qa_engineer/devops. Se usa el
@@ -154,7 +156,11 @@ function AuthorizedStressProfilesPage() {
               permissions={["systems.stress.execute"]}
               fallback={null}
             >
-              <Button variant="primary" onClick={() => setCreating(true)}>
+              <Button
+                variant="primary"
+                data-tutorial-id="qa-stress-new"
+                onClick={() => setCreating(true)}
+              >
                 Nuevo perfil
               </Button>
             </PermissionGate>

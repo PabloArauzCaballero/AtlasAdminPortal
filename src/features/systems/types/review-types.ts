@@ -68,6 +68,40 @@ export type EndpointDiscoveryInput = {
 
 export type ActionLogListResponse = PaginatedResponse<ActionLog>;
 
+/**
+ * De dónde salen las opciones de un filtro.
+ *
+ * `SCHEMA` es un conjunto cerrado que el backend valida: ofrecer un valor fuera
+ * de la lista sería ofrecer un filtro que responde 400. `DATA` son los valores
+ * que de verdad aparecen en la bitácora de este tenant —módulos, tipos de
+ * actor—, que nadie declara en ningún sitio y por eso sólo la tabla conoce.
+ */
+export type FilterOptionSource = "SCHEMA" | "DATA";
+
+/** Qué control necesita un filtro. Lo decide el backend, no la pantalla. */
+export type FilterControl =
+  "select" | "combobox" | "boolean" | "date-range" | "text" | "number";
+
+export type ActionLogFilterField = {
+  name: string;
+  label: string;
+  source: FilterOptionSource;
+  control: FilterControl;
+  options: Array<{ value: string; label: string }>;
+  help?: string;
+};
+
+/**
+ * Los filtros que la auditoría admite, con sus valores.
+ *
+ * Se pide al backend en vez de escribirse aquí porque la versión anterior tenía
+ * los métodos y los niveles de riesgo copiados a mano en el componente: la
+ * pantalla ofrecía tres de los once filtros que el endpoint acepta, y las
+ * opciones copiadas podían separarse del esquema sin que nada fallara hasta que
+ * alguien filtrara.
+ */
+export type ActionLogFilterCatalog = { fields: ActionLogFilterField[] };
+
 export type MongoLogEntry = {
   id: string;
   type: "startup" | "append" | "rotation" | string;

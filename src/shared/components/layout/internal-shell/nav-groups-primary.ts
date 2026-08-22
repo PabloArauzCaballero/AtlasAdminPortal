@@ -10,6 +10,7 @@ import {
   FileClock,
   Gauge,
   GitBranch,
+  GraduationCap,
   ShieldCheck,
   SlidersHorizontal,
   Stethoscope,
@@ -223,6 +224,18 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         label: "Laboratorio QA",
         href: "/internal/qa/lab",
         icon: TestTube2,
+        permissions: ["systems.endpoints.read"],
+      },
+      {
+        label: "Centro de aprendizaje",
+        href: "/internal/qa/aprender",
+        icon: GraduationCap,
+        permissions: ["systems.endpoints.read"],
+      },
+      {
+        label: "Guía QA Lab",
+        href: "/internal/qa/guia",
+        icon: GraduationCap,
         permissions: ["systems.endpoints.read"],
       },
       {

@@ -21,6 +21,7 @@ export const queryKeys = {
   testRuns: (params: unknown) => ["systems", "test-runs", params] as const,
   testRun: (runId: string) => ["systems", "test-run", runId] as const,
   actionLogs: (params: unknown) => ["systems", "action-logs", params] as const,
+  actionLogFilterCatalog: ["systems", "action-logs", "filter-catalog"] as const,
   actionLogsByRequest: (requestId: string) =>
     ["systems", "action-logs-by-request", requestId] as const,
   mongoLogs: (params: unknown) => ["systems", "mongo-logs", params] as const,
@@ -122,4 +123,12 @@ export const queryKeys = {
     ["external-providers", "cost-policy", providerCode] as const,
   externalProvidersReport: (report: string, params: unknown = null) =>
     ["external-providers", "report", report, params] as const,
+  externalProvidersAuthState: ["external-providers", "auth-state"] as const,
+  externalProviderAuthState: (providerCode: string) =>
+    ["external-providers", "auth-state", providerCode] as const,
+  externalProvidersPendingRotation: [
+    "external-providers",
+    "pending-rotation",
+  ] as const,
+  authBrokerAvailability: ["external-providers", "auth-broker"] as const,
 };

@@ -15,6 +15,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
@@ -100,9 +101,14 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
             eyebrow={`Run #${run.data.run.runId}`}
             title={`Ejecución QA ${run.data.run.status}`}
             description={`Ambiente: ${run.data.run.environment}`}
-            actions={<StatusBadge value={run.data.run.status} />}
+            actions={
+              <>
+                <TutorialLaunchButton tutorialId="qa-runs-interpret" />
+                <StatusBadge value={run.data.run.status} />
+              </>
+            }
           />
-          <div className="space-y-6">
+          <div className="space-y-6" data-tutorial-id="qa-run-summary">
             <KeyValueGrid
               items={[
                 {
@@ -134,7 +140,7 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
                 />
               </CardContent>
             </Card>
-            <section>
+            <section data-tutorial-id="qa-run-steps">
               <SectionHeader title="Steps ejecutados" />
               <DataTable data={run.data.steps} columns={columns} />
             </section>

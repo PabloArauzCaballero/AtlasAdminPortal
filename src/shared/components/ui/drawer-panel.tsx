@@ -25,8 +25,8 @@ export function DrawerPanel({
       // El drawer es de consulta, no confirma nada destructivo: cerrar tocando
       // fuera es el gesto esperado.
       closeOnBackdrop
-      overlayClassName="z-40 bg-slate-950/30"
-      panelClassName="atlas-scrollbar ml-auto h-full w-full max-w-xl overflow-auto border-l border-atlas-border bg-white shadow-subtle"
+      overlayClassName="z-40 animate-fade-in bg-slate-950/35 backdrop-blur-[1px]"
+      panelClassName="atlas-scrollbar ml-auto h-full w-full max-w-xl animate-drawer-in overflow-auto border-l border-atlas-border bg-white shadow-card"
     >
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-atlas-border bg-white px-5 py-4">
         <h2 id={titleId} className="text-sm font-semibold text-atlas-text">

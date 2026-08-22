@@ -10,6 +10,8 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
+import { WorkflowCanvas } from "@/features/workflows/workflow-canvas";
 import { EndpointPicker } from "./endpoint-picker";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
@@ -17,8 +19,15 @@ import { QaLabDocsPanel } from "./qa-lab-docs";
 import { SelectedEndpointBar } from "./selected-endpoint-bar";
 import { StressTestCard } from "./stress-test-card";
 
-const TABS = ["Prueba unitaria", "Journey (encadenado)"];
+const TABS = ["Prueba unitaria", "Journey (encadenado)", "Árbol de decisión"];
 const UNIT_TABS = ["Funcional", "Carga"];
+
+/** Cada pestaña abre el recorrido que explica esa herramienta, no uno genérico. */
+const TUTORIAL_BY_TAB: Record<string, string> = {
+  [TABS[0]]: "qa-lab-functional",
+  [TABS[1]]: "qa-lab-journey",
+  [TABS[2]]: "qa-lab-decision-tree",
+};
 
 export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -51,9 +60,18 @@ function AuthorizedQaLabPage({
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Prueba un endpoint suelto — funcional y de carga — o encadena varios en un journey que reproduce un flujo real de negocio."
+        description="Prueba un endpoint suelto — funcional y de carga —, encadena varios en un journey que reproduce un flujo real de negocio, o mirá el árbol de decisión del recorrido estándar que publica el backend."
         actions={
           <>
+            <TutorialLaunchButton
+              tutorialId={TUTORIAL_BY_TAB[activeTab] ?? "qa-lab-overview"}
+            />
+            <Link href="/internal/qa/aprender">
+              <Button>Centro de aprendizaje</Button>
+            </Link>
+            <Link href="/internal/qa/guia" data-tutorial-id="qa-lab-guide-link">
+              <Button>Guía</Button>
+            </Link>
             <Link href="/internal/qa/runs">
               <Button>
                 <History className="h-4 w-4" aria-hidden />
@@ -69,14 +87,18 @@ function AuthorizedQaLabPage({
           </>
         }
       />
-      <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+      <div data-tutorial-id="qa-lab-tabs">
+        <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+      </div>
 
       {activeTab === TABS[0] ? (
         <div className="space-y-5">
           <QaLabDocsPanel />
 
           {picking || !item ? (
-            <EndpointPicker selectedId={endpointId} onSelect={select} />
+            <div data-tutorial-id="qa-lab-endpoint-picker">
+              <EndpointPicker selectedId={endpointId} onSelect={select} />
+            </div>
           ) : (
             <SelectedEndpointBar
               endpoint={item}
@@ -102,18 +124,28 @@ function AuthorizedQaLabPage({
                 onChange={setUnitTab}
               />
               {unitTab === UNIT_TABS[0] ? (
-                <EndpointTestCard endpointId={endpointId} endpoint={item} />
+                <div data-tutorial-id="qa-lab-functional-card">
+                  <EndpointTestCard endpointId={endpointId} endpoint={item} />
+                </div>
               ) : (
-                <StressTestCard endpointId={endpointId} endpoint={item} />
+                <div data-tutorial-id="qa-lab-stress-card">
+                  <StressTestCard endpointId={endpointId} endpoint={item} />
+                </div>
               )}
             </>
           ) : null}
 
           {!endpointId ? <PickPrompt /> : null}
         </div>
-      ) : (
-        <JourneyRunnerPanel />
-      )}
+      ) : null}
+
+      {activeTab === TABS[1] ? (
+        <div data-tutorial-id="qa-lab-journey-panel">
+          <JourneyRunnerPanel />
+        </div>
+      ) : null}
+
+      {activeTab === TABS[2] ? <WorkflowCanvas /> : null}
     </>
   );
 }

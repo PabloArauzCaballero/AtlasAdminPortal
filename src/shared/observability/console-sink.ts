@@ -12,6 +12,6 @@ export function consoleSink(event: ObservabilityEvent): void {
     requestId: event.requestId,
     ...event.context,
   };
-  // eslint-disable-next-line no-console -- salida intencional del sink de dev
+  // Salida intencional del sink de dev (la regla no-console ya permite warn).
   console.warn(`[obs:${event.type}] ${event.message}`, detail);
 }

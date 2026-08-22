@@ -45,7 +45,28 @@ const a11yErrorRules = [
 
 const eslintConfig = [
   {
-    ignores: ['.next/**', 'node_modules/**', 'dist/**', 'out/**', 'coverage/**', 'next-env.d.ts'],
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      // `dist/**` solo cubría la raíz, así que la salida compilada de los workers anidados se
+      // linteaba como si fuera código fuente del portal.
+      '**/dist/**',
+      'out/**',
+      'coverage/**',
+      // `next-env.d.ts` (sin comodín) solo casaba con el de la raíz.
+      '**/next-env.d.ts',
+      // Clon suelto del propio portal dentro de sí mismo: tiene su propio `.git` y NO está
+      // rastreado por este repositorio (`git ls-files AtlasAdminPortal/` no devuelve nada). No se
+      // borra —es material local de quien lo clonó— pero tampoco es código de este proyecto.
+      'AtlasAdminPortal/**',
+      // Repos independientes anidados en este directorio: tienen su propia configuración de
+      // ESLint, su propio runtime (Node, no Next) y sus propios gates. Lintearlos aquí llenaba
+      // `yarn lint` de errores ajenos —`require()` en scripts CJS, `module` como variable en
+      // tests de NestJS— y dejaba el gate inservible para detectar problemas reales del portal.
+      'semantic-analysis-worker/**',
+      'bolivia-bank-statement-worker/**',
+      'atlas-auth-broker-worker/**',
+    ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
@@ -57,6 +78,23 @@ const eslintConfig = [
       // defecto es 2 y no llega a ese texto: se sube a 3, no se retuerce el
       // marcado para contentar a la regla.
       'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
+    },
+  },
+  {
+    // El código ya usa el prefijo `_` para marcar lo que existe por contrato
+    // (parámetros de un callback, capturas de error) pero no se consume. Sin
+    // este patrón la regla los reporta igual, y ese ruido termina tapando los
+    // no-usados de verdad. Un identificador sin `_` sigue avisando.
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 ];

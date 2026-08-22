@@ -20,6 +20,7 @@ export const breadcrumbLabels: Record<string, string> = {
   endpoints: "Endpoints",
   governance: "Gobierno de datos",
   glossary: "Glosario",
+  guia: "Guía",
   official: "Oficial",
   impact: "Impacto",
   nodes: "Nodos",

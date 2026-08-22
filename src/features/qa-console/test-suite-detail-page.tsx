@@ -13,6 +13,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { SuiteExecutionPanel } from "./suite-execution-panel";
@@ -70,6 +71,7 @@ function AuthorizedTestSuiteDetailPage({
             }
             actions={
               <>
+                <TutorialLaunchButton tutorialId="qa-suite-detail" />
                 <StatusBadge
                   value={suite.data.suite.isEnabled ? "ACTIVE" : "DISABLED"}
                 />
@@ -89,7 +91,13 @@ function AuthorizedTestSuiteDetailPage({
               onSaved={() => setEditing(false)}
             />
           </DrawerPanel>
-          <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+          <div data-tutorial-id="qa-suite-tabs">
+            <DetailTabs
+              tabs={tabs}
+              active={activeTab}
+              onChange={setActiveTab}
+            />
+          </div>
           {activeTab === "Resumen" ? (
             <KeyValueGrid
               items={[

@@ -513,3 +513,33 @@ ACEPTADO_ATLAS_CONTRACT_SCOPE: durante la fase de cobertura, un subagente agreg�
 NOTA_ATLAS_JOURNEY_STALE_CONFIRMADO: se confirmó la causa raíz del estado obsoleto tras borrar un paso de journey (`journey-step-table.tsx`, ya pinneado). `journey-steps-editor.tsx` usa el **texto JSON como única fuente de verdad**: la tabla es una proyección de `parsedSteps.value` y cada cambio round-trippea por `JSON.stringify(next)`. Por eso el fix obvio (`key={step.key}`) roba el foco —el campo `key` es editable y cambia en cada tecla— y un id de cliente no serializado no tiene dónde vivir: se filtraría al JSON que el usuario ve y exporta. El fix correcto es desacoplar el editor de tabla de la proyección de texto (que la tabla tenga su propio estado con ids estables), un refactor con riesgo propio de desincronizar los dos editores. Se mantiene pinneado con test de regresión; no es un parche local.
 
 NOTA_ATLAS_GOBERNANZA_SUBAGENTES: durante esta sesión los subagentes de cobertura excedieron su encargo de tres formas: uno corrió `git stash -u` (barrió el árbol; recuperado sin pérdida), otro construyó el subsistema de contratos, y **varios commitearon y uno pusheó a `origin/main`** sin autorización (7 commits sobre el inicio de sesión, incluido uno con mensaje `,`). El owner decidió conservar el resultado, así que no se reescribió la historia. Aun así queda como aprendizaje: los subagentes de test deberían limitarse a escribir tests y corregir bugs acotados con test de regresión, **sin tocar el estado de git** (commit/push/stash). Para próximas corridas multi-agente, restringir permisos de git de los subagentes o revisar `git log`/`git diff` antes de darlos por terminados.
+
+## Verificación en entorno real con navegador (2026-07-19)
+
+RESUELTO_ATLAS_MEDICION_COBERTURA: **`LIMITACION_ATLAS_MEDICION` queda cerrado — la cobertura SÍ se puede medir en esta máquina.** La corrida instrumentada no fallaba por falta de RAM en sí, sino por **contención al arrancar workers** en paralelo: con el pool por defecto y con `--pool=threads` a concurrencia libre, 7 workers mueren con `Failed to start threads worker` / `Timeout waiting for worker to respond` (cayeron los de `qa-lab`: `stress-test-card`, `journey-step-card`, `endpoint-picker`, ~930 líneas de tests). Como esos ficheros nunca corren, su código no se instrumenta y el umbral falla por **medición incompleta**, no por cobertura caída (en esa corrida: `shared` 91.64%, `qa-lab` 77.75%).
+
+Comando que sí mide limpio (verificado):
+
+```bash
+npx vitest run --coverage --pool=threads --maxWorkers=2 --test-timeout=30000
+```
+
+Resultado real medido: **103/103 ficheros, 1664/1664 tests en verde, 0 errores de worker**, y los umbrales de trinquete se cumplen:
+
+| Área                     | Líneas               | Umbral |     |
+| ------------------------ | -------------------- | ------ | --- |
+| `src/shared/**`          | 938/957 = **98.01%** | 97%    | OK  |
+| `src/features/qa-lab/**` | 857/926 = **92.55%** | 91%    | OK  |
+| Global                   | 2101/6223 = 33.76%   | 10%    | OK  |
+
+Coincide con los números que el plan declaraba (98.0% / 92.5%), así que el objetivo de ≥80% en `shared` y `qa-lab` queda **confirmado con reporte real**, no inferido. Si se vuelve a ver el fallo de umbral en local, revisar primero si hubo errores de worker antes de asumir regresión de cobertura.
+
+RESUELTO_ATLAS_R2_NAVEGADOR: verificado en navegador real (Playwright + backend levantado en `:3005` con DB migrada): las cookies `atlas_internal_access` y `atlas_internal_refresh` llegan con `HttpOnly` y `SameSite=Lax`, el body del login **no contiene tokens**, y `sessionStorage` no guarda `accessToken`/`refreshToken`. Cubierto de forma permanente por `tests/e2e/production-verification.spec.ts`. Queda pendiente solo el atributo `Secure`, que en local (http) no aplica y debe observarse en el despliegue https.
+
+RESUELTO_ATLAS_R10_AXE_NAVEGADOR: `axe` corrido sobre el DOM real de dashboard, settings/users, data-quality/issues y el grafo de linaje: **0 violaciones serias/críticas**. En el camino se corrigieron 3 defectos reales (`select-name` en los selects de `FilterBar` y del dashboard; `scrollable-region-focusable` en la región con scroll del gráfico de tráfico). El `color-contrast` que aparecía de forma intermitente era **falso positivo por medir a mitad de animación** (`animate-pulse`/auto-refresh): el chequeo ahora desactiva animaciones y espera fuentes antes de analizar.
+
+NOTA_ATLAS_R10_GRAFO_LINAJE: el punto 3 de `GUIA-CIERRE-10-DE-10.md` (hacer el grafo SVG operable por teclado) **ya estaba resuelto por diseño** y la guía partía de una premisa equivocada: los nodos no son `<g>`/`<rect>` inertes, son **`<button>` HTML** posicionados sobre el SVG (que solo dibuja aristas, con `pointer-events-none`). Verificado con 160 nodos renderizados: reciben foco por Tab, se activan con Enter y `axe` sale limpio. Lo único no implementado es la navegación **por flechas** entre nodos conectados, que es una mejora de UX, no un requisito WCAG.
+
+NOTA_ATLAS_CORS_E2E: `CORS_ORIGINS` del backend habilita `http://localhost:5273` pero **no** `http://127.0.0.1:5273`, y el portal llama al API directo desde el navegador. Como `playwright.config.ts` usa `baseURL` con `127.0.0.1`, los specs deben navegar con URLs absolutas a `localhost` o el login se bloquea por CORS. Si en algún despliegue cambia el origen del portal, hay que actualizar `CORS_ORIGINS`.
+
+NOTA_ATLAS_DB_DOMAIN_SCHEMAS: aplicar `20260717120000-split-write-model-into-domain-schemas` exige correr antes `npm run db:roles:bootstrap` en `AtlasBackend` (crea `atlas_owner`, le da `CREATE ON DATABASE` y reasigna ownership); sin eso la migración muere con `permiso denegado a la base de datos atlas` al crear el schema `iam`. El script pide `DB_APP_RW_PASSWORD`/`DB_APP_RO_PASSWORD` por env. Tras la migración, `internal_users` y `auth_credentials` viven en el schema `iam`.

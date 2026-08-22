@@ -5,14 +5,44 @@ import { RoleGate } from "@/shared/auth/role-gate";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { getApiBaseUrl } from "@/shared/api/config";
 import { isSafeExternalUrl } from "@/shared/lib/urls";
+import { resolveExportDownloadUrl } from "./download-url";
+import { estadoDeExportacion } from "./export-lifecycle";
 
 export function ExportDownloadAction({
   downloadUrl,
   expiresAt,
-}: Readonly<{ downloadUrl?: string | null; expiresAt?: string | null }>) {
+  status,
+}: Readonly<{
+  downloadUrl?: string | null;
+  expiresAt?: string | null;
+  /** Estado del trabajo. Sin él no se puede saber si el archivo sirve. */
+  status?: string | null;
+}>) {
   const [open, setOpen] = useState(false);
-  if (!downloadUrl || !isSafeExternalUrl(downloadUrl)) return null;
+  // El backend da la ruta relativa al API; sin resolverla contra su origen el
+  // navegador la buscaría en el portal, que no sirve /api/* (404).
+  const resolvedUrl = resolveExportDownloadUrl(downloadUrl, getApiBaseUrl());
+  if (!resolvedUrl || !isSafeExternalUrl(resolvedUrl)) return null;
+
+  /*
+   * Tener ruta NO basta para ofrecer la descarga.
+   *
+   * Un trabajo fallido que alcanzó a escribir su ruta antes de romperse enseñaba
+   * «Abrir archivo» y devolvía un error del servidor; uno caducado enseñaba lo
+   * mismo y hoy funcionaba y mañana daba un 403. En vez del botón se dice en qué
+   * estado está y qué se puede hacer, que es lo único accionable.
+   */
+  const estado = estadoDeExportacion({ downloadUrl, expiresAt, status });
+  if (estado.accion !== "descargar") {
+    return (
+      <p className="text-xs leading-5 text-atlas-muted" role="status">
+        <strong className="text-atlas-text">{estado.label}.</strong>{" "}
+        {estado.help}
+      </p>
+    );
+  }
 
   return (
     <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST} fallback={null}>
@@ -26,7 +56,7 @@ export function ExportDownloadAction({
         confirmText="Abrir archivo"
         onCancel={() => setOpen(false)}
         onConfirm={() => {
-          window.open(downloadUrl, "_blank", "noopener,noreferrer");
+          window.open(resolvedUrl, "_blank", "noopener,noreferrer");
           setOpen(false);
         }}
       />

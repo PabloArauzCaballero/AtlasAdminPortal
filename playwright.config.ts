@@ -60,7 +60,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "yarn start",
+    command: `npx next start -p ${PORT}`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

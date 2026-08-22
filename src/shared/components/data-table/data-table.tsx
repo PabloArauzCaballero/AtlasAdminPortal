@@ -46,18 +46,18 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="animate-fade-in overflow-hidden rounded-2xl border border-atlas-border bg-white shadow-card">
-        <div className="flex items-center justify-between border-b border-atlas-border bg-slate-50/70 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-atlas-muted">
+      <div className="overflow-hidden rounded-xl border border-atlas-border bg-white shadow-subtle">
+        <div className="flex items-center justify-between border-b border-atlas-border bg-white px-4 py-2.5">
+          <p className="text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-atlas-muted">
             Registros
           </p>
-          <span className="rounded-full border border-atlas-border bg-white px-2.5 py-1 text-xs font-semibold text-atlas-accent shadow-sm">
+          <span className="rounded-md bg-atlas-soft px-2 py-0.5 font-mono text-xs font-medium text-atlas-text">
             {meta?.total ?? data.length}
           </span>
         </div>
         <div className="atlas-scrollbar atlas-table-scroll max-h-[560px] overflow-auto">
           <table className="w-full min-w-max border-collapse text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-atlas-muted shadow-[0_1px_0_0_theme(colors.atlas.border)]">
+            <thead className="sticky top-0 z-10 bg-[#F7F7F8] text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-atlas-muted shadow-[0_1px_0_0_theme(colors.atlas.border)]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -70,12 +70,12 @@ export function DataTable<T>({
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="transition-colors hover:bg-atlas-accentSoft/60"
+                  className="transition-colors duration-100 hover:bg-atlas-soft/70"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-3 align-top text-sm text-atlas-text"
+                      className="px-4 py-3 align-middle text-sm text-atlas-text"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

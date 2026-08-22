@@ -6,6 +6,12 @@ import type { QueryParams } from "@/shared/api/types";
 import {
   activateKillSwitch,
   approveRequest,
+  getAuthBrokerAvailability,
+  getPendingRotation,
+  getProviderAuthStates,
+  invalidateProviderToken,
+  revokeProviderCredential,
+  rotateProviderCredential,
   getIdempotencyAudit,
   getProductionGate,
   getProviderCostPolicies,
@@ -30,6 +36,7 @@ import type {
   PolicyPreviewInput,
   ProviderRuntimePatchInput,
   RetryRequestInput,
+  RotateCredentialInput,
   TestProviderInput,
 } from "./types";
 
@@ -48,6 +55,69 @@ export function useProviderHealth() {
   return useQuery({
     queryKey: queryKeys.externalProvidersHealth,
     queryFn: () => getProviderHealth(),
+  });
+}
+
+/**
+ * Disponibilidad del broker de autenticación.
+ *
+ * Se consulta siempre y nunca falla: es lo que decide si el resto de la vista de autenticación
+ * tiene sentido. Sin este dato, un despliegue que aún no delega la autenticación mostraría un
+ * error rojo permanente en vez de "no configurado", que son cosas distintas.
+ */
+export function useAuthBrokerAvailability() {
+  return useQuery({
+    queryKey: queryKeys.authBrokerAvailability,
+    queryFn: () => getAuthBrokerAvailability(),
+  });
+}
+
+/** Solo se pide si el broker está configurado: si no, el backend responde 503 por diseño. */
+export function useProviderAuthStates(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.externalProvidersAuthState,
+    queryFn: () => getProviderAuthStates().then((body) => body.providers),
+    enabled,
+  });
+}
+
+export function usePendingRotation(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.externalProvidersPendingRotation,
+    queryFn: () => getPendingRotation().then((body) => body.credentials),
+    enabled,
+  });
+}
+
+function invalidateAuthState(queryClient: ReturnType<typeof useQueryClient>) {
+  return queryClient.invalidateQueries({
+    queryKey: ["external-providers"],
+  });
+}
+
+export function useRotateCredentialMutation(providerCode: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: RotateCredentialInput) =>
+      rotateProviderCredential(providerCode, body),
+    onSuccess: () => invalidateAuthState(queryClient),
+  });
+}
+
+export function useRevokeCredentialMutation(providerCode: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) =>
+      revokeProviderCredential(providerCode, reason),
+    onSuccess: () => invalidateAuthState(queryClient),
+  });
+}
+
+export function useInvalidateTokenMutation(providerCode: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => invalidateProviderToken(providerCode),
+    onSuccess: () => invalidateAuthState(queryClient),
   });
 }
 

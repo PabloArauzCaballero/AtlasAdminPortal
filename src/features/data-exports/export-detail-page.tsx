@@ -59,6 +59,7 @@ function AuthorizedExportDetailPage({
               <ExportDownloadAction
                 downloadUrl={exportQuery.data.downloadUrl}
                 expiresAt={exportQuery.data.expiresAt}
+                status={exportQuery.data.status}
               />
             }
           />

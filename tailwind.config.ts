@@ -75,8 +75,8 @@ const config: Config = {
         ],
       },
       boxShadow: {
-        subtle: "0 8px 20px rgba(15, 23, 42, 0.04)",
-        card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -12px rgba(15, 23, 42, 0.12)",
+        subtle: "0 1px 2px rgba(24, 25, 29, 0.04)",
+        card: "0 1px 2px rgba(24, 25, 29, 0.04), 0 6px 18px -14px rgba(24, 25, 29, 0.24)",
         "card-hover":
           "0 4px 10px rgba(15, 23, 42, 0.06), 0 20px 40px -16px rgba(15, 23, 42, 0.18)",
         glow: "0 0 0 1px rgba(0, 106, 97, 0.10), 0 8px 24px -8px rgba(0, 106, 97, 0.30)",
@@ -93,17 +93,44 @@ const config: Config = {
           "linear-gradient(135deg, #12181a 0%, #10322f 48%, #00544d 100%)",
       },
       keyframes: {
-        "fade-in": {
-          "0%": { opacity: "0", transform: "translateY(4px)" },
+        // Movimiento orgánico lento para formas abstractas del fondo (solo
+        // transform → compositor, sin repaints).
+        blob: {
+          "0%, 100%": { transform: "translate(0,0) scale(1)" },
+          "33%": { transform: "translate(24px,-20px) scale(1.06)" },
+          "66%": { transform: "translate(-18px,14px) scale(0.96)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-14px)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { opacity: "0.35" },
+          "50%": { opacity: "0.6" },
+        },
+        "float-in": {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
         "slide-up": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(6px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
-          "0%": { opacity: "0", transform: "scale(0.95) translateY(-4px)" },
+          "0%": { opacity: "0", transform: "scale(0.98) translateY(-2px)" },
           "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "drawer-in": {
+          "0%": { opacity: "0", transform: "translateX(12px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
         pop: {
           "0%": { transform: "scale(0.4)", opacity: "0" },
@@ -129,13 +156,20 @@ const config: Config = {
         },
       },
       animation: {
-        "fade-in": "fade-in 0.35s ease-out both",
-        "slide-up": "slide-up 0.4s ease-out both",
-        "scale-in": "scale-in 0.2s ease-out both",
+        "fade-in": "fade-in 0.16s ease-out both",
+        "slide-up": "slide-up 0.18s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-in": "scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "drawer-in": "drawer-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both",
         pop: "pop 0.3s ease-out both",
         "bell-ring": "bell-ring 0.9s ease-in-out 1",
         shimmer: "shimmer 1.6s infinite linear",
         "route-progress": "route-progress 0.9s ease-in-out infinite",
+        blob: "blob 20s ease-in-out infinite",
+        "blob-slow": "blob 30s ease-in-out infinite",
+        float: "float 8s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 6s ease-in-out infinite",
+        "float-in": "float-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "spin-slow": "spin-slow 32s linear infinite",
       },
     },
   },

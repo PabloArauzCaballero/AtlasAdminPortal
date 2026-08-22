@@ -168,7 +168,10 @@ function BroadcastForm() {
             ) : null}
             {send.isSuccess ? (
               <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-                Enviada — {send.data.targeted} destinatario(s) targeteados,{" "}
+                {send.data.status === "queued"
+                  ? "Aceptada — entrega en curso en segundo plano."
+                  : "Enviada."}{" "}
+                {send.data.targeted} destinatario(s) targeteados,{" "}
                 {send.data.created} mensaje(s) creados (referencia{" "}
                 <code className="font-mono">{send.data.broadcastId}</code>).
               </p>

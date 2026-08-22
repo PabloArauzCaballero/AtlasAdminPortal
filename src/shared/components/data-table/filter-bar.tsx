@@ -27,13 +27,14 @@ export function FilterBar({
   onClear?: () => void;
 }>) {
   return (
-    <div className="mb-4 flex flex-col gap-3 rounded-lg border border-atlas-border bg-white p-3 lg:flex-row lg:items-center">
+    <div className="mb-4 flex flex-col gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle lg:flex-row lg:items-center">
       <div className="relative min-w-0 flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
         <Input
           className="pl-9"
           value={search}
           placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
           onChange={(event) => onSearchChange(event.target.value)}
         />
       </div>
@@ -41,6 +42,7 @@ export function FilterBar({
         <Select
           key={filter.name}
           className="lg:w-48"
+          aria-label={filter.label}
           value={filter.value}
           onChange={(event) =>
             onFilterChange?.(filter.name, event.target.value)
