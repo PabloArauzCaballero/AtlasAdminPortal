@@ -37,13 +37,20 @@ function NavLink({
           active && "h-5",
         )}
       />
+      {/*
+        UN icono, no dos.
+        
+        El merge de las dos ramas visuales dejo los dos renders encadenados —el de la rama que traia
+        el hover y el de la que traia el color activo—, asi que CADA entrada del menu pintaba su
+        icono duplicado. No se detecto porque los dos son el mismo glifo al mismo tamano: se lee como
+        un icono ancho, no como un error. Se conserva el que tiene el movimiento y el color de marca.
+      */}
       <Icon
         className={cn(
           "h-4 w-4 shrink-0 transition-transform duration-150 group-hover:scale-110",
           active && "text-teal-300",
         )}
       />
-      <Icon className={cn("h-4 w-4 shrink-0", active && "text-[#9AABEF]")} />
       <span className="truncate">{item.label}</span>
     </Link>
   );

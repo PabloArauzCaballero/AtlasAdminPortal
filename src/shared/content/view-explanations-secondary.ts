@@ -181,6 +181,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     business:
       "Define quién puede hacer qué dentro del portal y mantiene actualizado el inventario sobre el que operan todos los demás módulos.",
     views: {
+      "/internal/settings/decision-artifacts": {
+        systems:
+          "Catálogo de decisiones delegadas al Decision Engine. Cada fila declara qué artefacto la resuelve, qué versión se ejecuta, qué endpoints del backend la disparan y en qué punto del recorrido ocurre. Las opciones del selector las publica el propio motor (GET /v1/artifacts), así que no se puede asignar un código que no exista.",
+        business:
+          "Cambiar la política que evalúa un crédito o una identidad deja de ser un despliegue: lo decide Riesgo desde aquí. Por ejemplo, si Riesgo publica una versión nueva del scoring BNPL, esta pantalla es donde se decide si entra en producción o se sigue con la anterior — y donde se ve, sin abrir el código, qué se rompe si se cambia.",
+      },
       "/internal/settings/users": {
         systems:
           "CRUD de usuarios internos con asignación de roles y estado de la cuenta.",

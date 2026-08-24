@@ -14,12 +14,30 @@ export type DecisionArtifactBinding = {
   decisionType: DecisionType;
   artifactCode: string | null;
   source: BindingSource;
+  /** Version fijada. `null` = se sigue la vigente del despliegue. */
+  pinnedVersion?: string | null;
+  /** Que endpoints del backend disparan esta decision: «si cambio esto, que se rompe». */
+  consumerEndpoints?: { method: string; path: string; purpose: string }[];
+  /** En que punto del recorrido del cliente ocurre. */
+  workflowStage?: string | null;
+  /** Los pasos del recorrido en los que participa, en orden. */
+  workflowSteps?: string[];
+  title?: string;
+  description?: string | null;
+  /** Para que le sirve al negocio. */
+  business?: string;
+  /** Que hace por dentro. */
+  systems?: string;
+  /** Un caso concreto donde se ve la diferencia. */
+  example?: string;
 };
 
 export type AvailableArtifact = {
   code: string;
   name: string | null;
   type: string | null;
+  latestVersion: string | null;
+  status: string | null;
 };
 
 export type DecisionArtifactsResponse = {
@@ -30,5 +48,6 @@ export type DecisionArtifactsResponse = {
 export type AssignArtifactBody = {
   decisionType: DecisionType;
   artifactCode: string;
+  pinnedVersion?: string | null;
   notes?: string;
 };
