@@ -167,6 +167,17 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["governance.policies.read"],
       },
       {
+        /*
+         * Que politica del motor decide una identidad o un credito era una variable de entorno:
+         * cambiarla exigia un despliegue y nadie podia ver cual estaba decidiendo. Es gobierno del
+         * riesgo, y por eso vive aqui y no en un fichero de configuracion.
+         */
+        label: "Motor de decisiones",
+        href: "/internal/settings/decision-artifacts",
+        icon: ShieldCheck,
+        permissions: ["governance.policies.read"],
+      },
+      {
         label: "Gobierno de datos",
         href: "/internal/governance",
         icon: ShieldCheck,
