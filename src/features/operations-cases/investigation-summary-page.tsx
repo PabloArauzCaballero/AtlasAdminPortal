@@ -136,6 +136,103 @@ export function InvestigationSummaryPage({
             </div>
           </section>
 
+          {/*
+            Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.
+
+            Quien investiga un caso de fraude documental necesita saber, en el mismo sitio, si el
+            carnet se verificó, con qué parecido, con cuánto riesgo de falsificación y si el teléfono
+            desde el que se dio de alta se parece al de alguien que vive con él. Estaba todo
+            registrado y repartido entre tres herramientas, así que la investigación empezaba
+            reuniéndolo a mano — y con prisa se decidía sin ello.
+
+            De la agenda se enseña su FORMA y nunca su contenido: ni un nombre, ni un teléfono. Lo
+            que el teléfono manda son cuentas, y lo que el servidor cruza son hashes que descarta.
+          */}
+          <section className="grid gap-4 md:grid-cols-2">
+            <KeyValueSection
+              title="Verificación de identidad"
+              items={
+                summary.data.latestIdentityVerification
+                  ? [
+                      {
+                        label: "Resultado",
+                        value: safeText(summary.data.latestIdentityVerification.result),
+                      },
+                      {
+                        label: "Canal",
+                        value: safeText(summary.data.latestIdentityVerification.channel),
+                      },
+                      {
+                        label: "Parecido biométrico",
+                        value: formatNumber(summary.data.latestIdentityVerification.similarity),
+                      },
+                      {
+                        // Riesgo de FALSIFICACIÓN del documento, no confianza en la lectura. Se
+                        // nombra entero porque los dos números viven al lado y se confunden.
+                        label: "Riesgo de fraude documental",
+                        value: formatNumber(summary.data.latestIdentityVerification.fraudRisk),
+                      },
+                      {
+                        label: "Solicitada",
+                        value: formatDateTime(summary.data.latestIdentityVerification.requestedAt),
+                      },
+                      {
+                        label: "Resuelta",
+                        value: formatDateTime(summary.data.latestIdentityVerification.completedAt),
+                      },
+                    ]
+                  : [
+                      {
+                        label: "Resultado",
+                        value: "Sin verificaciones de identidad registradas",
+                      },
+                    ]
+              }
+            />
+            <KeyValueSection
+              title="Agenda del dispositivo"
+              items={
+                summary.data.addressBook.available
+                  ? [
+                      {
+                        label: "Contactos",
+                        value: formatNumber(summary.data.addressBook.totalContacts),
+                      },
+                      {
+                        label: "Números distintos",
+                        value: formatNumber(summary.data.addressBook.uniqueRatio),
+                      },
+                      {
+                        label: "Números bolivianos",
+                        value: formatNumber(summary.data.addressBook.bolivianRatio),
+                      },
+                      {
+                        label: "Referencias dentro de la agenda",
+                        value: formatNumber(
+                          summary.data.addressBook.referencesFoundInAddressBook,
+                        ),
+                      },
+                      {
+                        label: "Coincidencias con teléfonos ya marcados",
+                        value: formatNumber(summary.data.addressBook.riskMatches),
+                      },
+                    ]
+                  : [
+                      {
+                        /*
+                          «No compartida» y no «vacía», y la diferencia importa: negarse a dar el
+                          permiso es un derecho, no una señal de fraude. Enseñarlo como una agenda
+                          de cero contactos invitaría a leer una decisión legítima como sospechosa.
+                        */
+                        label: "Estado",
+                        value:
+                          "No compartida — la persona no dio el permiso, o el alta es anterior a esta señal",
+                      },
+                    ]
+              }
+            />
+          </section>
+
           <section className="grid gap-4 md:grid-cols-2">
             <ListCard title="Contactos" empty="Sin contactos registrados.">
               {summary.data.contacts.map((contact, index) => (

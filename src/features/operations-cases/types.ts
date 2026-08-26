@@ -120,4 +120,38 @@ export type InvestigationSummary = {
     caseStatus: string | null;
     openedAt: string | null;
   }>;
+  /**
+   * El último intento de verificación de identidad, de cualquier canal.
+   *
+   * Faltaba, y era la mitad del expediente: quien investigaba un caso de fraude
+   * documental tenía que abrir otra herramienta para saber si el carnet siquiera
+   * se había verificado. `fraudRisk` es el riesgo de fraude DOCUMENTAL que mide
+   * el worker —plantilla del SEGIP, aritmética interna del documento, física de
+   * la imagen—, no la evidencia de que la foto fuera un carnet.
+   */
+  latestIdentityVerification: {
+    attemptId: string;
+    channel: string | null;
+    result: string | null;
+    similarity: number | null;
+    fraudRisk: number | null;
+    requestedAt: string | null;
+    completedAt: string | null;
+  } | null;
+  /**
+   * La FORMA de la agenda del cliente. Nunca su contenido: ni un nombre, ni un
+   * teléfono, ni un hash — sólo cuentas y proporciones que calculó el teléfono.
+   *
+   * `available: false` es «no hay captura o no dio el permiso», que NO es lo
+   * mismo que una agenda vacía. La pantalla tiene que decir esa diferencia: una
+   * es menos evidencia y la otra sería evidencia en contra.
+   */
+  addressBook: {
+    available: boolean;
+    totalContacts: number;
+    uniqueRatio: number;
+    bolivianRatio: number;
+    referencesFoundInAddressBook: number;
+    riskMatches: number;
+  };
 };
