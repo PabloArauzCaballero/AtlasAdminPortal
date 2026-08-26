@@ -11,7 +11,17 @@ import { loadEnvConfig } from "@next/env";
  */
 loadEnvConfig(process.cwd(), true, { info: () => {}, error: console.error });
 
-const PORT = 5273;
+/*
+ * El puerto es configurable, y no por gusto: en esta máquina el 5273 lo sirve un CONTENEDOR con una
+ * imagen ya construida del portal. `reuseExistingServer` lo daba por bueno y la suite medía código
+ * de otra compilación — una pantalla recién cambiada salía como estaba antes, en verde, sin que
+ * nada lo delatara. Es el peor fallo posible de un E2E: no falla, miente.
+ *
+ * Con `PW_PORT` se apunta a un servidor de desarrollo propio (`next dev -p 5274`) sin tocar el
+ * contenedor de nadie. Es la misma salida que `AtlasDecisionEngineFrontend` ya tenía con
+ * `PW_BASE_URL`.
+ */
+const PORT = Number(process.env.PW_PORT ?? 5273);
 /**
  * `localhost` y no `127.0.0.1`, a propósito.
  *
@@ -52,15 +62,37 @@ export default defineConfig({
     },
     {
       name: "chromium",
+      // Las especificaciones de evidencia NO entran aquí: no usan el estado de sesión y no deben
+      // arrastrar el `setup`, que exige credenciales y backend.
+      testIgnore: /\.evidencia\.spec\.ts$/,
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
         storageState: "tests/e2e/.auth/internal.json",
       },
     },
+    /*
+     * EVIDENCIA: capturas de pantalla con el expediente doblado.
+     *
+     * Proyecto aparte y SIN dependencia del `setup`, que es lo único que las separa del resto. Las
+     * demás pruebas miden el portal contra el stack real y por eso necesitan una sesión de verdad;
+     * éstas miden que una PANTALLA enseñe lo que dice enseñar, y atarlas a un login las pondría
+     * rojas cada vez que el backend no esté — por un motivo que no tiene nada que ver con lo que
+     * comprueban.
+     *
+     * Se corren solas:  npx playwright test --project=evidencia
+     */
+    {
+      name: "evidencia",
+      testMatch: /\.evidencia\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
   webServer: {
-    command: `npx next start -p ${PORT}`,
+    // Con `PW_PORT` se asume que el servidor lo levanta quien corre la suite (típicamente un
+    // `next dev`), así que no se arranca ninguno: arrancar un `next start` sobre un puerto ya
+    // ocupado sólo produciría un error confuso.
+    command: process.env.PW_PORT ? "true" : `npx next start -p ${PORT}`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
