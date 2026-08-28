@@ -173,3 +173,21 @@ export type WorkflowTransitionCheck = {
   toStepCode?: string | null;
   unsatisfiedDependencies?: string[];
 };
+
+/** Un hallazgo del informe de consistencia: qué paso y por qué no cuadra. */
+export type WorkflowConsistencyFinding = {
+  severity?: string;
+  code?: string;
+  message?: string;
+  stepCode?: string;
+  endpointCode?: string;
+  [key: string]: unknown;
+};
+
+export type WorkflowConsistencyReport = {
+  status?: string;
+  workflowCode?: string;
+  version?: string;
+  findings?: WorkflowConsistencyFinding[];
+  [key: string]: unknown;
+};

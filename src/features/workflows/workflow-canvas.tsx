@@ -13,6 +13,7 @@ import {
   WorkflowLegend,
   WorkflowTotals,
 } from "./workflow-controls";
+import { WorkflowConsistencyPanel } from "./workflow-consistency";
 import { WorkflowDetail } from "./workflow-detail";
 import { WorkflowGraphView } from "./workflow-graph-view";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
@@ -113,6 +114,9 @@ export function WorkflowCanvas() {
         <CardContent className="space-y-4">
           {controls}
           {body}
+          {/* La deriva entre lo declarado y lo montado se comprueba aquí, junto al árbol que la
+              declara: en otra pantalla habría que recordar qué flujo se estaba mirando. */}
+          <WorkflowConsistencyPanel workflowCode={workflowCode} version={filters.version} />
         </CardContent>
       </Card>
     </div>

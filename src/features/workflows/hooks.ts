@@ -7,6 +7,7 @@ import {
   getWorkflowVersions,
   listWorkflows,
   validateWorkflowTransition,
+  getWorkflowConsistency,
 } from "./services";
 import type { WorkflowTreeQuery } from "./types";
 
@@ -70,5 +71,20 @@ export function useValidateWorkflowTransitionMutation(workflowCode: string) {
   return useMutation({
     mutationFn: (body: Parameters<typeof validateWorkflowTransition>[1]) =>
       validateWorkflowTransition(workflowCode, body),
+  });
+}
+
+/**
+ * El informe de consistencia se pide a demanda, no al abrir el lienzo.
+ *
+ * Compara el catálogo sembrado con las rutas montadas en ESTE proceso, y eso recorre el árbol de
+ * endpoints entero: es una comprobación de gobierno, no un dato de la pantalla.
+ */
+export function useWorkflowConsistency(workflowCode: string, version?: string) {
+  return useQuery({
+    queryKey: ["workflows", "consistency", workflowCode, version ?? "latest"],
+    queryFn: () => getWorkflowConsistency(workflowCode, version),
+    enabled: false,
+    retry: false,
   });
 }

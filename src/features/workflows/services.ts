@@ -4,10 +4,10 @@ import type { QueryParams } from "@/shared/api/types";
 import type {
   WorkflowGraph,
   WorkflowSummary,
-  WorkflowTransition,
   WorkflowTransitionCheck,
   WorkflowTree,
   WorkflowTreeQuery,
+  WorkflowConsistencyReport,
 } from "./types";
 
 /**
@@ -52,15 +52,11 @@ export function getWorkflowGraph(
   });
 }
 
-export function getWorkflowTransitions(
-  workflowCode: string,
-  query?: WorkflowTreeQuery,
-) {
-  return apiRequest<WorkflowTransition[]>(
-    `/workflows/${workflowCode}/transitions`,
-    { query: toQuery(query) },
-  );
-}
+/*
+ * `GET /workflows/:code/transitions` no se envuelve: el árbol (`getWorkflowTree`) ya devuelve las
+ * transiciones y es lo que pinta el lienzo. Una segunda forma de pedir lo mismo se desincroniza en
+ * cuanto una de las dos cambie de forma.
+ */
 
 /**
  * Pregunta al grafo declarado si un salto es legal. No autoriza la petición:
@@ -167,4 +163,20 @@ export async function runWorkflowStepTrial(
       body: { message: error instanceof Error ? error.message : String(error) },
     };
   }
+}
+
+/**
+ * Informe de consistencia del flujo contra los endpoints REALES del proceso.
+ *
+ * Compara cada paso sembrado con las rutas montadas: ruta inexistente, código incoherente o estado
+ * de ciclo de vida desconocido son errores; roles divergentes o endpoint no descubierto, avisos.
+ * El endpoint existía —su propio comentario dice que «su consumidor natural es el portal interno y
+ * CI»— y el portal no lo pedía, así que la deriva entre lo declarado y lo montado sólo se veía
+ * llamando a mano.
+ */
+export function getWorkflowConsistency(workflowCode: string, version?: string) {
+  return apiRequest<WorkflowConsistencyReport>(
+    `/operations/workflows/${encodeURIComponent(workflowCode)}/consistency`,
+    version ? { query: { version } } : {},
+  );
 }

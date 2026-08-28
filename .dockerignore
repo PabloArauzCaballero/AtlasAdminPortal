@@ -1,0 +1,13 @@
+# Lo que NO tiene que viajar al build.
+#
+# Sin este archivo el contexto pasaba de 1,2 GB —`node_modules` y `.next` del anfitrión— y la
+# transferencia se comía la mayor parte del `docker build`. Ninguna de las dos cosas hace falta: las
+# dependencias las instala la etapa `dependencies` dentro de la imagen y `.next` lo produce el build
+# allí mismo. Mandar la copia local, además de lento, arriesga hornear un build viejo.
+node_modules
+.next
+.git
+.turbo
+test-results
+playwright-report
+*.log

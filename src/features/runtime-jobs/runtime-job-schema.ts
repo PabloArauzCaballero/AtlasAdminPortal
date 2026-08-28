@@ -32,13 +32,12 @@ function optionalInt(min: number, max: number) {
 /** Sin declaración del job, el campo no viaja: cualquier texto vale. */
 const unconstrained = z.string();
 
-const NUMERIC_FIELDS: readonly RuntimeJobNumericField[] = [
-  "limit",
-  "maxIdleMinutes",
-  "olderThanMinutes",
-  "olderThanDays",
-  "retentionDays",
-];
+/*
+ * Aquí había un `NUMERIC_FIELDS` con esos cinco nombres y no lo usaba nadie: los campos numéricos
+ * se enumeran uno a uno en el esquema y en el `switch` de `buildRuntimeJobBody`, y ese switch está
+ * escrito así a propósito —es lo que deja que el compilador compruebe que cada campo va con su tipo
+ * del contrato—. Una tercera lista de los mismos nombres, sin usar, sólo podía quedarse atrás.
+ */
 
 /**
  * Validación del formulario, construida PARA UN JOB.

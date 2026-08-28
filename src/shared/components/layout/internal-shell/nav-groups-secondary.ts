@@ -2,17 +2,23 @@ import {
   Bell,
   BellRing,
   Database,
+  DatabaseZap,
   Download,
+  Gauge,
   History,
   ListChecks,
   LockKeyhole,
   MessageSquare,
   PlayCircle,
+  Radio,
   Plug,
   Settings,
+  Store,
   ShieldAlert,
   ShieldCheck,
   Siren,
+  Stamp,
+  Table2,
   UserCircle,
   Users,
 } from "lucide-react";
@@ -44,6 +50,49 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         // "operations.workQueue.read" en el catálogo de /internal/permissions. Se deja visible y
         // el backend responde 403 con mensaje claro si el rol no alcanza.
         permissions: [],
+      },
+      {
+        label: "Vistas del negocio",
+        href: "/internal/views",
+        icon: Table2,
+        // Igual que el resto de Operaciones: el backend gatea por @Roles (diez roles internos,
+        // incluido readonly_auditor) y no hay permiso granular en /internal/permissions.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        label: "Usuarios de comercio",
+        href: "/internal/merchant-users",
+        icon: Store,
+        // Identidad del canal del comercio, administrada por personal interno: aquí no entra un
+        // comercio. La membresía (a qué comercio pertenece) vive en el ERP, en otra base.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        label: "Verificar comercios",
+        href: "/internal/operations/partners",
+        icon: Stamp,
+        // El backend gatea por @Roles y deja FUERA al rol `merchant`: de aquí en adelante el
+        // onboarding es verificación, no autoservicio.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        label: "Cartera y desenlaces",
+        href: "/internal/operations/portfolio",
+        icon: Gauge,
+        // El backend gatea por @Roles (risk_analyst/internal_operator/admin/platform_admin).
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        label: "Eventos de dominio",
+        href: "/internal/events",
+        icon: Radio,
+        // Mismo criterio que jobs: el backend gatea por @Roles y no hay permiso granular.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
         label: "Jobs internos",
@@ -117,6 +166,15 @@ export const navGroupsSecondary: InternalNavGroup[] = [
     label: "Proveedores externos",
     icon: Plug,
     items: [
+      {
+        label: "Datos del cliente",
+        href: "/internal/external-data",
+        icon: DatabaseZap,
+        // La otra mitad del módulo: la gobernanza del proveedor está en «Catálogo y salud»; esto es
+        // el consentimiento, la consulta y la evidencia de UN cliente.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
       {
         label: "Catálogo y salud",
         href: "/internal/external-providers",
