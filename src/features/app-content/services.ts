@@ -15,7 +15,10 @@ export function listAppContent(surface?: string) {
  * texto compitiendo por salir en la app.
  */
 export function saveAppContent(body: AppContentUpsert) {
-  return apiRequest<unknown>("/operations/app-content", { method: "PUT", body });
+  return apiRequest<unknown>("/operations/app-content", {
+    method: "PUT",
+    body,
+  });
 }
 
 export function removeAppContent(contentId: string) {

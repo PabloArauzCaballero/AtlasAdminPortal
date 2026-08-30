@@ -1,11 +1,5 @@
 export type ContentSurface =
-  | "onboarding"
-  | "home"
-  | "faq"
-  | "help"
-  | "legal"
-  | "profile"
-  | "credit";
+  "onboarding" | "home" | "faq" | "help" | "legal" | "profile" | "credit";
 
 export type ContentActionKind = "whatsapp" | "link" | "screen" | "tour";
 
