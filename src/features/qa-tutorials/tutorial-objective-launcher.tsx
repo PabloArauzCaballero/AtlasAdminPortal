@@ -24,7 +24,7 @@ export function TutorialObjectiveLauncher() {
           ¿Qué quieres hacer?
         </h2>
       </div>
-      <ul className="grid gap-2 sm:grid-cols-2">
+      <ul className="grid gap-2 grid-cols-1 sm:grid-cols-2">
         {goals.map((tutorial) => {
           const visual = statusVisual(statusFor(tutorial.id));
           return (

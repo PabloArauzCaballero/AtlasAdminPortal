@@ -15,7 +15,7 @@ export function StepAdvancedFields({
   onChange,
 }: Readonly<StepFieldProps>) {
   return (
-    <div className="grid gap-3 rounded-lg bg-atlas-soft p-3 md:grid-cols-2">
+    <div className="grid gap-3 rounded-lg bg-atlas-soft p-3 grid-cols-1 md:grid-cols-2">
       <JsonMiniField
         label="Path params"
         hint='Ej: { "customerId": "{{customerId}}" }'

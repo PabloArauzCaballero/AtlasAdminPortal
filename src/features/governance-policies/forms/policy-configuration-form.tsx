@@ -53,7 +53,7 @@ function IdentityFields({ values, onChange }: FormSectionProps) {
       <CardHeader>
         <SectionHeader title="Identidad" className="mb-0" />
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <TextField
           label="Nombre"
           field="name"
@@ -103,7 +103,7 @@ function ScopeFields({ values, onChange }: FormSectionProps) {
       <CardHeader>
         <SectionHeader title="Alcance" className="mb-0" />
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Tablas afectadas" hint="Una tabla por línea.">
           <Textarea
             value={values.scope.affectedTables}
@@ -144,7 +144,7 @@ function EnforcementFields({ values, onChange }: FormSectionProps) {
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Modo de mutación">
           <Select
             value={values.enforcement.mutationMode}

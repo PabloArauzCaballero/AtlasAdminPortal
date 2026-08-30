@@ -67,7 +67,7 @@ export function CatalogVersionCreateForm({
             publique.
           </p>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
             <Field
               label="Código de versión"
               hint="2 a 60 caracteres. Ej: 2026.07."

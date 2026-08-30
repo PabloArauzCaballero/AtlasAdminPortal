@@ -63,7 +63,7 @@ export function StepForm({
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Nombre del paso" error={errors.name?.message}>
           <Input
             placeholder="Login con credenciales válidas"
@@ -136,7 +136,7 @@ export function StepForm({
         </Select>
       </Field>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <JsonField
           label="Assertions"
           hint='Qué se valida de la respuesta. Ej: {"expectedStatusCodes": [200]}'
@@ -170,7 +170,7 @@ export function StepForm({
         field={register("configSchema")}
       />
 
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
         <label className="flex items-start gap-2 rounded-lg border border-atlas-border p-3 text-sm">
           <input
             type="checkbox"

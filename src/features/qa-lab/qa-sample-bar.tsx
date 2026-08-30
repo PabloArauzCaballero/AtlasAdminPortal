@@ -117,7 +117,7 @@ export function QaSampleBar({
         </Badge>
       </header>
 
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
         <Field label="Clase de caso">
           <Select
             value={kind}

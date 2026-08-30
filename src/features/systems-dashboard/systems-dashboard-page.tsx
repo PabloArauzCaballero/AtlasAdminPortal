@@ -115,7 +115,7 @@ function DashboardCounts({
   const { counts, posture } = dashboard.data;
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {Object.entries(counts ?? {}).map(([key, value]) => (
           <Card key={key}>
             <CardContent className="p-4">
@@ -134,7 +134,7 @@ function DashboardCounts({
           <p className="text-sm font-semibold text-atlas-text">
             Postura operativa
           </p>
-          <dl className="grid gap-2 sm:grid-cols-3">
+          <dl className="grid gap-2 grid-cols-1 sm:grid-cols-3">
             {Object.entries(posture ?? {}).map(([key, value]) => (
               <div
                 key={key}

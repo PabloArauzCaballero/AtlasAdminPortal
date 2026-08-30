@@ -62,7 +62,7 @@ export function CatalogIngestionForm({
           acá.
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field label="Código de catálogo" error={errors.catalogCode?.message}>
             <Input className="font-mono text-sm" {...register("catalogCode")} />
           </Field>
@@ -116,7 +116,7 @@ export function CatalogIngestionForm({
                 key={field.id}
                 className="space-y-3 rounded-lg border border-atlas-border p-3"
               >
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                   <Field
                     label="Valor crudo"
                     error={errors.items?.[index]?.rawValue?.message}
@@ -139,7 +139,7 @@ export function CatalogIngestionForm({
                     <Input {...register(`items.${index}.itemType`)} />
                   </Field>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                   <Field
                     label="Confianza (opcional)"
                     error={errors.items?.[index]?.confidenceScore?.message}

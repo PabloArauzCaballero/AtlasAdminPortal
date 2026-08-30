@@ -52,7 +52,7 @@ export function RunControls({
     isMutatingMethod(method) || Boolean(endpoint?.isDestructive);
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="Ambiente"
           hint="Determina el host base contra el que corre la prueba."

@@ -29,7 +29,7 @@ export function ColumnCatalogSection({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3 xl:grid-cols-5">
         <MetricCard label="Columnas" value={columns.length} />
         <MetricCard
           label="PII"
@@ -61,7 +61,7 @@ export function ColumnCatalogSection({
           description="El backend todavía no devolvió columnas para esta tabla."
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((column) => (
             <ColumnCard
               key={column.columnId ?? column.columnName}

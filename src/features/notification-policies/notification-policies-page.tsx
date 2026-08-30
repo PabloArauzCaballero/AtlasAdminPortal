@@ -72,7 +72,10 @@ export function NotificationPoliciesPage() {
       ) : null}
 
       {policies.data ? (
-        <div className="flex flex-col gap-6" data-testid="notification-policies-list">
+        <div
+          className="flex flex-col gap-6"
+          data-testid="notification-policies-list"
+        >
           {[...grouped.entries()].map(([category, items]) => (
             <div key={category} className="flex flex-col gap-3">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -91,8 +94,8 @@ export function NotificationPoliciesPage() {
           ))}
           {policies.data.data.length === 0 ? (
             <p className="text-sm text-slate-400">
-              No hay políticas configuradas. La pantalla de avisos de la app saldrá vacía hasta que
-              se defina al menos una.
+              No hay políticas configuradas. La pantalla de avisos de la app
+              saldrá vacía hasta que se defina al menos una.
             </p>
           ) : null}
         </div>
@@ -116,7 +119,9 @@ function PolicyCard({
   const [label, setLabel] = useState(policy.label);
   const [description, setDescription] = useState(policy.description ?? "");
   const [isMandatory, setIsMandatory] = useState(policy.isMandatory);
-  const [mandatoryReason, setMandatoryReason] = useState(policy.mandatoryReason ?? "");
+  const [mandatoryReason, setMandatoryReason] = useState(
+    policy.mandatoryReason ?? "",
+  );
   const [defaultEnabled, setDefaultEnabled] = useState(policy.defaultEnabled);
   const [isActive, setIsActive] = useState(policy.isActive);
 
@@ -150,9 +155,12 @@ function PolicyCard({
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold text-slate-100">{policy.label}</h3>
+          <h3 className="text-base font-semibold text-slate-100">
+            {policy.label}
+          </h3>
           <p className="mt-1 text-xs text-slate-400">
-            {policy.eventCode} · {CHANNEL_LABEL[policy.channel] ?? policy.channel}
+            {policy.eventCode} ·{" "}
+            {CHANNEL_LABEL[policy.channel] ?? policy.channel}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -171,7 +179,10 @@ function PolicyCard({
             {policy.isActive ? "activo" : "inactivo"}
           </span>
           {!editing ? (
-            <Button onClick={onEdit} data-testid={`edit-${policy.eventCode}-${policy.channel}`}>
+            <Button
+              onClick={onEdit}
+              data-testid={`edit-${policy.eventCode}-${policy.channel}`}
+            >
               Editar
             </Button>
           ) : null}
@@ -256,7 +267,9 @@ function PolicyCard({
           <div className="flex items-center gap-2">
             <Button
               onClick={save}
-              disabled={mutation.isPending || label.trim().length < 2 || missingReason}
+              disabled={
+                mutation.isPending || label.trim().length < 2 || missingReason
+              }
               data-testid={`save-${policy.eventCode}-${policy.channel}`}
             >
               {mutation.isPending ? "Guardando…" : "Guardar"}
@@ -266,7 +279,8 @@ function PolicyCard({
 
           {missingReason ? (
             <p className="text-xs text-amber-300">
-              Un aviso irrenunciable necesita explicar por qué no se puede apagar.
+              Un aviso irrenunciable necesita explicar por qué no se puede
+              apagar.
             </p>
           ) : null}
 

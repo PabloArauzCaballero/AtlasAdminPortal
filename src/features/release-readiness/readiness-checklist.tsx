@@ -18,7 +18,7 @@ export function ReadinessChecklist({
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="grid gap-3 lg:grid-cols-2">
+      <CardContent className="grid gap-3 grid-cols-1 lg:grid-cols-2">
         {items.map((item) => (
           <div
             key={item.key}
@@ -57,7 +57,7 @@ export function ReadinessActions() {
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map(([label, href]) => (
           <Link
             key={href}

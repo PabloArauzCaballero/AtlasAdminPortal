@@ -124,7 +124,7 @@ function AuthorizedCustomerExternalDataPage() {
                   : "No se pudieron leer los consentimientos."}
               </p>
             ) : null}
-            <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+            <div className="mt-4 grid gap-3 grid-cols-1 md:grid-cols-[1fr_1fr_auto]">
               <Field label="Propósito">
                 <Input
                   value={proposito}
@@ -187,7 +187,7 @@ function AuthorizedCustomerExternalDataPage() {
               La vista previa dice qué política aplica y qué costaría, sin llamar al proveedor. Es lo
               que separa una consulta gobernada de una factura sorpresa.
             </p>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
               <Field label="Proveedor">
                 <Input value={proveedor} onChange={(e) => setProveedor(e.target.value)} />
               </Field>
@@ -258,7 +258,7 @@ function AuthorizedCustomerExternalDataPage() {
             ) : null}
           </Card>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             <Card>
               <h2 className="mb-1 text-base font-semibold text-atlas-text">
                 Confianza digital

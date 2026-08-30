@@ -28,7 +28,7 @@ export function JourneyRunnerConfigFields({
 }>) {
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field label="Ambiente">
           <Select
             value={config.environment}
@@ -60,7 +60,7 @@ export function JourneyRunnerConfigFields({
           </Select>
         </Field>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <BaseRouteSelect
           value={config.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}

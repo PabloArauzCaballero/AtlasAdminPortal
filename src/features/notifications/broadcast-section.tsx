@@ -95,7 +95,7 @@ function BroadcastForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={openConfirm} noValidate className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <Field label="Título" error={errors.title?.message}>
                 <Input {...register("title")} />
               </Field>
@@ -115,7 +115,7 @@ function BroadcastForm() {
             <Field label="Mensaje" error={errors.body?.message}>
               <Textarea className="min-h-24" {...register("body")} />
             </Field>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
               <Field label="Audiencia">
                 <Select {...register("audience")}>
                   {AUDIENCE_OPTIONS.map((option) => (

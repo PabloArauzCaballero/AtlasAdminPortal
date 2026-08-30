@@ -39,7 +39,7 @@ export function Journey() {
       </p>
       <GuideJourneyDiagram />
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <FeatureCard
           icon={<Layers className="h-5 w-5" />}
           title="Campos por paso"
@@ -107,7 +107,7 @@ export function Seguridad() {
       kicker="Guardarraíles"
       title="Por qué es difícil hacerte daño con esto"
     >
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <FeatureCard
           icon={<Lock className="h-5 w-5" />}
           title="Tokens efímeros"
@@ -161,7 +161,7 @@ export function Historial() {
         Desde la cabecera del lab, dos accesos guardan lo que ejecutas para
         auditoría y comparación manual:
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Link
           href="/internal/qa/runs"
           className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle transition-[border-color,box-shadow] hover:border-slate-300 hover:shadow-card-hover"

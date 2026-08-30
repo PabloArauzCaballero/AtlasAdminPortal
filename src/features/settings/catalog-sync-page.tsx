@@ -90,7 +90,7 @@ export function CatalogSyncPage() {
         title="Sincronización de catálogo"
         description="Acciones controladas sobre Systems Ops. No ejecuta seeds destructivos ni toca secretos. Toda acción crítica requiere confirmación."
       />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         <SyncActionCard
           title="Descubrir endpoints"
           description="Ejecuta `/systems/endpoints/discover` en modo SOURCE_SCAN."

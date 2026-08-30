@@ -21,7 +21,7 @@ export function Panorama() {
         <strong>Journey (encadenado)</strong> ejecuta una secuencia de endpoints
         simulando un flujo de negocio real.
       </p>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <FeatureCard
           icon={<FlaskConical className="h-5 w-5" />}
           title="Prueba funcional"
@@ -116,7 +116,7 @@ export function Antes() {
         distinta a la del ambiente.
       </p>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <FeatureCard
           icon={<Radar className="h-5 w-5" />}
           title="systems.endpoints.read"

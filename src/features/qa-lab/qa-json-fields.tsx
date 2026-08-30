@@ -8,7 +8,7 @@ export type QaJsonField = {
 
 export function QaJsonFields({ fields }: Readonly<{ fields: QaJsonField[] }>) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
       {fields.map((field) => (
         <Field key={field.label} label={field.label}>
           <Textarea

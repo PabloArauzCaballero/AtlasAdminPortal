@@ -27,7 +27,7 @@ export function CustomerAuditFilters({
   onClear: () => void;
 }>) {
   return (
-    <div className="mb-4 grid gap-3 rounded-lg border border-atlas-border bg-white p-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+    <div className="mb-4 grid gap-3 rounded-lg border border-atlas-border bg-white p-3 grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
       <Field label="Tipo de evento">
         <Select
           value={value.eventType}

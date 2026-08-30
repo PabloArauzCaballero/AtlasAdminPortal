@@ -22,7 +22,7 @@ export function QaLabGuidePage() {
           </Link>
         }
       />
-      <div className="grid gap-8 xl:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid gap-8 grid-cols-1 xl:grid-cols-[220px_minmax(0,1fr)]">
         <GuideNav />
         <div className="min-w-0 space-y-12">
           <Panorama />

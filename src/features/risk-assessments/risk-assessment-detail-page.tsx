@@ -34,7 +34,7 @@ function ResultMetrics({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
     );
   }
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mb-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       <MetricCard label="Score total" value={formatNumber(result.scoreTotal)} />
       <MetricCard
         label="Score de fraude"

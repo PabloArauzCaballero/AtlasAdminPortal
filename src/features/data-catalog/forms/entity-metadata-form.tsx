@@ -76,7 +76,7 @@ function MetadataSection({
       <CardHeader>
         <SectionHeader title="Metadata de negocio" className="mb-0" />
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <TextField
           label="Nombre de negocio"
           field="entityName"
@@ -138,7 +138,7 @@ function GovernanceSection({
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Modo de mutación">
           <Select
             value={values.governance.mutationMode}

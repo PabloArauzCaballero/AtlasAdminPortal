@@ -2,7 +2,9 @@ import { apiRequest } from "@/shared/api/client";
 import type { NotificationPolicyList, NotificationPolicyUpsert } from "./types";
 
 export function listNotificationPolicies() {
-  return apiRequest<NotificationPolicyList>("/operations/notification-policies");
+  return apiRequest<NotificationPolicyList>(
+    "/operations/notification-policies",
+  );
 }
 
 /**

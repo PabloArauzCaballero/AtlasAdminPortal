@@ -169,7 +169,7 @@ function AuthorizedBusinessDomainsPage() {
       ) : null}
       {endpoints.data && entities.data && suites.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Dominios" value={formatNumber(domains.length)} />
             <MetricCard
               label="Endpoints"
@@ -194,7 +194,7 @@ function AuthorizedBusinessDomainsPage() {
               />
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {domains.map((domain) => {
                   const catalog = domainCatalogByModule.get(domain.key);
                   // Prioridad: descripción del catálogo del backend →

@@ -69,7 +69,7 @@ function AuthorizedLearningCenter() {
               Recorridos sugeridos
             </h2>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {learningPaths.map((path) => {
               const steps = pathTutorials(path);
               const first = steps[0];
@@ -139,7 +139,7 @@ function AuthorizedLearningCenter() {
               No hay tutoriales que coincidan con «{query}».
             </p>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
               {filtered.map((tutorial) => (
                 <TutorialListCard key={tutorial.id} tutorial={tutorial} />
               ))}

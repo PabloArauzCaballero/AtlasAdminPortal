@@ -109,7 +109,7 @@ export function CatalogVersionDecisionDialog({
             <Textarea rows={5} {...register("decisionReason")} />
           </Field>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <Field
               label="Vigente desde (opcional)"
               hint="YYYY-MM-DD. Vacío mantiene la fecha de la versión."

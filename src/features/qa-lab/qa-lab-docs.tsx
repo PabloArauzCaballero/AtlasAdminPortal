@@ -52,7 +52,7 @@ export function QaLabDocsPanel() {
         <Badge tone="info">{expanded ? "Ocultar" : "Ver guía"}</Badge>
       </button>
       {expanded ? (
-        <CardContent className="grid gap-4 border-t border-atlas-border pt-4 md:grid-cols-2 xl:grid-cols-3">
+        <CardContent className="grid gap-4 border-t border-atlas-border pt-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           <DocCard
             icon={<Radar className="h-4 w-4" />}
             title="Target dinámico"
@@ -102,7 +102,7 @@ export function QaLabDocsPanel() {
             <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-atlas-text">
               <Workflow className="h-3.5 w-3.5" /> Matriz de escenarios
             </p>
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
               {QA_SCENARIOS.map((scenario) => (
                 <div
                   key={scenario.key}

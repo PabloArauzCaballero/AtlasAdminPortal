@@ -88,7 +88,7 @@ export function TemplateForm({
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           <Field
             label="Código"
             hint="Identificador único, ej: onboarding_welcome."
@@ -124,7 +124,7 @@ export function TemplateForm({
             />
           </Field>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field label="Título" hint="Usado en push/in-app.">
             <Input
               value={form.titleTemplate ?? ""}
@@ -140,7 +140,7 @@ export function TemplateForm({
             />
           </Field>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
             label="Categoría"
             hint="Agrupa notificaciones para un futuro frontend (ej: system_alert, billing, kyc)."

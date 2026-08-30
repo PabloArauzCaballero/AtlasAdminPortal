@@ -30,13 +30,13 @@ export function SessionSecurityPage() {
         title="Seguridad de sesión"
         description="Revisión operativa de autenticación interna, cookies, MFA y permisos efectivos antes de producción."
       />
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Permisos" value={permissions.length} />
         <MetricCard label="Roles" value={roles.length} />
         <MetricCard label="Alertas" value={warnings} />
         <MetricCard label="Bloqueos" value={blocked} />
       </section>
-      <div className="mt-6 grid gap-4 xl:grid-cols-[1.3fr_1fr]">
+      <div className="mt-6 grid gap-4 grid-cols-1 xl:grid-cols-[1.3fr_1fr]">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

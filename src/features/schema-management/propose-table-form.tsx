@@ -45,7 +45,7 @@ export function ProposeTableForm({
   return (
     <DrawerPanel open title="Proponer tabla nueva" onClose={onClose}>
       <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
             label="Nombre de tabla"
             hint="snake_case, mín. 3 caracteres."

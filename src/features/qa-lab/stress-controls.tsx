@@ -23,7 +23,7 @@ export function StressControls({
   );
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="Ambiente"
           hint="LOCAL/STAGING permiten stress; producción queda bloqueada."

@@ -84,7 +84,7 @@ function AuthorizedDashboardPage() {
 
       {dashboard.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             {objectEntries(dashboard.data.counts).map(([key, value]) => (
               <MetricCard key={key} label={humanizeKey(key)} value={value} />
             ))}
@@ -92,7 +92,7 @@ function AuthorizedDashboardPage() {
 
           <TrafficLatencySection />
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-6 grid-cols-1 xl:grid-cols-[1.2fr_0.8fr]">
             <Card>
               <CardHeader>
                 <SectionHeader
@@ -102,7 +102,7 @@ function AuthorizedDashboardPage() {
                 />
               </CardHeader>
               <CardContent>
-                <dl className="grid gap-3 sm:grid-cols-2">
+                <dl className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                   {objectEntries(dashboard.data.posture).map(([key, value]) => (
                     <div
                       key={key}
@@ -164,7 +164,7 @@ function AuthorizedDashboardPage() {
                 className="mb-0"
               />
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               <QuickAccessLink
                 icon={GitBranch}
                 href="/internal/systems/endpoints"

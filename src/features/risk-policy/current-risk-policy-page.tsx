@@ -116,7 +116,7 @@ function AuthorizedCurrentRiskPolicyPage() {
       ) : null}
       {policy.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Modelos"
               value={formatNumber(policy.data.modelVersions.length)}
@@ -139,7 +139,7 @@ function AuthorizedCurrentRiskPolicyPage() {
                 className="mb-0"
               />
             </CardHeader>
-            <CardContent className="grid gap-3 lg:grid-cols-2">
+            <CardContent className="grid gap-3 grid-cols-1 lg:grid-cols-2">
               {policy.data.rulesetVersions.map((r) => (
                 <div
                   key={r.riskRulesetVersionId}

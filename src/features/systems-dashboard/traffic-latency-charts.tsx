@@ -43,7 +43,7 @@ export function TrafficLatencyCharts({
   );
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
       <ChartCard
         title="Hits por endpoint"
         subtitle="Top 10 rutas por cantidad de requests en la ventana."

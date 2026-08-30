@@ -61,7 +61,7 @@ export function SuiteForm({
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label={isEdit ? "Código (no editable)" : "Código"}
           hint={
@@ -144,7 +144,7 @@ export function SuiteForm({
         )}
       />
 
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
         <SuiteToggle
           label="Habilitada"
           description="Deshabilitada queda en el catálogo pero no se ejecuta."

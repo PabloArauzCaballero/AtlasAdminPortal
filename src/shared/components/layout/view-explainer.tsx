@@ -66,7 +66,7 @@ export function ViewExplainer() {
         )}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="grid gap-4 border-t border-atlas-border px-4 py-4 md:grid-cols-2">
+          <div className="grid gap-4 border-t border-atlas-border px-4 py-4 grid-cols-1 md:grid-cols-2">
             <ExplanationBlock
               icon={Landmark}
               tone="business"

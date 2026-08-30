@@ -95,7 +95,7 @@ function AuthorizedJobsPage() {
       ) : null}
       {jobs.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Jobs"
               value={formatNumber(jobs.data.meta.total)}

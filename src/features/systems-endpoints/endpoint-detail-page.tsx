@@ -137,7 +137,7 @@ function AuthorizedEndpointDetailPage({
             />
           ) : null}
           {activeTab === "QA Lab" ? (
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
               <EndpointTestCard
                 endpointId={data.endpoint.endpointId}
                 endpoint={data.endpoint}

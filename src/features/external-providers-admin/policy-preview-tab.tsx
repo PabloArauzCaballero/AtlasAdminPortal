@@ -48,7 +48,7 @@ export function PolicyPreviewTab() {
         Simula qué pasaría si se ejecutara esta solicitud (¿se bloquea por
         costo? ¿requiere aprobación manual?) sin llamar realmente al proveedor.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Customer ID (opcional)">
           <Input
             value={customerId}

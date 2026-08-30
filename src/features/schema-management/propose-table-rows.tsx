@@ -15,7 +15,7 @@ export function ColumnRowEditor({
 }>) {
   return (
     <div className="rounded-lg border border-atlas-border p-3">
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
         <Input
           value={column.columnName}
           onChange={(event) =>
@@ -99,7 +99,7 @@ export function RelationshipRowEditor({
 }>) {
   return (
     <div className="rounded-lg border border-atlas-border p-3">
-      <div className="grid gap-2 md:grid-cols-3">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-3">
         <Input
           value={relationship.sourceColumnName}
           onChange={(event) =>

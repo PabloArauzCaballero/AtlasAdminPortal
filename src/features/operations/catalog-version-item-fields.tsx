@@ -32,7 +32,7 @@ export function CatalogVersionItemFields({
         ) : null}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Código"
           hint="Solo letras, números y _ . : - (2 a 140)."
@@ -69,7 +69,7 @@ export function CatalogVersionItemFields({
         </Field>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Confianza (opcional)"
           hint="Hasta 3 enteros y 2 decimales (ej: 85.5)."

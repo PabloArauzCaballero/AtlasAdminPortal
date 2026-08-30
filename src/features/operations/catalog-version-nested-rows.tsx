@@ -43,7 +43,7 @@ export function AliasRows({ itemIndex }: Readonly<{ itemIndex: number }>) {
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="grid gap-3 rounded-lg border border-atlas-border p-3 md:grid-cols-[2fr_1fr_1fr_auto]"
+            className="grid gap-3 rounded-lg border border-atlas-border p-3 grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto]"
           >
             <Field label="Valor" error={errors?.[index]?.aliasValue?.message}>
               <Input
@@ -117,7 +117,7 @@ export function RiskMappingRows({
             key={field.id}
             className="space-y-3 rounded-lg border border-atlas-border p-3"
           >
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
               <Field
                 label="Dimensión"
                 error={errors?.[index]?.riskDimension?.message}
@@ -163,7 +163,7 @@ export function RiskMappingRows({
                 />
               </Field>
             </div>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
               <Field
                 label="Uso en modelo"
                 error={errors?.[index]?.modelUsage?.message}

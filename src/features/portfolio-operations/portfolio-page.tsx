@@ -115,7 +115,7 @@ function AuthorizedPortfolioPage() {
 
       {resumen.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Créditos calificados"
               value={formatNumber(resumen.data.totals.loanCount)}
@@ -152,7 +152,7 @@ function AuthorizedPortfolioPage() {
             />
           </Card>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             <Card>
               <h2 className="mb-1 text-base font-semibold text-atlas-text">
                 Recalificar

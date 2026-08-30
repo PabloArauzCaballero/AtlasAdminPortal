@@ -86,7 +86,7 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
               />
             </CardContent>
           </Card>
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
             <JsonViewer
               title="Payload sanitizado"
               value={job.data.payloadSummary}

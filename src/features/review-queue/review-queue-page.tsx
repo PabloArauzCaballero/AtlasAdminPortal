@@ -148,7 +148,7 @@ function AuthorizedReviewQueuePage() {
       ) : null}
       {queue.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
             <MetricCard label="Endpoints" value={queue.data.endpoints.total} />
             <MetricCard label="Tablas" value={queue.data.dataEntities.total} />
             <MetricCard

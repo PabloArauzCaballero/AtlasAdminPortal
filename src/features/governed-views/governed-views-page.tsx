@@ -154,7 +154,7 @@ function AuthorizedGovernedViewsPage() {
       ) : null}
       {vista.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Registros"
               value={formatNumber(vista.data.meta.total)}

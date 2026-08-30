@@ -38,7 +38,7 @@ export function GuideScenarioMatrix() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {QA_SCENARIOS.map((scenario) => {
           const selected = scenario.key === activeKey;
           return (

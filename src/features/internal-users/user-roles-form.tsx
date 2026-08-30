@@ -79,7 +79,7 @@ export function UserRolesForm({
         ) : null}
         <fieldset
           disabled={isSelf}
-          className="grid gap-3 md:grid-cols-2"
+          className="grid gap-3 grid-cols-1 md:grid-cols-2"
           aria-describedby={isSelf ? "self-role-lock" : undefined}
         >
           {(roles.data?.items ?? []).map((role) => {

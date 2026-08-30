@@ -99,7 +99,7 @@ function AuthorizedGovernanceOverviewPage() {
       ) : null}
       {entities.data && endpoints.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Tablas con PII"
               value={formatNumber(stats.piiTables)}
@@ -118,7 +118,7 @@ function AuthorizedGovernanceOverviewPage() {
             />
           </section>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
             <Card>
               <CardHeader>
                 <SectionHeader
@@ -158,7 +158,7 @@ function AuthorizedGovernanceOverviewPage() {
                   className="mb-0"
                 />
               </CardHeader>
-              <CardContent className="grid gap-3 sm:grid-cols-3">
+              <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-3">
                 <MetricCard
                   label="PII"
                   value={formatNumber(stats.piiEndpoints)}
@@ -183,7 +183,7 @@ function AuthorizedGovernanceOverviewPage() {
                 className="mb-0"
               />
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               <Link
                 className="rounded-md border border-atlas-border p-4 text-sm font-medium hover:bg-atlas-soft"
                 href="/internal/governance/pii"

@@ -59,7 +59,7 @@ export function ResolutionDialog({
           title={`Cerrar issue #${issueId}`}
           description="Completa resolución y notas. Evita incluir datos sensibles."
         />
-        <div className="grid gap-4 md:grid-cols-[180px_1fr]">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-[180px_1fr]">
           <Field label="Resolución" error={errors.resolution?.message}>
             <Select {...register("resolution")}>
               <option value="resolved">resolved</option>

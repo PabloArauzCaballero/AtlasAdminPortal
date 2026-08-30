@@ -1,4 +1,5 @@
-export type NotificationChannel = "push" | "email" | "sms" | "in_app" | "whatsapp";
+export type NotificationChannel =
+  "push" | "email" | "sms" | "in_app" | "whatsapp";
 
 export type NotificationPolicy = {
   policyId: string;

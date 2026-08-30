@@ -45,7 +45,7 @@ export function ProviderTestForm({
         Ejecuta una solicitud real de prueba contra el proveedor (útil para
         QA/debug). Usa valores por defecto razonables si dejás campos vacíos.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Customer ID">
           <Input
             value={customerId}

@@ -13,7 +13,8 @@ export function useNotificationPolicies() {
 export function useSaveNotificationPolicy() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: NotificationPolicyUpsert) => saveNotificationPolicy(body),
+    mutationFn: (body: NotificationPolicyUpsert) =>
+      saveNotificationPolicy(body),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: KEY });
     },

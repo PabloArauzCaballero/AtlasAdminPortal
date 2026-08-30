@@ -12,7 +12,7 @@ export function QaTargetControls({
   const defaultPath = endpoint?.fullPath || endpoint?.routePath || "";
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <BaseRouteSelect
           value={form.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}
@@ -52,7 +52,7 @@ export function QaExpectationsControls({
 }: Readonly<QaExpectationsControlsProps>) {
   if (variant === "stress") {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field label="HTTP esperados" hint="Ej: 200, 201, 204">
           <Input
             value={form.expectedStatusCodes}
@@ -65,7 +65,7 @@ export function QaExpectationsControls({
     );
   }
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
       <Field label="HTTP esperados" hint="Ej: 200, 201, 204">
         <Input
           value={form.expectedStatusCodes}
@@ -113,7 +113,7 @@ export function QaScenarioControls({
   const active = getQaScenario(form.scenario ?? "valid_payload");
   return (
     <div className="space-y-3 rounded-xl border border-atlas-border bg-atlas-soft p-3">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Escenario de prueba"
           hint="Preconfigura payload/expectativas para un caso común (payload inválido, sin auth, etc.)."

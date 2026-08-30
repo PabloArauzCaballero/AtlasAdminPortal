@@ -161,7 +161,7 @@ export function WorkflowLegend() {
         <p className="mb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-atlas-muted">
           Flechas (condición de la transición)
         </p>
-        <ul className="grid gap-1.5 sm:grid-cols-2">
+        <ul className="grid gap-1.5 grid-cols-1 sm:grid-cols-2">
           {Object.entries(CONDITION_LABEL).map(([key, label]) => (
             <LegendItem key={key} color={CONDITION_COLOR[key]} label={label} />
           ))}
@@ -172,7 +172,7 @@ export function WorkflowLegend() {
         <p className="mb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-atlas-muted">
           Color de la etapa (quién la ejecuta)
         </p>
-        <ul className="grid gap-1.5 sm:grid-cols-2">
+        <ul className="grid gap-1.5 grid-cols-1 sm:grid-cols-2">
           {Object.entries(ACTOR_LABEL).map(([key, label]) => (
             <LegendItem key={key} color={ACTOR_COLOR[key]} label={label} />
           ))}

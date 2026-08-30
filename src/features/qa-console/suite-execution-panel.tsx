@@ -102,7 +102,7 @@ export function SuiteExecutionPanel({
   return (
     <Card>
       <CardContent className="space-y-5">
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
           <Field label="Ambiente">
             <Select
               value={environment}
@@ -150,7 +150,7 @@ export function SuiteExecutionPanel({
           </Field>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
           <Field
             label="Headers JSON"
             hint="No se guardan secretos en el portal."

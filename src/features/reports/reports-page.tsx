@@ -103,7 +103,7 @@ function AuthorizedReportsPage() {
       ) : null}
       {reports.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Reportes"
               value={formatNumber(reports.data.meta.total)}

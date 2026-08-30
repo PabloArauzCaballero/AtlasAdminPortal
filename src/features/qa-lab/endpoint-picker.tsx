@@ -45,7 +45,7 @@ export function EndpointPicker({
       </CardHeader>
       <CardContent className="space-y-4">
         <div
-          className="grid gap-3 lg:grid-cols-[1fr_260px_auto]"
+          className="grid gap-3 grid-cols-1 lg:grid-cols-[1fr_260px_auto]"
           data-tutorial-id="qa-lab-endpoint-search"
         >
           <FilterBar

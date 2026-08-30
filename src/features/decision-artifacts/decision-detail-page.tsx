@@ -79,7 +79,7 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
         aprueba y para quien la opera. El ejemplo es lo que convierte una definicion en algo que se
         puede discutir en un comite.
       */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <h3 className="text-sm font-semibold text-atlas-text">Explicación de negocio</h3>
@@ -195,7 +195,7 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card testId="decision-endpoints">
           <CardHeader>
             <h3 className="text-sm font-semibold text-atlas-text">Endpoints que la llaman</h3>

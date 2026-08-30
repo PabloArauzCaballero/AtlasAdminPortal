@@ -148,7 +148,7 @@ export function InvestigationSummaryPage({
             De la agenda se enseña su FORMA y nunca su contenido: ni un nombre, ni un teléfono. Lo
             que el teléfono manda son cuentas, y lo que el servidor cruza son hashes que descarta.
           */}
-          <section className="grid gap-4 md:grid-cols-2">
+          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <KeyValueSection
               title="Verificación de identidad"
               items={
@@ -233,7 +233,7 @@ export function InvestigationSummaryPage({
             />
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2">
+          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <ListCard title="Contactos" empty="Sin contactos registrados.">
               {summary.data.contacts.map((contact, index) => (
                 <li
@@ -271,7 +271,7 @@ export function InvestigationSummaryPage({
             </ListCard>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2">
+          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <ListCard
               title={`Casos de revisión manual (${summary.data.manualReviewCases.length})`}
               empty="Sin casos de revisión manual abiertos."
