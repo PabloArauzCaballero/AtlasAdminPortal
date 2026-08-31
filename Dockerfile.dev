@@ -1,0 +1,77 @@
+# syntax=docker/dockerfile:1.7
+# Imagen de PRUEBAS del portal de administración, para el VPS de testing (Ubuntu, Contabo).
+#
+# La diferencia que importa frente a `Dockerfile` no es el tamaño: es de dónde salen las
+# `NEXT_PUBLIC_*`.
+#
+# Next las INCRUSTA EN EL PAQUETE DEL NAVEGADOR AL CONSTRUIR, no al arrancar. Cambiar una después
+# no tiene ningún efecto — ni reiniciando el contenedor, ni pasándola por `environment:`. La imagen
+# de producción resuelve esto copiando el `.env.local` de la máquina dentro del contexto de
+# construcción, que en un VPS no existe: se clona el repositorio limpio. Con el `.env.local` ausente
+# el portal se construiría contra los valores por defecto —`http://localhost:53005`— y el navegador
+# del tester llamaría a SU propio equipo en vez de al VPS. El portal cargaría perfectamente y el
+# login fallaría con un error de red que no menciona ninguna URL.
+#
+# Por eso aquí entran como `ARG`, y el compose del VPS los rellena con su dominio o su IP.
+#
+# Construcción:
+#   docker build -f Dockerfile.dev \
+#     --build-arg NEXT_PUBLIC_API_BASE_URL=http://203.0.113.10:3005/api/v1 \
+#     -t atlas-admin-portal:dev .
+
+FROM node:22-alpine AS base
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable
+
+FROM base AS dependencies
+COPY package.json yarn.lock ./
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+  yarn install --frozen-lockfile
+
+FROM base AS builder
+# El origen de la API tal y como lo ve EL NAVEGADOR del tester, no el contenedor: esta URL la
+# resuelve el equipo de quien abre el portal, así que un nombre de servicio de Docker
+# (`atlas-backend:3005`) no sirve aquí aunque funcione dentro de la red.
+ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:3005/api/v1
+ARG NEXT_PUBLIC_ATLAS_ENVIRONMENT=vps-testing
+ARG NEXT_PUBLIC_INTERNAL_APP_NAME="ATLAS Internal Platform"
+ARG NEXT_PUBLIC_DEFAULT_TENANT_ID=1
+ARG NEXT_PUBLIC_API_TIMEOUT_MS=20000
+ARG NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=cookie
+# Una variable REAL de entorno gana sobre `.env.local`, así que estas mandan aunque el contexto de
+# construcción llegue con un `.env.local` de otra máquina.
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
+    NEXT_PUBLIC_ATLAS_ENVIRONMENT=$NEXT_PUBLIC_ATLAS_ENVIRONMENT \
+    NEXT_PUBLIC_INTERNAL_APP_NAME=$NEXT_PUBLIC_INTERNAL_APP_NAME \
+    NEXT_PUBLIC_DEFAULT_TENANT_ID=$NEXT_PUBLIC_DEFAULT_TENANT_ID \
+    NEXT_PUBLIC_API_TIMEOUT_MS=$NEXT_PUBLIC_API_TIMEOUT_MS \
+    NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=$NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . .
+RUN yarn build
+# Este portal no tiene `public/`. La copia de más abajo es incondicional —Docker no sabe copiar «si
+# existe»— así que se garantiza el directorio aquí.
+RUN mkdir -p public
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production \
+  NEXT_TELEMETRY_DISABLED=1 \
+  HOSTNAME=0.0.0.0 \
+  PORT=5273
+
+RUN addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# `public/` no viaja dentro de `standalone`: Next lo deja fuera y pide copiarlo aparte, igual que
+# `.next/static`. Sin esta línea la imagen no serviría ningún recurso estático.
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+USER nextjs
+EXPOSE 5273
+HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
+  CMD wget -q -O /dev/null "http://127.0.0.1:${PORT}/" || exit 1
+CMD ["node", "server.js"]
