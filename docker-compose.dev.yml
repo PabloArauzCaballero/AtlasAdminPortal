@@ -1,0 +1,53 @@
+# Despliegue de PRUEBAS del portal de administración en el VPS de Contabo (Ubuntu).
+#
+# ## La trampa que gobierna este archivo
+#
+# Next INCRUSTA las `NEXT_PUBLIC_*` en el paquete del navegador AL CONSTRUIR, no al arrancar.
+# `ATLAS_PUBLIC_HOST` es por tanto un ARGUMENTO DE CONSTRUCCIÓN, no una variable de entorno:
+# cambiarlo y hacer `restart` no surte NINGÚN efecto. Hay que reconstruir:
+#
+#   docker compose -f docker-compose.dev.yml up -d --build
+#
+# Es la causa número uno de «el portal carga y el login falla con un error de red» después de mover
+# el VPS de IP o de ponerle un dominio.
+#
+# La URL que va ahí es la que resuelve EL NAVEGADOR del tester, no el contenedor: un nombre de
+# servicio de Docker (`atlas-backend:3005`) funcionaría dentro de la red y fallaría en el equipo de
+# quien abre el portal.
+#
+# ## Red compartida
+#
+#   docker network create atlas_vps     # una sola vez, en el VPS
+
+name: atlas-admin-portal-vps
+
+services:
+  portal:
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    image: atlas-admin-portal:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      cache_from: ['atlas-admin-portal:dev']
+      args:
+        NEXT_PUBLIC_API_BASE_URL: 'http://${ATLAS_PUBLIC_HOST:?define ATLAS_PUBLIC_HOST en el .env de este repositorio}:3005/api/v1'
+        NEXT_PUBLIC_ATLAS_ENVIRONMENT: vps-testing
+    env_file: ['${ATLAS_ENV_DIR:-/opt/atlas/env}/admin-portal.env']
+    ports:
+      - '5273:5273'
+    networks:
+      atlas_vps:
+        aliases: [admin-portal]
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+networks:
+  atlas_vps:
+    external: true
