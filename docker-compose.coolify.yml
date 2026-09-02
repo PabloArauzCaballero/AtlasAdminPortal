@@ -50,10 +50,18 @@ services:
     # `init: true` reparte SIGTERM al proceso de Node: sin un init como PID 1, el apagado no es
     # ordenado. Se pone aquí y no con un binario en la imagen para no depender de `apt`.
     init: true
-    # Publicado en la interfaz de Tailscale, que es por donde entras. `0.0.0.0` lo dejaría
-    # accesible en la IP pública sin TLS; si algún día le pones dominio en Coolify, quita este
-    # `ports` y deja que lo sirva su proxy.
-    ports: ['100.101.207.88:5273:5273']
+    # SIN `ports:` — y es lo que evita el fallo que rompía cada redespliegue.
+    #
+    # Coolify nombra cada contenedor con una MARCA DE TIEMPO, así que en cada despliegue crea uno
+    # NUEVO en vez de reemplazar el anterior. Mientras el viejo siga en pie sujeta el puerto del
+    # host, y el nuevo muere con `failed to bind host port ...: address already in use`. No es un
+    # puerto mal elegido: publicar un puerto FIJO desde el compose es incompatible con cómo
+    # despliega Coolify.
+    #
+    # Quien publica este portal interno es el PROXY de Coolify. En la aplicación, pon en el campo de
+    # dominio:  http://100.101.207.88:5273
+    # Coolify configura entonces su proxy para escuchar ahí y enrutar al contenedor, y se encarga
+    # él de retirar el anterior — que es justo lo que un compose con puerto fijo no puede hacer.
     expose: ['5273']
     stop_grace_period: 20s
     deploy:
