@@ -1,0 +1,61 @@
+# Portal interno de Atlas, gestionado por COOLIFY.
+#
+# Va aparte de `docker-compose.dev.yml` —el del VPS operado a mano, con los `.env` en
+# `/opt/atlas/env` y la red compartida `atlas_vps`— porque las dos formas de configurar son
+# incompatibles.
+#
+# ## LO ÚNICO QUE HAY QUE ENTENDER DE ESTE ARCHIVO
+#
+# **`NEXT_PUBLIC_API_BASE_URL` se hornea AL CONSTRUIR, no al arrancar.** Next reemplaza las
+# variables `NEXT_PUBLIC_*` por su valor literal dentro del JavaScript que descarga el navegador,
+# así que cambiarla en Environment Variables y reiniciar **no hace absolutamente nada**: hay que
+# RECONSTRUIR. Es la causa número uno de «el portal carga y el login falla con un error de red».
+#
+# Y la resuelve **el navegador**, no el contenedor. Por eso no puede ser `http://atlas-backend:3005`
+# —ese nombre sólo existe dentro de Docker— ni `http://localhost:3005`, que en el navegador de
+# quien entra desde otra máquina es SU propio equipo. Tiene que ser una dirección a la que llegue
+# el navegador: aquí la IP de Tailscale del VPS, que es por donde entras.
+#
+# Va como `build.args` en este archivo y no como variable de Coolify a propósito: así queda
+# escrita junto a la explicación y no depende de que alguien marque la casilla correcta en la
+# interfaz.
+#
+# ## Lo que este archivo NO trae
+#
+# La red externa `atlas_vps` —Coolify crea la suya por proyecto— ni `env_file`: Coolify añade
+# `env_file: - .env` a cada servicio por su cuenta, con las variables de su interfaz dentro. Pega
+# ahí `atlas-vps-testing/env/admin-portal.env`, EN BLOQUE.
+
+name: atlas-admin-portal
+
+services:
+  portal:
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    image: atlas-admin-portal:coolify
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      cache_from: ['atlas-admin-portal:coolify']
+      args:
+        # La dirección que va a pedir el NAVEGADOR. Ver la nota de arriba: si cambias esto, hay
+        # que reconstruir, no reiniciar.
+        NEXT_PUBLIC_API_BASE_URL: 'http://100.101.207.88:3005/api/v1'
+        NEXT_PUBLIC_ATLAS_ENVIRONMENT: 'vps-testing'
+    # `init: true` reparte SIGTERM al proceso de Node: sin un init como PID 1, el apagado no es
+    # ordenado. Se pone aquí y no con un binario en la imagen para no depender de `apt`.
+    init: true
+    # Publicado en la interfaz de Tailscale, que es por donde entras. `0.0.0.0` lo dejaría
+    # accesible en la IP pública sin TLS; si algún día le pones dominio en Coolify, quita este
+    # `ports` y deja que lo sirva su proxy.
+    ports: ['100.101.207.88:5273:5273']
+    expose: ['5273']
+    stop_grace_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
