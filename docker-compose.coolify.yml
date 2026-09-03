@@ -11,10 +11,16 @@
 # así que cambiarla en Environment Variables y reiniciar **no hace absolutamente nada**: hay que
 # RECONSTRUIR. Es la causa número uno de «el portal carga y el login falla con un error de red».
 #
-# Y la resuelve **el navegador**, no el contenedor. Por eso no puede ser `http://atlas-backend:3005`
-# —ese nombre sólo existe dentro de Docker— ni `http://localhost:3005`, que en el navegador de
-# quien entra desde otra máquina es SU propio equipo. Tiene que ser una dirección a la que llegue
-# el navegador: aquí la IP de Tailscale del VPS, que es por donde entras.
+# Y la resuelve **el navegador**, no el contenedor. Es por eso que vale `/api/v1`, RELATIVA: el
+# navegador la resuelve contra el origen del portal —el del túnel, con su HTTPS— y `rewrites()` en
+# `next.config.ts` da el salto al backend desde dentro de Docker, donde `atlas-backend:3005` sí
+# existe. Ese destino es `INTERNAL_API_ORIGIN`, más abajo, y ése SÍ se lee al arrancar.
+#
+# Lo que NO puede ser es una dirección absoluta del backend. Antes decía
+# `http://100.101.207.88:3005/api/v1`, la IP de Tailscale, de cuando se entraba por el VPS: hoy la
+# página se sirve por HTTPS desde un dev tunnel y esa llamada muere dos veces —el navegador de un
+# tester no enruta una IP de Tailscale, y aunque la enrutara el navegador bloquea HTTP desde una
+# página HTTPS (contenido mixto)—. El portal cargaba y el login fallaba con un error de red.
 #
 # Va como `build.args` en este archivo y no como variable de Coolify a propósito: así queda
 # escrita junto a la explicación y no depende de que alguien marque la casilla correcta en la
@@ -44,8 +50,8 @@ services:
       cache_from: ['atlas-admin-portal:coolify']
       args:
         # La dirección que va a pedir el NAVEGADOR. Ver la nota de arriba: si cambias esto, hay
-        # que reconstruir, no reiniciar.
-        NEXT_PUBLIC_API_BASE_URL: 'http://100.101.207.88:3005/api/v1'
+        # que reconstruir, no reiniciar. Relativa a propósito: mismo origen que el portal.
+        NEXT_PUBLIC_API_BASE_URL: '/api/v1'
         NEXT_PUBLIC_ATLAS_ENVIRONMENT: 'vps-testing'
     # `init: true` reparte SIGTERM al proceso de Node: sin un init como PID 1, el apagado no es
     # ordenado. Se pone aquí y no con un binario en la imagen para no depender de `apt`.
@@ -62,6 +68,14 @@ services:
     # dominio:  http://100.101.207.88:5273
     # Coolify configura entonces su proxy para escuchar ahí y enrutar al contenedor, y se encarga
     # él de retirar el anterior — que es justo lo que un compose con puerto fijo no puede hacer.
+    # El destino de `rewrites()` en `next.config.ts`, y la otra mitad de la nota de arriba: ésta SÍ
+    # se lee al arrancar, así que basta redespliegue, no reconstrucción. Sin ella Next cae a su
+    # `http://127.0.0.1:3005`, que dentro de este contenedor no es nadie, y cada `/api/v1/*`
+    # devuelve 500 con `ECONNREFUSED 127.0.0.1:3005` en el log del portal.
+    #
+    # `atlas-backend` es el alias del API en la red compartida (ver el bloque `networks`).
+    environment:
+      INTERNAL_API_ORIGIN: 'http://atlas-backend:3005'
     expose: ['5273']
     stop_grace_period: 20s
     deploy:
