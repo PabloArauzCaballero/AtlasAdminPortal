@@ -71,6 +71,12 @@ ARG NEXT_PUBLIC_INTERNAL_APP_NAME="ATLAS Internal Platform"
 ARG NEXT_PUBLIC_DEFAULT_TENANT_ID=1
 ARG NEXT_PUBLIC_API_TIMEOUT_MS=20000
 ARG NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=cookie
+# El destino del `rewrites()` de `next.config.ts`, es decir el backend tal y como lo ve EL
+# CONTENEDOR. Va como ARG, y no sólo como variable de ejecución, porque `output: 'standalone'`
+# SERIALIZA la configuración dentro del `server.js` que genera el build: lo que valga esto al
+# construir queda escrito ahí y definirlo al arrancar no cambia nada. Se comprueba con
+# `grep -o '127.0.0.1:3005' server.js` dentro del contenedor — si aparece, se horneó el default.
+ARG INTERNAL_API_ORIGIN=http://127.0.0.1:3005
 # Una variable REAL de entorno gana sobre `.env.local`, así que estas mandan aunque el contexto de
 # construcción llegue con un `.env.local` de otra máquina.
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
@@ -78,7 +84,8 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_INTERNAL_APP_NAME=$NEXT_PUBLIC_INTERNAL_APP_NAME \
     NEXT_PUBLIC_DEFAULT_TENANT_ID=$NEXT_PUBLIC_DEFAULT_TENANT_ID \
     NEXT_PUBLIC_API_TIMEOUT_MS=$NEXT_PUBLIC_API_TIMEOUT_MS \
-    NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=$NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE
+    NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=$NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE \
+    INTERNAL_API_ORIGIN=$INTERNAL_API_ORIGIN
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN yarn build

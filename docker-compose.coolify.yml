@@ -53,6 +53,10 @@ services:
         # que reconstruir, no reiniciar. Relativa a propósito: mismo origen que el portal.
         NEXT_PUBLIC_API_BASE_URL: '/api/v1'
         NEXT_PUBLIC_ATLAS_ENVIRONMENT: 'vps-testing'
+        # El destino de `rewrites()`: el backend visto DESDE EL CONTENEDOR. Aquí y no sólo en
+        # `environment:` porque `output: 'standalone'` serializa la configuración de Next dentro
+        # del `server.js` del build — definirla al arrancar no cambia el destino ya horneado.
+        INTERNAL_API_ORIGIN: 'http://atlas-backend:3005'
     # `init: true` reparte SIGTERM al proceso de Node: sin un init como PID 1, el apagado no es
     # ordenado. Se pone aquí y no con un binario en la imagen para no depender de `apt`.
     init: true
@@ -68,10 +72,13 @@ services:
     # dominio:  http://100.101.207.88:5273
     # Coolify configura entonces su proxy para escuchar ahí y enrutar al contenedor, y se encarga
     # él de retirar el anterior — que es justo lo que un compose con puerto fijo no puede hacer.
-    # El destino de `rewrites()` en `next.config.ts`, y la otra mitad de la nota de arriba: ésta SÍ
-    # se lee al arrancar, así que basta redespliegue, no reconstrucción. Sin ella Next cae a su
-    # `http://127.0.0.1:3005`, que dentro de este contenedor no es nadie, y cada `/api/v1/*`
-    # devuelve 500 con `ECONNREFUSED 127.0.0.1:3005` en el log del portal.
+    # Se repite aquí a propósito, pero el que MANDA es el `build.args` de arriba: con
+    # `output: 'standalone'` la reescritura ya está escrita en `server.js`. Esto sólo cubre
+    # cualquier lectura de la variable en tiempo de ejecución, y evita que el valor quede
+    # definido en un único sitio.
+    #
+    # Sin ninguno de los dos, Next cae a `http://127.0.0.1:3005`, que dentro de este contenedor no
+    # es nadie, y cada `/api/v1/*` devuelve 500 con `ECONNREFUSED 127.0.0.1:3005` en el log.
     #
     # `atlas-backend` es el alias del API en la red compartida (ver el bloque `networks`).
     environment:
