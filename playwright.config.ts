@@ -23,6 +23,14 @@ loadEnvConfig(process.cwd(), true, { info: () => {}, error: console.error });
  */
 const PORT = Number(process.env.PW_PORT ?? 5273);
 /**
+ * `PW_BASE_URL` apunta la suite a un portal YA desplegado, con su URL completa.
+ *
+ * Es lo que permite comprobar la versión que de verdad está publicada —la del túnel del VPS— en
+ * lugar de una compilación local que se le parece. Sin esto sólo se podía medir `localhost`, y un
+ * despliegue roto pasaba desapercibido: el código estaba bien y el entorno no.
+ */
+const EXTERNAL_BASE_URL = process.env.PW_BASE_URL;
+/**
  * `localhost` y no `127.0.0.1`, a propósito.
  *
  * La sesión del portal vive en cookies `HttpOnly` con `SameSite=Lax`, y el navegador decide
@@ -32,7 +40,7 @@ const PORT = Number(process.env.PW_PORT ?? 5273);
  * portal rebotaba a `?reason=session_expired`, que es exactamente el síntoma de una sesión
  * caducada y no lo era. Debe coincidir con el host de `NEXT_PUBLIC_API_BASE_URL`.
  */
-const BASE_URL = `http://localhost:${PORT}`;
+const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
 
 /**
  * E2E con Playwright. El webServer levanta la app real (`next start`, que exige
@@ -92,7 +100,12 @@ export default defineConfig({
     // Con `PW_PORT` se asume que el servidor lo levanta quien corre la suite (típicamente un
     // `next dev`), así que no se arranca ninguno: arrancar un `next start` sobre un puerto ya
     // ocupado sólo produciría un error confuso.
-    command: process.env.PW_PORT ? "true" : `npx next start -p ${PORT}`,
+    // Con `PW_BASE_URL` el portal ya está servido en otra máquina: arrancar uno aquí no sólo
+    // sobra, sino que mediría el equivocado.
+    command:
+      process.env.PW_PORT || EXTERNAL_BASE_URL
+        ? "true"
+        : `npx next start -p ${PORT}`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
