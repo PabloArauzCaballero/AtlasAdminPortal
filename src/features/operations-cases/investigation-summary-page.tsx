@@ -1,18 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import {
   Badge,
-  RiskBadge,
   SeverityBadge,
   StatusBadge,
 } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
+import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
+import { ListCard } from "./list-card";
 import { useInvestigationSummary } from "./hooks";
 import { Search } from "lucide-react";
 
@@ -94,47 +95,11 @@ export function InvestigationSummaryPage({
             ]}
           />
 
-          <section className="rounded-2xl border border-atlas-border bg-white shadow-subtle">
-            <div className="border-b border-atlas-border bg-slate-50/70 px-5 py-4">
-              <h2 className="text-sm font-semibold text-atlas-text">
-                Última evaluación de riesgo
-              </h2>
-            </div>
-            <div className="p-5">
-              {summary.data.latestRiskAssessment ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <RiskBadge
-                    value={summary.data.latestRiskAssessment.riskLevel}
-                  />
-                  <span className="text-sm text-atlas-text">
-                    {safeText(
-                      summary.data.latestRiskAssessment.recommendedAction,
-                    )}
-                  </span>
-                  <span className="text-sm text-atlas-muted">
-                    Score:{" "}
-                    {formatNumber(summary.data.latestRiskAssessment.fraudScore)}
-                  </span>
-                  <Link
-                    href={`/internal/operations/risk-assessments/${summary.data.latestRiskAssessment.riskAssessmentRunId}`}
-                    className="ml-auto font-mono text-xs text-atlas-accent underline"
-                  >
-                    run #{summary.data.latestRiskAssessment.riskAssessmentRunId}
-                  </Link>
-                  <span className="w-full text-xs text-atlas-muted">
-                    Decidido:{" "}
-                    {formatDateTime(
-                      summary.data.latestRiskAssessment.decidedAt,
-                    )}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-sm text-atlas-muted">
-                  Sin evaluaciones de riesgo registradas.
-                </p>
-              )}
-            </div>
-          </section>
+          <TarjetaDeExpediente customerId={customerId} />
+
+          <UltimaEvaluacionDeRiesgo
+            evaluacion={summary.data.latestRiskAssessment}
+          />
 
           {/*
             Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.
@@ -156,29 +121,41 @@ export function InvestigationSummaryPage({
                   ? [
                       {
                         label: "Resultado",
-                        value: safeText(summary.data.latestIdentityVerification.result),
+                        value: safeText(
+                          summary.data.latestIdentityVerification.result,
+                        ),
                       },
                       {
                         label: "Canal",
-                        value: safeText(summary.data.latestIdentityVerification.channel),
+                        value: safeText(
+                          summary.data.latestIdentityVerification.channel,
+                        ),
                       },
                       {
                         label: "Parecido biométrico",
-                        value: formatNumber(summary.data.latestIdentityVerification.similarity),
+                        value: formatNumber(
+                          summary.data.latestIdentityVerification.similarity,
+                        ),
                       },
                       {
                         // Riesgo de FALSIFICACIÓN del documento, no confianza en la lectura. Se
                         // nombra entero porque los dos números viven al lado y se confunden.
                         label: "Riesgo de fraude documental",
-                        value: formatNumber(summary.data.latestIdentityVerification.fraudRisk),
+                        value: formatNumber(
+                          summary.data.latestIdentityVerification.fraudRisk,
+                        ),
                       },
                       {
                         label: "Solicitada",
-                        value: formatDateTime(summary.data.latestIdentityVerification.requestedAt),
+                        value: formatDateTime(
+                          summary.data.latestIdentityVerification.requestedAt,
+                        ),
                       },
                       {
                         label: "Resuelta",
-                        value: formatDateTime(summary.data.latestIdentityVerification.completedAt),
+                        value: formatDateTime(
+                          summary.data.latestIdentityVerification.completedAt,
+                        ),
                       },
                     ]
                   : [
@@ -196,15 +173,21 @@ export function InvestigationSummaryPage({
                   ? [
                       {
                         label: "Contactos",
-                        value: formatNumber(summary.data.addressBook.totalContacts),
+                        value: formatNumber(
+                          summary.data.addressBook.totalContacts,
+                        ),
                       },
                       {
                         label: "Números distintos",
-                        value: formatNumber(summary.data.addressBook.uniqueRatio),
+                        value: formatNumber(
+                          summary.data.addressBook.uniqueRatio,
+                        ),
                       },
                       {
                         label: "Números bolivianos",
-                        value: formatNumber(summary.data.addressBook.bolivianRatio),
+                        value: formatNumber(
+                          summary.data.addressBook.bolivianRatio,
+                        ),
                       },
                       {
                         label: "Referencias dentro de la agenda",
@@ -214,7 +197,9 @@ export function InvestigationSummaryPage({
                       },
                       {
                         label: "Coincidencias con teléfonos ya marcados",
-                        value: formatNumber(summary.data.addressBook.riskMatches),
+                        value: formatNumber(
+                          summary.data.addressBook.riskMatches,
+                        ),
                       },
                     ]
                   : [
@@ -309,29 +294,5 @@ export function InvestigationSummaryPage({
         </div>
       ) : null}
     </>
-  );
-}
-
-function ListCard({
-  title,
-  empty,
-  children,
-}: Readonly<{ title: string; empty: string; children: React.ReactNode }>) {
-  const hasChildren = Array.isArray(children)
-    ? children.length > 0
-    : Boolean(children);
-  return (
-    <section className="rounded-2xl border border-atlas-border bg-white shadow-subtle">
-      <div className="border-b border-atlas-border bg-slate-50/70 px-5 py-3">
-        <h2 className="text-sm font-semibold text-atlas-text">{title}</h2>
-      </div>
-      <div className="p-5">
-        {hasChildren ? (
-          <ul className="divide-y divide-slate-100">{children}</ul>
-        ) : (
-          <p className="text-sm text-atlas-muted">{empty}</p>
-        )}
-      </div>
-    </section>
   );
 }

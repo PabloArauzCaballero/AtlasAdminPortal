@@ -12,6 +12,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       "/internal/notifications",
       "/internal/my-notifications",
       "/internal/exports",
+      "/internal/files",
     ],
     systems:
       "Herramientas del día a día del equipo interno: cola de trabajo de casos, jobs programados del backend, alertas operativas, mensajería interna (broadcasts, plantillas y preferencias) y exportaciones de datos con trazabilidad.",
@@ -23,6 +24,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
           "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",
         business:
           "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
+      },
+      "/internal/files": {
+        systems:
+          "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
+        business:
+          "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
       },
       "/internal/operations/runtime-jobs": {
         systems:

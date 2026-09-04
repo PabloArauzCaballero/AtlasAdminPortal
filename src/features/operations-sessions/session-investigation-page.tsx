@@ -8,6 +8,7 @@ import {
 } from "@/shared/components/layout/page-header";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
 import { useSessionInvestigationSummary } from "./hooks";
 import { SessionDetailTabs } from "./session-detail-tabs";
 import { SessionSignalsSection } from "./session-signals-section";
@@ -59,6 +60,12 @@ export function SessionInvestigationPage({
       ) : null}
       {summary.data ? (
         <>
+          {/* Los archivos que se subieron en esta sesión viven en el expediente del cliente: la
+              sesión es el momento, el expediente es el material. Sin este camino, quien mira las
+              señales de fraude no tiene forma de abrir el carnet que las produjo. */}
+          {summary.data.session.customerId ? (
+            <TarjetaDeExpediente customerId={summary.data.session.customerId} />
+          ) : null}
           <SessionSignalsSection summary={summary.data} />
           <SectionHeader
             title="Evidencia de la sesión"

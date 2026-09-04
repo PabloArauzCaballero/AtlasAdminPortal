@@ -4,6 +4,7 @@ import {
   Database,
   DatabaseZap,
   Download,
+  FolderTree,
   Gauge,
   History,
   ListChecks,
@@ -50,6 +51,15 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         // "operations.workQueue.read" en el catálogo de /internal/permissions. Se deja visible y
         // el backend responde 403 con mensaje claro si el rol no alcanza.
         permissions: [],
+      },
+      {
+        label: "Archivos",
+        href: "/internal/files",
+        icon: FolderTree,
+        // Aquí SÍ hay permiso granular: `expedientes.leer` existe en el catálogo de
+        // /internal/permissions y lo exige el backend por carpeta. Es lo que distingue esta
+        // entrada del resto de Operaciones, gateadas por @Roles a falta de permiso propio.
+        permissions: ["expedientes.leer"],
       },
       {
         label: "Vistas del negocio",

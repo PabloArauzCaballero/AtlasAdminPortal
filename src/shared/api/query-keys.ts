@@ -131,4 +131,24 @@ export const queryKeys = {
     "pending-rotation",
   ] as const,
   authBrokerAvailability: ["external-providers", "auth-broker"] as const,
+
+  // Expedientes: el explorador de archivos del cliente.
+  expedientes: (params: unknown) => ["expedientes", "lista", params] as const,
+  expediente: (expedienteId: string) =>
+    ["expedientes", "detalle", expedienteId] as const,
+  expedientePorCliente: (customerId: string) =>
+    ["expedientes", "por-cliente", customerId] as const,
+  expedienteNodos: (
+    expedienteId: string,
+    parentId: string | null,
+    q?: string,
+  ) => ["expedientes", "nodos", expedienteId, parentId, q ?? ""] as const,
+  expedienteContenido: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "contenido", expedienteId, nodoId] as const,
+  expedienteActividad: (expedienteId: string, params: unknown) =>
+    ["expedientes", "actividad", expedienteId, params] as const,
+  expedienteContactos: (expedienteId: string) =>
+    ["expedientes", "contactos", expedienteId] as const,
+  expedienteConcesiones: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "concesiones", expedienteId, nodoId] as const,
 };

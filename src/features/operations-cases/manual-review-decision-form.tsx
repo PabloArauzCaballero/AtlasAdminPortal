@@ -18,6 +18,7 @@ import {
   type ManualReviewForm,
 } from "./decision-schemas";
 import { useDecideManualReviewCaseMutation } from "./hooks";
+import { AvisoDeExpediente } from "@/features/files/expediente-notice";
 import type { WorkQueueItem } from "./types";
 
 export function ManualReviewDecisionForm({
@@ -50,6 +51,7 @@ export function ManualReviewDecisionForm({
       onClose={onClose}
     >
       <form onSubmit={onSubmit} noValidate className="space-y-4">
+        <AvisoDeExpediente customerId={item.customerId} />
         <Field label="Decisión">
           <Select {...register("decision")}>
             {MANUAL_REVIEW_DECISIONS.map((option) => (
