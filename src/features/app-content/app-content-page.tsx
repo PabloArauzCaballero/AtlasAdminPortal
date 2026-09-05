@@ -50,7 +50,7 @@ const SURFACES: Array<{ value: ContentSurface; label: string; hint: string }> =
     {
       value: "legal",
       label: "Legal",
-      hint: "Enlaces a términos y política de privacidad",
+      hint: "Términos, privacidad y el texto con el que la app pide los permisos de ubicación y contactos",
     },
     {
       value: "profile",
