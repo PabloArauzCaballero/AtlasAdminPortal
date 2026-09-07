@@ -19,6 +19,11 @@ export const DOMAIN_CODE_TO_MODULE: Record<string, string> = {
   CALIDAD_DATOS: "data_quality",
   AUDITORIA: "audit",
   SISTEMAS_QA: "systems",
+  // Faltaban dos de los quince dominios del catálogo. Sus tablas viven en `privacy` y en `catalog`
+  // (evidencias y catálogos de contexto), así que sin estas dos líneas ambos dominios quedaban
+  // fuera del mapa y sus fichas aparecían sin dominio de negocio asociado.
+  EVIDENCIAS: "privacy",
+  CONTEXTO_RIESGO: "catalog_management",
 };
 
 /**
@@ -77,6 +82,14 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
     "Linaje de datos: relaciones y trazabilidad entre orígenes y destinos.",
   reports: "Reportes: tableros de negocio y readiness de release.",
   security: "Seguridad: revisiones, controles y hallazgos de seguridad.",
+  credit:
+    "Crédito: líneas aprobadas, solicitudes, cartera, cuotas, pagos y política de mora.",
+  support:
+    "Soporte: casos que la persona o el comercio abren contra Atlas, colas, SLA y base de conocimiento.",
+  expedientes:
+    "Expedientes: el archivo por cliente, sus nodos, concesiones de acceso y actividad sobre los documentos.",
+  partner_onboarding:
+    "Comercios: alta y verificación del comercio como sujeto, sus sucursales, terminales y códigos QR.",
 };
 
 /**

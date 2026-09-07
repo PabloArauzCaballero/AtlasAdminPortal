@@ -5,7 +5,10 @@ import { Badge, ReviewStatusBadge } from "@/shared/components/ui/badges";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { formatNumber } from "@/shared/lib/format";
 import type { Domain } from "@/features/systems/types";
-import { normalizeModule } from "@/features/systems/domain-module-map";
+import {
+  moduleDescription,
+  normalizeModule,
+} from "@/features/systems/domain-module-map";
 import type { DomainNode } from "./domain-nodes";
 
 export function DomainMapCard({
@@ -40,6 +43,7 @@ function DomainNodeCard({
   node,
   domain,
 }: Readonly<{ node: DomainNode; domain?: Domain }>) {
+  const fallbackDescription = moduleDescription(node.name);
   return (
     <div className="rounded-lg border border-atlas-border bg-slate-50 p-4">
       <div className="flex items-start justify-between gap-3">
@@ -61,6 +65,16 @@ function DomainNodeCard({
           {domain.description}{" "}
           <span className="font-medium text-atlas-text">
             Owner: {domain.ownerTeam}
+          </span>
+        </p>
+      ) : fallbackDescription ? (
+        // El respaldo por módulo ya existía en `domain-module-map` y nadie lo llamaba: la tarjeta
+        // saltaba directo al mensaje de «sin dominio» incluso para módulos que sí tienen
+        // descripción escrita. Se dice de dónde sale para no hacerla pasar por catálogo oficial.
+        <p className="mt-2 text-xs leading-5 text-atlas-muted">
+          {fallbackDescription}{" "}
+          <span className="italic">
+            Descripción del portal, aún sin dominio en el catálogo.
           </span>
         </p>
       ) : (
