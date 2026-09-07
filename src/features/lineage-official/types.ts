@@ -20,11 +20,25 @@ export type LineageEdge = {
   metadata: JsonRecord | null;
 };
 
+/** Cuánto se muestra frente a cuánto existe. El backend lo declara para cada familia. */
+export type LineageCount = { shown: number; total: number };
+
+export type LineageGraphSummary = {
+  nodeCount?: number;
+  edgeCount?: number;
+  source?: string;
+  tables?: LineageCount;
+  endpoints?: LineageCount;
+  impactEdges?: LineageCount;
+  relationshipEdges?: LineageCount;
+  truncated?: boolean;
+};
+
 export type LineageGraph = {
   nodes: LineageNode[];
   edges: LineageEdge[];
   generatedAt: string | null;
-  summary?: JsonRecord | null;
+  summary?: (LineageGraphSummary & JsonRecord) | null;
 };
 
 export type LineageNodeDetail = LineageNode & {

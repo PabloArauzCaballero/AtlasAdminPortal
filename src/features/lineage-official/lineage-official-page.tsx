@@ -20,6 +20,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
 import { uniqueTextOptions } from "@/shared/lib/options";
+import type { LineageGraphSummary } from "./types";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 
 type ViewMode = "table" | "graph";
@@ -73,6 +74,18 @@ function AuthorizedLineageOfficialPage() {
   const nodeTypeOptions = useMemo(
     () => uniqueTextOptions(allNodes.map((node) => node.nodeType)),
     [allNodes],
+  );
+  // Las dos familias de arista responden preguntas distintas y el usuario pregunta por la segunda:
+  // «endpoint → tabla» dice quién toca el dato, «tabla → tabla» dice cómo se relacionan entre sí.
+  // Un único contador «Relaciones» las sumaba y ocultaba que la segunda estaba en cero.
+  const impactEdgeCount = useMemo(
+    () => edges.filter((edge) => edge.edgeId.startsWith("impact:")).length,
+    [edges],
+  );
+  const relationshipEdgeCount = useMemo(
+    () =>
+      edges.filter((edge) => edge.edgeId.startsWith("relationship:")).length,
+    [edges],
   );
   const domainOptions = useMemo(
     () =>
@@ -135,16 +148,20 @@ function AuthorizedLineageOfficialPage() {
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Nodos" value={formatNumber(nodes.length)} />
-            <MetricCard label="Relaciones" value={formatNumber(edges.length)} />
             <MetricCard
-              label="Tipos de nodo"
-              value={formatNumber(nodeTypeOptions.length)}
+              label="Endpoint → tabla"
+              value={formatNumber(impactEdgeCount)}
+            />
+            <MetricCard
+              label="Tabla → tabla"
+              value={formatNumber(relationshipEdgeCount)}
             />
             <MetricCard
               label="Generado"
               value={formatDateTime(graph.data.generatedAt)}
             />
           </section>
+          <CoverageNote summary={graph.data.summary} />
           {view === "graph" ? (
             <LineageGraphView nodes={nodes} edges={edges} />
           ) : (
@@ -212,5 +229,43 @@ function LineageCard<T>({
         />
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Una pantalla de linaje que enseña una parte sin decirlo lleva a concluir que "no hay relaciones"
+ * cuando lo que pasa es que no se pidieron. El backend declara `shown`/`total` por familia y aquí
+ * se dice en voz alta, incluido el caso de cero: un catálogo de relaciones vacío se lee como una
+ * tarea pendiente, no como un fallo de la pantalla.
+ */
+function CoverageNote({
+  summary,
+}: Readonly<{
+  summary?: (LineageGraphSummary & Record<string, unknown>) | null;
+}>) {
+  if (!summary) return null;
+  const parts: string[] = [];
+  if (summary.tables) {
+    parts.push(
+      `${formatNumber(summary.tables.shown)} de ${formatNumber(summary.tables.total)} tablas`,
+    );
+  }
+  if (summary.endpoints) {
+    parts.push(
+      `${formatNumber(summary.endpoints.shown)} de ${formatNumber(summary.endpoints.total)} endpoints`,
+    );
+  }
+  if (parts.length === 0) return null;
+  const noRelationships = summary.relationshipEdges?.total === 0;
+  return (
+    <p className="text-xs leading-5 text-atlas-muted">
+      Mostrando {parts.join(" y ")} del catálogo.
+      {summary.truncated
+        ? " El grafo está recortado: acota con el buscador o el filtro de dominio para ver el resto."
+        : ""}
+      {noRelationships
+        ? " El catálogo de relaciones entre tablas está vacío, así que no hay ninguna arista tabla → tabla que dibujar; se llena refrescando el catálogo desde information_schema."
+        : ""}
+    </p>
   );
 }
