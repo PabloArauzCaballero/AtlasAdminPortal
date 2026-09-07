@@ -2,38 +2,44 @@
 
 import { useMemo, useState } from "react";
 import { Store } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { StatusBadge } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import {
-  useCreateMerchantUserMutation,
   useMerchantUsers,
+  useProvisioningRequests,
   useSetMerchantUserStatusMutation,
 } from "./hooks";
+import { buildIdentityColumns } from "./merchant-user-columns";
+import { ProvisioningQueue } from "./provisioning-queue";
 import { MERCHANT_USER_STATUSES, type MerchantUserProfile } from "./types";
 
 /**
  * Identidades del canal del comercio.
  *
- * Aquí NO entra un comercio: es la contraparte interna del onboarding. Sin esta pantalla, dar
- * acceso al personal de un comercio afiliado sólo se podía por semilla, así que un comercio recién
- * aprobado no tenía con qué entrar.
+ * ## Esta pantalla ya no da de alta a nadie: concede lo que el ERP pide
  *
- * La contraseña se fija al crear y el usuario la cambia al primer acceso —el backend marca
- * `mustChangePassword`—: es el único momento en que una contraseña pasa por esta consola, y por eso
- * no se puede consultar después, sólo reemplazar por otra alta.
+ * Tenía un botón «Dar de alta una identidad» con un formulario de correo, nombre y contraseña. Con
+ * eso el portal interno se comportaba como el ORIGEN del usuario de comercio, y no lo es: la
+ * relación comercial se firma en el ERP y allí están la cuenta B2B, la sucursal y el rol. El
+ * resultado eran dos altas que no se conocían —la del CRM y la identidad tecleada aquí—, y un
+ * carácter de diferencia en el correo bastaba para que la persona iniciara sesión sin alcance
+ * ninguno, con el 403 apareciendo a dos sistemas de distancia de la causa.
+ *
+ * Ahora la pantalla tiene dos mitades y ese orden importa: arriba LA COLA, que es el trabajo
+ * pendiente, y debajo las identidades ya concedidas, que es la consulta. El alta directa se retiró
+ * también del backend, así que no queda una segunda puerta.
+ *
+ * Sigue sin vivir aquí a qué comercio pertenece cada persona: eso es del ERP, en otra base.
  */
 export function MerchantUsersPage() {
   return (
@@ -47,7 +53,6 @@ function AuthorizedMerchantUsersPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [email, setEmail] = useState("");
-  const [alta, setAlta] = useState(false);
   const [cambio, setCambio] = useState<{
     usuario: MerchantUserProfile;
     destino: string;
@@ -59,12 +64,24 @@ function AuthorizedMerchantUsersPage() {
     ...(status ? { status } : {}),
     ...(email ? { email } : {}),
   });
-  const crear = useCreateMerchantUserMutation();
+  // Sin filtro de estado: la cola enseña lo pendiente Y lo ya resuelto, porque «¿en qué quedó lo
+  // que pedí?» se pregunta tanto como «¿qué me falta por atender?».
+  const peticiones = useProvisioningRequests({ page: 1, limit: 50 });
   const cambiarEstado = useSetMerchantUserStatusMutation();
 
   const items = useMemo(() => usuarios.data?.items ?? [], [usuarios.data]);
+  const pendientes = useMemo(
+    () =>
+      (peticiones.data?.items ?? []).filter(
+        (peticion) => peticion.status === "pending",
+      ).length,
+    [peticiones.data],
+  );
   const columns = useMemo(
-    () => buildColumns((usuario, destino) => setCambio({ usuario, destino })),
+    () =>
+      buildIdentityColumns((usuario, destino) =>
+        setCambio({ usuario, destino }),
+      ),
     [],
   );
 
@@ -74,89 +91,93 @@ function AuthorizedMerchantUsersPage() {
         icon={Store}
         eyebrow="Identidad del comercio"
         title="Usuarios de comercio"
-        description="Quién puede operar el canal del comercio afiliado. No es el portal del comercio: esto lo administra el personal interno."
+        description="Conceder o rechazar los accesos que pide el ERP, y administrar los ya concedidos. Aquí no entra un comercio: esto lo opera el personal interno."
       />
-      <FilterBar
-        search={email}
-        searchPlaceholder="Buscar por correo…"
-        filters={[
-          {
-            name: "status",
-            label: "Estado",
-            value: status,
-            options: MERCHANT_USER_STATUSES.map((valor) => ({
-              value: valor,
-              label: valor,
-            })),
-          },
-        ]}
-        onSearchChange={(valor) => {
-          setEmail(valor);
-          setPage(1);
-        }}
-        onFilterChange={(nombre, valor) => {
-          if (nombre === "status") setStatus(valor);
-          setPage(1);
-        }}
-        onClear={() => {
-          setEmail("");
-          setStatus("");
-          setPage(1);
-        }}
-      />
+      <BusinessContextNote>
+        El ERP registra a la persona en el CRM del comercio y pide su acceso;
+        esta consola lo concede. Los datos son los que mandó el ERP y no se
+        pueden editar al aprobar: si el correo está mal, se corrige allí y se
+        vuelve a pedir. La contraseña provisional la genera Atlas y se enseña
+        una sola vez.
+      </BusinessContextNote>
 
-      {usuarios.isLoading ? <LoadingSkeleton rows={6} /> : null}
-      {usuarios.error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(usuarios.error)
-              ? usuarios.error.message
-              : "No se pudieron cargar las identidades de comercio."
-          }
-          requestId={
-            isAtlasApiError(usuarios.error)
-              ? usuarios.error.requestId
-              : undefined
-          }
-          onRetry={() => void usuarios.refetch()}
+      <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Por atender" value={formatNumber(pendientes)} />
+        <MetricCard
+          label="Identidades"
+          value={formatNumber(usuarios.data?.total ?? 0)}
         />
-      ) : null}
+        <MetricCard
+          label="Activas"
+          value={formatNumber(
+            items.filter((u) => u.status === "active").length,
+          )}
+        />
+        <MetricCard
+          label="Suspendidas"
+          value={formatNumber(
+            items.filter(
+              (u) => u.status === "suspended" || u.status === "disabled",
+            ).length,
+          )}
+        />
+      </section>
 
-      {usuarios.data ? (
-        <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Identidades"
-              value={formatNumber(usuarios.data.total)}
-            />
-            <MetricCard
-              label="Activas"
-              value={formatNumber(
-                items.filter((u) => u.status === "active").length,
-              )}
-            />
-            <MetricCard
-              label="Invitadas"
-              value={formatNumber(
-                items.filter((u) => u.status === "invited").length,
-              )}
-            />
-            <MetricCard
-              label="Suspendidas"
-              value={formatNumber(
-                items.filter(
-                  (u) => u.status === "suspended" || u.status === "disabled",
-                ).length,
-              )}
-            />
-          </section>
+      <ProvisioningQueue query={peticiones} />
 
-          <div className="flex justify-end">
-            <Button variant="primary" onClick={() => setAlta(true)}>
-              Dar de alta una identidad
-            </Button>
-          </div>
-
+      <Card className="p-5">
+        <h2 className="mb-1 text-base font-semibold text-atlas-text">
+          Identidades concedidas
+        </h2>
+        <p className="mb-4 text-sm text-atlas-muted">
+          Quién puede entrar hoy al canal del comercio. Suspender corta el
+          acceso en la siguiente rotación del token; el historial se conserva.
+        </p>
+        <FilterBar
+          search={email}
+          searchPlaceholder="Buscar por correo…"
+          filters={[
+            {
+              name: "status",
+              label: "Estado",
+              value: status,
+              options: MERCHANT_USER_STATUSES.map((valor) => ({
+                value: valor,
+                label: valor,
+              })),
+            },
+          ]}
+          onSearchChange={(valor) => {
+            setEmail(valor);
+            setPage(1);
+          }}
+          onFilterChange={(nombre, valor) => {
+            if (nombre === "status") setStatus(valor);
+            setPage(1);
+          }}
+          onClear={() => {
+            setEmail("");
+            setStatus("");
+            setPage(1);
+          }}
+        />
+        {usuarios.isLoading ? <LoadingSkeleton rows={6} /> : null}
+        {usuarios.error ? (
+          <ErrorState
+            description={
+              isAtlasApiError(usuarios.error)
+                ? usuarios.error.message
+                : "No se pudieron cargar las identidades de comercio."
+            }
+            requestId={
+              isAtlasApiError(usuarios.error)
+                ? usuarios.error.requestId
+                : undefined
+            }
+            onRetry={() => void usuarios.refetch()}
+          />
+        ) : null}
+        {usuarios.data ? (
           <DataTable
             data={items}
             columns={columns}
@@ -170,29 +191,11 @@ function AuthorizedMerchantUsersPage() {
               ),
             }}
             onPageChange={setPage}
-            emptyTitle="Sin identidades de comercio."
-            emptyDescription="Un comercio aprobado sin identidad no tiene con qué entrar al portal."
+            emptyTitle="Ninguna identidad concedida todavía."
+            emptyDescription="Las que se concedan desde la cola de arriba aparecerán aquí."
           />
-        </div>
-      ) : null}
-
-      {alta ? (
-        <AltaDialog
-          onClose={() => setAlta(false)}
-          onSubmit={async (valores) => {
-            await crear.mutateAsync(valores);
-            setAlta(false);
-          }}
-          isPending={crear.isPending}
-          error={
-            crear.error
-              ? isAtlasApiError(crear.error)
-                ? crear.error.message
-                : "No se pudo crear la identidad."
-              : null
-          }
-        />
-      ) : null}
+        ) : null}
+      </Card>
 
       <ConfirmDialog
         open={cambio !== null}
@@ -213,143 +216,4 @@ function AuthorizedMerchantUsersPage() {
       />
     </>
   );
-}
-
-function AltaDialog({
-  onClose,
-  onSubmit,
-  isPending,
-  error,
-}: Readonly<{
-  onClose: () => void;
-  onSubmit: (valores: {
-    email: string;
-    fullName: string;
-    password: string;
-    phone?: string;
-    userCode?: string;
-  }) => Promise<void>;
-  isPending: boolean;
-  error: string | null;
-}>) {
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
-
-  return (
-    <Card className="fixed inset-x-4 top-24 z-50 mx-auto max-w-xl p-5">
-      <h2 className="mb-1 text-base font-semibold text-atlas-text">
-        Nueva identidad de comercio
-      </h2>
-      <p className="mb-4 text-sm text-atlas-muted">
-        La contraseña es provisional: el backend obliga a cambiarla en el primer
-        acceso. Diez caracteres mínimo.
-      </p>
-      <div className="space-y-3">
-        <Field label="Correo">
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Field>
-        <Field label="Nombre completo">
-          <Input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </Field>
-        <Field label="Contraseña provisional" hint="Mínimo 10 caracteres.">
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Field>
-        <Field label="Teléfono">
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </Field>
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
-        <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Cancelar</Button>
-          <Button
-            variant="primary"
-            disabled={
-              isPending || password.length < 10 || !email || fullName.length < 3
-            }
-            onClick={() =>
-              void onSubmit({
-                email,
-                fullName,
-                password,
-                ...(phone ? { phone } : {}),
-              })
-            }
-          >
-            Crear identidad
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function buildColumns(
-  onCambiar: (usuario: MerchantUserProfile, destino: string) => void,
-): ColumnDef<MerchantUserProfile>[] {
-  return [
-    {
-      accessorKey: "fullName",
-      header: "Usuario",
-      cell: ({ row }) => (
-        <div>
-          <p className="font-medium text-atlas-text">{row.original.fullName}</p>
-          <p className="text-xs text-atlas-muted">{row.original.email}</p>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Estado",
-      cell: ({ row }) => <StatusBadge value={row.original.status} />,
-    },
-    {
-      accessorKey: "mustChangePassword",
-      header: "Debe cambiar clave",
-      cell: ({ row }) => (row.original.mustChangePassword ? "Sí" : "No"),
-    },
-    {
-      accessorKey: "lastLoginAt",
-      header: "Último acceso",
-      cell: ({ row }) => formatDateTime(row.original.lastLoginAt),
-    },
-    {
-      id: "actions",
-      header: "Acciones",
-      cell: ({ row }) => (
-        <Select
-          aria-label={`Cambiar estado de ${row.original.fullName}`}
-          value=""
-          onChange={(evento) => {
-            if (evento.target.value)
-              onCambiar(row.original, evento.target.value);
-          }}
-        >
-          <option value="">Cambiar estado…</option>
-          {MERCHANT_USER_STATUSES.filter(
-            (estado) => estado !== row.original.status,
-          ).map((estado) => (
-            <option key={estado} value={estado}>
-              {estado}
-            </option>
-          ))}
-        </Select>
-      ),
-    },
-  ];
 }
