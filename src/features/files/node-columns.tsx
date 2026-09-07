@@ -1,18 +1,11 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  File,
-  FileJson,
-  FileText,
-  Folder,
-  Image as ImageIcon,
-  Lock,
-  TriangleAlert,
-} from "lucide-react";
+import { Lock, TriangleAlert } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
+import { IconoDeNodo } from "./node-icon";
 import { alcanza, type Nodo, type OrigenNodo } from "./types";
 
 export type AccionesDeFila = {
@@ -42,19 +35,6 @@ const ETIQUETA_ORIGEN: Record<
   sistema: { texto: "Generado", tono: "muted" },
 };
 
-function IconoDeNodo({ nodo }: Readonly<{ nodo: Nodo }>) {
-  if (nodo.tipo === "carpeta")
-    return <Folder className="h-4 w-4 text-atlas-info" aria-hidden />;
-  const tipo = nodo.mimeType ?? "";
-  if (tipo.startsWith("image/"))
-    return <ImageIcon className="h-4 w-4 text-slate-500" aria-hidden />;
-  if (tipo.includes("pdf"))
-    return <FileText className="h-4 w-4 text-slate-500" aria-hidden />;
-  if (tipo.includes("json"))
-    return <FileJson className="h-4 w-4 text-slate-500" aria-hidden />;
-  return <File className="h-4 w-4 text-slate-500" aria-hidden />;
-}
-
 /** Bytes en la unidad que una persona lee, con el número alineado por columna. */
 export function formatearTamano(bytes: string | null): string {
   const valor = Number(bytes ?? 0);
@@ -78,7 +58,7 @@ export function buildNodeColumns(
           <button
             type="button"
             onClick={() => onAbrir(nodo)}
-            className="flex items-center gap-2 text-left font-medium text-atlas-text hover:underline"
+            className="flex select-text items-center gap-2 text-left font-medium text-atlas-text hover:underline"
           >
             <IconoDeNodo nodo={nodo} />
             <span

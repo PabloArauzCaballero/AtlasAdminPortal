@@ -79,6 +79,30 @@ export type Concesion = {
   heredadaDe: string | null;
 };
 
+/**
+ * Una persona interna que PUEDE ver el nodo, venga de donde venga su acceso.
+ *
+ * No es lo mismo que una `Concesion`: la concesión es lo que alguien concedió a mano, y casi
+ * siempre no hay ninguna. El espectador es el resultado —el rol más lo concedido—, que es lo que
+ * de verdad responde «quién lo ve».
+ */
+export type Espectador = {
+  internalUserId: string;
+  nombre: string;
+  email: string | null;
+  estado: string | null;
+  departamento: string | null;
+  cargo: string | null;
+  roles: string[];
+  nivel: Nivel;
+  porRol: boolean;
+  porConcesionDeRol: boolean;
+  porConcesionDirecta: boolean;
+  heredadaDe: string | null;
+  /** Entra al Motor de Decisión por su rol de riesgo, y por eso ya ve esta evidencia. */
+  accedeAlMotor: boolean;
+};
+
 export type TicketDeSubida = {
   ticketId: string;
   uploadUrl: string;

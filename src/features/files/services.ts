@@ -13,6 +13,7 @@ import type {
   ActividadListResponse,
   Concesion,
   Contactos,
+  Espectador,
   Expediente,
   ExpedienteListResponse,
   Nivel,
@@ -171,6 +172,19 @@ export function listarConcesiones(expedienteId: string, nodoId: string) {
   );
 }
 
+/**
+ * Quién ve este nodo, incluida la gente que lo ve por su rol.
+ *
+ * Endpoint distinto al de concesiones porque responde otra pregunta y exige otro nivel: listar
+ * concesiones es cosa de quien administra el acceso; saber quién mira el expediente es parte de
+ * revisar el caso.
+ */
+export function listarVisibilidad(expedienteId: string, nodoId: string) {
+  return apiRequest<Espectador[]>(
+    `/expedientes/${encodeURIComponent(expedienteId)}/nodos/${encodeURIComponent(nodoId)}/concesiones/visibilidad`,
+  );
+}
+
 export function conceder(
   expedienteId: string,
   nodoId: string,
@@ -199,4 +213,4 @@ export function revocar(expedienteId: string, nodoId: string, grantId: string) {
   );
 }
 
-export type { Actividad, Concesion, Contactos, Expediente, Nodo };
+export type { Actividad, Concesion, Contactos, Espectador, Expediente, Nodo };

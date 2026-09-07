@@ -1,7 +1,9 @@
 "use client";
 
-import { Download, TriangleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, ExternalLink, TriangleAlert } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { CopyButton } from "@/shared/components/ui/copy-button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { useContactos, useContenido } from "./hooks";
 import type { Nodo } from "./types";
@@ -46,6 +48,7 @@ export function VistaPreviaDeNodo({
     if (contactos.isLoading) return <LoadingSkeleton rows={4} />;
     if (contactos.error)
       return <EmptyState title="No se pudieron traer los contactos." />;
+    const json = JSON.stringify(contactos.data, null, 2);
     return (
       <div className="space-y-2">
         {contactos.data?.enmascarado ? (
@@ -58,9 +61,7 @@ export function VistaPreviaDeNodo({
             permiso de revelado y deja constancia de quién lo pidió y por qué.
           </p>
         ) : null}
-        <pre className="max-h-[28rem] overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-700">
-          {JSON.stringify(contactos.data, null, 2)}
-        </pre>
+        <BloqueDeTexto texto={json} />
       </div>
     );
   }
@@ -76,8 +77,8 @@ export function VistaPreviaDeNodo({
   }
 
   const url = contenido.data?.url;
-  const tipo = contenido.data?.contentType ?? nodo.mimeType ?? "";
   if (!url) return null;
+  const tipo = tipoEfectivo(contenido.data?.contentType, nodo);
 
   return (
     <div className="space-y-3">
@@ -100,29 +101,89 @@ export function VistaPreviaDeNodo({
           title={nodo.nombre}
           className="h-[28rem] w-full rounded border border-slate-200"
         />
-      ) : tipo.includes("json") || tipo.startsWith("text/") ? (
-        <VistaDeTexto url={url} />
+      ) : esTexto(tipo) ? (
+        <VistaDeTexto blob={contenido.data?.blob ?? null} />
       ) : (
         <EmptyState
           title="Este tipo de archivo no se puede previsualizar."
           description="Descárgalo para abrirlo con el programa que corresponda."
         />
       )}
-      <Button variant="secondary" onClick={onDescargar}>
-        <Download className="mr-1.5 h-4 w-4" aria-hidden />
-        Descargar
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="secondary" onClick={onDescargar}>
+          <Download className="mr-1.5 h-4 w-4" aria-hidden />
+          Descargar
+        </Button>
+        {/*
+         * Abrir en una pestaña aparte es la salida cuando el visor incrustado no da la talla —un
+         * PDF de cien páginas dentro de un panel de 28rem—. El enlace apunta al mismo blob local,
+         * así que no hay una segunda descarga ni una URL que sobreviva a la sesión.
+         */}
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-3 py-1.5 text-sm text-atlas-text hover:bg-atlas-soft"
+        >
+          <ExternalLink className="h-4 w-4" aria-hidden />
+          Abrir en otra pestaña
+        </a>
+      </div>
     </div>
   );
 }
 
-/** Texto y JSON se leen del propio blob: ya está en memoria, no hace falta pedirlo otra vez. */
-function VistaDeTexto({ url }: Readonly<{ url: string }>) {
+/**
+ * Qué tipo se usa para elegir el visor.
+ *
+ * El almacén devuelve `application/octet-stream` cuando no supo decir más, y con eso todo archivo
+ * caía en «no se puede previsualizar» aunque el nodo sí supiera que era un PDF. El tipo declarado
+ * en el nodo manda cuando la respuesta no aporta nada.
+ */
+function tipoEfectivo(contentType: string | undefined, nodo: Nodo): string {
+  const generico =
+    !contentType || contentType.startsWith("application/octet-stream");
+  return (generico ? (nodo.mimeType ?? contentType) : contentType) ?? "";
+}
+
+function esTexto(tipo: string): boolean {
   return (
-    <iframe
-      src={url}
-      title="Contenido del archivo"
-      className="h-[28rem] w-full rounded border border-slate-200 bg-white"
-    />
+    tipo.includes("json") || tipo.startsWith("text/") || tipo.includes("xml")
+  );
+}
+
+/**
+ * Texto y JSON se leen del propio blob y se pintan aquí.
+ *
+ * Antes iban en un `<iframe src={blob}>`, que el navegador no sabe seleccionar ni buscar y que la
+ * política de contenido bloqueaba. En un `<pre>` el contenido se puede leer, seleccionar y copiar,
+ * que es todo lo que se hace con el JSON de una decisión.
+ */
+function VistaDeTexto({ blob }: Readonly<{ blob: Blob | null }>) {
+  const [texto, setTexto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!blob) return;
+    let vigente = true;
+    void blob.text().then((valor) => {
+      if (vigente) setTexto(valor);
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [blob]);
+
+  if (texto === null) return <LoadingSkeleton rows={4} />;
+  return <BloqueDeTexto texto={texto} />;
+}
+
+function BloqueDeTexto({ texto }: Readonly<{ texto: string }>) {
+  return (
+    <div className="relative">
+      <CopyButton value={texto} className="absolute right-2 top-2" />
+      <pre className="max-h-[28rem] select-text overflow-auto rounded bg-slate-50 p-3 pr-10 text-xs text-slate-700">
+        {texto}
+      </pre>
+    </div>
   );
 }

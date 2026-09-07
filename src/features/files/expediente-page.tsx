@@ -123,10 +123,12 @@ function ExpedienteAutorizado({
           <ArbolDeCarpetas
             expedienteId={expedienteId}
             carpetaActual={carpeta?.nodoId ?? null}
+            archivoActual={seleccionado?.nodoId ?? null}
             onSeleccionar={(nodo) => {
               setCarpeta(nodo);
               setQ("");
             }}
+            onAbrirArchivo={setSeleccionado}
           />
         </aside>
 

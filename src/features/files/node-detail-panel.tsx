@@ -4,14 +4,14 @@ import { useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { Badge } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
-import { useActividad, useConcesiones } from "./hooks";
+import { useActividad } from "./hooks";
 import { descargarNodo } from "./services";
 import { VistaPreviaDeNodo } from "./node-preview";
+import { QuienLoVe } from "./node-viewers";
 import { formatearTamano } from "./node-columns";
-import { alcanza, type Nodo } from "./types";
+import type { Nodo } from "./types";
 
 const PESTANAS = [
   "Vista previa",
@@ -57,7 +57,7 @@ export function PanelDeNodo({
       ) : null}
       {pestana === "Detalles" ? <Detalles nodo={nodo} /> : null}
       {pestana === "Quién lo ve" ? (
-        <Concesiones
+        <QuienLoVe
           expedienteId={expedienteId}
           nodo={nodo}
           onCompartir={onCompartir}
@@ -163,61 +163,6 @@ function Detalles({ nodo }: Readonly<{ nodo: Nodo }>) {
         <Fila etiqueta="Ejecución del Motor" valor={nodo.engineRequestId} />
       ) : null}
     </dl>
-  );
-}
-
-function Concesiones({
-  expedienteId,
-  nodo,
-  onCompartir,
-}: Readonly<{
-  expedienteId: string;
-  nodo: Nodo;
-  onCompartir: (nodo: Nodo) => void;
-}>) {
-  const concesiones = useConcesiones(expedienteId, nodo.nodoId);
-  const puedeCompartir = alcanza(nodo.nivelEfectivo, "compartir");
-
-  if (concesiones.isLoading) return <LoadingSkeleton rows={3} />;
-
-  return (
-    <div className="space-y-3">
-      {(concesiones.data ?? []).length === 0 ? (
-        <EmptyState
-          title="Nadie tiene acceso concedido aquí."
-          description="Quien lo ve, lo ve por su rol o porque lo heredó de una carpeta de más arriba."
-        />
-      ) : (
-        <ul className="space-y-1">
-          {(concesiones.data ?? []).map((concesion) => (
-            <li
-              key={concesion.id}
-              className="rounded border border-slate-200 px-3 py-2 text-sm"
-            >
-              <span className="font-medium text-atlas-text">
-                {concesion.principalId}
-              </span>{" "}
-              <Badge tone="info">{concesion.nivel}</Badge>
-              <p className="mt-1 text-xs text-slate-500">
-                {concesion.heredadaDe
-                  ? `Heredado de ${concesion.heredadaDe}. `
-                  : ""}
-                {concesion.motivo ?? "Sin motivo registrado."}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-      {puedeCompartir ? (
-        <Button variant="secondary" onClick={() => onCompartir(nodo)}>
-          Gestionar el acceso
-        </Button>
-      ) : (
-        <p className="text-xs text-slate-500">
-          Tu nivel aquí no alcanza para cambiar quién lo ve.
-        </p>
-      )}
-    </div>
   );
 }
 

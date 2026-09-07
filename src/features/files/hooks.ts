@@ -128,6 +128,14 @@ export function useConcesiones(expedienteId: string, nodoId: string | null) {
   });
 }
 
+export function useVisibilidad(expedienteId: string, nodoId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.expedienteVisibilidad(expedienteId, nodoId ?? ""),
+    queryFn: () => api.listarVisibilidad(expedienteId, nodoId!),
+    enabled: Boolean(expedienteId) && Boolean(nodoId),
+  });
+}
+
 /** Invalida lo que cambia tras una mutación del árbol: los nodos y la cabecera del expediente. */
 function useRefrescarArbol(expedienteId: string) {
   const cliente = useQueryClient();
@@ -180,10 +188,15 @@ export function useMutacionesDelArbol(expedienteId: string) {
 export function useCompartir(expedienteId: string, nodoId: string | null) {
   const cliente = useQueryClient();
   const refrescar = () => {
-    if (nodoId)
-      void cliente.invalidateQueries({
-        queryKey: queryKeys.expedienteConcesiones(expedienteId, nodoId),
-      });
+    if (!nodoId) return;
+    void cliente.invalidateQueries({
+      queryKey: queryKeys.expedienteConcesiones(expedienteId, nodoId),
+    });
+    // Conceder o revocar cambia quién lo ve; sin esto la lista de espectadores seguía enseñando
+    // el reparto anterior hasta recargar la pantalla.
+    void cliente.invalidateQueries({
+      queryKey: queryKeys.expedienteVisibilidad(expedienteId, nodoId),
+    });
   };
 
   const conceder = useMutation({
