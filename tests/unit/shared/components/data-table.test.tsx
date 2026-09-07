@@ -263,3 +263,59 @@ describe("DataTable · paginación", () => {
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 });
+
+/**
+ * Sacar los datos de la tabla sin transcribirlos a mano.
+ *
+ * Copiar se lee del DOM y no de `data` a propósito: lo que sirve pegado en una hoja o en un ticket
+ * es lo que la pantalla muestra —la fecha ya formateada, la etiqueta en castellano—, no el JSON del
+ * que salió. Y las columnas sin cabecera se saltan porque son las de acciones: «Renombrar» no es un
+ * dato de la fila.
+ */
+describe("DataTable · copiar", () => {
+  function conPortapapeles() {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    return writeText;
+  }
+
+  it("copia cabeceras y filas separadas por tabuladores", async () => {
+    const writeText = conPortapapeles();
+    render(<DataTable data={rows} columns={columns} />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Copiar/ }));
+
+    expect(writeText).toHaveBeenCalledWith(
+      ["Nombre\tPuntaje", "Bravo\t20", "Alfa\t30", "Charlie\t10"].join("\n"),
+    );
+  });
+
+  it("no copia las columnas de acciones, que no llevan cabecera", async () => {
+    const writeText = conPortapapeles();
+    render(
+      <DataTable
+        data={rows}
+        columns={[
+          ...columns,
+          { id: "acciones", header: "", cell: () => <button>Borrar</button> },
+        ]}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Copiar/ }));
+
+    expect(writeText.mock.calls[0][0]).not.toContain("Borrar");
+  });
+
+  it("copia lo ordenado, no el orden en que llegaron los datos", async () => {
+    const writeText = conPortapapeles();
+    render(<DataTable data={rows} columns={columns} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Nombre" }));
+    await userEvent.click(screen.getByRole("button", { name: /Copiar/ }));
+
+    expect(writeText.mock.calls[0][0]).toBe(
+      ["Nombre\tPuntaje", "Alfa\t30", "Bravo\t20", "Charlie\t10"].join("\n"),
+    );
+  });
+});

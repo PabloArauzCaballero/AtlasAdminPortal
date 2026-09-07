@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/shared/lib/cn";
+
+/** El montaje no cambia nunca después de la hidratación: no hay a qué suscribirse. */
+function suscribirNada(): () => void {
+  return () => {};
+}
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -42,6 +48,17 @@ export function DialogShell({
 }>) {
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  /*
+   * `document` no existe durante el render del servidor y `createPortal` lo exige. Con
+   * `useSyncExternalStore` el servidor y la primera pasada del cliente coinciden en `false`
+   * —ningún desajuste de hidratación—, y el portal se monta en la pasada siguiente.
+   */
+  const montado = useSyncExternalStore(
+    suscribirNada,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -104,9 +121,9 @@ export function DialogShell({
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !montado) return null;
 
-  return (
+  const overlay = (
     // El backdrop cierra con el ratón como atajo; el equivalente accesible es
     // Escape, que este mismo componente implementa y cubre con tests. No se le
     // pone role interactivo a propósito: es decorado, no un control que deba
@@ -130,4 +147,19 @@ export function DialogShell({
       </div>
     </div>
   );
+
+  /*
+   * El diálogo se monta en `document.body`, no donde se escribe.
+   *
+   * `AppShell` envuelve cada vista en un `<main>` con `animate-fade-in`, y una animación con
+   * `fill-mode: both` sobre la opacidad deja al elemento con contexto de apilamiento PROPIO
+   * aunque ya haya terminado. Dentro de ese contexto, el `z-40` del overlay no compite con el
+   * `z-20` de la barra superior: `main` no está posicionado, así que se pinta entero por debajo
+   * de ella. El síntoma era que la cabecera del drawer —su título y la ✕ de cerrar— quedaba
+   * TAPADA por la barra, y el único modo de cerrarlo era Escape o el fondo.
+   *
+   * Subir el `z-index` no lo arregla: el contexto padre lo acota igual. Salir del árbol de
+   * `main`, sí.
+   */
+  return createPortal(overlay, document.body);
 }

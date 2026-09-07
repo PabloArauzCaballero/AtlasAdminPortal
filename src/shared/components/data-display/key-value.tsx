@@ -1,9 +1,11 @@
+import { isValidElement } from "react";
 import { cn } from "@/shared/lib/cn";
 import { CopyableCode } from "@/shared/components/ui/copy-button";
 import { formatBoolean, safeText } from "@/shared/lib/format";
 
 type Item = {
   label: string;
+  /** Texto, número, booleano — o un nodo de React ya compuesto (una insignia, un enlace). */
   value: unknown;
   mono?: boolean;
   tone?: "default" | "success" | "warning" | "critical" | "muted";
@@ -64,7 +66,16 @@ function KeyValueItem({ item }: Readonly<{ item: Item }>) {
   );
 }
 
+/*
+ * Un elemento React se devuelve tal cual.
+ *
+ * `safeText` termina en `JSON.stringify`, y serializar un elemento no da su texto: da el objeto
+ * interno de React. Sin esta salida, pasar una insignia como valor pintaba un churro de llaves.
+ * Es lo que permite que el resumen de un proveedor enseñe su estado y su salud con la MISMA
+ * insignia que la tabla de la que se abrió, en vez de repetir el literal en inglés.
+ */
 function resolveValue(value: unknown) {
+  if (isValidElement(value)) return value;
   if (typeof value === "boolean") return formatBoolean(value);
   return safeText(value);
 }

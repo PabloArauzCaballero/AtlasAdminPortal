@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 
 type Tone =
@@ -28,11 +29,19 @@ export function Badge({
   tone = "default",
   className,
   dot = false,
+  icon: Icon,
 }: Readonly<{
   children: React.ReactNode;
   tone?: Tone;
   className?: string;
   dot?: boolean;
+  /**
+   * Icono a la izquierda, alternativa al punto (que sólo transmite el TONO, ya presente en el
+   * color del texto y del borde). El icono dice además de QUÉ se habla, que es lo que distingue
+   * de un vistazo, en una fila con cinco insignias, la salud del proveedor de nuestra credencial.
+   * Con icono no se pinta el punto: dos marcas antes del texto sólo compiten.
+   */
+  icon?: LucideIcon;
 }>) {
   return (
     <span
@@ -42,7 +51,9 @@ export function Badge({
         className,
       )}
     >
-      {dot ? (
+      {Icon ? (
+        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      ) : dot ? (
         tone === "success" ? (
           <LiveDot tone={tone} />
         ) : (

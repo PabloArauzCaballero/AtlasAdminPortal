@@ -1,5 +1,14 @@
 import { cn } from "@/shared/lib/cn";
 
+/**
+ * La tarjeta es SOLO el marco: filo, fondo y sombra. No lleva relleno propio.
+ *
+ * Quien mete contenido dentro debe darle el suyo, y hay dos formas de hacerlo: componer con
+ * `CardHeader` + `CardContent` (lo que hace la mayoría del portal) o pasar el relleno en
+ * `className` (`p-5`, el mismo que usa `CardContent`). Contenido suelto y sin relleno se pega al
+ * borde y, en las esquinas, se sale por fuera del radio: era el fallo visible en «Datos externos
+ * del cliente», «Verificación de expedientes» y «Cartera».
+ */
 export function Card({
   className,
   children,

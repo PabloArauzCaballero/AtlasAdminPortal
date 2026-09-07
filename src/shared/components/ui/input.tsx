@@ -63,7 +63,17 @@ export function Field({
 }>) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm font-medium text-atlas-text">{label}</span>
+      {/*
+       * `block` en la etiqueta, y no sólo en el `<label>` que la envuelve.
+       *
+       * Un `<span>` es inline y un `<input>` es inline-block: sólo caen en renglones distintos
+       * porque el input es `w-full`, y `w-full` se resuelve contra el ancho del contenedor.
+       * Dentro de una rejilla eso es todo el ancho de la celda y funciona; dentro de un
+       * contenedor FLEXIBLE el `<label>` se encoge a su contenido, el porcentaje se vuelve
+       * circular y etiqueta e input acaban en la misma línea: «Ventana (días) [30]». Se veía en
+       * las barras de filtros de las auditorías de proveedores.
+       */}
+      <span className="block text-sm font-medium text-atlas-text">{label}</span>
       {children}
       {hint ? (
         <span className="block text-xs text-atlas-muted">{hint}</span>
