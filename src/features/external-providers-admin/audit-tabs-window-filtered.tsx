@@ -7,7 +7,7 @@ import {
   useRetentionPreview,
   useSanitizationAudit,
 } from "./hooks";
-import { ReportView } from "./report-view";
+import { ReportFilters, ReportView } from "./report-view";
 
 export function IdempotencyAuditTab() {
   const [days, setDays] = useState(30);
@@ -16,12 +16,13 @@ export function IdempotencyAuditTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <ReportFilters>
         <Field label="Ventana (días)">
           <Input
             type="number"
             min={1}
             max={366}
+            className="w-32"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 30)}
           />
@@ -31,11 +32,12 @@ export function IdempotencyAuditTab() {
             type="number"
             min={1}
             max={10000}
+            className="w-32"
             value={limit}
             onChange={(event) => setLimit(Number(event.target.value) || 5000)}
           />
         </Field>
-      </div>
+      </ReportFilters>
       <ReportView query={query} title="Auditoría de idempotencia" />
     </div>
   );
@@ -48,12 +50,13 @@ export function RetentionPreviewTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <ReportFilters>
         <Field label="Más antiguo que (días)">
           <Input
             type="number"
             min={1}
             max={3650}
+            className="w-40"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 90)}
           />
@@ -63,11 +66,12 @@ export function RetentionPreviewTab() {
             type="number"
             min={1}
             max={500}
+            className="w-40"
             value={limit}
             onChange={(event) => setLimit(Number(event.target.value) || 100)}
           />
         </Field>
-      </div>
+      </ReportFilters>
       <ReportView query={query} title="Vista previa de purga por retención" />
     </div>
   );
@@ -79,15 +83,18 @@ export function SanitizationAuditTab() {
 
   return (
     <div className="space-y-4">
-      <Field label="Límite de muestra" hint="Máximo 500.">
-        <Input
-          type="number"
-          min={1}
-          max={500}
-          value={limit}
-          onChange={(event) => setLimit(Number(event.target.value) || 100)}
-        />
-      </Field>
+      <ReportFilters>
+        <Field label="Límite de muestra" hint="Máximo 500.">
+          <Input
+            type="number"
+            min={1}
+            max={500}
+            className="w-40"
+            value={limit}
+            onChange={(event) => setLimit(Number(event.target.value) || 100)}
+          />
+        </Field>
+      </ReportFilters>
       <ReportView query={query} title="Auditoría de sanitización" />
     </div>
   );

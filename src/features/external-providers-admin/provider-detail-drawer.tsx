@@ -4,7 +4,14 @@ import { useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { ProviderAuthSection } from "./provider-auth-section";
+import {
+  ProviderCategoryLabel,
+  ProviderHealthBadge,
+  ProviderModeBadge,
+  ProviderStatusBadge,
+} from "./provider-badges";
 import { ProviderCostPoliciesSection } from "./provider-cost-policies-section";
 import { ProviderRuntimeForm } from "./provider-runtime-form";
 import { ProviderTestForm } from "./provider-test-form";
@@ -32,9 +39,21 @@ export function ProviderDetailDrawer({
         <KeyValueGrid
           items={[
             { label: "Código", value: provider.code, mono: true },
-            { label: "Categoría", value: provider.category },
-            { label: "Estado", value: provider.status },
-            { label: "Modo por defecto", value: provider.defaultMode },
+            {
+              label: "Categoría",
+              value: <ProviderCategoryLabel value={provider.category} />,
+            },
+            // Las mismas insignias que la tabla de la que se abrió este panel: si el operador
+            // acaba de leer «Caído» en rojo en la fila, encontrarse aquí un `DOWN` en texto
+            // llano le obliga a traducir dos veces lo mismo.
+            {
+              label: "Estado",
+              value: <ProviderStatusBadge value={provider.status} />,
+            },
+            {
+              label: "Modo por defecto",
+              value: <ProviderModeBadge value={provider.defaultMode} />,
+            },
             {
               label: "Requiere consentimiento",
               value: provider.requiresConsent,
@@ -45,9 +64,25 @@ export function ProviderDetailDrawer({
             },
             { label: "Costoso", value: provider.isCostly },
             { label: "Descripción", value: provider.description },
-            { label: "Salud", value: provider.health?.status },
-            { label: "Latencia (ms)", value: provider.health?.latencyMs },
-            { label: "Chequeado", value: provider.health?.checkedAt },
+            {
+              label: "Salud",
+              value: <ProviderHealthBadge value={provider.health?.status} />,
+            },
+            {
+              label: "Latencia",
+              value: provider.health
+                ? `${formatNumber(provider.health.latencyMs)} ms`
+                : null,
+            },
+            // La fecha, en el formato del portal y no en ISO crudo: «2026-09-06T10:02:00.000Z»
+            // obliga a hacer la cuenta del huso mentalmente para saber si la sonda es de hace un
+            // minuto o de hace tres días, que es lo único que se le pregunta a este campo.
+            {
+              label: "Último chequeo",
+              value: provider.health
+                ? formatDateTime(provider.health.checkedAt)
+                : null,
+            },
           ]}
         />
       ) : null}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { OctagonX, Save } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Select } from "@/shared/components/ui/input";
@@ -118,9 +119,11 @@ export function ProviderRuntimeForm({
             })
           }
         >
+          <Save className="h-4 w-4" aria-hidden />
           Guardar cambios de runtime
         </Button>
         <Button variant="danger" onClick={() => setConfirmingKillSwitch(true)}>
+          <OctagonX className="h-4 w-4" aria-hidden />
           Kill switch de emergencia
         </Button>
       </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Field, Input } from "@/shared/components/ui/input";
 import { useProductionGate, useSlaReport, useUsageReport } from "./hooks";
-import { ReportView } from "./report-view";
+import { ReportCheckbox, ReportFilters, ReportView } from "./report-view";
 
 export function ProductionGateTab() {
   const [providerCode, setProviderCode] = useState("");
@@ -15,7 +15,7 @@ export function ProductionGateTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <ReportFilters>
         <Field label="Código de proveedor (opcional)">
           <Input
             value={providerCode}
@@ -23,18 +23,15 @@ export function ProductionGateTab() {
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
-        <label className="flex items-center gap-2 pb-2.5 text-sm text-atlas-text">
-          <input
-            type="checkbox"
-            checked={strict}
-            onChange={(event) => setStrict(event.target.checked)}
-          />
-          Modo estricto
-        </label>
-      </div>
+        <ReportCheckbox
+          label="Modo estricto"
+          checked={strict}
+          onChange={setStrict}
+        />
+      </ReportFilters>
       <ReportView query={query} title="Production gate" />
     </div>
   );
@@ -47,7 +44,7 @@ export function SlaReportTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <ReportFilters>
         <Field label="Código de proveedor (opcional)">
           <Input
             value={providerCode}
@@ -55,7 +52,7 @@ export function SlaReportTab() {
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
         <Field label="Ventana (días)">
@@ -63,11 +60,12 @@ export function SlaReportTab() {
             type="number"
             min={1}
             max={366}
+            className="w-32"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 30)}
           />
         </Field>
-      </div>
+      </ReportFilters>
       <ReportView query={query} title="Reporte de SLA" />
     </div>
   );
@@ -83,7 +81,7 @@ export function UsageReportTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <ReportFilters>
         <Field label="Código de proveedor (opcional)">
           <Input
             value={providerCode}
@@ -91,7 +89,7 @@ export function UsageReportTab() {
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
         <Field label="Ventana (días)">
@@ -99,11 +97,12 @@ export function UsageReportTab() {
             type="number"
             min={1}
             max={366}
+            className="w-32"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 30)}
           />
         </Field>
-      </div>
+      </ReportFilters>
       <ReportView query={query} title="Uso y costo" />
     </div>
   );

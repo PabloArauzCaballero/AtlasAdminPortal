@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Play } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
@@ -106,6 +107,7 @@ export function ProviderTestForm({
         loadingText="Ejecutando…"
         onClick={submit}
       >
+        <Play className="h-4 w-4" aria-hidden />
         Ejecutar prueba
       </Button>
       {test.data ? <JsonViewer title="Resultado" value={test.data} /> : null}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { CircleCheck, RefreshCcwDot, RotateCw } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
@@ -18,7 +20,15 @@ export function ApproveRequestTab() {
   const approve = useApproveRequestMutation();
 
   return (
-    <div className="space-y-4">
+    /*
+     * El formulario va dentro de una tarjeta y con el ancho acotado.
+     *
+     * Suelto sobre el lienzo, sus campos se estiraban los 1.500 px de la vista: una caja de
+     * texto de ese ancho para escribir «4021» no dice que espera cuatro dígitos, dice que
+     * espera un párrafo. La tarjeta además le da un borde al que alinearse, que es lo que
+     * faltaba respecto del resto del portal.
+     */
+    <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
         Aprueba una solicitud bloqueada por política de costo o que requiere
         revisión manual, permitiendo su ejecución. Solo{" "}
@@ -65,12 +75,13 @@ export function ApproveRequestTab() {
           })
         }
       >
+        <CircleCheck className="h-4 w-4" aria-hidden />
         Aprobar solicitud
       </Button>
       {approve.data ? (
         <JsonViewer title="Resultado" value={approve.data} />
       ) : null}
-    </div>
+    </Card>
   );
 }
 
@@ -79,7 +90,7 @@ export function RetryRequestTab() {
   const retry = useRetryRequestMutation();
 
   return (
-    <div className="space-y-4">
+    <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
         Reintenta una solicitud fallida a un proveedor externo, reutilizando sus
         parámetros originales.
@@ -112,10 +123,11 @@ export function RetryRequestTab() {
         loadingText="Reintentando…"
         onClick={() => retry.mutate({ requestId: requestId.trim(), body: {} })}
       >
+        <RotateCw className="h-4 w-4" aria-hidden />
         Reintentar solicitud
       </Button>
       {retry.data ? <JsonViewer title="Resultado" value={retry.data} /> : null}
-    </div>
+    </Card>
   );
 }
 
@@ -124,7 +136,7 @@ export function RebuildFeaturesTab() {
   const rebuild = useRebuildFeaturesMutation();
 
   return (
-    <div className="space-y-4">
+    <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
         Recalcula el snapshot de features a partir de la respuesta ya almacenada
         de una solicitud, sin volver a consultar al proveedor.
@@ -157,11 +169,12 @@ export function RebuildFeaturesTab() {
         loadingText="Reconstruyendo…"
         onClick={() => rebuild.mutate(requestId.trim())}
       >
+        <RefreshCcwDot className="h-4 w-4" aria-hidden />
         Reconstruir features
       </Button>
       {rebuild.data ? (
         <JsonViewer title="Resultado" value={rebuild.data} />
       ) : null}
-    </div>
+    </Card>
   );
 }

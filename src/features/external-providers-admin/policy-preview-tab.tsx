@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Eye } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
@@ -43,7 +45,7 @@ export function PolicyPreviewTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <Card className="max-w-3xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
         Simula qué pasaría si se ejecutara esta solicitud (¿se bloquea por
         costo? ¿requiere aprobación manual?) sin llamar realmente al proveedor.
@@ -112,11 +114,12 @@ export function PolicyPreviewTab() {
         loadingText="Simulando…"
         onClick={submit}
       >
+        <Eye className="h-4 w-4" aria-hidden />
         Previsualizar política
       </Button>
       {preview.data ? (
         <JsonViewer title="Resultado" value={preview.data} />
       ) : null}
-    </div>
+    </Card>
   );
 }

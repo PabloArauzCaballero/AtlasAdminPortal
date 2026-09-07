@@ -16,7 +16,7 @@ import {
 } from "./hooks";
 import { buildProviderColumns, type ProviderRow } from "./provider-columns";
 import { ProviderDetailDrawer } from "./provider-detail-drawer";
-import { Plug } from "lucide-react";
+import { Inbox, KeyRound, Plug, ScrollText, TriangleAlert } from "lucide-react";
 
 /**
  * Aviso sobre la delegación de autenticación.
@@ -32,18 +32,24 @@ function AuthBrokerNotice({
   if (configured === undefined) return null;
   if (!configured) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
-        La autenticación con proveedores aún no está delegada en el{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>; las
-        columnas &quot;Credencial&quot; y &quot;Token&quot; aparecerán vacías.
+      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
+        <KeyRound className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+        <span>
+          La autenticación con proveedores aún no está delegada en el{" "}
+          <span className="font-mono">atlas-auth-broker-worker</span>; las
+          columnas &quot;Credencial&quot; y &quot;Token&quot; aparecerán vacías.
+        </span>
       </div>
     );
   }
   if (!reachable) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-        El broker de autenticación no responde. Las llamadas a proveedores que
-        exijan credencial fallarán mientras dure la incidencia.
+      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+        <span>
+          El broker de autenticación no responde. Las llamadas a proveedores que
+          exijan credencial fallarán mientras dure la incidencia.
+        </span>
       </div>
     );
   }
@@ -89,10 +95,16 @@ export function ProvidersOverviewPage() {
         actions={
           <>
             <Link href="/internal/external-providers/audits">
-              <Button>Auditorías</Button>
+              <Button>
+                <ScrollText className="h-4 w-4" aria-hidden />
+                Auditorías
+              </Button>
             </Link>
             <Link href="/internal/external-providers/requests">
-              <Button>Solicitudes</Button>
+              <Button>
+                <Inbox className="h-4 w-4" aria-hidden />
+                Solicitudes
+              </Button>
             </Link>
           </>
         }

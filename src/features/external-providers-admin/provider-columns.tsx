@@ -1,17 +1,21 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  Badge,
-  BooleanBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
+import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
+import { Coins, Settings2, UserRoundCheck } from "lucide-react";
+import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { formatNumber, safeText } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import {
   CredentialStatusBadge,
   TokenStatusBadge,
 } from "./provider-auth-badges";
+import {
+  ProviderCategoryLabel,
+  ProviderHealthBadge,
+  ProviderModeBadge,
+  ProviderStatusBadge,
+} from "./provider-badges";
 import type { Provider, ProviderAuthState, ProviderHealth } from "./types";
 
 export type ProviderRow = Provider & {
@@ -38,24 +42,26 @@ export function buildProviderColumns(
     {
       header: "Categoría",
       accessorKey: "category",
-      cell: ({ row }) => safeText(row.original.category),
+      cell: ({ row }) => (
+        <ProviderCategoryLabel value={row.original.category} />
+      ),
     },
     {
       header: "Estado",
       accessorKey: "status",
-      cell: ({ row }) => <StatusBadge value={row.original.status} />,
+      cell: ({ row }) => <ProviderStatusBadge value={row.original.status} />,
     },
     {
       header: "Modo",
       accessorKey: "defaultMode",
-      cell: ({ row }) => <Badge tone="info">{row.original.defaultMode}</Badge>,
+      cell: ({ row }) => <ProviderModeBadge value={row.original.defaultMode} />,
     },
     {
       header: "Salud",
       accessorKey: "health",
       cell: ({ row }) =>
         row.original.health ? (
-          <StatusBadge value={row.original.health.status} />
+          <ProviderHealthBadge value={row.original.health.status} />
         ) : (
           <span className="text-atlas-muted">—</span>
         ),
@@ -89,31 +95,57 @@ export function buildProviderColumns(
       header: "Latencia",
       accessorKey: "latencyMs",
       cell: ({ row }) =>
-        row.original.health
-          ? `${formatNumber(row.original.health.latencyMs)} ms`
-          : "—",
+        row.original.health ? (
+          <span className="whitespace-nowrap tabular-nums">
+            {formatNumber(row.original.health.latencyMs)} ms
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
-      header: "Costoso",
+      /*
+       * «Costoso» y «Aprobación manual» eran dos columnas con un «Sí/No» cada una.
+       *
+       * Dos columnas enteras para decir «no» once veces de doce: ocupaban casi 350 px para,
+       * en la práctica, no marcar nada, y eran las que empujaban el botón de gestión fuera de
+       * la pantalla. Aquí sólo aparece lo que ES cierto, con su icono; una fila sin marcas es
+       * un proveedor sin restricciones, que es como se lee una lista de excepciones.
+       */
+      header: "Política",
       accessorKey: "isCostly",
-      cell: ({ row }) => (
-        <BooleanBadge value={row.original.isCostly} tone="critical" />
-      ),
-    },
-    {
-      header: "Aprobación manual",
-      accessorKey: "requiresManualApproval",
-      cell: ({ row }) => (
-        <BooleanBadge value={row.original.requiresManualApproval} />
-      ),
+      cell: ({ row }) => {
+        const costoso = row.original.isCostly;
+        const manual = row.original.requiresManualApproval;
+        if (!costoso && !manual) {
+          return <span className="text-atlas-muted">—</span>;
+        }
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {costoso ? (
+              <Badge tone="critical" icon={Coins}>
+                Costoso
+              </Badge>
+            ) : null}
+            {manual ? (
+              <Badge tone="warning" icon={UserRoundCheck}>
+                Aprobación manual
+              </Badge>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       header: "Detalle",
+      // Clavada a la derecha: es la acción de la fila y la tabla se desplaza en horizontal.
+      meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) => (
         <Button
           className="h-8 px-2 text-xs"
           onClick={() => onOpen(row.original)}
         >
+          <Settings2 className="h-3.5 w-3.5" aria-hidden />
           Gestionar
         </Button>
       ),

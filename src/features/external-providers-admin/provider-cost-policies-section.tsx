@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Coins, Pencil, ShieldAlert, X } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Select } from "@/shared/components/ui/input";
@@ -9,6 +10,31 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
 import { useProviderCostPolicies, useUpdateCostPolicyMutation } from "./hooks";
 import type { CostPolicy, CostPolicyPatchInput } from "./types";
+
+/**
+ * El tramo de costo es un semáforo de gasto, no una etiqueta suelta.
+ *
+ * Todos salían en ámbar: `FREE` y `CRITICAL` se pintaban igual, que es justo la distinción que
+ * esta columna existe para hacer.
+ */
+const TONO_DE_TRAMO: Record<
+  NonNullable<CostPolicy["costTier"]>,
+  "success" | "info" | "warning" | "critical"
+> = {
+  FREE: "success",
+  LOW: "info",
+  MEDIUM: "warning",
+  HIGH: "critical",
+  CRITICAL: "critical",
+};
+
+const ETIQUETA_DE_TRAMO: Record<NonNullable<CostPolicy["costTier"]>, string> = {
+  FREE: "Sin costo",
+  LOW: "Costo bajo",
+  MEDIUM: "Costo medio",
+  HIGH: "Costo alto",
+  CRITICAL: "Costo crítico",
+};
 
 export function ProviderCostPoliciesSection({
   providerCode,
@@ -57,10 +83,14 @@ export function ProviderCostPoliciesSection({
                 {policy.active ? "Activa" : "Inactiva"}
               </Badge>
               {policy.costTier ? (
-                <Badge tone="warning">{policy.costTier}</Badge>
+                <Badge tone={TONO_DE_TRAMO[policy.costTier]} icon={Coins}>
+                  {ETIQUETA_DE_TRAMO[policy.costTier]}
+                </Badge>
               ) : null}
               {policy.blockByDefault ? (
-                <Badge tone="critical">Bloquea por defecto</Badge>
+                <Badge tone="critical" icon={ShieldAlert}>
+                  Bloquea por defecto
+                </Badge>
               ) : null}
               {policy.requiresManualApproval ? (
                 <Badge tone="info">Requiere aprobación</Badge>
@@ -78,6 +108,11 @@ export function ProviderCostPoliciesSection({
               setEditing(editing?.id === policy.id ? null : policy)
             }
           >
+            {editing?.id === policy.id ? (
+              <X className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <Pencil className="h-3.5 w-3.5" aria-hidden />
+            )}
             {editing?.id === policy.id ? "Cerrar" : "Editar"}
           </Button>
           {editing?.id === policy.id ? (
