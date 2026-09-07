@@ -194,6 +194,24 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Cambiar la política que evalúa un crédito o una identidad deja de ser un despliegue: lo decide Riesgo desde aquí. Por ejemplo, si Riesgo publica una versión nueva del scoring BNPL, esta pantalla es donde se decide si entra en producción o se sigue con la anterior — y donde se ve, sin abrir el código, qué se rompe si se cambia.",
       },
+      "/internal/settings/consent-documents": {
+        systems:
+          "Edita el TEXTO de cada documento de consentimiento (`/operations/consent-documents`), nunca su código ni su versión: el backend lo impone y esta pantalla ni siquiera ofrece esos campos. La app móvil lee el título y el cuerpo del servidor, así que corregir una palabra no exige compilar ni publicar en las tiendas.",
+        business:
+          "Quien aceptó bajo la v1 tiene derecho a que la v1 siga diciendo lo que leyó. Aquí se corrige la redacción; un cambio de fondo se publica como versión nueva y vuelve a pedirse la aceptación.",
+      },
+      "/internal/settings/app-content": {
+        systems:
+          "Contenido por superficie (`/operations/app-content`): bienvenida, preguntas frecuentes, ayuda, inicio, legal, perfil y crédito. Crear y editar son la misma operación, resuelta por superficie + clave + idioma, así que reeditar una pieza la actualiza en vez de duplicarla. El botón de WhatsApp se guarda como número local y el servidor le añade el prefijo del país.",
+        business:
+          "El eslogan, los pasos de bienvenida y las respuestas de ayuda estaban escritos en el código de la app: corregir una respuesta que confunde costaba dos publicaciones en tiendas y, hasta que cada persona actualizara, convivían dos versiones de lo que Atlas dice ser.",
+      },
+      "/internal/settings/notification-policies": {
+        systems:
+          "Declara qué avisos existen, por qué canal salen y cuáles son irrenunciables (`/operations/notification-policies`). El flag de irrenunciable se fija AQUÍ, del lado del servidor: antes llegaba en la petición del cliente y bastaba mandarlo en `false` para silenciar el aviso de mora. Un aviso irrenunciable no puede guardarse sin el motivo que la app enseña junto al candado.",
+        business:
+          "Un interruptor bloqueado sin explicación se lee como abuso; con el motivo delante, «no puedes apagarlo» se convierte en «no te conviene apagarlo, y por esto». Aquí se decide qué le llega al cliente y qué puede él silenciar.",
+      },
       "/internal/settings/users": {
         systems:
           "CRUD de usuarios internos con asignación de roles y estado de la cuenta.",

@@ -134,7 +134,7 @@ function AuthorizedPortfolioPage() {
             />
           </section>
 
-          <Card>
+          <Card className="p-5">
             <h2 className="mb-1 text-base font-semibold text-atlas-text">
               Cartera por categoría
             </h2>
@@ -153,24 +153,33 @@ function AuthorizedPortfolioPage() {
           </Card>
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            <Card>
+            <Card className="p-5">
               <h2 className="mb-1 text-base font-semibold text-atlas-text">
                 Recalificar
               </h2>
               <p className="mb-4 text-sm text-atlas-muted">
-                Calificar un crédito recalifica también a su titular: su categoría se deriva por
-                arrastre de todas sus operaciones, y hacerlo a medias dejaría la ficha mintiendo.
+                Calificar un crédito recalifica también a su titular: su
+                categoría se deriva por arrastre de todas sus operaciones, y
+                hacerlo a medias dejaría la ficha mintiendo.
               </p>
               <div className="space-y-3">
                 <Button
                   disabled={ejecutando}
-                  onClick={() => setConfirmacion({ tipo: "ratings", limite: 500 })}
+                  onClick={() =>
+                    setConfirmacion({ tipo: "ratings", limite: 500 })
+                  }
                 >
                   Recalificar la cartera
                 </Button>
-                <Field label="Recalificar un crédito" hint="Identificador del crédito.">
+                <Field
+                  label="Recalificar un crédito"
+                  hint="Identificador del crédito."
+                >
                   <div className="flex gap-2">
-                    <Input value={loanId} onChange={(e) => setLoanId(e.target.value)} />
+                    <Input
+                      value={loanId}
+                      onChange={(e) => setLoanId(e.target.value)}
+                    />
                     <Button
                       disabled={!loanId || calificarCredito.isPending}
                       onClick={() => void calificarCredito.mutateAsync(loanId)}
@@ -179,7 +188,10 @@ function AuthorizedPortfolioPage() {
                     </Button>
                   </div>
                 </Field>
-                <Field label="Recalificar un cliente" hint="Identificador del cliente.">
+                <Field
+                  label="Recalificar un cliente"
+                  hint="Identificador del cliente."
+                >
                   <div className="flex gap-2">
                     <Input
                       value={customerId}
@@ -187,7 +199,9 @@ function AuthorizedPortfolioPage() {
                     />
                     <Button
                       disabled={!customerId || calificarCliente.isPending}
-                      onClick={() => void calificarCliente.mutateAsync(customerId)}
+                      onClick={() =>
+                        void calificarCliente.mutateAsync(customerId)
+                      }
                     >
                       Calificar
                     </Button>
@@ -196,25 +210,34 @@ function AuthorizedPortfolioPage() {
               </div>
             </Card>
 
-            <Card>
+            <Card className="p-5">
               <h2 className="mb-1 text-base font-semibold text-atlas-text">
                 Mora y desenlaces
               </h2>
               <p className="mb-4 text-sm text-atlas-muted">
-                Son dos pasos y no uno: el barrido produce observaciones y la entrega las manda.
-                Separados, la mora se sigue midiendo aunque el motor esté caído —que es justo
-                cuando más conviene—, y la cola se entrega cuando vuelva.
+                Son dos pasos y no uno: el barrido produce observaciones y la
+                entrega las manda. Separados, la mora se sigue midiendo aunque
+                el motor esté caído —que es justo cuando más conviene—, y la
+                cola se entrega cuando vuelva.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Button
                   disabled={ejecutando}
-                  onClick={() => setConfirmacion({ tipo: "mora", limite: 200, tenantScoped: true })}
+                  onClick={() =>
+                    setConfirmacion({
+                      tipo: "mora",
+                      limite: 200,
+                      tenantScoped: true,
+                    })
+                  }
                 >
                   Recalcular mora
                 </Button>
                 <Button
                   disabled={ejecutando}
-                  onClick={() => setConfirmacion({ tipo: "desenlaces", limite: 100 })}
+                  onClick={() =>
+                    setConfirmacion({ tipo: "desenlaces", limite: 100 })
+                  }
                 >
                   Entregar desenlaces
                 </Button>
@@ -222,13 +245,14 @@ function AuthorizedPortfolioPage() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="p-5">
             <h2 className="mb-1 text-base font-semibold text-atlas-text">
               Desenlaces que agotaron reintentos
             </h2>
             <p className="mb-4 text-sm text-atlas-muted">
-              Cada fila es una decisión de la que el motor nunca supo el resultado. No se reintentan
-              solos: hay que arreglar la causa y volver a entregar.
+              Cada fila es una decisión de la que el motor nunca supo el
+              resultado. No se reintentan solos: hay que arreglar la causa y
+              volver a entregar.
             </p>
             {backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
             <DataTable
@@ -289,13 +313,17 @@ function buildBacklogColumns(): ColumnDef<ExhaustedOutcome>[] {
     {
       accessorKey: "loanId",
       header: "Crédito",
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.loanId}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.loanId}</span>
+      ),
     },
     {
       accessorKey: "decisionExecutionId",
       header: "Ejecución",
       cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.decisionExecutionId}</span>
+        <span className="font-mono text-xs">
+          {row.original.decisionExecutionId}
+        </span>
       ),
     },
     {

@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { FileText } from "lucide-react";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/shared/components/ui/states";
 import { useAppContent } from "./hooks";
 import { EntryCard } from "./entry-card";
 import type { ContentSurface } from "./types";
@@ -72,7 +77,8 @@ export function AppContentPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Configuración"
+        icon={FileText}
+        eyebrow="Gobierno y calidad"
         title="Contenido de la app"
         description="Todo lo que el cliente lee y no es un dato suyo. Se edita aquí y llega a la app sin publicar una versión."
       />
@@ -88,10 +94,11 @@ export function AppContentPage() {
             onClick={() => setSurface(option.value)}
             title={option.hint}
             data-testid={`surface-${option.value}`}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+            aria-pressed={surface === option.value}
+            className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/50 focus-visible:ring-offset-1 ${
               surface === option.value
-                ? "bg-sky-500/20 text-sky-200 ring-1 ring-sky-400/40"
-                : "bg-slate-800/60 text-slate-400 hover:text-slate-200"
+                ? "border-atlas-accent/30 bg-atlas-accentSoft text-atlas-accent shadow-subtle"
+                : "border-atlas-border bg-white text-atlas-muted hover:border-slate-300 hover:bg-atlas-soft hover:text-atlas-text"
             }`}
           >
             {option.label}
@@ -120,10 +127,10 @@ export function AppContentPage() {
             />
           ))}
           {content.data.items.length === 0 ? (
-            <p className="text-sm text-slate-400">
-              Todavía no hay contenido para esta pantalla. La app usará sus
-              textos por defecto.
-            </p>
+            <EmptyState
+              title="Todavía no hay contenido para esta pantalla"
+              description="La app usará sus textos por defecto hasta que se escriba aquí el primero."
+            />
           ) : null}
         </div>
       ) : null}

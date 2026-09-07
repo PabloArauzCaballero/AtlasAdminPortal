@@ -1,5 +1,8 @@
 "use client";
 
+import { Plus, X } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import type { ContentBullet } from "./types";
 
 /**
@@ -19,13 +22,18 @@ export function BulletsEditor({
   contentKey: string;
 }>) {
   return (
-    <fieldset className="flex flex-col gap-2 rounded-lg border border-slate-800 p-3">
-      <legend className="px-1 text-xs text-slate-400">
+    <fieldset className="flex flex-col gap-2 rounded-xl border border-atlas-border bg-atlas-soft/60 p-3">
+      <legend className="px-1 text-sm font-medium text-atlas-text">
         Puntos de la lista
       </legend>
+      {bullets.length === 0 ? (
+        <p className="px-1 text-xs text-atlas-muted">
+          Sin puntos. La app no pintará ninguna lista en esta entrada.
+        </p>
+      ) : null}
       {bullets.map((bullet, index) => (
-        <div key={index} className="flex items-center gap-2">
-          <input
+        <div key={index} className="flex flex-wrap items-center gap-2">
+          <Input
             value={bullet.text}
             onChange={(event) =>
               onChange((current) =>
@@ -37,9 +45,9 @@ export function BulletsEditor({
               )
             }
             data-testid={`bullet-${contentKey}-${index}`}
-            className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="h-10 min-w-48 flex-1"
           />
-          <input
+          <Input
             value={bullet.icon ?? ""}
             placeholder="icono"
             onChange={(event) =>
@@ -51,9 +59,9 @@ export function BulletsEditor({
                 ),
               )
             }
-            className="w-28 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100"
+            className="h-10 w-28 shrink-0 text-xs"
           />
-          <label className="flex items-center gap-1 text-xs text-slate-400">
+          <label className="flex shrink-0 items-center gap-1.5 text-xs text-atlas-text">
             <input
               type="checkbox"
               checked={Boolean(bullet.emphasis)}
@@ -66,32 +74,35 @@ export function BulletsEditor({
                   ),
                 )
               }
+              className="h-4 w-4 rounded border-slate-300 accent-atlas-accent"
             />
             destacar
           </label>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() =>
               onChange((current) =>
                 current.filter((_, position) => position !== index),
               )
             }
-            className="text-xs text-rose-300"
+            aria-label={`Quitar el punto ${index + 1}`}
+            className="h-10 w-10 shrink-0 px-0 text-atlas-muted hover:text-red-600"
           >
-            quitar
-          </button>
+            <X className="h-4 w-4" aria-hidden />
+          </Button>
         </div>
       ))}
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={() =>
           onChange((current) => [...current, { text: "", icon: null }])
         }
         data-testid={`add-bullet-${contentKey}`}
-        className="self-start text-xs text-sky-300"
+        className="self-start"
       >
-        + añadir punto
-      </button>
+        <Plus className="h-4 w-4" aria-hidden />
+        Añadir punto
+      </Button>
     </fieldset>
   );
 }

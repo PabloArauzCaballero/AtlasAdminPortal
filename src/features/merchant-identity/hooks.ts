@@ -17,7 +17,9 @@ export function useMerchantUsers(query: QueryParams) {
   });
 }
 
-function useIdentidadMutation<TInput>(accion: (input: TInput) => Promise<unknown>) {
+function useIdentidadMutation<TInput>(
+  accion: (input: TInput) => Promise<unknown>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: accion,

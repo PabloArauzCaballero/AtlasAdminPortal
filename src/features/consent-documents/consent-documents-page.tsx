@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { FileText } from "lucide-react";
 import { useConsentDocuments, useUpdateConsentDocument } from "./hooks";
 import type { ConsentDocument } from "./types";
+import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 /**
@@ -29,7 +37,8 @@ export function ConsentDocumentsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Configuración"
+        icon={FileText}
+        eyebrow="Gobierno y calidad"
         title="Documentos de consentimiento"
         description="Lo que el cliente acepta al registrarse. El texto se edita aquí y llega a la app sin desplegar nada."
       />
@@ -58,9 +67,10 @@ export function ConsentDocumentsPage() {
             />
           ))}
           {documents.data.items.length === 0 ? (
-            <p className="text-sm text-slate-400">
-              Todavía no hay documentos publicados.
-            </p>
+            <EmptyState
+              title="Todavía no hay documentos publicados"
+              description="Cuando se publique un consentimiento aparecerá aquí para poder corregir su texto."
+            />
           ) : null}
         </div>
       ) : null}
@@ -68,10 +78,17 @@ export function ConsentDocumentsPage() {
   );
 }
 
-function statusTone(status: string | null): string {
-  if (status === "published") return "bg-emerald-500/15 text-emerald-300";
-  if (status === "retired") return "bg-slate-500/15 text-slate-300";
-  return "bg-amber-500/15 text-amber-300";
+/**
+ * El estado se pinta con el tono del sistema, no con un color inventado por la pantalla.
+ *
+ * `published` es lo que el cliente está aceptando ahora mismo y por eso va en verde; `retired`
+ * describe algo que ya no se ofrece y se apaga en gris; cualquier otro estado —un borrador— avisa
+ * en ámbar de que hay texto escrito que todavía no rige.
+ */
+function statusTone(status: string | null): "success" | "muted" | "warning" {
+  if (status === "published") return "success";
+  if (status === "retired") return "muted";
+  return "warning";
 }
 
 function DocumentCard({
@@ -101,101 +118,111 @@ function DocumentCard({
   };
 
   return (
-    <section
-      className="rounded-xl border border-slate-700 bg-slate-900/60 p-5"
-      data-testid={`consent-document-${document.documentCode}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base font-semibold text-slate-100">
-            {document.title ?? document.documentCode}
-          </h3>
-          <p className="mt-1 text-xs text-slate-400">
-            {document.documentCode} · versión {document.versionCode} ·{" "}
-            {document.language}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusTone(document.status)}`}
-          >
-            {document.status}
-          </span>
-          {!editing ? (
-            <Button
-              onClick={onEdit}
-              data-testid={`edit-${document.documentCode}`}
-            >
-              Editar texto
-            </Button>
-          ) : null}
-        </div>
-      </div>
-
-      {!editing ? (
-        <>
-          {document.summary ? (
-            <p className="mt-3 text-sm text-slate-300">{document.summary}</p>
-          ) : null}
-          {/*
-            El cuerpo se muestra recortado. Quien administra necesita reconocer el documento de un
-            vistazo; leerlo entero es lo que hace el modo edición, donde además se puede corregir.
-          */}
-          <pre className="mt-3 max-h-32 overflow-hidden whitespace-pre-wrap text-xs text-slate-400">
-            {document.bodyMarkdown ?? "(sin texto)"}
-          </pre>
-        </>
-      ) : (
-        <div className="mt-4 flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
-            Título
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              data-testid={`title-${document.documentCode}`}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
-            Resumen
-            <input
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-              data-testid={`summary-${document.documentCode}`}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
-            Texto del documento
-            <textarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              rows={12}
-              data-testid={`body-${document.documentCode}`}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-100"
-            />
-          </label>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={save}
-              disabled={mutation.isPending || title.trim().length < 3}
-              data-testid={`save-${document.documentCode}`}
-            >
-              {mutation.isPending ? "Guardando…" : "Guardar"}
-            </Button>
-            <Button onClick={onClose}>Cancelar</Button>
-          </div>
-
-          {mutation.error ? (
-            <p className="text-xs text-rose-300">
-              No pudimos guardar. Revisa el texto e intenta otra vez.
+    <Card testId={`consent-document-${document.documentCode}`}>
+      <CardContent>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-atlas-text">
+              {document.title ?? document.documentCode}
+            </h3>
+            <p className="mt-1 font-mono text-xs text-atlas-muted">
+              {document.documentCode} · versión {document.versionCode} ·{" "}
+              {document.language}
             </p>
-          ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge tone={statusTone(document.status)}>
+              {document.status ?? "sin estado"}
+            </Badge>
+            {!editing ? (
+              <Button
+                variant="secondary"
+                onClick={onEdit}
+                data-testid={`edit-${document.documentCode}`}
+              >
+                Editar texto
+              </Button>
+            ) : null}
+          </div>
         </div>
-      )}
-    </section>
+
+        {!editing ? (
+          <>
+            {document.summary ? (
+              <p className="mt-3 text-sm leading-6 text-atlas-text">
+                {document.summary}
+              </p>
+            ) : null}
+            {/*
+              El cuerpo se muestra recortado. Quien administra necesita reconocer el documento de un
+              vistazo; leerlo entero es lo que hace el modo edición, donde además se puede corregir.
+
+              El recorte se DEGRADA en vez de cortarse a hachazos: el degradado sobre el borde
+              inferior dice que el texto sigue. Con `overflow-hidden` a secas la última línea
+              quedaba partida por la mitad y parecía un fallo de renderizado.
+            */}
+            <div className="relative mt-3">
+              <pre className="max-h-32 overflow-hidden whitespace-pre-wrap rounded-lg border border-atlas-border bg-atlas-soft p-3 font-mono text-xs leading-5 text-atlas-muted">
+                {document.bodyMarkdown ?? "(sin texto)"}
+              </pre>
+              <div className="pointer-events-none absolute inset-x-px bottom-px h-10 rounded-b-lg bg-gradient-to-t from-atlas-soft to-transparent" />
+            </div>
+          </>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            <Field label="Título">
+              <Input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                data-testid={`title-${document.documentCode}`}
+              />
+            </Field>
+
+            <Field label="Resumen">
+              <Input
+                value={summary}
+                onChange={(event) => setSummary(event.target.value)}
+                data-testid={`summary-${document.documentCode}`}
+              />
+            </Field>
+
+            <Field
+              label="Texto del documento"
+              hint="Se corrige la redacción, nunca el fondo: un cambio de fondo se publica como versión nueva."
+            >
+              <Textarea
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                rows={12}
+                data-testid={`body-${document.documentCode}`}
+                className="font-mono text-xs leading-5"
+              />
+            </Field>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                onClick={save}
+                isLoading={mutation.isPending}
+                loadingText="Guardando…"
+                disabled={title.trim().length < 3}
+                data-testid={`save-${document.documentCode}`}
+              >
+                Guardar
+              </Button>
+              <Button variant="ghost" onClick={onClose}>
+                Cancelar
+              </Button>
+            </div>
+
+            {mutation.error ? (
+              <p className="text-xs font-medium text-red-600">
+                No pudimos guardar. Revisa el texto e intenta otra vez.
+              </p>
+            ) : null}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -48,7 +48,10 @@ function AuthorizedMerchantUsersPage() {
   const [status, setStatus] = useState("");
   const [email, setEmail] = useState("");
   const [alta, setAlta] = useState(false);
-  const [cambio, setCambio] = useState<{ usuario: MerchantUserProfile; destino: string } | null>(null);
+  const [cambio, setCambio] = useState<{
+    usuario: MerchantUserProfile;
+    destino: string;
+  } | null>(null);
 
   const usuarios = useMerchantUsers({
     page,
@@ -81,7 +84,10 @@ function AuthorizedMerchantUsersPage() {
             name: "status",
             label: "Estado",
             value: status,
-            options: MERCHANT_USER_STATUSES.map((valor) => ({ value: valor, label: valor })),
+            options: MERCHANT_USER_STATUSES.map((valor) => ({
+              value: valor,
+              label: valor,
+            })),
           },
         ]}
         onSearchChange={(valor) => {
@@ -108,7 +114,9 @@ function AuthorizedMerchantUsersPage() {
               : "No se pudieron cargar las identidades de comercio."
           }
           requestId={
-            isAtlasApiError(usuarios.error) ? usuarios.error.requestId : undefined
+            isAtlasApiError(usuarios.error)
+              ? usuarios.error.requestId
+              : undefined
           }
           onRetry={() => void usuarios.refetch()}
         />
@@ -117,19 +125,28 @@ function AuthorizedMerchantUsersPage() {
       {usuarios.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Identidades" value={formatNumber(usuarios.data.total)} />
+            <MetricCard
+              label="Identidades"
+              value={formatNumber(usuarios.data.total)}
+            />
             <MetricCard
               label="Activas"
-              value={formatNumber(items.filter((u) => u.status === "active").length)}
+              value={formatNumber(
+                items.filter((u) => u.status === "active").length,
+              )}
             />
             <MetricCard
               label="Invitadas"
-              value={formatNumber(items.filter((u) => u.status === "invited").length)}
+              value={formatNumber(
+                items.filter((u) => u.status === "invited").length,
+              )}
             />
             <MetricCard
               label="Suspendidas"
               value={formatNumber(
-                items.filter((u) => u.status === "suspended" || u.status === "disabled").length,
+                items.filter(
+                  (u) => u.status === "suspended" || u.status === "disabled",
+                ).length,
               )}
             />
           </section>
@@ -147,7 +164,10 @@ function AuthorizedMerchantUsersPage() {
               page: usuarios.data.page,
               limit: usuarios.data.limit,
               total: usuarios.data.total,
-              totalPages: Math.max(1, Math.ceil(usuarios.data.total / usuarios.data.limit)),
+              totalPages: Math.max(
+                1,
+                Math.ceil(usuarios.data.total / usuarios.data.limit),
+              ),
             }}
             onPageChange={setPage}
             emptyTitle="Sin identidades de comercio."
@@ -218,20 +238,27 @@ function AltaDialog({
   const [phone, setPhone] = useState("");
 
   return (
-    <Card className="fixed inset-x-4 top-24 z-50 mx-auto max-w-xl">
+    <Card className="fixed inset-x-4 top-24 z-50 mx-auto max-w-xl p-5">
       <h2 className="mb-1 text-base font-semibold text-atlas-text">
         Nueva identidad de comercio
       </h2>
       <p className="mb-4 text-sm text-atlas-muted">
-        La contraseña es provisional: el backend obliga a cambiarla en el primer acceso. Diez
-        caracteres mínimo.
+        La contraseña es provisional: el backend obliga a cambiarla en el primer
+        acceso. Diez caracteres mínimo.
       </p>
       <div className="space-y-3">
         <Field label="Correo">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </Field>
         <Field label="Nombre completo">
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          <Input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
         </Field>
         <Field label="Contraseña provisional" hint="Mínimo 10 caracteres.">
           <Input
@@ -252,7 +279,9 @@ function AltaDialog({
           <Button onClick={onClose}>Cancelar</Button>
           <Button
             variant="primary"
-            disabled={isPending || password.length < 10 || !email || fullName.length < 3}
+            disabled={
+              isPending || password.length < 10 || !email || fullName.length < 3
+            }
             onClick={() =>
               void onSubmit({
                 email,
@@ -307,17 +336,18 @@ function buildColumns(
           aria-label={`Cambiar estado de ${row.original.fullName}`}
           value=""
           onChange={(evento) => {
-            if (evento.target.value) onCambiar(row.original, evento.target.value);
+            if (evento.target.value)
+              onCambiar(row.original, evento.target.value);
           }}
         >
           <option value="">Cambiar estado…</option>
-          {MERCHANT_USER_STATUSES.filter((estado) => estado !== row.original.status).map(
-            (estado) => (
-              <option key={estado} value={estado}>
-                {estado}
-              </option>
-            ),
-          )}
+          {MERCHANT_USER_STATUSES.filter(
+            (estado) => estado !== row.original.status,
+          ).map((estado) => (
+            <option key={estado} value={estado}>
+              {estado}
+            </option>
+          ))}
         </Select>
       ),
     },

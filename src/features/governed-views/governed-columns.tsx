@@ -1,6 +1,10 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/shared/components/ui/badges";
-import { formatBoolean, formatDateTime, formatNumber } from "@/shared/lib/format";
+import {
+  formatBoolean,
+  formatDateTime,
+  formatNumber,
+} from "@/shared/lib/format";
 import { FIELD_LABELS, type GovernedViewRow } from "./types";
 
 /**
@@ -22,7 +26,10 @@ export function buildGovernedColumns(
 
 /** Un nombre técnico sin traducción se enseña legible, no se esconde. */
 function humanizar(field: string): string {
-  const separado = field.replace(/([A-Z])/g, " $1").toLowerCase().trim();
+  const separado = field
+    .replace(/([A-Z])/g, " $1")
+    .toLowerCase()
+    .trim();
   return separado.charAt(0).toUpperCase() + separado.slice(1);
 }
 
@@ -41,7 +48,11 @@ function renderValue(field: string, value: unknown) {
     return formatNumber(value);
   }
   /* Estado, banda y decisión son los tres campos que se leen de un vistazo por su color. */
-  if (/^(status|lifecycleStatus|healthStatus|providerStatus|decision|latestRiskDecision|riskBand|latestRiskBand|severity|priority|reviewStatus|riskLevel)$/.test(field)) {
+  if (
+    /^(status|lifecycleStatus|healthStatus|providerStatus|decision|latestRiskDecision|riskBand|latestRiskBand|severity|priority|reviewStatus|riskLevel)$/.test(
+      field,
+    )
+  ) {
     return <StatusBadge value={texto} />;
   }
   return texto;

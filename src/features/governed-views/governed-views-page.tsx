@@ -118,7 +118,9 @@ function AuthorizedGovernedViewsPage() {
             options: uniqueTextOptions(
               items.map((row) => {
                 const valor = row[filtro.name];
-                return valor === null || valor === undefined ? null : String(valor);
+                return valor === null || valor === undefined
+                  ? null
+                  : String(valor);
               }),
             ),
           }))}
@@ -159,7 +161,10 @@ function AuthorizedGovernedViewsPage() {
               label="Registros"
               value={formatNumber(vista.data.meta.total)}
             />
-            <MetricCard label="En pantalla" value={formatNumber(items.length)} />
+            <MetricCard
+              label="En pantalla"
+              value={formatNumber(items.length)}
+            />
             <MetricCard label="Columnas" value={formatNumber(campos.length)} />
           </section>
           <DataTable

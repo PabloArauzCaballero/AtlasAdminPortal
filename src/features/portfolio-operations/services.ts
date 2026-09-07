@@ -8,7 +8,9 @@ import type {
 } from "./types";
 
 export function getPortfolioSummary() {
-  return apiRequest<PortfolioSummary>("/operations/credit-rating/portfolio-summary");
+  return apiRequest<PortfolioSummary>(
+    "/operations/credit-rating/portfolio-summary",
+  );
 }
 
 export function sweepRatings(limit: number) {
@@ -37,17 +39,23 @@ export function rateCustomer(customerId: string) {
  * inquilinos, que es una operación de plataforma y no algo que deba pasar por descuido.
  */
 export function sweepDelinquency(limit: number, tenantScoped: boolean) {
-  return apiRequest<DelinquencySweepResult>("/operations/loans/delinquency-sweep", {
-    method: "POST",
-    body: { limit, tenantScoped },
-  });
+  return apiRequest<DelinquencySweepResult>(
+    "/operations/loans/delinquency-sweep",
+    {
+      method: "POST",
+      body: { limit, tenantScoped },
+    },
+  );
 }
 
 export function dispatchOutcomes(limit: number) {
-  return apiRequest<OutcomeDispatchResult>("/operations/loans/outcome-dispatch", {
-    method: "POST",
-    body: { limit },
-  });
+  return apiRequest<OutcomeDispatchResult>(
+    "/operations/loans/outcome-dispatch",
+    {
+      method: "POST",
+      body: { limit },
+    },
+  );
 }
 
 export function listExhaustedOutcomes(limit: number) {
