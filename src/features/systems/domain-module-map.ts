@@ -24,6 +24,12 @@ export const DOMAIN_CODE_TO_MODULE: Record<string, string> = {
   // fuera del mapa y sus fichas aparecían sin dominio de negocio asociado.
   EVIDENCIAS: "privacy",
   CONTEXTO_RIESGO: "catalog_management",
+  // Los cuatro dominios que faltaban por escribir: sus esquemas (`credit`, `support`, `partner`,
+  // `expedientes`) nacieron después de que se redactara el catálogo original.
+  CREDITO: "credit",
+  SOPORTE: "support",
+  COMERCIOS: "partner_onboarding",
+  EXPEDIENTES: "expedientes",
 };
 
 /**
