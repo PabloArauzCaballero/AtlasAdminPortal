@@ -9,6 +9,7 @@ import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
 import { useActividad } from "./hooks";
 import { descargarNodo } from "./services";
 import { VistaPreviaDeNodo } from "./node-preview";
+import { conTipo, tipoEfectivo } from "./tipo-de-archivo";
 import { QuienLoVe } from "./node-viewers";
 import { formatearTamano } from "./node-columns";
 import type { Nodo } from "./types";
@@ -74,16 +75,23 @@ export function PanelDeNodo({
  * Guardar el archivo en el disco de quien lo pide.
  *
  * El enlace se fabrica sobre un blob que ya vino autenticado; un `<a href>` directo a la API no
- * llevaría la credencial y bajaría un JSON de error con nombre de imagen.
+ * llevaría la credencial y bajaría un JSON de error con nombre de imagen. El tipo se normaliza por
+ * el mismo motivo que en la vista previa: un extracto guardado como `application/octet-stream` se
+ * baja sin que el sistema sepa con qué abrirlo.
+ *
+ * La URL se revoca en el siguiente turno y no en la misma línea: revocarla antes de que el
+ * navegador haya empezado a leerla cancela la descarga en silencio.
  */
 async function guardarEnDisco(expedienteId: string, nodo: Nodo): Promise<void> {
   const archivo = await descargarNodo(expedienteId, nodo);
-  const url = URL.createObjectURL(archivo.blob);
+  const url = URL.createObjectURL(
+    conTipo(archivo.blob, tipoEfectivo(archivo.contentType, nodo)),
+  );
   const enlace = document.createElement("a");
   enlace.href = url;
   enlace.download = archivo.nombre;
   enlace.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 function Fila({

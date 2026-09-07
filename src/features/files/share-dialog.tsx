@@ -60,8 +60,10 @@ export function DialogoDeCompartir({
       labelledBy={tituloId}
       onClose={onCerrar}
       closeOnBackdrop
+      overlayClassName="flex items-center justify-center p-4"
+      panelClassName="atlas-scrollbar max-h-full w-[34rem] max-w-full animate-scale-in overflow-auto rounded-xl border border-atlas-border bg-white shadow-card"
     >
-      <div className="w-[34rem] max-w-full space-y-4 p-5">
+      <div className="space-y-4 p-5">
         <div>
           <h2 id={tituloId} className="text-base font-semibold text-atlas-text">
             Quién puede ver «{nodo.nombre}»

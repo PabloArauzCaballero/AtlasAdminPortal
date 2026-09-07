@@ -1,9 +1,10 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { queryKeys } from "@/shared/api/query-keys";
 import * as api from "./services";
+import { conTipo, tipoEfectivo } from "./tipo-de-archivo";
 import type { Nivel, Nodo } from "./types";
 
 /**
@@ -65,22 +66,31 @@ export function useNodos(
 }
 
 /**
- * El contenido de un archivo, como URL de objeto local.
+ * El contenido de un archivo, listo para pintar.
  *
- * Se libera al cambiar de archivo o desmontar: sin eso, cada documento abierto deja su blob en
- * memoria hasta recargar la pestaña, y en una sesión de revisión eso son decenas de megas de
- * imágenes de carnets que ya nadie mira.
+ * ## Lo que se cachea y lo que NO
+ *
+ * En la caché de consultas va el BLOB; la URL del objeto se fabrica al montar y se revoca al
+ * desmontar. Antes se guardaba la URL dentro de la respuesta cacheada y se revocaba igual: la
+ * primera vez se veía el carnet y la segunda —cambiar de pestaña y volver, o cerrar el panel y
+ * reabrirlo dentro de los cinco minutos que la caché conserva— el `src` apuntaba a un objeto ya
+ * liberado y quedaba una imagen rota. Ése era el «a veces carga y a veces no»: no dependía del
+ * archivo ni de la red, dependía de si era la primera vez.
+ *
+ * Revocar sigue siendo obligatorio: sin eso, cada documento abierto deja su blob en memoria hasta
+ * recargar la pestaña, y en una sesión de revisión eso son decenas de megas de imágenes de
+ * carnets que ya nadie mira.
+ *
+ * El tipo se normaliza AQUÍ, al recibir los bytes, y no en el visor: el visor elige el elemento,
+ * pero quien decide si el navegador pinta el PDF es el tipo del blob (ver `conTipo`).
  */
 export function useContenido(expedienteId: string, nodo: Nodo | null) {
   const query = useQuery({
     queryKey: queryKeys.expedienteContenido(expedienteId, nodo?.nodoId ?? ""),
     queryFn: async () => {
       const archivo = await api.descargarNodo(expedienteId, nodo!);
-      return {
-        url: URL.createObjectURL(archivo.blob),
-        contentType: archivo.contentType,
-        blob: archivo.blob,
-      };
+      const contentType = tipoEfectivo(archivo.contentType, nodo!);
+      return { blob: conTipo(archivo.blob, contentType), contentType };
     },
     enabled:
       Boolean(expedienteId) &&
@@ -91,14 +101,37 @@ export function useContenido(expedienteId: string, nodo: Nodo | null) {
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    const url = query.data?.url;
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [query.data?.url]);
+  const blob = query.data?.blob ?? null;
+  const url = useUrlDeObjeto(blob);
 
-  return query;
+  return {
+    // Mientras la URL no exista, la pantalla sigue «cargando»: es un solo fotograma —el efecto
+    // corre justo después de pintar— y evita que el visor parpadee en vacío al abrir el archivo.
+    isLoading: query.isLoading || (blob !== null && url === null),
+    error: query.error,
+    data: query.data && url ? { ...query.data, url } : undefined,
+    refetch: query.refetch,
+  };
+}
+
+/** Una URL local para estos bytes, viva mientras el componente lo esté. */
+function useUrlDeObjeto(blob: Blob | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!blob) {
+      setUrl(null);
+      return;
+    }
+    const objeto = URL.createObjectURL(blob);
+    setUrl(objeto);
+    return () => {
+      setUrl(null);
+      URL.revokeObjectURL(objeto);
+    };
+  }, [blob]);
+
+  return url;
 }
 
 export function useActividad(

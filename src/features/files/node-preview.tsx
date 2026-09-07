@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { CopyButton } from "@/shared/components/ui/copy-button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { useContactos, useContenido } from "./hooks";
+import { esTexto } from "./tipo-de-archivo";
 import type { Nodo } from "./types";
 
 /**
@@ -76,9 +77,10 @@ export function VistaPreviaDeNodo({
     );
   }
 
-  const url = contenido.data?.url;
-  if (!url) return null;
-  const tipo = tipoEfectivo(contenido.data?.contentType, nodo);
+  if (!contenido.data) return null;
+  const url = contenido.data.url;
+  // Ya viene normalizado de `useContenido`, que es también quien rotuló el blob con él.
+  const tipo = contenido.data.contentType;
 
   return (
     <div className="space-y-3">
@@ -130,25 +132,6 @@ export function VistaPreviaDeNodo({
         </a>
       </div>
     </div>
-  );
-}
-
-/**
- * Qué tipo se usa para elegir el visor.
- *
- * El almacén devuelve `application/octet-stream` cuando no supo decir más, y con eso todo archivo
- * caía en «no se puede previsualizar» aunque el nodo sí supiera que era un PDF. El tipo declarado
- * en el nodo manda cuando la respuesta no aporta nada.
- */
-function tipoEfectivo(contentType: string | undefined, nodo: Nodo): string {
-  const generico =
-    !contentType || contentType.startsWith("application/octet-stream");
-  return (generico ? (nodo.mimeType ?? contentType) : contentType) ?? "";
-}
-
-function esTexto(tipo: string): boolean {
-  return (
-    tipo.includes("json") || tipo.startsWith("text/") || tipo.includes("xml")
   );
 }
 
