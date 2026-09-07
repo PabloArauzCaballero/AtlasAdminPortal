@@ -7,6 +7,7 @@ import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
+import { Portal } from "@/shared/components/ui/portal";
 import { useWorkflowTree, useWorkflowVersions, useWorkflows } from "./hooks";
 import {
   WorkflowControls,
@@ -92,12 +93,20 @@ export function WorkflowCanvas() {
     />
   );
 
+  /*
+   * A pantalla completa se sale del árbol de la vista, con `createPortal`.
+   *
+   * Escrito donde se declara, este bloque queda dentro del `<main>` que `AppShell` anima, y ese
+   * `animate-fade-in` le da a `main` un contexto de apilamiento propio: por mucho `z-50` que
+   * llevara, la barra lateral (`z-30`, fija en la raíz) y la superior (`z-20`) se pintaban ENCIMA
+   * del lienzo «a pantalla completa». No lo era: era un lienzo con el menú por delante.
+   */
   if (expanded) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-atlas-soft p-4">
+      <ALoAncho>
         {controls}
         <div className="min-h-0 flex-1">{body}</div>
-      </div>
+      </ALoAncho>
     );
   }
 
@@ -273,4 +282,15 @@ function collectModules(stages: readonly WorkflowStage[]): string[] {
   };
   stages.forEach(visit);
   return [...modules].sort((a, b) => a.localeCompare(b));
+}
+
+/** El lienzo expandido, montado en `document.body` para que nada de la aplicación lo tape. */
+function ALoAncho({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <Portal>
+      <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-atlas-soft p-4">
+        {children}
+      </div>
+    </Portal>
+  );
 }

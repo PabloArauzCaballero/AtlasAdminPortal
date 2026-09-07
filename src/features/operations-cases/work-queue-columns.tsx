@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
 import Link from "next/link";
 import {
   Badge,
@@ -37,10 +38,27 @@ export function buildWorkQueueColumns(
     {
       header: "Caso",
       accessorKey: "caseCode",
+      /*
+       * El código manda y el identificador va debajo, recortado.
+       *
+       * Se pintaban en la MISMA línea —«MR-2026-000481 #11111111-1111-4111-8111-111111111111»—, y
+       * un uuid son 36 caracteres en tipografía monoespaciada: esta sola celda estiraba la fila
+       * más allá del ancho de la tarjeta y empujaba fuera de la pantalla las columnas de la
+       * derecha, la de la acción incluida. El uuid sigue estando entero en el `title`, que es de
+       * donde se copia cuando hace falta.
+       */
       cell: ({ row }) => (
-        <span className="font-mono text-xs">
-          {safeText(row.original.caseCode)} #{row.original.caseId}
-        </span>
+        <div className="min-w-0">
+          <p className="font-mono text-xs text-atlas-text">
+            {safeText(row.original.caseCode)}
+          </p>
+          <p
+            className="max-w-[16ch] truncate font-mono text-[0.6875rem] text-atlas-muted"
+            title={row.original.caseId}
+          >
+            #{row.original.caseId}
+          </p>
+        </div>
       ),
     },
     {
@@ -80,6 +98,12 @@ export function buildWorkQueueColumns(
     },
     {
       header: "Acción",
+      /*
+       * Clavada a la derecha: es la ÚNICA acción de la fila y con ocho columnas se salía de la
+       * tarjeta a 1.440 px, sin nada que delatara que había algo más a la derecha. Es el mismo
+       * fallo que ya arreglaba `pinRight` en la tabla de proveedores externos; aquí faltaba.
+       */
+      meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) => (
         <AccionDeFila item={row.original} onDecide={onDecide} />
       ),

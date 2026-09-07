@@ -32,6 +32,26 @@ export function formatNumber(
   return new Intl.NumberFormat("es-BO").format(numeric);
 }
 
+/**
+ * Un importe decimal, tal y como lo devuelve el backend (`"1510330.00"`), hecho legible.
+ *
+ * Sin esto la cartera enseñaba «1510330.00» en la tarjeta de exposición y en cada fila de la
+ * tabla: siete dígitos seguidos que hay que contar con el dedo para saber si son cien mil o un
+ * millón. No se le pone símbolo de moneda porque la API no declara ninguna; lo que faltaba era la
+ * separación de miles, no la divisa.
+ */
+export function formatAmount(
+  value: number | string | null | undefined,
+): string {
+  if (value === null || value === undefined || value === "") return "—";
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (Number.isNaN(numeric)) return String(value);
+  return new Intl.NumberFormat("es-BO", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numeric);
+}
+
 export function safeText(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "string") return value;

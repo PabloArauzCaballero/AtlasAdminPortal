@@ -1,6 +1,5 @@
 import {
   Bell,
-  BellRing,
   Database,
   DatabaseZap,
   Download,
@@ -133,14 +132,6 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         href: "/internal/notifications",
         icon: MessageSquare,
         permissions: ["notifications.messages.read"],
-      },
-      {
-        label: "Mis notificaciones",
-        href: "/internal/my-notifications",
-        icon: BellRing,
-        // Autoservicio: cualquier usuario interno autenticado ve sus propias notificaciones,
-        // sin importar su rol funcional — no requiere un permiso administrativo.
-        permissions: [],
       },
       {
         label: "Exportaciones",

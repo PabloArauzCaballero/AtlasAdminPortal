@@ -65,7 +65,7 @@ export function PublishEventDialog({
       open
       labelledBy={titleId}
       onClose={onClose}
-      overlayClassName="z-50 flex items-center justify-center bg-slate-950/40 p-4"
+      overlayClassName="flex items-center justify-center p-4"
       panelClassName="w-full max-w-2xl rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
     >
       <form onSubmit={(evento) => void enviar(evento)} className="space-y-4">
