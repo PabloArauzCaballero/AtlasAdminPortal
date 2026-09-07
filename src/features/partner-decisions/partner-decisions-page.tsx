@@ -1,36 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Stamp } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { StatusBadge } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input, Textarea } from "@/shared/components/ui/input";
-import { LoadingSkeleton } from "@/shared/components/ui/states";
-import {
-  useDecidePartnerMutation,
-  usePartnerStatus,
-  useSetMdrRateMutation,
-} from "./hooks";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { formatNumber } from "@/shared/lib/format";
+import { usePartnerQueue } from "./hooks";
+import { buildPartnerQueueColumns } from "./partner-queue-columns";
+import { PartnerFileDrawer } from "./partner-file-drawer";
+import type { PartnerQueueItem } from "./types";
 
 /**
  * Verificación de comercios.
  *
- * Es la pantalla que faltaba para cerrar el onboarding: el expediente llegaba a «en revisión» y no
- * había forma de aprobarlo o rechazarlo desde ninguna consola, así que ningún comercio llegaba a
- * estar verificado. El onboarding es autoservicio hasta el envío; de ahí en adelante es
- * verificación, y por eso el propio backend deja fuera al rol `merchant`: un comercio que pudiera
- * aprobarse a sí mismo convertiría el trámite en un formulario.
+ * ## Dejó de ser un buscador y pasó a ser una cola
  *
- * El identificador se teclea porque el backend no publica un listado de expedientes en revisión.
- * De donde se saca es de «Vistas del negocio › Cola operativa», que sí los lista.
+ * La pantalla pedía TECLEAR el identificador del comercio, que había que traer de otra vista porque
+ * el backend no publicaba ningún listado de expedientes en revisión. Con eso, la carga de trabajo
+ * pendiente no se veía en ninguna parte: sólo se revisaba lo que alguien recordara, y un expediente
+ * olvidado se queda en «en revisión» para siempre — y con él la afiliación entera, porque sin
+ * comercio verificado no hay QR de caja que resuelva ni compra que se le pueda atribuir.
+ *
+ * ## La comisión ya no se fija aquí
+ *
+ * Estaba en esta misma pantalla, junto a la decisión, y son dos cosas distintas: verificar es
+ * comprobar que el comercio es quien dice ser; el MDR es un término comercial que se negocia y se
+ * lleva en el ERP. Ver `services.ts`.
+ *
+ * El onboarding es autoservicio hasta el envío; de ahí en adelante es verificación, y por eso el
+ * backend deja fuera al rol `merchant`: un comercio que pudiera aprobarse a sí mismo convertiría el
+ * trámite en un formulario.
  */
 export function PartnerDecisionsPage() {
   return (
@@ -41,24 +47,27 @@ export function PartnerDecisionsPage() {
 }
 
 function AuthorizedPartnerDecisionsPage() {
-  const [entrada, setEntrada] = useState("");
-  const [partnerId, setPartnerId] = useState("");
-  const [motivo, setMotivo] = useState("");
-  const [mdr, setMdr] = useState("");
-  const [pendiente, setPendiente] = useState<"aprobar" | "rechazar" | null>(
-    null,
+  const [page, setPage] = useState(1);
+  const [abierto, setAbierto] = useState<PartnerQueueItem | null>(null);
+
+  const cola = usePartnerQueue({ page, limit: 25 });
+  const items = useMemo(() => cola.data?.items ?? [], [cola.data]);
+  const columns = useMemo(
+    () => buildPartnerQueueColumns((expediente) => setAbierto(expediente)),
+    [],
   );
 
-  const estado = usePartnerStatus(partnerId);
-  const decidir = useDecidePartnerMutation(partnerId);
-  const fijarMdr = useSetMdrRateMutation(partnerId);
-
-  const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
-    string,
-    unknown
-  >;
-  const onboardingStatus = String(perfil.onboardingStatus ?? "");
-  const enRevision = onboardingStatus === "under_review";
+  const masAntiguo = useMemo(
+    () =>
+      items.reduce<string | null>(
+        (acumulado, item) =>
+          item.submittedAt && (!acumulado || item.submittedAt < acumulado)
+            ? item.submittedAt
+            : acumulado,
+        null,
+      ),
+    [items],
+  );
 
   return (
     <>
@@ -66,166 +75,76 @@ function AuthorizedPartnerDecisionsPage() {
         icon={Stamp}
         eyebrow="Onboarding de comercios"
         title="Verificación de expedientes"
-        description="Aprobar o rechazar el expediente de un comercio y fijar su comisión. Sin esta decisión el comercio nunca queda verificado."
+        description="Los expedientes que esperan decisión, el más antiguo primero. Sin esta decisión el comercio nunca queda verificado."
       />
+      <BusinessContextNote>
+        Cada fila es un comercio que terminó su onboarding y espera que alguien
+        confirme que es quien dice ser. Aprobar lo deja verificado: sus QR
+        resuelven y sus ventas pueden atribuirse. Rechazar exige motivo, que el
+        comercio verá y es lo que le dice qué corregir. La comisión (MDR) no se
+        fija aquí: es un término comercial y se lleva en el ERP.
+      </BusinessContextNote>
 
-      <Card className="mb-6 p-5">
-        <Field
-          label="Identificador del comercio"
-          hint="Se toma de «Vistas del negocio › Cola operativa». El backend no publica un listado propio de expedientes en revisión."
-        >
-          <div className="flex gap-2">
-            <Input
-              value={entrada}
-              onChange={(evento) => setEntrada(evento.target.value)}
-              placeholder="partnerId"
-            />
-            <Button
-              variant="primary"
-              onClick={() => setPartnerId(entrada.trim())}
-            >
-              Abrir expediente
-            </Button>
-          </div>
-        </Field>
+      <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <MetricCard
+          label="Esperando decisión"
+          value={formatNumber(cola.data?.meta.total ?? 0)}
+        />
+        <MetricCard label="En esta página" value={formatNumber(items.length)} />
+        <MetricCard
+          label="El más antiguo"
+          value={
+            masAntiguo
+              ? new Intl.DateTimeFormat("es-BO", {
+                  dateStyle: "medium",
+                }).format(new Date(masAntiguo))
+              : "—"
+          }
+        />
+      </section>
+
+      <Card className="p-5">
+        <h2 className="mb-1 text-base font-semibold text-atlas-text">
+          Expedientes en revisión
+        </h2>
+        <p className="mb-4 text-sm text-atlas-muted">
+          Sólo se decide desde «en revisión». Volver a decidir sobre un
+          expediente ya resuelto responde 409: la decisión es una sola y queda
+          con quién la firmó.
+        </p>
+
+        {cola.isLoading ? <LoadingSkeleton rows={5} /> : null}
+        {cola.error ? (
+          <ErrorState
+            description={
+              isAtlasApiError(cola.error)
+                ? cola.error.message
+                : "No se pudo cargar la cola de expedientes."
+            }
+            requestId={
+              isAtlasApiError(cola.error) ? cola.error.requestId : undefined
+            }
+            onRetry={() => void cola.refetch()}
+          />
+        ) : null}
+        {cola.data ? (
+          <DataTable
+            data={items}
+            columns={columns}
+            meta={cola.data.meta}
+            onPageChange={setPage}
+            emptyTitle="No hay expedientes esperando decisión."
+            emptyDescription="Cuando un comercio termine su onboarding y lo envíe, aparecerá aquí."
+          />
+        ) : null}
       </Card>
 
-      {estado.isLoading ? <LoadingSkeleton rows={4} /> : null}
-      {estado.error ? (
-        <Card className="p-5">
-          <p className="text-sm text-red-700">
-            {isAtlasApiError(estado.error)
-              ? estado.error.message
-              : "No se pudo leer el expediente."}
-          </p>
-        </Card>
+      {abierto ? (
+        <PartnerFileDrawer
+          expediente={abierto}
+          onClose={() => setAbierto(null)}
+        />
       ) : null}
-
-      {estado.data ? (
-        <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Estado"
-              value={<StatusBadge value={onboardingStatus || "—"} />}
-            />
-            <MetricCard
-              label="Razón social"
-              value={String(perfil.legalName ?? "—")}
-            />
-            <MetricCard label="NIT" value={String(perfil.taxId ?? "—")} />
-            <MetricCard
-              label="Decidido"
-              value={String(perfil.decidedAt ?? "Sin decidir")}
-            />
-          </section>
-
-          <Card className="p-5">
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">
-              Decisión
-            </h2>
-            <p className="mb-4 text-sm text-atlas-muted">
-              Sólo se decide desde «en revisión». Volver a decidir sobre un
-              expediente ya resuelto responde 409: la decisión es una sola y
-              queda con quién la firmó.
-            </p>
-            {!enRevision ? (
-              <p className="text-sm text-atlas-muted">
-                {`Este expediente está en «${onboardingStatus || "sin estado"}», así que no admite decisión.`}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                <Field
-                  label="Motivo del rechazo"
-                  hint="Obligatorio para rechazar; el comercio lo verá y es lo que le dice qué corregir."
-                >
-                  <Textarea
-                    rows={3}
-                    value={motivo}
-                    onChange={(evento) => setMotivo(evento.target.value)}
-                  />
-                </Field>
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    onClick={() => setPendiente("aprobar")}
-                  >
-                    Aprobar
-                  </Button>
-                  <Button
-                    variant="danger"
-                    disabled={motivo.trim().length < 3}
-                    onClick={() => setPendiente("rechazar")}
-                  >
-                    Rechazar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          <Card className="p-5">
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">
-              Comisión (MDR)
-            </h2>
-            <p className="mb-4 text-sm text-atlas-muted">
-              Porcentaje que Atlas cobra sobre lo que el cliente paga en cada
-              venta financiada. Se negocia en el onboarding y se puede ajustar
-              después.
-            </p>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                value={mdr}
-                onChange={(evento) => setMdr(evento.target.value)}
-                placeholder="3.50"
-              />
-              <Button
-                disabled={!mdr || fijarMdr.isPending}
-                onClick={() => void fijarMdr.mutateAsync(Number(mdr))}
-              >
-                Fijar comisión
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <h2 className="mb-3 text-base font-semibold text-atlas-text">
-              Expediente completo
-            </h2>
-            <JsonViewer value={estado.data} />
-          </Card>
-        </div>
-      ) : null}
-
-      <ConfirmDialog
-        open={pendiente !== null}
-        title={
-          pendiente === "aprobar"
-            ? "Aprobar el expediente"
-            : "Rechazar el expediente"
-        }
-        description={
-          pendiente === "aprobar"
-            ? "El comercio queda verificado: sus QR resolverán y sus ventas podrán atribuirse. La decisión queda con tu usuario y su fecha."
-            : `El comercio queda rechazado con el motivo escrito. Podrá corregir y volver a enviar.`
-        }
-        confirmText={pendiente === "aprobar" ? "Aprobar" : "Rechazar"}
-        isLoading={decidir.isPending}
-        onCancel={() => setPendiente(null)}
-        onConfirm={() => {
-          const aprobado = pendiente === "aprobar";
-          void decidir
-            .mutateAsync(
-              aprobado
-                ? { approved: true }
-                : { approved: false, rejectionReason: motivo.trim() },
-            )
-            .finally(() => setPendiente(null));
-        }}
-      />
     </>
   );
 }

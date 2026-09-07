@@ -1,9 +1,18 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { decidePartner, getPartnerStatus, setPartnerMdrRate } from "./services";
+import type { QueryParams } from "@/shared/api/types";
+import { decidePartner, getPartnerStatus, listPartnerQueue } from "./services";
 
 const RAIZ = ["operations", "partners"] as const;
+const COLA = [...RAIZ, "queue"] as const;
+
+export function usePartnerQueue(query: QueryParams) {
+  return useQuery({
+    queryKey: [...COLA, query],
+    queryFn: () => listPartnerQueue(query),
+  });
+}
 
 export function usePartnerStatus(partnerId: string) {
   return useQuery({
@@ -14,27 +23,19 @@ export function usePartnerStatus(partnerId: string) {
   });
 }
 
-function usePartnerMutation<TInput>(
-  accion: (input: TInput) => Promise<unknown>,
-) {
+/**
+ * Decidir saca el expediente de la cola: hay que invalidar las DOS consultas.
+ *
+ * Invalidando sólo el detalle, la fila decidida seguía en la lista y la pantalla invitaba a
+ * decidirla otra vez — con un 409 esperando al final.
+ */
+export function useDecidePartnerMutation(partnerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: accion,
+    mutationFn: (input: { approved: boolean; rejectionReason?: string }) =>
+      decidePartner(partnerId, input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: RAIZ });
     },
   });
-}
-
-export function useDecidePartnerMutation(partnerId: string) {
-  return usePartnerMutation(
-    (input: { approved: boolean; rejectionReason?: string }) =>
-      decidePartner(partnerId, input),
-  );
-}
-
-export function useSetMdrRateMutation(partnerId: string) {
-  return usePartnerMutation((mdrRatePercent: number) =>
-    setPartnerMdrRate(partnerId, mdrRatePercent),
-  );
 }

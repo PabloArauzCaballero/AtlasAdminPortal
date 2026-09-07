@@ -2,20 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { Gauge } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { buildBacklogColumns, buildGradeColumns } from "./portfolio-columns";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatAmount, formatNumber } from "@/shared/lib/format";
 import {
   useDelinquencySweepMutation,
   useDispatchOutcomesMutation,
@@ -25,7 +24,6 @@ import {
   useRateLoanMutation,
   useSweepRatingsMutation,
 } from "./hooks";
-import type { ExhaustedOutcome, PortfolioGrade } from "./types";
 
 /**
  * Operación de cartera.
@@ -122,11 +120,11 @@ function AuthorizedPortfolioPage() {
             />
             <MetricCard
               label="Exposición"
-              value={resumen.data.totals.exposureAmount}
+              value={formatAmount(resumen.data.totals.exposureAmount)}
             />
             <MetricCard
               label="Previsión"
-              value={resumen.data.totals.provisionAmount}
+              value={formatAmount(resumen.data.totals.provisionAmount)}
             />
             <MetricCard
               label="Desenlaces agotados"
@@ -152,7 +150,7 @@ function AuthorizedPortfolioPage() {
             />
           </Card>
 
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
             <Card className="p-5">
               <h2 className="mb-1 text-base font-semibold text-atlas-text">
                 Recalificar
@@ -288,60 +286,4 @@ function AuthorizedPortfolioPage() {
       />
     </>
   );
-}
-
-function buildGradeColumns(): ColumnDef<PortfolioGrade>[] {
-  return [
-    {
-      accessorKey: "grade",
-      header: "Categoría",
-      cell: ({ row }) => <StatusBadge value={row.original.grade} />,
-    },
-    { accessorKey: "gradeLabel", header: "Significado" },
-    {
-      accessorKey: "loanCount",
-      header: "Créditos",
-      cell: ({ row }) => formatNumber(row.original.loanCount),
-    },
-    { accessorKey: "exposureAmount", header: "Exposición" },
-    { accessorKey: "provisionAmount", header: "Previsión" },
-  ];
-}
-
-function buildBacklogColumns(): ColumnDef<ExhaustedOutcome>[] {
-  return [
-    {
-      accessorKey: "loanId",
-      header: "Crédito",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.loanId}</span>
-      ),
-    },
-    {
-      accessorKey: "decisionExecutionId",
-      header: "Ejecución",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">
-          {row.original.decisionExecutionId}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "windowDays",
-      header: "Ventana",
-      cell: ({ row }) => `${row.original.windowDays} días`,
-    },
-    { accessorKey: "label", header: "Desenlace" },
-    {
-      accessorKey: "attempts",
-      header: "Intentos",
-      cell: ({ row }) => formatNumber(row.original.attempts),
-    },
-    { accessorKey: "lastError", header: "Último error" },
-    {
-      accessorKey: "observedAt",
-      header: "Observado",
-      cell: ({ row }) => formatDateTime(row.original.observedAt),
-    },
-  ];
 }
