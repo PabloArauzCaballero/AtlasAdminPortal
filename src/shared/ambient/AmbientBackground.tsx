@@ -59,40 +59,77 @@ export function AmbientBackground({
     if (!finePointer) return;
 
     let frame = 0;
-    let pending: { x: number; y: number } | null = null;
+    // Coordenadas de VIEWPORT del último puntero; `null` es el puntero fuera de
+    // la ventana (la luz vuelve a su sitio de reposo EN PANTALLA, no en el
+    // documento). Se guarda el punto crudo, no la fracción ya calculada, porque
+    // la conversión depende de dónde esté la caja del host, y esa se mueve.
+    let point: { clientX: number; clientY: number } | null = null;
+
+    const restPoint = () => ({
+      clientX: window.innerWidth / 2,
+      clientY: window.innerHeight * 0.4,
+    });
+
     const apply = () => {
       frame = 0;
-      if (!pending) return;
-      // Se publican dos formas de la misma posición: la absoluta (0…1), que usa
-      // el foco de luz para ir exactamente donde está el cursor, y el desvío
-      // respecto al centro (-0.5…0.5), que cada capa multiplica por su propio
-      // factor para separarse en profundidad.
-      element.style.setProperty("--ambient-px", pending.x.toFixed(4));
-      element.style.setProperty("--ambient-py", pending.y.toFixed(4));
-      element.style.setProperty("--ambient-x", (pending.x - 0.5).toFixed(4));
-      element.style.setProperty("--ambient-y", (pending.y - 0.5).toFixed(4));
-      pending = null;
+      const cursor = point ?? restPoint();
+      // El host es `position: absolute` sobre el armazón entero, así que su caja
+      // es la del DOCUMENTO, no la de la ventana: en una página larga mide
+      // varias pantallas de alto y su borde superior sube al desplazarse. Las
+      // coordenadas del puntero son de viewport, así que hay que traducirlas a
+      // esa caja o el foco de luz aparece lejos del cursor —y en una vista larga
+      // ni siquiera en pantalla—.
+      const box = element.getBoundingClientRect();
+      // Se publican dos formas de la misma posición, y NO comparten marco de
+      // referencia a propósito: la absoluta (0…1) va relativa al HOST, porque el
+      // foco de luz se coloca como porcentaje de esa caja y tiene que caer
+      // exactamente bajo el cursor; el desvío respecto al centro (-0.5…0.5) va
+      // relativo a la VENTANA, porque el paralaje se mide desde el centro de lo
+      // que se está mirando, no desde el centro del documento (si no, en una
+      // página larga el desvío queda clavado en -0.5 y las capas dejan de
+      // separarse en profundidad).
+      element.style.setProperty(
+        "--ambient-px",
+        ((cursor.clientX - box.left) / Math.max(1, box.width)).toFixed(4),
+      );
+      element.style.setProperty(
+        "--ambient-py",
+        ((cursor.clientY - box.top) / Math.max(1, box.height)).toFixed(4),
+      );
+      element.style.setProperty(
+        "--ambient-x",
+        (cursor.clientX / Math.max(1, window.innerWidth) - 0.5).toFixed(4),
+      );
+      element.style.setProperty(
+        "--ambient-y",
+        (cursor.clientY / Math.max(1, window.innerHeight) - 0.5).toFixed(4),
+      );
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(apply);
     };
     // Un único listener global, agrupado en rAF: el trabajo por movimiento es
-    // escribir cuatro variables CSS, nunca un relayout.
+    // leer la caja del host y escribir cuatro variables CSS, nunca un relayout.
     const onMove = (event: PointerEvent) => {
-      pending = {
-        x: event.clientX / Math.max(1, window.innerWidth),
-        y: event.clientY / Math.max(1, window.innerHeight),
-      };
-      if (!frame) frame = requestAnimationFrame(apply);
+      point = { clientX: event.clientX, clientY: event.clientY };
+      schedule();
     };
     // Al salir el puntero de la ventana la luz vuelve al centro en lugar de
     // quedarse clavada en el borde, que se lee como que algo se atascó.
     const onLeave = () => {
-      pending = { x: 0.5, y: 0.4 };
-      if (!frame) frame = requestAnimationFrame(apply);
+      point = null;
+      schedule();
     };
+    // Con el cursor quieto y la página desplazándose, la caja del host se mueve
+    // bajo él: sin recalcular, la luz se queda atrás y se despega de la mano.
+    const onScroll = () => schedule();
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("pointerleave", onLeave);
     return () => {
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
       document.removeEventListener("pointerleave", onLeave);
       if (frame) cancelAnimationFrame(frame);
     };
@@ -144,8 +181,14 @@ export function AmbientBackground({
       element.querySelector(".ambient-ripple")?.remove();
       const ripple = document.createElement("span");
       ripple.className = "ambient-ripple";
-      ripple.style.left = `${event.clientX}px`;
-      ripple.style.top = `${event.clientY}px`;
+      // La onda se posiciona DENTRO del host, que es absoluto sobre el documento
+      // entero; `clientX/Y` son de viewport. Sin restar el origen de la caja, la
+      // onda salía desplazada justo lo que llevara desplazada la página, y con
+      // la página lo bastante abajo caía fuera de la caja —que recorta con
+      // `overflow: hidden` y `contain: strict`— y no aparecía en absoluto.
+      const box = element.getBoundingClientRect();
+      ripple.style.left = `${event.clientX - box.left}px`;
+      ripple.style.top = `${event.clientY - box.top}px`;
       ripple.addEventListener("animationend", () => ripple.remove(), {
         once: true,
       });
