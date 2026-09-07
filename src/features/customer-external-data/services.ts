@@ -72,12 +72,12 @@ export function getProvidersHealth() {
 
 /** Las cuatro lecturas del cliente: de la más cruda a la más elaborada. */
 export type CustomerDataset =
-  | "observations"
-  | "features"
-  | "scoring-input"
-  | "decision-package";
+  "observations" | "features" | "scoring-input" | "decision-package";
 
-export function getCustomerDataset(customerId: string, dataset: CustomerDataset) {
+export function getCustomerDataset(
+  customerId: string,
+  dataset: CustomerDataset,
+) {
   return apiRequest<JsonRecord>(
     `/external-data/users/${encodeURIComponent(customerId)}/${dataset}`,
   );
@@ -94,7 +94,10 @@ export function runDigitalTrustCheck(body: {
   email?: string;
   phoneNumber?: string;
 }) {
-  return apiRequest<JsonRecord>("/digital-trust/check", { method: "POST", body });
+  return apiRequest<JsonRecord>("/digital-trust/check", {
+    method: "POST",
+    body,
+  });
 }
 
 export function getFacebookStatus(customerId: string) {

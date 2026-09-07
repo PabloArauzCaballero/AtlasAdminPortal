@@ -11,7 +11,9 @@ export function buildDomainEventColumns(): ColumnDef<DomainEventSummary>[] {
       header: "Evento",
       cell: ({ row }) => (
         <div>
-          <p className="font-medium text-atlas-text">{row.original.eventCode}</p>
+          <p className="font-medium text-atlas-text">
+            {row.original.eventCode}
+          </p>
           <p className="font-mono text-xs text-atlas-muted">
             {row.original.aggregateType ?? "—"}
             {row.original.aggregateId ? ` · ${row.original.aggregateId}` : ""}

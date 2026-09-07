@@ -29,7 +29,10 @@ export function useCustomerConsents(customerId: string) {
   });
 }
 
-export function useCustomerDataset(customerId: string, dataset: CustomerDataset) {
+export function useCustomerDataset(
+  customerId: string,
+  dataset: CustomerDataset,
+) {
   return useQuery({
     queryKey: [...RAIZ, "dataset", customerId, dataset],
     queryFn: () => getCustomerDataset(customerId, dataset),
@@ -86,8 +89,12 @@ function useExternalMutation<TInput, TResult>(
 
 export function useGrantConsentMutation() {
   return useExternalMutation(
-    (input: { customerId: string; purpose: string; providerCode?: string; accepted: boolean }) =>
-      grantConsent(input),
+    (input: {
+      customerId: string;
+      purpose: string;
+      providerCode?: string;
+      accepted: boolean;
+    }) => grantConsent(input),
   );
 }
 
@@ -97,7 +104,9 @@ export function useRevokeConsentMutation() {
 
 /** La vista previa NO invalida nada: no cambia estado, sólo dice qué costaría. */
 export function usePreviewRequestMutation() {
-  return useMutation({ mutationFn: (body: JsonRecord) => previewDataRequest(body) });
+  return useMutation({
+    mutationFn: (body: JsonRecord) => previewDataRequest(body),
+  });
 }
 
 export function useCreateRequestMutation() {

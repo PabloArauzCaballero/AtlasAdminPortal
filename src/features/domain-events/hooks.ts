@@ -55,8 +55,7 @@ export function useCancelEventMutation() {
 }
 
 export function usePublishEventMutation() {
-  return useEventMutation(
-    (input: { body: unknown; idempotencyKey: string }) =>
-      publishDomainEvent(input.body, input.idempotencyKey),
+  return useEventMutation((input: { body: unknown; idempotencyKey: string }) =>
+    publishDomainEvent(input.body, input.idempotencyKey),
   );
 }

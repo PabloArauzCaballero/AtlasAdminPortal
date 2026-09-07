@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import { Radio } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { INTERNAL_PORTAL_ROLE_LIST, RUNTIME_JOB_ROLE_LIST } from "@/shared/auth/portal-roles";
+import {
+  INTERNAL_PORTAL_ROLE_LIST,
+  RUNTIME_JOB_ROLE_LIST,
+} from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
@@ -123,17 +126,22 @@ function AuthorizedDomainEventsPage() {
       {eventos.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="En pantalla" value={formatNumber(items.length)} />
+            <MetricCard
+              label="En pantalla"
+              value={formatNumber(items.length)}
+            />
             <MetricCard
               label="Fallidos"
               value={formatNumber(
-                items.filter((item) => item.status?.toUpperCase() === "FAILED").length,
+                items.filter((item) => item.status?.toUpperCase() === "FAILED")
+                  .length,
               )}
             />
             <MetricCard
               label="Pendientes"
               value={formatNumber(
-                items.filter((item) => item.status?.toUpperCase() === "PENDING").length,
+                items.filter((item) => item.status?.toUpperCase() === "PENDING")
+                  .length,
               )}
             />
             <MetricCard
@@ -144,7 +152,9 @@ function AuthorizedDomainEventsPage() {
 
           <RoleGate roles={RUNTIME_JOB_ROLE_LIST}>
             <div className="flex justify-end">
-              <Button onClick={() => setPublicando(true)}>Publicar evento</Button>
+              <Button onClick={() => setPublicando(true)}>
+                Publicar evento
+              </Button>
             </div>
           </RoleGate>
 
@@ -164,7 +174,10 @@ function AuthorizedDomainEventsPage() {
               >
                 Anterior
               </Button>
-              <Button disabled={!hayMas} onClick={() => setPage((actual) => actual + 1)}>
+              <Button
+                disabled={!hayMas}
+                onClick={() => setPage((actual) => actual + 1)}
+              >
                 Siguiente
               </Button>
             </div>

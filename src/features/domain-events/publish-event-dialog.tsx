@@ -73,8 +73,9 @@ export function PublishEventDialog({
           Publicar un evento de dominio
         </h2>
         <p className="text-sm text-atlas-muted">
-          El evento entra en el outbox y lo consumirán sus suscriptores como si lo hubiera publicado
-          el módulo de origen. Queda auditado con el usuario que lo publicó.
+          El evento entra en el outbox y lo consumirán sus suscriptores como si
+          lo hubiera publicado el módulo de origen. Queda auditado con el
+          usuario que lo publicó.
         </p>
 
         <Field
@@ -96,14 +97,20 @@ export function PublishEventDialog({
         </Field>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Field label="Tipo de agregado" hint="Sobre qué entidad ocurre: customer, loan, partner…">
+          <Field
+            label="Tipo de agregado"
+            hint="Sobre qué entidad ocurre: customer, loan, partner…"
+          >
             <Input
               required
               value={aggregateType}
               onChange={(evento) => setAggregateType(evento.target.value)}
             />
           </Field>
-          <Field label="Id del agregado" hint="Opcional: el identificador concreto.">
+          <Field
+            label="Id del agregado"
+            hint="Opcional: el identificador concreto."
+          >
             <Input
               value={aggregateId}
               onChange={(evento) => setAggregateId(evento.target.value)}
@@ -111,7 +118,11 @@ export function PublishEventDialog({
           </Field>
         </div>
 
-        <Field label="Payload" hint="JSON. Es lo que recibirán los suscriptores." error={errorPayload ?? undefined}>
+        <Field
+          label="Payload"
+          hint="JSON. Es lo que recibirán los suscriptores."
+          error={errorPayload ?? undefined}
+        >
           <Textarea
             rows={6}
             value={payload}
