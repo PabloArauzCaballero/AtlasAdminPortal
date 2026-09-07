@@ -3,6 +3,7 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/shared/lib/cn";
+import { bloquearElFondo } from "./dialog-backdrop";
 
 /** El montaje no cambia nunca después de la hidratación: no hay a qué suscribirse. */
 function suscribirNada(): () => void {
@@ -42,11 +43,17 @@ export function DialogShell({
   labelledBy: string;
   onClose: () => void;
   closeOnBackdrop?: boolean;
+  /**
+   * Sólo la DISPOSICIÓN del panel dentro del velo (centrado, relleno). El color, el desenfoque y
+   * el orden de apilamiento los pone el propio shell: cuando cada diálogo los traía puestos, dos
+   * de ellos se quedaron sin ninguno y la barra lateral —`z-30`— se pintaba por encima.
+   */
   overlayClassName?: string;
   panelClassName?: string;
   children: React.ReactNode;
 }>) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   /*
@@ -59,6 +66,20 @@ export function DialogShell({
     () => true,
     () => false,
   );
+
+  /*
+   * Mientras el diálogo está abierto, el resto de la aplicación no se usa: ni con el ratón, ni con
+   * la rueda, ni con el tabulador. Ver `dialog-backdrop.ts`.
+   *
+   * `montado` está en las dependencias porque el velo no existe hasta que el portal se monta, en la
+   * pasada siguiente a la primera: sin él, el efecto correría con la referencia todavía vacía.
+   */
+  useEffect(() => {
+    if (!open || !montado) return;
+    const velo = overlayRef.current;
+    if (!velo) return;
+    return bloquearElFondo(velo);
+  }, [open, montado]);
 
   useEffect(() => {
     if (!open) return;
@@ -130,7 +151,12 @@ export function DialogShell({
     // anunciarse ni recibir foco.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
-      className={cn("fixed inset-0", overlayClassName)}
+      ref={overlayRef}
+      data-atlas-overlay=""
+      className={cn(
+        "fixed inset-0 z-50 atlas-veil animate-fade-in",
+        overlayClassName,
+      )}
       onMouseDown={(event) => {
         if (closeOnBackdrop && event.target === event.currentTarget) onClose();
       }}

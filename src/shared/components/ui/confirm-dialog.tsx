@@ -52,7 +52,7 @@ export function ConfirmDialog({
       open={open}
       labelledBy={titleId}
       onClose={onCancel}
-      overlayClassName="z-50 flex animate-fade-in items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+      overlayClassName="flex items-center justify-center p-4"
       panelClassName="w-full max-w-md animate-scale-in rounded-xl border border-atlas-border bg-white p-5 shadow-card"
     >
       <div className="flex items-start gap-3">

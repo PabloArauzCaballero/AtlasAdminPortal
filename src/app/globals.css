@@ -199,6 +199,23 @@ button {
   }
 }
 
+/**
+ * El velo de los diálogos.
+ *
+ * Un lavado de negro translúcido oscurece lo claro y NO HACE NADA sobre lo oscuro: sobre la barra
+ * lateral —casi negra— el velo era invisible, así que el menú seguía leyéndose como si estuviera
+ * activo mientras el panel de un archivo estaba abierto. `brightness` escala la luminancia en vez
+ * de sumar negro, así que rebaja las dos superficies a la vez; el lavado se queda para dar el tinte
+ * frío, y el desenfoque para separar los planos.
+ *
+ * Que además NO se pueda usar lo de detrás es cosa de `dialog-backdrop.ts`, no del color.
+ */
+.atlas-veil {
+  background-color: rgb(2 6 23 / 0.2);
+  -webkit-backdrop-filter: blur(2px) brightness(0.75) saturate(0.85);
+  backdrop-filter: blur(2px) brightness(0.75) saturate(0.85);
+}
+
 /* Mientras el cajón cubre la pantalla, el fondo no debe desplazarse: si lo hace, el dedo mueve la
    página de debajo y el cajón parece flotar sobre algo que se escapa. */
 body.atlas-nav-open {

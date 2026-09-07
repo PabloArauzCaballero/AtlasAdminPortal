@@ -25,7 +25,8 @@ export function DrawerPanel({
       // El drawer es de consulta, no confirma nada destructivo: cerrar tocando
       // fuera es el gesto esperado.
       closeOnBackdrop
-      overlayClassName="z-40 animate-fade-in bg-slate-950/35 backdrop-blur-[1px]"
+      // El panel se pega a la derecha; el velo, el desenfoque y el apilamiento son del shell.
+      overlayClassName="block"
       panelClassName="atlas-scrollbar ml-auto h-full w-full max-w-xl animate-drawer-in overflow-auto border-l border-atlas-border bg-white shadow-card"
     >
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-atlas-border bg-white px-5 py-4">
