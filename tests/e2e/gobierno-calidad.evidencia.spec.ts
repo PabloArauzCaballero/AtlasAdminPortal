@@ -302,6 +302,17 @@ function contraste(uno: string, otro: string): number {
   return (claro + 0.05) / (oscuro + 0.05);
 }
 
+/**
+ * Margen para el arranque EN FRÍO.
+ *
+ * `next dev` compila cada ruta la primera vez que alguien la pide, y estas seis pruebas corren en
+ * paralelo: contra un servidor recién levantado las tres rutas se compilan a la vez y la primera
+ * carga se pasa de los 20 s por defecto. Sin este margen la suite salía roja la primera corrida y
+ * verde la segunda — el peor comportamiento posible, porque enseña a repetir la prueba en vez de
+ * a creerle.
+ */
+const ARRANQUE_FRIO = 90_000;
+
 const VISTAS = [
   {
     nombre: "consentimientos",
@@ -339,16 +350,17 @@ for (const vista of VISTAS) {
   test(`Gobierno y calidad — ${vista.nombre} se pinta sobre el tema claro`, async ({
     page,
   }, testInfo) => {
+    test.setTimeout(ARRANQUE_FRIO);
     await preparar(page);
-    await page.goto(vista.ruta);
+    await page.goto(vista.ruta, { timeout: ARRANQUE_FRIO });
 
     await expect(page.getByRole("heading", { name: vista.titulo })).toBeVisible(
       {
-        timeout: 20_000,
+        timeout: ARRANQUE_FRIO,
       },
     );
     await expect(page.getByTestId(vista.lista)).toBeVisible({
-      timeout: 20_000,
+      timeout: ARRANQUE_FRIO,
     });
 
     const tarjeta = await colores(page, vista.tarjeta);
@@ -387,10 +399,11 @@ for (const vista of VISTAS) {
   test(`Gobierno y calidad — el formulario de ${vista.nombre} es legible`, async ({
     page,
   }, testInfo) => {
+    test.setTimeout(ARRANQUE_FRIO);
     await preparar(page);
-    await page.goto(vista.ruta);
+    await page.goto(vista.ruta, { timeout: ARRANQUE_FRIO });
     await expect(page.getByTestId(vista.lista)).toBeVisible({
-      timeout: 20_000,
+      timeout: ARRANQUE_FRIO,
     });
 
     await page.getByTestId(vista.editar).click();
