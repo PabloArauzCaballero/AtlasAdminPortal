@@ -83,6 +83,27 @@ services:
     # `atlas-backend` es el alias del API en la red compartida (ver el bloque `networks`).
     environment:
       INTERNAL_API_ORIGIN: 'http://atlas-backend:3005'
+    # ------------------------------------------------------------------------------------------
+    # PESO DE CPU, para no perder el turno frente a un build del vecino.
+    #
+    # Esta máquina la comparten varios proyectos, y no todos despliegan por Coolify: alovida tiene
+    # dos timers de systemd que cada 2 minutos miran `dev` y, si hay commit, lanzan
+    # `yarn install --immutable` + `nest build` sin ningún tope. El 2026-09-06 eso puso la carga en
+    # 30 con 6 núcleos, y el login del portal murió con `REQUEST_TIMEOUT_EXCEEDED` a los 30 s —el
+    # único timeout en seis horas y media de logs limpios—, con el readiness oscilando entre
+    # 207 ms y 2331 ms.
+    #
+    # Limitar al vecino NO se puede desde su unidad de systemd: los pasos del build no viven en el
+    # cgroup de la unidad, sino en uno que crea `runc` bajo el ejecutor de buildkit. Un `CPUQuota=`
+    # allí sólo limitaría el script que llama a `docker build`.
+    #
+    # Lo que sí funciona es no salir a competir en igualdad: por defecto TODO —contenedores en
+    # marcha y pasos de build— corre con `cpu.weight=100`, así que veinte procesos de build ganan a
+    # dos servicios. Medido en esta máquina: `cpu_shares: 4096` da `cpu.weight=303`, tres veces el
+    # peso por defecto (1024 da exactamente 100, que es el defecto; poner menos EMPEORA las cosas).
+    #
+    # El peso sólo actúa cuando hay contienda. Con la máquina ociosa no cambia nada.
+    cpu_shares: 4096
     expose: ['5273']
     stop_grace_period: 20s
     deploy:
