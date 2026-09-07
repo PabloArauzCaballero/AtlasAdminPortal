@@ -33,7 +33,8 @@ export function WorkflowConsistencyPanel({
             Consistencia con los endpoints reales
           </h3>
           <p className="text-xs text-atlas-muted">
-            Compara cada paso sembrado con las rutas que este proceso tiene montadas.
+            Compara cada paso sembrado con las rutas que este proceso tiene
+            montadas.
           </p>
         </div>
         <Button
@@ -86,13 +87,16 @@ export function WorkflowConsistencyPanel({
                       <span className="text-atlas-muted">{`paso ${hallazgo.stepCode}`}</span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-atlas-muted">{hallazgo.message ?? ""}</p>
+                  <p className="mt-1 text-atlas-muted">
+                    {hallazgo.message ?? ""}
+                  </p>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-xs text-atlas-muted">
-              Cada paso del flujo apunta a una ruta que existe y con el rol que declara.
+              Cada paso del flujo apunta a una ruta que existe y con el rol que
+              declara.
             </p>
           )}
         </div>

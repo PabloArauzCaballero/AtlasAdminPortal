@@ -25,6 +25,8 @@ export type RiskAssessmentRun = {
   startedAt: string | null;
   completedAt: string | null;
   latencyMs: number | null;
+  decisionSource: string | null;
+  decisionExecutionId: string | null;
   createdAtValue: string;
 };
 
@@ -131,6 +133,9 @@ export type RiskExplanationFactor = {
  * (`result.recommendedAction`); el backend lo expone bajo dos nombres.
  */
 export type RiskAssessmentExplanation = {
+  /** Escalón que resolvió: `decision_engine`, `ruleset`, `heuristic_v0`, o `null` si no consta. */
+  decisionSource: string | null;
+  decisionExecutionId: string | null;
   decision: string | null;
   summary: string;
   topPositiveFactors: RiskExplanationFactor[];

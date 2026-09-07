@@ -14,7 +14,11 @@ import { Card } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
-import { useDecidePartnerMutation, usePartnerStatus, useSetMdrRateMutation } from "./hooks";
+import {
+  useDecidePartnerMutation,
+  usePartnerStatus,
+  useSetMdrRateMutation,
+} from "./hooks";
 
 /**
  * Verificación de comercios.
@@ -41,13 +45,18 @@ function AuthorizedPartnerDecisionsPage() {
   const [partnerId, setPartnerId] = useState("");
   const [motivo, setMotivo] = useState("");
   const [mdr, setMdr] = useState("");
-  const [pendiente, setPendiente] = useState<"aprobar" | "rechazar" | null>(null);
+  const [pendiente, setPendiente] = useState<"aprobar" | "rechazar" | null>(
+    null,
+  );
 
   const estado = usePartnerStatus(partnerId);
   const decidir = useDecidePartnerMutation(partnerId);
   const fijarMdr = useSetMdrRateMutation(partnerId);
 
-  const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<string, unknown>;
+  const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
+    string,
+    unknown
+  >;
   const onboardingStatus = String(perfil.onboardingStatus ?? "");
   const enRevision = onboardingStatus === "under_review";
 
@@ -60,7 +69,7 @@ function AuthorizedPartnerDecisionsPage() {
         description="Aprobar o rechazar el expediente de un comercio y fijar su comisión. Sin esta decisión el comercio nunca queda verificado."
       />
 
-      <Card className="mb-6">
+      <Card className="mb-6 p-5">
         <Field
           label="Identificador del comercio"
           hint="Se toma de «Vistas del negocio › Cola operativa». El backend no publica un listado propio de expedientes en revisión."
@@ -71,7 +80,10 @@ function AuthorizedPartnerDecisionsPage() {
               onChange={(evento) => setEntrada(evento.target.value)}
               placeholder="partnerId"
             />
-            <Button variant="primary" onClick={() => setPartnerId(entrada.trim())}>
+            <Button
+              variant="primary"
+              onClick={() => setPartnerId(entrada.trim())}
+            >
               Abrir expediente
             </Button>
           </div>
@@ -80,7 +92,7 @@ function AuthorizedPartnerDecisionsPage() {
 
       {estado.isLoading ? <LoadingSkeleton rows={4} /> : null}
       {estado.error ? (
-        <Card>
+        <Card className="p-5">
           <p className="text-sm text-red-700">
             {isAtlasApiError(estado.error)
               ? estado.error.message
@@ -96,7 +108,10 @@ function AuthorizedPartnerDecisionsPage() {
               label="Estado"
               value={<StatusBadge value={onboardingStatus || "—"} />}
             />
-            <MetricCard label="Razón social" value={String(perfil.legalName ?? "—")} />
+            <MetricCard
+              label="Razón social"
+              value={String(perfil.legalName ?? "—")}
+            />
             <MetricCard label="NIT" value={String(perfil.taxId ?? "—")} />
             <MetricCard
               label="Decidido"
@@ -104,11 +119,14 @@ function AuthorizedPartnerDecisionsPage() {
             />
           </section>
 
-          <Card>
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">Decisión</h2>
+          <Card className="p-5">
+            <h2 className="mb-1 text-base font-semibold text-atlas-text">
+              Decisión
+            </h2>
             <p className="mb-4 text-sm text-atlas-muted">
-              Sólo se decide desde «en revisión». Volver a decidir sobre un expediente ya resuelto
-              responde 409: la decisión es una sola y queda con quién la firmó.
+              Sólo se decide desde «en revisión». Volver a decidir sobre un
+              expediente ya resuelto responde 409: la decisión es una sola y
+              queda con quién la firmó.
             </p>
             {!enRevision ? (
               <p className="text-sm text-atlas-muted">
@@ -127,7 +145,10 @@ function AuthorizedPartnerDecisionsPage() {
                   />
                 </Field>
                 <div className="flex gap-2">
-                  <Button variant="primary" onClick={() => setPendiente("aprobar")}>
+                  <Button
+                    variant="primary"
+                    onClick={() => setPendiente("aprobar")}
+                  >
                     Aprobar
                   </Button>
                   <Button
@@ -142,11 +163,14 @@ function AuthorizedPartnerDecisionsPage() {
             )}
           </Card>
 
-          <Card>
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">Comisión (MDR)</h2>
+          <Card className="p-5">
+            <h2 className="mb-1 text-base font-semibold text-atlas-text">
+              Comisión (MDR)
+            </h2>
             <p className="mb-4 text-sm text-atlas-muted">
-              Porcentaje que Atlas cobra sobre lo que el cliente paga en cada venta financiada. Se
-              negocia en el onboarding y se puede ajustar después.
+              Porcentaje que Atlas cobra sobre lo que el cliente paga en cada
+              venta financiada. Se negocia en el onboarding y se puede ajustar
+              después.
             </p>
             <div className="flex gap-2">
               <Input
@@ -167,7 +191,7 @@ function AuthorizedPartnerDecisionsPage() {
             </div>
           </Card>
 
-          <Card>
+          <Card className="p-5">
             <h2 className="mb-3 text-base font-semibold text-atlas-text">
               Expediente completo
             </h2>
@@ -178,7 +202,11 @@ function AuthorizedPartnerDecisionsPage() {
 
       <ConfirmDialog
         open={pendiente !== null}
-        title={pendiente === "aprobar" ? "Aprobar el expediente" : "Rechazar el expediente"}
+        title={
+          pendiente === "aprobar"
+            ? "Aprobar el expediente"
+            : "Rechazar el expediente"
+        }
         description={
           pendiente === "aprobar"
             ? "El comercio queda verificado: sus QR resolverán y sus ventas podrán atribuirse. La decisión queda con tu usuario y su fecha."
@@ -191,7 +219,9 @@ function AuthorizedPartnerDecisionsPage() {
           const aprobado = pendiente === "aprobar";
           void decidir
             .mutateAsync(
-              aprobado ? { approved: true } : { approved: false, rejectionReason: motivo.trim() },
+              aprobado
+                ? { approved: true }
+                : { approved: false, rejectionReason: motivo.trim() },
             )
             .finally(() => setPendiente(null));
         }}

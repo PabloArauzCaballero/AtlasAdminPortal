@@ -26,7 +26,10 @@ import type { BindingSource } from "./types";
  * volverla ilegible, y comprimirla la convierte en decoración. Cada decisión tiene ademas su propia
  * URL, así que se puede enlazar en un ticket o en un acta de comité.
  */
-const SOURCE_LABEL: Record<BindingSource, { text: string; tone: "success" | "warning" | "muted" }> = {
+const SOURCE_LABEL: Record<
+  BindingSource,
+  { text: string; tone: "success" | "warning" | "muted" }
+> = {
   binding: { text: "Elegido aquí", tone: "success" },
   // Que venga del entorno no es un error, pero sí algo que conviene ver: significa que nadie lo ha
   // decidido desde el portal y que cambiarlo hoy exige un despliegue.
@@ -34,7 +37,8 @@ const SOURCE_LABEL: Record<BindingSource, { text: string; tone: "success" | "war
   unset: { text: "Sin configurar", tone: "muted" },
 };
 
-const TH = "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-atlas-muted";
+const TH =
+  "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-atlas-muted";
 
 export function DecisionArtifactsPage() {
   const artifacts = useDecisionArtifacts();
@@ -89,15 +93,25 @@ export function DecisionArtifactsPage() {
                             className="block"
                             data-testid={`decision-row-${binding.decisionType}`}
                           >
-                            <span className="font-medium text-atlas-text">{binding.title ?? binding.decisionType}</span>
-                            <span className="mt-0.5 block text-xs text-atlas-muted">{binding.description}</span>
+                            <span className="font-medium text-atlas-text">
+                              {binding.title ?? binding.decisionType}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-atlas-muted">
+                              {binding.description}
+                            </span>
                           </Link>
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs text-atlas-text">{binding.artifactCode ?? "—"}</td>
-                        <td className="px-4 py-3 text-xs text-atlas-muted">
-                          {binding.pinnedVersion ? `Fijada ${binding.pinnedVersion}` : "Vigente del despliegue"}
+                        <td className="px-4 py-3 font-mono text-xs text-atlas-text">
+                          {binding.artifactCode ?? "—"}
                         </td>
-                        <td className="px-4 py-3 text-xs text-atlas-muted">{binding.workflowStage ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-atlas-muted">
+                          {binding.pinnedVersion
+                            ? `Fijada ${binding.pinnedVersion}`
+                            : "Vigente del despliegue"}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-atlas-muted">
+                          {binding.workflowStage ?? "—"}
+                        </td>
                         <td className="px-4 py-3">
                           <Badge tone={origen.tone}>{origen.text}</Badge>
                         </td>
@@ -112,8 +126,8 @@ export function DecisionArtifactsPage() {
       ) : null}
 
       <p className="text-xs text-atlas-muted">
-        Entra en una decisión para ver qué hace por dentro, qué endpoints la disparan y para elegir el artefacto y la
-        versión que la resuelven.
+        Entra en una decisión para ver qué hace por dentro, qué endpoints la
+        disparan y para elegir el artefacto y la versión que la resuelven.
       </p>
     </div>
   );

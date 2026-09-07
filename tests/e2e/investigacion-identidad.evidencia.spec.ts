@@ -72,14 +72,31 @@ const EXPEDIENTE = {
     preferredLanguage: "es",
   },
   contacts: [
-    { contactType: "phone", status: "verified", isPrimary: true, valueLast4: "0122" },
+    {
+      contactType: "phone",
+      status: "verified",
+      isPrimary: true,
+      valueLast4: "0122",
+    },
   ],
   consents: [
-    { purposeCode: "identity_verification", granted: true, grantedAt: "2026-08-01T10:05:00.000Z", revokedAt: null },
+    {
+      purposeCode: "identity_verification",
+      granted: true,
+      grantedAt: "2026-08-01T10:05:00.000Z",
+      revokedAt: null,
+    },
   ],
   latestRiskAssessment: null,
   manualReviewCases: [
-    { caseId: "77", caseCode: "MR-IDENT-0042", caseType: "identity", priority: "10", status: "open", openedAt: "2026-08-26T12:00:00.000Z" },
+    {
+      caseId: "77",
+      caseCode: "MR-IDENT-0042",
+      caseType: "identity",
+      priority: "10",
+      status: "open",
+      openedAt: "2026-08-26T12:00:00.000Z",
+    },
   ],
   fraudCases: [],
   latestIdentityVerification: {
@@ -103,7 +120,10 @@ const EXPEDIENTE = {
 
 async function preparar(page: Page, expediente: unknown): Promise<void> {
   await page.addInitScript((sesion) => {
-    window.sessionStorage.setItem("atlas_internal_session_v3", JSON.stringify(sesion));
+    window.sessionStorage.setItem(
+      "atlas_internal_session_v3",
+      JSON.stringify(sesion),
+    );
   }, SESION);
 
   /*
@@ -147,9 +167,12 @@ async function preparar(page: Page, expediente: unknown): Promise<void> {
   await page.route(
     (url) =>
       !url.pathname.startsWith("/internal") &&
-      /\/operations\/customers\/[^/]+\/investigation-summary$/.test(url.pathname),
+      /\/operations\/customers\/[^/]+\/investigation-summary$/.test(
+        url.pathname,
+      ),
     (route) => {
-      if (route.request().resourceType() === "document") return route.fallback();
+      if (route.request().resourceType() === "document")
+        return route.fallback();
       return route.fulfill({ json: { data: expediente } });
     },
   );
@@ -188,7 +211,9 @@ test.describe("investigación · identidad y agenda", () => {
     await capturar(page, "01-identidad-y-agenda.png");
   });
 
-  test("una agenda NO COMPARTIDA no se lee como una agenda vacía", async ({ page }) => {
+  test("una agenda NO COMPARTIDA no se lee como una agenda vacía", async ({
+    page,
+  }) => {
     /*
      * La afirmación que hace honesta a la pantalla. Negarse a dar el permiso de contactos es un
      * derecho, no una señal de fraude, y las dos situaciones tienen el mismo cero. Enseñarlas igual

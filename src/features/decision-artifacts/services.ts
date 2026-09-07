@@ -14,5 +14,8 @@ export function listDecisionArtifacts() {
  * muriera en un 404 silencioso.
  */
 export function assignDecisionArtifact(body: AssignArtifactBody) {
-  return apiRequest<unknown>("/internal/decision-artifacts", { method: "POST", body });
+  return apiRequest<unknown>("/internal/decision-artifacts", {
+    method: "POST",
+    body,
+  });
 }

@@ -1,14 +1,10 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo } from "react";
 import { useCurrentRiskPolicy } from "@/features/operations/hooks";
-import { canActivateRuleset } from "@/features/operations/catalog-version-lifecycle";
-import { RulesetActivateDialog } from "@/features/operations/ruleset-activate-dialog";
+import { AvisoDeAutoriaEnElMotor } from "./policy-authoring-notice";
 import type { RiskPolicyCurrent } from "@/features/operations/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { RoleGate } from "@/shared/auth/role-gate";
-import { Button } from "@/shared/components/ui/button";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import {
   PageHeader,
@@ -25,7 +21,6 @@ type RuleRow = RiskPolicyCurrent["rulesetVersions"][number]["rules"][number] & {
   ruleset: string;
   rulesetStatus: string;
 };
-type ActivationTarget = { id: string; label: string };
 
 export function CurrentRiskPolicyPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -39,7 +34,6 @@ export function CurrentRiskPolicyPage() {
 }
 
 function AuthorizedCurrentRiskPolicyPage() {
-  const [activating, setActivating] = useState<ActivationTarget | null>(null);
   const policy = useCurrentRiskPolicy();
   const rules = useMemo<RuleRow[]>(
     () =>
@@ -93,13 +87,10 @@ function AuthorizedCurrentRiskPolicyPage() {
         icon={Scale}
         eyebrow="Política de riesgo"
         title="Política de riesgo actual"
-        description="Consulta de `/operations/risk-policy/current`. Las versiones nuevas se crean en borrador y solo un administrador puede activarlas."
-        actions={
-          <Link href="/internal/risk-policy/ruleset-versions/new">
-            <Button>Nueva versión de ruleset</Button>
-          </Link>
-        }
+        description="Qué política LOCAL está vigente. Es la red de seguridad para cuando el Motor no responde, no la política que decide en condiciones normales."
       />
+
+      <AvisoDeAutoriaEnElMotor />
       {policy.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {policy.error ? (
         <ErrorState
@@ -156,26 +147,6 @@ function AuthorizedCurrentRiskPolicyPage() {
                     {formatDateTime(r.effectiveFrom)} · Hasta:{" "}
                     {formatDateTime(r.effectiveUntil)}
                   </p>
-                  {/* Activar está restringido a admin/platform_admin en el
-                      backend (403 al resto), así que no se le muestra el botón
-                      a quien no puede usarlo. El gate es cosmético: manda el rol
-                      del token. */}
-                  {canActivateRuleset(r.status) ? (
-                    <RoleGate roles={["SUPER_ADMIN"]} fallback={null}>
-                      <Button
-                        className="mt-3 h-8 text-xs"
-                        variant="primary"
-                        onClick={() =>
-                          setActivating({
-                            id: r.riskRulesetVersionId,
-                            label: `${r.rulesetCode}@${r.versionCode}`,
-                          })
-                        }
-                      >
-                        Activar versión
-                      </Button>
-                    </RoleGate>
-                  ) : null}
                 </div>
               ))}
             </CardContent>
@@ -197,13 +168,6 @@ function AuthorizedCurrentRiskPolicyPage() {
             </CardContent>
           </Card>
         </div>
-      ) : null}
-      {activating ? (
-        <RulesetActivateDialog
-          rulesetVersionId={activating.id}
-          rulesetLabel={activating.label}
-          onClose={() => setActivating(null)}
-        />
       ) : null}
     </>
   );

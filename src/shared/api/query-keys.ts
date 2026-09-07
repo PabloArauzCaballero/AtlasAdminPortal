@@ -151,4 +151,6 @@ export const queryKeys = {
     ["expedientes", "contactos", expedienteId] as const,
   expedienteConcesiones: (expedienteId: string, nodoId: string) =>
     ["expedientes", "concesiones", expedienteId, nodoId] as const,
+  expedienteVisibilidad: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "visibilidad", expedienteId, nodoId] as const,
 };

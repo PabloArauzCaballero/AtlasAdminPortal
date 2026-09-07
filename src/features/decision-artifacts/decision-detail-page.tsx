@@ -24,23 +24,32 @@ import type { BindingSource, DecisionType } from "./types";
  * deja la pregunta a medias. El endpoint enlaza a su documentación viva y el flujo a la vista de
  * ejecuciones del motor, que es donde se ve lo que esta política decidió de verdad.
  */
-const SOURCE_LABEL: Record<BindingSource, { text: string; tone: "success" | "warning" | "muted" }> = {
+const SOURCE_LABEL: Record<
+  BindingSource,
+  { text: string; tone: "success" | "warning" | "muted" }
+> = {
   binding: { text: "Elegido aquí", tone: "success" },
   environment: { text: "Heredado del entorno", tone: "warning" },
   unset: { text: "Sin configurar", tone: "muted" },
 };
 
 /** Dónde vive la documentación viva de la API y el detalle de ejecuciones del motor. */
-const API_DOCS = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1$/, "") ?? "";
-const ENGINE_URL = process.env.NEXT_PUBLIC_DECISION_ENGINE_URL ?? "http://localhost:5173";
+const API_DOCS =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1$/, "") ?? "";
+const ENGINE_URL =
+  process.env.NEXT_PUBLIC_DECISION_ENGINE_URL ?? "http://localhost:5173";
 
-export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: DecisionType }>) {
+export function DecisionDetailPage({
+  decisionType,
+}: Readonly<{ decisionType: DecisionType }>) {
   const artifacts = useDecisionArtifacts();
   const assign = useAssignDecisionArtifact();
   const [artefacto, setArtefacto] = useState<string | null>(null);
   const [version, setVersion] = useState<string | null>(null);
 
-  const binding = artifacts.data?.bindings.find((item) => item.decisionType === decisionType);
+  const binding = artifacts.data?.bindings.find(
+    (item) => item.decisionType === decisionType,
+  );
   const disponibles = artifacts.data?.availableArtifacts ?? [];
   const motorSinResponder = !artifacts.isLoading && disponibles.length === 0;
 
@@ -58,7 +67,9 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
   const versionElegida = version ?? binding.pinnedVersion ?? "";
   const artefactoElegido = disponibles.find((item) => item.code === elegido);
   const cambiado =
-    elegido !== "" && (elegido !== binding.artifactCode || versionElegida !== (binding.pinnedVersion ?? ""));
+    elegido !== "" &&
+    (elegido !== binding.artifactCode ||
+      versionElegida !== (binding.pinnedVersion ?? ""));
   const origen = SOURCE_LABEL[binding.source];
 
   return (
@@ -68,7 +79,10 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
         title={binding.title ?? decisionType}
         description={binding.description ?? undefined}
         actions={
-          <Link href="/internal/settings/decision-artifacts" className="text-sm text-atlas-accent hover:underline">
+          <Link
+            href="/internal/settings/decision-artifacts"
+            className="text-sm text-atlas-accent hover:underline"
+          >
             ← Volver al catálogo
           </Link>
         }
@@ -82,10 +96,14 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">Explicación de negocio</h3>
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Explicación de negocio
+            </h3>
           </CardHeader>
           <CardContent>
-            <p className="text-sm leading-relaxed text-atlas-text">{binding.business}</p>
+            <p className="text-sm leading-relaxed text-atlas-text">
+              {binding.business}
+            </p>
             <p className="mt-3 border-l-2 border-atlas-accent/40 pl-3 text-sm italic leading-relaxed text-atlas-muted">
               <span className="font-semibold not-italic">Por ejemplo: </span>
               {binding.example}
@@ -95,10 +113,14 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
 
         <Card>
           <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">Explicación de sistemas</h3>
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Explicación de sistemas
+            </h3>
           </CardHeader>
           <CardContent>
-            <p className="text-sm leading-relaxed text-atlas-text">{binding.systems}</p>
+            <p className="text-sm leading-relaxed text-atlas-text">
+              {binding.systems}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -106,21 +128,26 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
       <Card testId="decision-config">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-atlas-text">Qué política la resuelve</h3>
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Qué política la resuelve
+            </h3>
             <Badge tone={origen.tone}>{origen.text}</Badge>
           </div>
         </CardHeader>
         <CardContent>
           {motorSinResponder ? (
             <p className="mb-3 text-sm text-amber-700">
-              El motor no devolvió su catálogo de artefactos. Puedes ver la configuración vigente, pero no cambiarla
-              hasta que responda: elegir un código a ciegas es justo lo que esta pantalla evita.
+              El motor no devolvió su catálogo de artefactos. Puedes ver la
+              configuración vigente, pero no cambiarla hasta que responda:
+              elegir un código a ciegas es justo lo que esta pantalla evita.
             </p>
           ) : null}
 
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex min-w-64 flex-1 flex-col gap-1">
-              <span className="text-xs font-medium text-atlas-muted">Artefacto que decide</span>
+              <span className="text-xs font-medium text-atlas-muted">
+                Artefacto que decide
+              </span>
               <select
                 className="h-9 rounded-lg border border-atlas-border bg-white px-3 text-sm text-atlas-text"
                 value={elegido}
@@ -142,7 +169,9 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
               nueva en el motor cambia lo que decide en produccion sin que nadie lo apruebe.
             */}
             <label className="flex w-56 flex-col gap-1">
-              <span className="text-xs font-medium text-atlas-muted">Versión</span>
+              <span className="text-xs font-medium text-atlas-muted">
+                Versión
+              </span>
               <select
                 className="h-9 rounded-lg border border-atlas-border bg-white px-3 text-sm text-atlas-text"
                 value={versionElegida}
@@ -153,7 +182,9 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
                 {artefactoElegido?.latestVersion ? (
                   <option value={artefactoElegido.latestVersion}>
                     Fijar {artefactoElegido.latestVersion}
-                    {artefactoElegido.status ? ` · ${artefactoElegido.status}` : ""}
+                    {artefactoElegido.status
+                      ? ` · ${artefactoElegido.status}`
+                      : ""}
                   </option>
                 ) : null}
               </select>
@@ -179,17 +210,22 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
           <p className="mt-3 text-xs text-atlas-muted">
             {binding.artifactCode
               ? `Ahora mismo decide: ${binding.artifactCode}${
-                  binding.pinnedVersion ? ` · versión fijada ${binding.pinnedVersion}` : " · versión vigente del despliegue"
+                  binding.pinnedVersion
+                    ? ` · versión fijada ${binding.pinnedVersion}`
+                    : " · versión vigente del despliegue"
                 }`
               : "Ahora mismo no hay ningún artefacto asignado a esta decisión."}
           </p>
 
           {assign.isSuccess ? (
-            <p className="mt-2 text-xs font-medium text-emerald-700">Guardado. La decisión ya usa esta política.</p>
+            <p className="mt-2 text-xs font-medium text-emerald-700">
+              Guardado. La decisión ya usa esta política.
+            </p>
           ) : null}
           {assign.error ? (
             <p className="mt-2 text-xs font-medium text-red-700">
-              El motor no publica ese artefacto. Elige uno de la lista y vuelve a intentarlo.
+              El motor no publica ese artefacto. Elige uno de la lista y vuelve
+              a intentarlo.
             </p>
           ) : null}
         </CardContent>
@@ -198,8 +234,12 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card testId="decision-endpoints">
           <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">Endpoints que la llaman</h3>
-            <p className="text-xs text-atlas-muted">Si cambias esta política, esto es lo que se ve afectado.</p>
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Endpoints que la llaman
+            </h3>
+            <p className="text-xs text-atlas-muted">
+              Si cambias esta política, esto es lo que se ve afectado.
+            </p>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -213,7 +253,9 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
                   >
                     {endpoint.method} {endpoint.path}
                   </a>
-                  <p className="mt-0.5 text-xs text-atlas-muted">{endpoint.purpose}</p>
+                  <p className="mt-0.5 text-xs text-atlas-muted">
+                    {endpoint.purpose}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -222,7 +264,9 @@ export function DecisionDetailPage({ decisionType }: Readonly<{ decisionType: De
 
         <Card testId="decision-workflow">
           <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">Flujo de trabajo</h3>
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Flujo de trabajo
+            </h3>
             <p className="text-xs text-atlas-muted">{binding.workflowStage}</p>
           </CardHeader>
           <CardContent>

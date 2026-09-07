@@ -116,7 +116,10 @@ export function WorkflowCanvas() {
           {body}
           {/* La deriva entre lo declarado y lo montado se comprueba aquí, junto al árbol que la
               declara: en otra pantalla habría que recordar qué flujo se estaba mirando. */}
-          <WorkflowConsistencyPanel workflowCode={workflowCode} version={filters.version} />
+          <WorkflowConsistencyPanel
+            workflowCode={workflowCode}
+            version={filters.version}
+          />
         </CardContent>
       </Card>
     </div>

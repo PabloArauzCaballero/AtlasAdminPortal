@@ -164,13 +164,13 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/risk-policy/current": {
         systems:
-          "Política de riesgo activa servida por el backend con sus umbrales y versión vigente. Desde acá un administrador puede activar una versión de ruleset en estado `draft`, `inactive` o `approved` (`/operations/risk-policy/ruleset-versions/:id/activate`): la activación retira la versión activa anterior, exige una justificación de mínimo 5 caracteres y pide doble confirmación tecleada.",
+          "Política de riesgo LOCAL vigente, servida por el backend con sus umbrales y versión. Es la red de seguridad para cuando el Motor de Decisión no responde, no la política que decide en condiciones normales: esa vive en los artefactos versionados del Motor. La pantalla es de consulta — ni se crean ni se activan versiones desde el portal.",
         business:
           "La configuración que decide aprobaciones/rechazos de riesgo hoy; consultarla evita discusiones sobre 'qué regla estaba activa'. Activar una versión cambia en vivo cómo se decide, así que solo lo hace un administrador y siempre queda registrado el motivo.",
       },
       "/internal/risk-policy/ruleset-versions": {
         systems:
-          "Editor del paquete de versión de ruleset (`/operations/risk-policy/ruleset-versions`): modelo, ruleset, hasta 500 reglas con su `expressionJson` y hasta 500 señales de riesgo. Crea todo en borrador — no activa nada. La versión se valida en el navegador con el esquema del backend antes de enviarse.",
+          "La autoría de política se movió al Motor de Decisión. La ruta se conserva para explicar dónde se hace ahora en vez de devolver un 404: escribir reglas en el portal creaba una segunda política sin aprobación, segregación de funciones ni auditoría encadenada.",
         business:
           "Donde se arma una política de riesgo nueva sin tocar la que está corriendo. Queda en borrador hasta que un administrador la active, así se puede preparar y revisar un cambio de reglas sin riesgo para producción.",
       },

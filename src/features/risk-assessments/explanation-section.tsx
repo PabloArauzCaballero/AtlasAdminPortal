@@ -10,6 +10,7 @@ import {
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
 import { safeText } from "@/shared/lib/format";
+import { decidioElMotor } from "./decision-provenance";
 import { useRiskAssessmentExplanation } from "./hooks";
 import type { RiskExplanationFactor } from "./types";
 
@@ -49,8 +50,14 @@ function FactorList({
   );
 }
 
-export function ExplanationSection({ runId }: Readonly<{ runId: string }>) {
+export function ExplanationSection({
+  runId,
+  decisionSource,
+}: Readonly<{ runId: string; decisionSource: string | null }>) {
   const explanation = useRiskAssessmentExplanation(runId);
+  // Cuando decidió el Motor, esto es contexto y no explicación: lo dice el encabezado, y lo dice
+  // otra vez sobre las reglas, que es donde más fácil sería leerlo como el motivo del rechazo.
+  const esContexto = decidioElMotor(decisionSource);
   // El backend responde 404 cuando la corrida existe pero aún no tiene
   // resultado. No es un error de carga: es un estado legítimo del flujo, así
   // que se separa del error real para no alarmar al analista sin motivo.
@@ -61,8 +68,16 @@ export function ExplanationSection({ runId }: Readonly<{ runId: string }>) {
   return (
     <section className="mb-6">
       <SectionHeader
-        title="Explicación de la decisión"
-        description="Por qué el sistema recomendó esta acción, en lenguaje del analista."
+        title={
+          esContexto
+            ? "Contexto que calculó Atlas"
+            : "Explicación de la decisión"
+        }
+        description={
+          esContexto
+            ? "Esta decisión la tomó el Motor: lo de abajo es lo que Atlas midió del cliente, no el motivo por el que se decidió. La explicación está en la ejecución del Motor."
+            : "Por qué el sistema recomendó esta acción, en lenguaje del analista."
+        }
       />
       {explanation.isLoading ? <LoadingSkeleton rows={4} /> : null}
       {isMissingResult ? (
@@ -91,7 +106,7 @@ export function ExplanationSection({ runId }: Readonly<{ runId: string }>) {
           <Card>
             <CardHeader>
               <h3 className="text-sm font-semibold text-atlas-text">
-                Decisión recomendada
+                {esContexto ? "Decisión registrada" : "Decisión recomendada"}
               </h3>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -142,6 +157,11 @@ export function ExplanationSection({ runId }: Readonly<{ runId: string }>) {
               </h3>
             </CardHeader>
             <CardContent>
+              {esContexto ? (
+                <p className="mb-2 text-xs text-atlas-muted">
+                  Reglas de la política LOCAL. No son las que aplicó el Motor.
+                </p>
+              ) : null}
               {explanation.data.rulesFired.length === 0 ? (
                 <p className="text-sm text-atlas-muted">
                   La evaluación no disparó reglas explicativas.

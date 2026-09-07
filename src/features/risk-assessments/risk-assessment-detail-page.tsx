@@ -11,6 +11,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { AuditTrailTabs } from "./audit-trail-tabs";
 import { ExplanationSection } from "./explanation-section";
+import { ProcedenciaDeLaDecision } from "./decision-provenance";
 import { useRiskAssessment } from "./hooks";
 import type { RiskAssessmentDetail } from "./types";
 import { ShieldAlert } from "lucide-react";
@@ -94,9 +95,18 @@ export function RiskAssessmentDetailPage({
       {detail.data ? (
         <>
           <ResultMetrics detail={detail.data} />
+          {/* La procedencia va antes que la explicación: decide si lo que sigue explica la
+              decisión o sólo la acompaña. */}
+          <ProcedenciaDeLaDecision
+            decisionSource={detail.data.run.decisionSource}
+            decisionExecutionId={detail.data.run.decisionExecutionId}
+          />
           {/* La explicación se consulta aparte: puede fallar (404 sin resultado)
               sin que eso invalide el detalle crudo que ya cargó. */}
-          <ExplanationSection runId={riskAssessmentRunId} />
+          <ExplanationSection
+            runId={riskAssessmentRunId}
+            decisionSource={detail.data.run.decisionSource}
+          />
           <SectionHeader
             title="Traza de auditoría"
             description="Los datos crudos que respaldan la decisión: corrida, resultado, reglas, contribuciones y snapshot de features."

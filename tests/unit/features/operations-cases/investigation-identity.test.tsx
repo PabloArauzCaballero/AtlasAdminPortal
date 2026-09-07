@@ -23,9 +23,8 @@ vi.mock("@/features/operations-cases/services", () => ({
   getInvestigationSummary: vi.fn(),
 }));
 
-const { getInvestigationSummary } = await import(
-  "@/features/operations-cases/services"
-);
+const { getInvestigationSummary } =
+  await import("@/features/operations-cases/services");
 
 const BASE: InvestigationSummary = {
   customer: {
@@ -96,9 +95,7 @@ describe("investigación · verificación de identidad", () => {
      * «Riesgo» a secas junto a un «Parecido» se lee como la misma escala invertida, que es
      * exactamente lo que no son.
      */
-    expect(
-      screen.getByText("Riesgo de fraude documental"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Riesgo de fraude documental")).toBeInTheDocument();
   });
 
   it("sin verificaciones lo DICE, en vez de dejar la sección vacía", async () => {
@@ -114,7 +111,9 @@ describe("investigación · agenda del dispositivo", () => {
   it("enseña la forma de la agenda y los cruces conocidos", async () => {
     pintar(BASE);
 
-    expect(await screen.findByText("Agenda del dispositivo")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Agenda del dispositivo"),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("Referencias dentro de la agenda"),
     ).toBeInTheDocument();

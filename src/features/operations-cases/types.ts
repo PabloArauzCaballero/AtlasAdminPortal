@@ -10,6 +10,14 @@ export type WorkQueueItem = {
   priority: string | null;
   status: string | null;
   reasonCode: string | null;
+  /**
+   * La ejecución del Motor que se lleva la decisión de este caso.
+   *
+   * Con valor, la bandeja buena es la del Motor: allí está el expediente, la petición de
+   * información y la auditoría. Aquí sólo queda el ancla del flujo de alta, y el backend rechaza
+   * cerrarla desde el portal.
+   */
+  decisionExecutionId: string | null;
   openedAt: string | null;
   createdAt: string;
 };

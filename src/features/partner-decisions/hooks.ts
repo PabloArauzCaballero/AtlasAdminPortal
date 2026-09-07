@@ -14,7 +14,9 @@ export function usePartnerStatus(partnerId: string) {
   });
 }
 
-function usePartnerMutation<TInput>(accion: (input: TInput) => Promise<unknown>) {
+function usePartnerMutation<TInput>(
+  accion: (input: TInput) => Promise<unknown>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: accion,
