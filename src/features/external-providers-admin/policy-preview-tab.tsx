@@ -6,9 +6,9 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { usePolicyPreviewMutation } from "./hooks";
+import { RequestResultCard } from "./request-result-card";
 
 export function PolicyPreviewTab() {
   const [customerId, setCustomerId] = useState("");
@@ -118,7 +118,7 @@ export function PolicyPreviewTab() {
         Previsualizar política
       </Button>
       {preview.data ? (
-        <JsonViewer title="Resultado" value={preview.data} />
+        <RequestResultCard title="Vista previa de la política" result={preview.data} />
       ) : null}
     </Card>
   );

@@ -6,8 +6,8 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { RequestResultCard } from "./request-result-card";
 import {
   useApproveRequestMutation,
   useRebuildFeaturesMutation,
@@ -79,7 +79,7 @@ export function ApproveRequestTab() {
         Aprobar solicitud
       </Button>
       {approve.data ? (
-        <JsonViewer title="Resultado" value={approve.data} />
+        <RequestResultCard title="Solicitud aprobada" result={approve.data} />
       ) : null}
     </Card>
   );
@@ -126,7 +126,9 @@ export function RetryRequestTab() {
         <RotateCw className="h-4 w-4" aria-hidden />
         Reintentar solicitud
       </Button>
-      {retry.data ? <JsonViewer title="Resultado" value={retry.data} /> : null}
+      {retry.data ? (
+        <RequestResultCard title="Solicitud reintentada" result={retry.data} />
+      ) : null}
     </Card>
   );
 }
@@ -173,7 +175,10 @@ export function RebuildFeaturesTab() {
         Reconstruir features
       </Button>
       {rebuild.data ? (
-        <JsonViewer title="Resultado" value={rebuild.data} />
+        <RequestResultCard
+          title="Features reconstruidos"
+          result={rebuild.data}
+        />
       ) : null}
     </Card>
   );

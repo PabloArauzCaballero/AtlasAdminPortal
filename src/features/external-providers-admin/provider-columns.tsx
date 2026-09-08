@@ -18,6 +18,14 @@ import {
 } from "./provider-badges";
 import type { Provider, ProviderAuthState, ProviderHealth } from "./types";
 
+/**
+ * Sólo estos modos salen a la red y cronometran la respuesta. `mock_local` y `disabled` devuelven
+ * un veredicto constante sin llamar a nadie.
+ */
+export function esMedido(mode: string): boolean {
+  return mode === "mock_server" || mode === "sandbox" || mode === "production";
+}
+
 export type ProviderRow = Provider & {
   health?: ProviderHealth;
   authState?: ProviderAuthState;
@@ -28,80 +36,97 @@ export function buildProviderColumns(
 ): ColumnDef<ProviderRow>[] {
   return [
     {
+      /*
+       * Identidad del proveedor: código, nombre y familia, en una sola columna.
+       *
+       * La categoría tenía columna propia y es lo que menos se consulta de la fila —dice de qué
+       * clase es el proveedor, algo que casi siempre ya se deduce de su nombre—, mientras costaba
+       * unos 180 px que hacían falta al final de la tabla. `DataTable` dimensiona por contenido y
+       * no recorta: lo que no cabe no se ve, y la columna clavada de la derecha se pinta encima de
+       * la penúltima, que se lee cortada.
+       */
       header: "Proveedor",
       accessorKey: "code",
       cell: ({ row }) => (
-        <div>
+        <div className="space-y-0.5">
           <p className="font-mono text-xs font-semibold text-atlas-text">
             {row.original.code}
           </p>
           <p className="text-xs text-atlas-muted">{row.original.name}</p>
+          <div className="text-xs text-atlas-muted">
+            <ProviderCategoryLabel value={row.original.category} />
+          </div>
         </div>
       ),
     },
     {
-      header: "Categoría",
-      accessorKey: "category",
-      cell: ({ row }) => (
-        <ProviderCategoryLabel value={row.original.category} />
-      ),
-    },
-    {
-      header: "Estado",
+      /*
+       * «Estado» y «Modo» se leían como una contradicción —«Activo» junto a «Sólo simulado»— y
+       * no lo son: contestan preguntas distintas. Los nombres nuevos lo dicen sin nota al pie.
+       *
+       * QUIÉN ES el proveedor: SEGIP e INFOCENTER son los oficiales que Atlas usará; los
+       * genéricos son de relleno contractual mientras no haya proveedor firmado.
+       */
+      header: "Tipo de proveedor",
       accessorKey: "status",
       cell: ({ row }) => <ProviderStatusBadge value={row.original.status} />,
     },
     {
-      header: "Modo",
+      // CÓMO SE LE LLAMA hoy. Es ortogonal a lo anterior: un proveedor oficial sin credenciales
+      // todavía se llama en simulado, y las dos cosas son ciertas a la vez.
+      header: "Cómo se le llama",
       accessorKey: "defaultMode",
       cell: ({ row }) => <ProviderModeBadge value={row.original.defaultMode} />,
     },
     {
+      /*
+       * Salud HONESTA.
+       *
+       * `checkMockHealth` devuelve `UP` y `0 ms` como constante en todo modo que no sea
+       * `mock_server`: no hay llamada, no hay medición. Pintar «Responde · 0 ms» ahí afirmaba el
+       * resultado de una comprobación que nunca ocurrió, y hacía indistinguible un proveedor
+       * realmente sano de uno que nadie ha tocado.
+       */
       header: "Salud",
       accessorKey: "health",
-      cell: ({ row }) =>
-        row.original.health ? (
-          <ProviderHealthBadge value={row.original.health.status} />
-        ) : (
-          <span className="text-atlas-muted">—</span>
-        ),
+      cell: ({ row }) => {
+        const { health, defaultMode } = row.original;
+        if (!health) return <span className="text-atlas-muted">—</span>;
+        if (!esMedido(defaultMode)) return <Badge tone="muted">Sin llamada</Badge>;
+        return (
+          <div className="space-y-1">
+            <ProviderHealthBadge value={health.status} />
+            <p className="whitespace-nowrap text-xs tabular-nums text-atlas-muted">
+              {formatNumber(health.latencyMs)} ms
+            </p>
+          </div>
+        );
+      },
     },
     {
-      // Separada de "Salud" a propósito: un proveedor puede responder perfectamente y aun así
-      // tener la credencial vencida. Fundirlas en una sola columna es lo que hacía imposible
-      // distinguir "el proveedor está caído" de "hay que rotar nuestra credencial".
-      header: "Credencial",
+      /*
+       * Credencial y token, juntas. Sigue SIN fundirse con «Salud», que es lo que de verdad
+       * importa no mezclar: un proveedor puede responder perfectamente y tener la credencial
+       * vencida, y eso hay que poder distinguirlo.
+       *
+       * Entre ellas dos, en cambio, no hay nada que distinguir de un vistazo: vienen del mismo
+       * worker, se llenan a la vez y están las dos vacías cuando la autenticación no está
+       * delegada, que es el caso hoy. Y ocupaban dos columnas de las que sacaban a otras tres
+       * fuera de la pantalla: `DataTable` dimensiona por contenido y no recorta, así que la
+       * columna clavada de la derecha se pintaba encima de la anterior.
+       */
+      header: "Autenticación",
       accessorKey: "authState",
-      cell: ({ row }) =>
-        row.original.authState ? (
-          <CredentialStatusBadge
-            value={row.original.authState.credentialStatus}
-          />
-        ) : (
-          <span className="text-atlas-muted">—</span>
-        ),
-    },
-    {
-      header: "Token",
-      accessorKey: "tokenStatus",
-      cell: ({ row }) =>
-        row.original.authState ? (
-          <TokenStatusBadge value={row.original.authState.tokenStatus} />
-        ) : (
-          <span className="text-atlas-muted">—</span>
-        ),
-    },
-    {
-      header: "Latencia",
-      accessorKey: "latencyMs",
-      cell: ({ row }) =>
-        row.original.health ? (
-          <span className="whitespace-nowrap tabular-nums">
-            {formatNumber(row.original.health.latencyMs)} ms
-          </span>
-        ) : (
-          "—"
-        ),
+      cell: ({ row }) => {
+        const authState = row.original.authState;
+        if (!authState) return <span className="text-atlas-muted">—</span>;
+        return (
+          <div className="flex flex-col items-start gap-1">
+            <CredentialStatusBadge value={authState.credentialStatus} />
+            <TokenStatusBadge value={authState.tokenStatus} />
+          </div>
+        );
+      },
     },
     {
       /*
@@ -120,8 +145,10 @@ export function buildProviderColumns(
         if (!costoso && !manual) {
           return <span className="text-atlas-muted">—</span>;
         }
+        // APILADAS, no en fila: las dos juntas ensanchan la columna lo justo para que la columna
+        // clavada de la derecha se pinte encima de la segunda y se lea a medias.
         return (
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-col items-start gap-1">
             {costoso ? (
               <Badge tone="critical" icon={Coins}>
                 Costoso

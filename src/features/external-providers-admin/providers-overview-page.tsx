@@ -14,6 +14,7 @@ import {
   useProviderHealth,
   useProviders,
 } from "./hooks";
+import { ProvidersDashboard } from "./dashboard/providers-dashboard";
 import { buildProviderColumns, type ProviderRow } from "./provider-columns";
 import { ProviderDetailDrawer } from "./provider-detail-drawer";
 import { Inbox, KeyRound, Plug, ScrollText, TriangleAlert } from "lucide-react";
@@ -91,7 +92,7 @@ export function ProvidersOverviewPage() {
         icon={Plug}
         eyebrow="Proveedores externos"
         title="Proveedores externos"
-        description="Catálogo de proveedores de datos externos (KYC, buró de crédito, telco, pagos, redes) con su salud en vivo, modo runtime y políticas de costo."
+        description="Actividad y salud de los proveedores de datos externos (KYC, buró de crédito, telco, pagos, redes), y el catálogo con su modo de llamada y políticas de costo."
         actions={
           <>
             <Link href="/internal/external-providers/audits">
@@ -123,6 +124,15 @@ export function ProvidersOverviewPage() {
         configured={authBroker.data?.configured}
         reachable={authBroker.data?.reachable}
       />
+      {/*
+       * El tablero va PRIMERO. Contesta con qué se entra a esta pantalla —¿responden?, ¿cuánto
+       * tardan?, ¿cuántas llamadas hubo, cuántas fallaron y cuánto costaron?—; la tabla de abajo
+       * contesta la pregunta siguiente, que es cómo está configurado cada proveedor.
+       */}
+      <ProvidersDashboard />
+      <h2 className="mt-6 mb-2 text-sm font-semibold uppercase tracking-[0.08em] text-atlas-muted">
+        Catálogo y configuración
+      </h2>
       {isLoading ? <LoadingSkeleton rows={6} /> : null}
       {providers.error ? (
         <ErrorState

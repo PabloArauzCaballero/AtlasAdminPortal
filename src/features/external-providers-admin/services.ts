@@ -2,6 +2,16 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   ApproveProviderRequestInput,
+  IdempotencyAudit,
+  ProductionGate,
+  ProviderRequestsPage,
+  ProvidersDashboard,
+  QualityAudit,
+  ReadinessReport,
+  RetentionPreview,
+  SanitizationAudit,
+  SlaReport,
+  UsageReport,
   AuthBrokerAvailability,
   CostPolicy,
   CostPolicyPatchInput,
@@ -116,49 +126,56 @@ export function invalidateProviderToken(providerCode: string) {
   );
 }
 
-// --- Auditoría y diagnóstico (payloads heterogéneos, sin DTO estable) ------
+// --- Auditoría y diagnóstico ----------------------------------------------
+//
+// Ya NO son `Record<string, unknown>`. Se tipaban así —y por eso se pintaban como un bloque de
+// JSON— con el argumento de que son diagnósticos sin contrato estable. Pero el backend los arma
+// con una forma fija en `external-data-governance.service.ts`: lo único que faltaba era escribirla.
 
 export function getQualityAudit() {
-  return apiRequest<Record<string, unknown>>(`${BASE}/quality-audit`);
+  return apiRequest<QualityAudit>(`${BASE}/quality-audit`);
 }
 
 export function getProductionGate(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/production-gate`, {
-    query,
-  });
+  return apiRequest<ProductionGate>(`${BASE}/production-gate`, { query });
 }
 
 export function getReadiness() {
-  return apiRequest<Record<string, unknown>>(`${BASE}/readiness`);
+  return apiRequest<ReadinessReport>(`${BASE}/readiness`);
 }
 
 export function getSla(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/sla`, { query });
+  return apiRequest<SlaReport>(`${BASE}/sla`, { query });
 }
 
 export function getUsage(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/usage`, { query });
+  return apiRequest<UsageReport>(`${BASE}/usage`, { query });
 }
 
 export function getIdempotencyAudit(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/idempotency-audit`, {
-    query,
-  });
+  return apiRequest<IdempotencyAudit>(`${BASE}/idempotency-audit`, { query });
 }
 
 export function getRetentionPreview(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/retention/preview`, {
-    query,
-  });
+  return apiRequest<RetentionPreview>(`${BASE}/retention/preview`, { query });
 }
 
 export function getSanitizationAudit(query: QueryParams) {
-  return apiRequest<Record<string, unknown>>(`${BASE}/sanitization-audit`, {
-    query,
-  });
+  return apiRequest<SanitizationAudit>(`${BASE}/sanitization-audit`, { query });
 }
 
-// --- Solicitudes (por ID, sin listado disponible en el backend) -----------
+// --- Tablero de actividad --------------------------------------------------
+
+export function getProvidersDashboard(query: QueryParams) {
+  return apiRequest<ProvidersDashboard>(`${BASE}/dashboard`, { query });
+}
+
+// --- Solicitudes -----------------------------------------------------------
+
+/** El listado que faltaba. Sin él, las acciones de abajo obligaban a conocer el ID de memoria. */
+export function listProviderRequests(query: QueryParams) {
+  return apiRequest<ProviderRequestsPage>(`${BASE}/requests`, { query });
+}
 
 export function approveRequest(
   requestId: string,

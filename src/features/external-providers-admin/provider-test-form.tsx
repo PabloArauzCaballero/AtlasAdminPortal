@@ -5,9 +5,9 @@ import { Play } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useTestProviderMutation } from "./hooks";
+import { RequestResultCard } from "./request-result-card";
 
 export function ProviderTestForm({
   providerCode,
@@ -110,7 +110,9 @@ export function ProviderTestForm({
         <Play className="h-4 w-4" aria-hidden />
         Ejecutar prueba
       </Button>
-      {test.data ? <JsonViewer title="Resultado" value={test.data} /> : null}
+      {test.data ? (
+        <RequestResultCard title="Respuesta del proveedor" result={test.data} />
+      ) : null}
     </div>
   );
 }

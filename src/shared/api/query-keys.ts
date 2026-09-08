@@ -141,6 +141,10 @@ export const queryKeys = {
     "pending-rotation",
   ] as const,
   authBrokerAvailability: ["external-providers", "auth-broker"] as const,
+  externalProvidersDashboard: (params: unknown = null) =>
+    ["external-providers", "dashboard", params] as const,
+  externalProviderRequests: (params: unknown = null) =>
+    ["external-providers", "requests", params] as const,
 
   // Expedientes: el explorador de archivos del cliente.
   expedientes: (params: unknown) => ["expedientes", "lista", params] as const,

@@ -16,8 +16,10 @@ import {
   getProductionGate,
   getProviderCostPolicies,
   getProviderHealth,
+  getProvidersDashboard,
   getQualityAudit,
   getReadiness,
+  listProviderRequests,
   getRetentionPreview,
   getSanitizationAudit,
   getSla,
@@ -51,10 +53,37 @@ export function useProviders() {
   });
 }
 
+/**
+ * Salud de los proveedores, con refresco automático.
+ *
+ * La cabecera de la pantalla promete «salud en vivo» y esta consulta no se repetía NUNCA: lo que
+ * se veía era la medición del momento en que se abrió la pestaña, envejeciendo en silencio.
+ *
+ * El refresco tiene además un segundo efecto que no es accesorio: el backend ESCRIBE un registro
+ * en `provider_health_logs` en cada llamada a este endpoint, y de esa tabla sale la serie que
+ * dibuja el tablero. Con la pantalla abierta, la serie crece sola.
+ */
 export function useProviderHealth() {
   return useQuery({
     queryKey: queryKeys.externalProvidersHealth,
     queryFn: () => getProviderHealth(),
+    refetchInterval: 30_000,
+  });
+}
+
+/** El tablero de actividad. Mismo pulso que la salud: los dos alimentan la misma pantalla. */
+export function useProvidersDashboard(query: QueryParams) {
+  return useQuery({
+    queryKey: queryKeys.externalProvidersDashboard(query),
+    queryFn: () => getProvidersDashboard(query),
+    refetchInterval: 30_000,
+  });
+}
+
+export function useProviderRequests(query: QueryParams) {
+  return useQuery({
+    queryKey: queryKeys.externalProviderRequests(query),
+    queryFn: () => listProviderRequests(query),
   });
 }
 
@@ -221,25 +250,38 @@ export function useSanitizationAudit(query: QueryParams) {
   });
 }
 
+/**
+ * Las tres mutaciones sobre una solicitud invalidan el árbol de proveedores externos.
+ *
+ * Ninguna lo hacía: aprobar una solicitud dejaba el listado y el tablero mostrando el estado
+ * anterior hasta que alguien recargaba la página, así que la acción parecía no haber surtido
+ * efecto justo cuando sí lo había surtido.
+ */
 export function useApproveRequestMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: {
       requestId: string;
       body: ApproveProviderRequestInput;
     }) => approveRequest(input.requestId, input.body),
+    onSuccess: () => invalidateProviders(queryClient),
   });
 }
 
 export function useRetryRequestMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: { requestId: string; body: RetryRequestInput }) =>
       retryRequest(input.requestId, input.body),
+    onSuccess: () => invalidateProviders(queryClient),
   });
 }
 
 export function useRebuildFeaturesMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (requestId: string) => rebuildFeatures(requestId),
+    onSuccess: () => invalidateProviders(queryClient),
   });
 }
 

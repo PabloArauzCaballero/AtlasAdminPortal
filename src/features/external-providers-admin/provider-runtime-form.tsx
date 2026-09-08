@@ -14,6 +14,25 @@ import {
 import type { ProviderRuntimePatchInput } from "./types";
 import type { ProviderRow } from "./provider-columns";
 
+/**
+ * Una frase por opción, porque la diferencia entre los dos modos simulados no se deduce del
+ * nombre y es la que decide si el emulador interviene o no.
+ */
+const AYUDA_MODO: Record<string, string> = {
+  mock_local: "El backend fabrica la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
+  mock_server: "Llama por red al emulador de proveedores. Es el modo que permite medir salud y latencia de verdad.",
+  sandbox: "Entorno de pruebas del proveedor real. Hoy ningún conector lo implementa: falla explícitamente.",
+  production: "El proveedor real. Exige credenciales cargadas y la integración implementada.",
+  disabled: "No se le llama. Cualquier solicitud a este proveedor se rechaza.",
+};
+
+const AYUDA_ESTADO: Record<string, string> = {
+  ACTIVE: "Es el proveedor oficial para esta categoría. No implica que ya se le llame de verdad: eso lo dice el modo.",
+  MOCK_ONLY: "Existe para fijar el contrato mientras no haya proveedor firmado.",
+  SANDBOX_ONLY: "Sólo autorizado contra el entorno de pruebas del proveedor.",
+  DISABLED: "Retirado del catálogo operativo.",
+};
+
 export function ProviderRuntimeForm({
   provider,
 }: Readonly<{ provider: ProviderRow }>) {
@@ -33,7 +52,13 @@ export function ProviderRuntimeForm({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field label="Modo">
+        {/*
+          * Las opciones se escribían con el literal del backend (`mock_local`, `MOCK_ONLY`). El
+          * mismo concepto se pintaba en castellano en la tabla y en inglés técnico aquí, en el
+          * único sitio donde hay que ELEGIR — que es justo donde importa entender la diferencia
+          * entre simular en proceso y simular por red.
+          */}
+        <Field label="Cómo se le llama" hint={AYUDA_MODO[defaultMode ?? ""]}>
           <Select
             value={defaultMode}
             onChange={(event) =>
@@ -42,14 +67,14 @@ export function ProviderRuntimeForm({
               )
             }
           >
-            <option value="mock_local">mock_local</option>
-            <option value="mock_server">mock_server</option>
-            <option value="sandbox">sandbox</option>
-            <option value="production">production</option>
-            <option value="disabled">disabled</option>
+            <option value="mock_local">Simulado en proceso (sin red)</option>
+            <option value="mock_server">Simulado por red (emulador)</option>
+            <option value="sandbox">Sandbox del proveedor</option>
+            <option value="production">Producción</option>
+            <option value="disabled">No llamar</option>
           </Select>
         </Field>
-        <Field label="Estado">
+        <Field label="Tipo de proveedor" hint={AYUDA_ESTADO[providerStatus ?? ""]}>
           <Select
             value={providerStatus}
             onChange={(event) =>
@@ -59,10 +84,10 @@ export function ProviderRuntimeForm({
               )
             }
           >
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="DISABLED">DISABLED</option>
-            <option value="MOCK_ONLY">MOCK_ONLY</option>
-            <option value="SANDBOX_ONLY">SANDBOX_ONLY</option>
+            <option value="ACTIVE">Oficial (Atlas lo usará de verdad)</option>
+            <option value="MOCK_ONLY">De prueba (relleno contractual)</option>
+            <option value="SANDBOX_ONLY">Sólo sandbox</option>
+            <option value="DISABLED">Deshabilitado</option>
           </Select>
         </Field>
       </div>

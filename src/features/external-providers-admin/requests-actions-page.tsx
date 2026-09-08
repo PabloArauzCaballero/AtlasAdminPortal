@@ -10,9 +10,11 @@ import {
   RetryRequestTab,
 } from "./approve-retry-request-tabs";
 import { PolicyPreviewTab } from "./policy-preview-tab";
+import { RequestsListTab } from "./requests-list-tab";
 import { Inbox } from "lucide-react";
 
 const tabs = [
+  "Listado",
   "Aprobar",
   "Reintentar",
   "Reconstruir features",
@@ -28,14 +30,16 @@ export function RequestsActionsPage() {
         icon={Inbox}
         eyebrow="Proveedores externos"
         title="Solicitudes a proveedores"
-        description="Acciones sobre solicitudes individuales a proveedores externos, identificadas por su ID."
+        description="Las consultas hechas a proveedores externos, con lo que pasó con cada una, y las acciones que se pueden tomar sobre una en concreto."
       />
       <BusinessContextNote>
-        El backend no expone un listado de solicitudes pendientes — el ID se
-        obtiene de otra pantalla (investigación de cliente, logs, un webhook de
-        error). Por eso cada acción acá pide el ID directamente.
+        Las acciones trabajan sobre UNA solicitud, identificada por su ID. El listado es de dónde
+        se saca: cada fila copia su identificador con un clic. Aprobar y editar costos está
+        restringido a <span className="font-mono">admin</span>/
+        <span className="font-mono">platform_admin</span> en el backend.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      {activeTab === "Listado" ? <RequestsListTab /> : null}
       {activeTab === "Aprobar" ? <ApproveRequestTab /> : null}
       {activeTab === "Reintentar" ? <RetryRequestTab /> : null}
       {activeTab === "Reconstruir features" ? <RebuildFeaturesTab /> : null}

@@ -7,7 +7,12 @@ import {
   useRetentionPreview,
   useSanitizationAudit,
 } from "./hooks";
-import { ReportFilters, ReportView } from "./report-view";
+import {
+  IdempotencyAuditView,
+  RetentionPreviewView,
+  SanitizationAuditView,
+} from "./audit/data-views";
+import { ReportFilters } from "./report-view";
 
 export function IdempotencyAuditTab() {
   const [days, setDays] = useState(30);
@@ -38,7 +43,7 @@ export function IdempotencyAuditTab() {
           />
         </Field>
       </ReportFilters>
-      <ReportView query={query} title="Auditoría de idempotencia" />
+      <IdempotencyAuditView query={query} />
     </div>
   );
 }
@@ -72,7 +77,7 @@ export function RetentionPreviewTab() {
           />
         </Field>
       </ReportFilters>
-      <ReportView query={query} title="Vista previa de purga por retención" />
+      <RetentionPreviewView query={query} />
     </div>
   );
 }
@@ -95,7 +100,7 @@ export function SanitizationAuditTab() {
           />
         </Field>
       </ReportFilters>
-      <ReportView query={query} title="Auditoría de sanitización" />
+      <SanitizationAuditView query={query} />
     </div>
   );
 }

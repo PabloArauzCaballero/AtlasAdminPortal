@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Field, Input } from "@/shared/components/ui/input";
 import { useProductionGate, useSlaReport, useUsageReport } from "./hooks";
-import { ReportCheckbox, ReportFilters, ReportView } from "./report-view";
+import { ProductionGateView } from "./audit/quality-views";
+import { SlaReportView, UsageReportView } from "./audit/usage-views";
+import { ReportCheckbox, ReportFilters } from "./report-view";
 
 export function ProductionGateTab() {
   const [providerCode, setProviderCode] = useState("");
@@ -32,7 +34,7 @@ export function ProductionGateTab() {
           onChange={setStrict}
         />
       </ReportFilters>
-      <ReportView query={query} title="Production gate" />
+      <ProductionGateView query={query} />
     </div>
   );
 }
@@ -66,7 +68,7 @@ export function SlaReportTab() {
           />
         </Field>
       </ReportFilters>
-      <ReportView query={query} title="Reporte de SLA" />
+      <SlaReportView query={query} />
     </div>
   );
 }
@@ -103,7 +105,7 @@ export function UsageReportTab() {
           />
         </Field>
       </ReportFilters>
-      <ReportView query={query} title="Uso y costo" />
+      <UsageReportView query={query} />
     </div>
   );
 }

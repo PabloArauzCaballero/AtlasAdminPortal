@@ -17,15 +17,20 @@ import {
   SanitizationAuditTab,
 } from "./audit-tabs-window-filtered";
 
+/**
+ * Los nombres son lo primero que se lee y cuatro de los ocho estaban en la jerga del backend
+ * («Production gate», «Readiness», «SLA», «Idempotencia»). Ahora dicen la pregunta que contestan;
+ * el nombre técnico sigue apareciendo dentro de cada pestaña, en la explicación.
+ */
 const tabs = [
-  "Calidad",
-  "Production gate",
-  "Readiness",
-  "SLA",
-  "Uso",
-  "Idempotencia",
-  "Retención",
-  "Sanitización",
+  "Configuración",
+  "¿Listo para producción?",
+  "Preparación",
+  "Cumplimiento",
+  "Consumo",
+  "Consultas repetidas",
+  "Purga por antigüedad",
+  "Datos sensibles",
 ];
 
 export function AuditsPage() {
@@ -37,22 +42,22 @@ export function AuditsPage() {
         icon={ScrollText}
         eyebrow="Proveedores externos"
         title="Auditorías y diagnóstico"
-        description="Reportes de solo lectura del backend sobre calidad de configuración, gate de producción, SLA, uso/costo, idempotencia, retención y sanitización de datos de proveedores externos."
+        description="Ocho comprobaciones de solo lectura sobre cómo están configurados los proveedores externos, cómo se portaron, cuánto costaron y qué se guarda de sus respuestas."
       />
       <BusinessContextNote>
-        Estos reportes no tienen un contrato de respuesta fijo (son
-        diagnósticos, no un DTO estable) — se muestran como JSON estructurado
-        tal como los devuelve el backend.
+        Cada pestaña explica arriba qué comprueba y cuándo se da por fallada. Ninguna de estas
+        comprobaciones modifica nada: son lecturas. El detalle técnico completo está al final de
+        cada una, en &quot;Ver datos crudos&quot;.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-      {activeTab === "Calidad" ? <QualityAuditTab /> : null}
-      {activeTab === "Production gate" ? <ProductionGateTab /> : null}
-      {activeTab === "Readiness" ? <ReadinessTab /> : null}
-      {activeTab === "SLA" ? <SlaReportTab /> : null}
-      {activeTab === "Uso" ? <UsageReportTab /> : null}
-      {activeTab === "Idempotencia" ? <IdempotencyAuditTab /> : null}
-      {activeTab === "Retención" ? <RetentionPreviewTab /> : null}
-      {activeTab === "Sanitización" ? <SanitizationAuditTab /> : null}
+      {activeTab === "Configuración" ? <QualityAuditTab /> : null}
+      {activeTab === "¿Listo para producción?" ? <ProductionGateTab /> : null}
+      {activeTab === "Preparación" ? <ReadinessTab /> : null}
+      {activeTab === "Cumplimiento" ? <SlaReportTab /> : null}
+      {activeTab === "Consumo" ? <UsageReportTab /> : null}
+      {activeTab === "Consultas repetidas" ? <IdempotencyAuditTab /> : null}
+      {activeTab === "Purga por antigüedad" ? <RetentionPreviewTab /> : null}
+      {activeTab === "Datos sensibles" ? <SanitizationAuditTab /> : null}
     </>
   );
 }
