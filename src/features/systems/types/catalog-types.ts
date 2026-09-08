@@ -297,3 +297,38 @@ export type EndpointListResponse = PaginatedResponse<EndpointItem>;
 export type DataEntityListResponse = PaginatedResponse<DataEntity>;
 export type ToolListResponse = PaginatedResponse<ToolItem>;
 export type DomainListResponse = PaginatedResponse<Domain>;
+
+/**
+ * Un dominio del mapa, con sus cifras calculadas en el SERVIDOR (`GET /systems/domains/overview`).
+ *
+ * Antes las calculaba el navegador cruzando tres listados paginados a 100 filas: con 432 endpoints
+ * y 186 tablas el mapa salía truncado sin que nada lo delatara.
+ */
+export type DomainOverviewItem = {
+  domainCode: string;
+  domainName: string;
+  description: string | null;
+  ownerTeam: string | null;
+  dataNature: string | null;
+  status: string | null;
+  tables: number;
+  piiTables: number;
+  endpoints: number;
+  criticalEndpoints: number;
+  testSuites: number;
+  pendingReview: number;
+  modules: string[];
+};
+
+export type DomainOverview = {
+  generatedAt: string;
+  /** `catalog` si la lista salió de la base; `fixtures` si el catálogo estaba vacío y se usaron las fichas en código. */
+  domainSource: "catalog" | "fixtures";
+  items: DomainOverviewItem[];
+  unassigned: {
+    tables: number;
+    endpoints: number;
+    modules: { module: string; tables: number }[];
+  };
+  totals: { tables: number; endpoints: number; testSuites: number };
+};

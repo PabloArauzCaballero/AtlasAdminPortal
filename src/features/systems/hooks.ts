@@ -6,6 +6,7 @@ import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
   getDomain,
+  getDomainOverview,
   getTool,
   inferDataImpacts,
   inferToolRequirements,
@@ -205,6 +206,13 @@ export function useDomains(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.domains(query),
     queryFn: () => listDomains(query),
+  });
+}
+
+export function useDomainOverview() {
+  return useQuery({
+    queryKey: queryKeys.domainOverview,
+    queryFn: () => getDomainOverview(),
   });
 }
 

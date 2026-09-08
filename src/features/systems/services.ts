@@ -18,6 +18,7 @@ import type {
   DataEntityMetadataInput,
   Domain,
   DomainListResponse,
+  DomainOverview,
   EndpointListResponse,
   SystemsDashboard,
   ToolHealth,
@@ -159,6 +160,11 @@ export async function listDomains(query: QueryParams) {
     response,
     ["domains", "records", "results"],
   );
+}
+
+/** El mapa entero, con las cifras ya cruzadas en el servidor. */
+export function getDomainOverview() {
+  return apiRequest<DomainOverview>("/systems/domains/overview");
 }
 
 export function getDomain(domainCode: string) {

@@ -2,17 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  useDataEntities,
-  useDomains,
-  useEndpoints,
-  useTestSuites,
-} from "@/features/systems/hooks";
-import {
-  moduleDescription,
-  moduleKeyForDomainCode,
-  normalizeModule,
-} from "@/features/systems/domain-module-map";
+import { useDomainOverview } from "@/features/systems/hooks";
+import type { DomainOverviewItem } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
@@ -28,17 +19,20 @@ import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Boxes } from "lucide-react";
 
-type DomainSummary = {
-  key: string;
-  name: string;
-  endpoints: number;
-  tables: number;
-  testSuites: number;
-  piiTables: number;
-  pendingReview: number;
-  criticalEndpoints: number;
-};
-
+/**
+ * Dominios del negocio.
+ *
+ * ## Por qué ya no se calcula aquí
+ *
+ * Esta vista construía el mapa en el navegador cruzando TRES listados —endpoints, tablas y suites—
+ * pedidos con `limit: 100`. Con 432 endpoints y 186 tablas en el catálogo, el mapa salía de 100 de
+ * cada: dominios que faltaban y cifras falsas, sin error alguno, porque 100 filas también «cargan
+ * bien». Y el cruce se hacía por el primer segmento de la ruta del endpoint (`internal`, `mobile`,
+ * `admin`…), que no es un dominio de negocio ni coincide con el módulo de una tabla.
+ *
+ * Ahora lo calcula el backend, entero, con la relación que sí existe: cada tabla lleva su dominio
+ * y cada endpoint declara qué tablas toca. Aquí sólo se pinta y se filtra.
+ */
 export function BusinessDomainsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -52,81 +46,20 @@ export function BusinessDomainsPage() {
 
 function AuthorizedBusinessDomainsPage() {
   const [q, setQ] = useState("");
-  const endpoints = useEndpoints({ page: 1, limit: 100, q });
-  const entities = useDataEntities({ page: 1, limit: 100, q });
-  const suites = useTestSuites({ page: 1, limit: 100 });
-  const domainCatalog = useDomains({ page: 1, limit: 100 });
-  const error = endpoints.error ?? entities.error ?? suites.error;
-  // Indexado por módulo normalizado → { nombre humano, descripción } del catálogo.
-  const domainCatalogByModule = useMemo(() => {
-    const map = new Map<string, { name: string; description: string }>();
-    for (const domain of domainCatalog.data?.items ?? []) {
-      const moduleKey = moduleKeyForDomainCode(domain.domainCode);
-      const existing = map.get(moduleKey);
-      map.set(moduleKey, {
-        name: domain.domainName || existing?.name || domain.domainCode,
-        // Si un módulo cruza varios dominios (ej. risk), se concatenan.
-        description: existing?.description
-          ? `${existing.description} · ${domain.description}`
-          : domain.description,
-      });
-    }
-    return map;
-  }, [domainCatalog.data?.items]);
+  const overview = useDomainOverview();
 
   const domains = useMemo(() => {
-    const map = new Map<string, DomainSummary>();
-    const ensure = (rawName?: string | null) => {
-      const key = normalizeModule(rawName);
-      const current = map.get(key) ?? {
-        key,
-        name: rawName?.trim() || "Sin dominio",
-        endpoints: 0,
-        tables: 0,
-        testSuites: 0,
-        piiTables: 0,
-        pendingReview: 0,
-        criticalEndpoints: 0,
-      };
-      map.set(key, current);
-      return current;
-    };
-
-    (endpoints.data?.items ?? []).forEach((endpoint) => {
-      const domain = ensure(endpoint.module);
-      domain.endpoints += 1;
-      if (
-        endpoint.reviewStatus === "NEEDS_REVIEW" ||
-        endpoint.reviewStatus === "AUTO_DETECTED"
-      )
-        domain.pendingReview += 1;
-      if (endpoint.riskLevel === "HIGH" || endpoint.riskLevel === "CRITICAL")
-        domain.criticalEndpoints += 1;
-    });
-
-    (entities.data?.items ?? []).forEach((entity) => {
-      const domain = ensure(entity.module);
-      domain.tables += 1;
-      if (entity.containsPii) domain.piiTables += 1;
-      if (
-        entity.reviewStatus === "NEEDS_REVIEW" ||
-        entity.reviewStatus === "AUTO_DETECTED"
-      )
-        domain.pendingReview += 1;
-    });
-
-    (suites.data?.items ?? []).forEach((suite) => {
-      ensure(suite.module).testSuites += 1;
-    });
-
-    return Array.from(map.values()).sort(
-      (a, b) =>
-        b.endpoints +
-        b.tables +
-        b.testSuites -
-        (a.endpoints + a.tables + a.testSuites),
+    const items = overview.data?.items ?? [];
+    const needle = q.trim().toLowerCase();
+    if (!needle) return items;
+    return items.filter(
+      (domain) =>
+        domain.domainCode.toLowerCase().includes(needle) ||
+        domain.domainName.toLowerCase().includes(needle) ||
+        (domain.description ?? "").toLowerCase().includes(needle) ||
+        domain.modules.some((module) => module.includes(needle)),
     );
-  }, [endpoints.data?.items, entities.data?.items, suites.data?.items]);
+  }, [overview.data, q]);
 
   return (
     <>
@@ -134,154 +67,194 @@ function AuthorizedBusinessDomainsPage() {
         icon={Boxes}
         eyebrow="Metadata de negocio"
         title="Dominios del sistema"
-        description="Mapa derivado desde módulos reportados por endpoints, tablas y suites QA. No se fija una lista cerrada en la interfaz."
+        description="Cada dominio con sus tablas, los endpoints que las tocan y sus suites. Las cifras las calcula el backend sobre el catálogo completo."
       />
       <BusinessContextNote>
         Atlas está dividido en dominios de negocio (onboarding, riesgo,
         cobranza, cumplimiento, etc.), cada uno con sus propias tablas,
         endpoints y reglas. Esta vista existe para responder &quot;¿qué parte
         del negocio toca este endpoint o esta tabla?&quot; sin tener que
-        preguntarle a quien escribió el código.
+        preguntarle a quien escribió el código. Un endpoint pertenece a los
+        dominios de las tablas que toca.
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar dominio, tabla o endpoint…"
+        searchPlaceholder="Buscar dominio o módulo…"
         onSearchChange={setQ}
         onClear={() => setQ("")}
       />
-      {endpoints.isLoading || entities.isLoading || suites.isLoading ? (
-        <LoadingSkeleton rows={6} />
-      ) : null}
-      {error ? (
+      {overview.isLoading ? <LoadingSkeleton rows={6} /> : null}
+      {overview.error ? (
         <ErrorState
           description={
-            isAtlasApiError(error)
-              ? error.message
-              : "No se pudo cargar dominios."
+            isAtlasApiError(overview.error)
+              ? overview.error.message
+              : "No se pudo cargar el mapa de dominios."
           }
-          requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => {
-            void endpoints.refetch();
-            void entities.refetch();
-            void suites.refetch();
-          }}
+          requestId={
+            isAtlasApiError(overview.error)
+              ? overview.error.requestId
+              : undefined
+          }
+          onRetry={() => void overview.refetch()}
         />
       ) : null}
-      {endpoints.data && entities.data && suites.data ? (
+      {overview.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Dominios" value={formatNumber(domains.length)} />
+            <MetricCard
+              label="Dominios"
+              value={formatNumber(overview.data.items.length)}
+              hint={
+                overview.data.domainSource === "fixtures"
+                  ? "El catálogo en base está vacío: la lista sale de las fichas en código."
+                  : undefined
+              }
+            />
             <MetricCard
               label="Endpoints"
-              value={formatNumber(endpoints.data.items.length)}
+              value={formatNumber(overview.data.totals.endpoints)}
+              hint={`${formatNumber(overview.data.unassigned.endpoints)} sin dominio (no tocan ninguna tabla catalogada)`}
             />
             <MetricCard
               label="Tablas"
-              value={formatNumber(entities.data.items.length)}
+              value={formatNumber(overview.data.totals.tables)}
+              hint={`${formatNumber(overview.data.unassigned.tables)} sin dominio asignado`}
+              tone={overview.data.unassigned.tables > 0 ? "warning" : "default"}
             />
             <MetricCard
               label="Suites QA"
-              value={formatNumber(suites.data.items.length)}
+              value={formatNumber(overview.data.totals.testSuites)}
             />
           </section>
+
+          {overview.data.unassigned.tables > 0 ? (
+            <Card>
+              <CardHeader>
+                <SectionHeader
+                  title="Tablas sin dominio"
+                  description="Lo que falta clasificar, por módulo. Mientras no tengan dominio, sus endpoints tampoco aparecen en ninguna ficha."
+                  className="mb-0"
+                />
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-wrap gap-2 text-xs">
+                  {overview.data.unassigned.modules.map((entry) => (
+                    <li
+                      key={entry.module}
+                      className="rounded-md bg-atlas-soft px-2 py-1"
+                    >
+                      <Link
+                        href={`/internal/data-catalog/tables?q=${encodeURIComponent(entry.module)}`}
+                        className="font-mono text-atlas-accent underline"
+                      >
+                        {entry.module}
+                      </Link>{" "}
+                      · <strong>{formatNumber(entry.tables)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>
               <SectionHeader
                 title="Resumen por dominio"
-                description="Cada card cruza endpoints, tablas y suites para detectar cobertura y huecos."
+                description="Cada card cruza tablas, endpoints y suites para detectar cobertura y huecos."
                 className="mb-0"
               />
             </CardHeader>
             <CardContent>
+              {domains.length === 0 ? (
+                <p className="text-sm text-atlas-muted">
+                  Ningún dominio coincide con la búsqueda.
+                </p>
+              ) : null}
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                {domains.map((domain) => {
-                  const catalog = domainCatalogByModule.get(domain.key);
-                  // Prioridad: descripción del catálogo del backend →
-                  // descripción de respaldo del módulo → texto genérico.
-                  const description =
-                    catalog?.description?.trim() ||
-                    moduleDescription(domain.key) ||
-                    "Sin descripción registrada en el catálogo de dominios.";
-                  return (
-                    <article
-                      key={domain.key}
-                      className="rounded-lg border border-atlas-border bg-white p-4 shadow-subtle"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-atlas-text">
-                            {catalog?.name ?? domain.name}
-                          </h3>
-                          <p className="font-mono text-[11px] uppercase tracking-wide text-atlas-muted">
-                            {domain.name}
-                          </p>
-                        </div>
-                        <ReviewStatusBadge
-                          value={
-                            domain.pendingReview > 0
-                              ? "NEEDS_REVIEW"
-                              : "APPROVED"
-                          }
-                        />
-                      </div>
-                      <p className="mt-2 text-xs italic text-atlas-muted">
-                        {description}
-                      </p>
-                      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          Endpoints:{" "}
-                          <strong>{formatNumber(domain.endpoints)}</strong>
-                        </span>
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          Tablas: <strong>{formatNumber(domain.tables)}</strong>
-                        </span>
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          Suites:{" "}
-                          <strong>{formatNumber(domain.testSuites)}</strong>
-                        </span>
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          PII: <strong>{formatNumber(domain.piiTables)}</strong>
-                        </span>
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          Críticos:{" "}
-                          <strong>
-                            {formatNumber(domain.criticalEndpoints)}
-                          </strong>
-                        </span>
-                        <span className="rounded-md bg-atlas-soft p-2">
-                          Review:{" "}
-                          <strong>{formatNumber(domain.pendingReview)}</strong>
-                        </span>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <Link
-                          href={`/internal/systems/endpoints?q=${encodeURIComponent(domain.name)}`}
-                          className="text-xs font-medium text-atlas-accent underline"
-                        >
-                          Endpoints
-                        </Link>
-                        <Link
-                          href={`/internal/data-catalog/tables?q=${encodeURIComponent(domain.name)}`}
-                          className="text-xs font-medium text-atlas-accent underline"
-                        >
-                          Tablas
-                        </Link>
-                        <Link
-                          href="/internal/review-queue"
-                          className="text-xs font-medium text-atlas-accent underline"
-                        >
-                          Revisión
-                        </Link>
-                      </div>
-                    </article>
-                  );
-                })}
+                {domains.map((domain) => (
+                  <DomainCard key={domain.domainCode} domain={domain} />
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
       ) : null}
     </>
+  );
+}
+
+function DomainCard({ domain }: Readonly<{ domain: DomainOverviewItem }>) {
+  const primaryModule = domain.modules[0] ?? domain.domainCode.toLowerCase();
+  return (
+    <article
+      data-testid={`domain-${domain.domainCode}`}
+      className="rounded-lg border border-atlas-border bg-white p-4 shadow-subtle"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-atlas-text">
+            {domain.domainName}
+          </h3>
+          <p className="font-mono text-[11px] uppercase tracking-wide text-atlas-muted">
+            {domain.domainCode}
+            {domain.ownerTeam ? ` · ${domain.ownerTeam}` : ""}
+          </p>
+        </div>
+        <ReviewStatusBadge
+          value={domain.pendingReview > 0 ? "NEEDS_REVIEW" : "APPROVED"}
+        />
+      </div>
+      <p className="mt-2 text-xs italic text-atlas-muted">
+        {domain.description?.trim() ||
+          "Sin descripción registrada en el catálogo de dominios."}
+      </p>
+      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+        <span className="rounded-md bg-atlas-soft p-2">
+          Endpoints: <strong>{formatNumber(domain.endpoints)}</strong>
+        </span>
+        <span className="rounded-md bg-atlas-soft p-2">
+          Tablas: <strong>{formatNumber(domain.tables)}</strong>
+        </span>
+        <span className="rounded-md bg-atlas-soft p-2">
+          Suites: <strong>{formatNumber(domain.testSuites)}</strong>
+        </span>
+        <span className="rounded-md bg-atlas-soft p-2">
+          PII: <strong>{formatNumber(domain.piiTables)}</strong>
+        </span>
+        <span className="rounded-md bg-atlas-soft p-2">
+          Críticos: <strong>{formatNumber(domain.criticalEndpoints)}</strong>
+        </span>
+        <span className="rounded-md bg-atlas-soft p-2">
+          Review: <strong>{formatNumber(domain.pendingReview)}</strong>
+        </span>
+      </div>
+      {domain.modules.length > 0 ? (
+        <p className="mt-3 font-mono text-[11px] text-atlas-muted">
+          {domain.modules.join(" · ")}
+        </p>
+      ) : null}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          href={`/internal/systems/endpoints?q=${encodeURIComponent(primaryModule)}`}
+          className="text-xs font-medium text-atlas-accent underline"
+        >
+          Endpoints
+        </Link>
+        <Link
+          href={`/internal/data-catalog/tables?q=${encodeURIComponent(primaryModule)}`}
+          className="text-xs font-medium text-atlas-accent underline"
+        >
+          Tablas
+        </Link>
+        <Link
+          href="/internal/review-queue"
+          className="text-xs font-medium text-atlas-accent underline"
+        >
+          Revisión
+        </Link>
+      </div>
+    </article>
   );
 }
