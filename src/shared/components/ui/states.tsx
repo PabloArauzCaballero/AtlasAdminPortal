@@ -1,4 +1,4 @@
-import { AlertTriangle, Ban, Loader2, SearchX } from "lucide-react";
+import { AlertTriangle, Ban, Loader2, RotateCcw, SearchX } from "lucide-react";
 import { Button } from "./button";
 
 export function LoadingSkeleton({ rows = 6 }: Readonly<{ rows?: number }>) {
@@ -72,6 +72,7 @@ export function ErrorState({
           ) : null}
           {onRetry ? (
             <Button className="mt-4" variant="secondary" onClick={onRetry}>
+              <RotateCcw className="h-4 w-4" aria-hidden />
               Reintentar
             </Button>
           ) : null}

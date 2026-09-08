@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatDateTime, safeText } from "@/shared/lib/format";
@@ -80,8 +80,9 @@ export function NotificationBell() {
                 type="button"
                 disabled={markAllRead.isPending}
                 onClick={() => markAllRead.mutate()}
-                className="text-xs font-medium text-atlas-accent underline disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-1 text-xs font-medium text-atlas-accent underline disabled:cursor-not-allowed disabled:opacity-60"
               >
+                <CheckCheck className="h-3.5 w-3.5" aria-hidden />
                 Marcar todas
               </button>
             ) : null}

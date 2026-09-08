@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { DecisionConsumersSection } from "./decision-consumers-section";
 import { useAssignDecisionArtifact, useDecisionArtifacts } from "./hooks";
 import type { BindingSource, DecisionType } from "./types";
 
@@ -34,10 +36,6 @@ const SOURCE_LABEL: Record<
 };
 
 /** Dónde vive la documentación viva de la API y el detalle de ejecuciones del motor. */
-const API_DOCS =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1$/, "") ?? "";
-const ENGINE_URL =
-  process.env.NEXT_PUBLIC_DECISION_ENGINE_URL ?? "http://localhost:5173";
 
 export function DecisionDetailPage({
   decisionType,
@@ -81,9 +79,10 @@ export function DecisionDetailPage({
         actions={
           <Link
             href="/internal/settings/decision-artifacts"
-            className="text-sm text-atlas-accent hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm text-atlas-accent hover:underline"
           >
-            ← Volver al catálogo
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Volver al catálogo
           </Link>
         }
       />
@@ -231,66 +230,7 @@ export function DecisionDetailPage({
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card testId="decision-endpoints">
-          <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">
-              Endpoints que la llaman
-            </h3>
-            <p className="text-xs text-atlas-muted">
-              Si cambias esta política, esto es lo que se ve afectado.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {(binding.consumerEndpoints ?? []).map((endpoint) => (
-                <li key={`${endpoint.method}-${endpoint.path}`}>
-                  <a
-                    href={`${API_DOCS}/docs`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-mono text-xs text-atlas-accent hover:underline"
-                  >
-                    {endpoint.method} {endpoint.path}
-                  </a>
-                  <p className="mt-0.5 text-xs text-atlas-muted">
-                    {endpoint.purpose}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card testId="decision-workflow">
-          <CardHeader>
-            <h3 className="text-sm font-semibold text-atlas-text">
-              Flujo de trabajo
-            </h3>
-            <p className="text-xs text-atlas-muted">{binding.workflowStage}</p>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-2">
-              {(binding.workflowSteps ?? []).map((step, index) => (
-                <li key={step} className="flex gap-3 text-sm text-atlas-text">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-atlas-soft text-xs font-semibold text-atlas-muted">
-                    {index + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-            <a
-              href={`${ENGINE_URL}/executions`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-block text-xs text-atlas-accent hover:underline"
-            >
-              Ver las ejecuciones de esta política en el motor →
-            </a>
-          </CardContent>
-        </Card>
-      </div>
+      <DecisionConsumersSection binding={binding} />
     </div>
   );
 }

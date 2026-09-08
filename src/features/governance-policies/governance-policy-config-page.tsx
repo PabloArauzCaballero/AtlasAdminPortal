@@ -12,7 +12,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { PolicyConfigurationForm } from "./forms/policy-configuration-form";
-import { SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 
 export function GovernancePolicyConfigPage(
   props: Readonly<{ policyId: string }>,
@@ -43,7 +43,10 @@ function AuthorizedGovernancePolicyConfigPage({
         description="Define acciones operativas como append only, delete, retención, masking, auditoría y aprobaciones."
         actions={
           <Link href={`/internal/governance/policies/${policyId}`}>
-            <Button>Volver al detalle</Button>
+            <Button>
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Volver al detalle
+            </Button>
           </Link>
         }
       />

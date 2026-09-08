@@ -12,9 +12,9 @@ import {
 import { useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { EmptyState } from "@/shared/components/ui/states";
-import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 import type { PaginationMeta } from "@/shared/api/types";
+import { Pagination } from "./pagination";
 
 /**
  * Metadatos por columna que esta tabla entiende.
@@ -258,35 +258,5 @@ function HeaderCell<T>({ header }: Readonly<{ header: Header<T, unknown> }>) {
         <span className="inline-flex items-center gap-1">{label}</span>
       )}
     </th>
-  );
-}
-
-function Pagination({
-  meta,
-  onPageChange,
-}: Readonly<{
-  meta: PaginationMeta;
-  onPageChange?: (page: number) => void;
-}>) {
-  return (
-    <div className="flex flex-col gap-2 text-xs text-atlas-muted sm:flex-row sm:items-center sm:justify-between">
-      <span>
-        Página {meta.page} de {meta.totalPages || 1} · {meta.total} registros
-      </span>
-      <div className="flex gap-2">
-        <Button
-          disabled={meta.page <= 1}
-          onClick={() => onPageChange?.(meta.page - 1)}
-        >
-          Anterior
-        </Button>
-        <Button
-          disabled={meta.totalPages <= meta.page}
-          onClick={() => onPageChange?.(meta.page + 1)}
-        >
-          Siguiente
-        </Button>
-      </div>
-    </div>
   );
 }

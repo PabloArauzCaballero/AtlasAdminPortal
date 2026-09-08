@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 
 export function QaLogDownload({
@@ -25,7 +25,10 @@ export function QaLogDownload({
         download={fileName}
         onClick={() => setTimeout(() => URL.revokeObjectURL(href), 0)}
       >
-        <Button>Descargar logs Pino</Button>
+        <Button>
+          <Download className="h-4 w-4" aria-hidden />
+          Descargar logs Pino
+        </Button>
       </a>
       <Button onClick={() => void copyLogs()}>
         {copied ? (

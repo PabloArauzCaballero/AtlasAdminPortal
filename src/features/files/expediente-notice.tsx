@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FolderTree } from "lucide-react";
+import { ExternalLink, FolderTree } from "lucide-react";
 import { useExpedientePorCliente } from "./hooks";
 
 /**
@@ -38,9 +38,10 @@ export function AvisoDeExpediente({
       <Link
         href={`/internal/files/${datos.expedienteId}`}
         target="_blank"
-        className="font-medium text-atlas-accent underline"
+        className="inline-flex items-center gap-1.5 font-medium text-atlas-accent underline"
       >
         Verlos antes de decidir
+        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
       </Link>
     </p>
   );

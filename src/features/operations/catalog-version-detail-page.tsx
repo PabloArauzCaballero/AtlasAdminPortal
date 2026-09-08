@@ -23,7 +23,7 @@ import { buildCatalogVersionItemColumns } from "./catalog-version-items-columns"
 import { STATUS_HELP, STATUS_LABELS } from "./catalog-version-lifecycle";
 import type { ContextItem } from "./catalog-version-types";
 import { useCatalogVersion } from "./hooks";
-import { Boxes } from "lucide-react";
+import { ArrowLeft, Boxes } from "lucide-react";
 
 /**
  * Ficha de una versión de catálogo y su flujo de aprobación.
@@ -81,7 +81,10 @@ function AuthorizedCatalogVersionDetailPage({
         description={`Ciclo de aprobación de una versión de \`${catalogCode}\`. Conectado a \`/operations/catalogs/:catalogCode/versions/:versionId\`.`}
         actions={
           <Link href="/internal/operations/catalogs">
-            <Button>Volver a catálogos</Button>
+            <Button>
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Volver a catálogos
+            </Button>
           </Link>
         }
       />

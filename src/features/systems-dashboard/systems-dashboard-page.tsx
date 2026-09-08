@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, RefreshCw } from "lucide-react";
+import { Activity, ArrowRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useDashboard, useToolsHealth } from "@/features/systems/hooks";
 import {
@@ -75,10 +75,11 @@ function AuthorizedSystemsDashboardPage() {
             de salud:{" "}
             {criticalDown.map((tool) => tool.name ?? tool.code).join(", ")}.{" "}
             <Link
-              className="font-medium underline"
+              className="inline-flex items-center gap-1 font-medium underline"
               href="/internal/systems/tools/health"
             >
               Ver detalle
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </Link>
           </div>
         ) : null}

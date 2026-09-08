@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { breadcrumbLabels } from "./breadcrumb-labels";
 
 export function Breadcrumbs() {
@@ -23,7 +24,7 @@ export function Breadcrumbs() {
       </Link>
       {segments.map((segment, index) => (
         <span key={`${segment}-${index}`} className="flex items-center gap-1">
-          <span className="text-slate-400">/</span>
+          <ChevronRight className="h-3 w-3 text-slate-400" aria-hidden />
           <span
             className={
               index === segments.length - 1

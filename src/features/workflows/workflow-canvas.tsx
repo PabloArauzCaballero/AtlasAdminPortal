@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -9,16 +8,12 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
 import { Portal } from "@/shared/components/ui/portal";
 import { useWorkflowTree, useWorkflowVersions, useWorkflows } from "./hooks";
-import {
-  WorkflowControls,
-  WorkflowLegend,
-  WorkflowTotals,
-} from "./workflow-controls";
+import { WorkflowControls, WorkflowTotals } from "./workflow-controls";
 import { WorkflowConsistencyPanel } from "./workflow-consistency";
-import { WorkflowDetail } from "./workflow-detail";
+import { SidePanel } from "./workflow-side-panel";
 import { WorkflowGraphView } from "./workflow-graph-view";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
-import type { WorkflowStage, WorkflowTree, WorkflowTreeQuery } from "./types";
+import type { WorkflowStage, WorkflowTreeQuery } from "./types";
 
 const STANDARD_WORKFLOW = "customer_credit_journey";
 
@@ -212,64 +207,6 @@ function WorkflowBody({
           </p>
         )}
       </div>
-    </div>
-  );
-}
-
-/** Ficha y leyenda flotando sobre el lienzo, sin robarle ancho. */
-function SidePanel({
-  tree,
-  selection,
-  onClose,
-}: Readonly<{
-  tree: WorkflowTree;
-  selection: WorkflowSelection;
-  onClose: () => void;
-}>) {
-  const [legendOpen, setLegendOpen] = useState(false);
-
-  return (
-    <div className="pointer-events-none absolute inset-y-3 right-3 flex w-[21rem] max-w-[calc(100%-1.5rem)] flex-col gap-2 overflow-hidden">
-      <div className="pointer-events-auto flex justify-end">
-        <button
-          type="button"
-          onClick={() => setLegendOpen((open) => !open)}
-          aria-expanded={legendOpen}
-          className="rounded-lg border border-atlas-border bg-white/95 px-3 py-1.5 text-xs font-medium text-atlas-text shadow-subtle hover:bg-atlas-soft"
-        >
-          {legendOpen ? "Ocultar leyenda" : "Cómo leer el flujo"}
-        </button>
-      </div>
-
-      {legendOpen ? (
-        <div
-          data-tutorial-id="workflow-legend"
-          className="pointer-events-auto rounded-2xl border border-atlas-border bg-white/97 p-3 shadow-lg backdrop-blur"
-        >
-          <WorkflowLegend />
-        </div>
-      ) : null}
-
-      {selection ? (
-        <div
-          data-tutorial-id="workflow-detail"
-          className="atlas-scrollbar pointer-events-auto min-h-0 flex-1 overflow-y-auto rounded-2xl border border-atlas-border bg-white/97 shadow-lg backdrop-blur"
-        >
-          <div className="sticky top-0 z-10 flex justify-end bg-white/90 p-2 backdrop-blur">
-            <button
-              type="button"
-              aria-label="Cerrar la ficha"
-              onClick={onClose}
-              className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="px-4 pb-4">
-            <WorkflowDetail tree={tree} selection={selection} />
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { FilterX, Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input, Select } from "@/shared/components/ui/input";
 
@@ -56,7 +56,12 @@ export function FilterBar({
           ))}
         </Select>
       ))}
-      {onClear ? <Button onClick={onClear}>Limpiar</Button> : null}
+      {onClear ? (
+        <Button onClick={onClear}>
+          <FilterX className="h-4 w-4" aria-hidden />
+          Limpiar
+        </Button>
+      ) : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { Check } from "lucide-react";
 import {
   NotificationCategoryBadge,
   NotificationChannelBadge,
@@ -58,8 +59,9 @@ export function buildMyNotificationColumns(
             type="button"
             disabled={isMarkingRead}
             onClick={() => onMarkRead(row.original.id)}
-            className="rounded-full bg-atlas-accentSoft px-2.5 py-1 text-xs font-semibold text-atlas-accent hover:bg-atlas-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-1 rounded-full bg-atlas-accentSoft px-2.5 py-1 text-xs font-semibold text-atlas-accent hover:bg-atlas-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
+            <Check className="h-3.5 w-3.5" aria-hidden />
             Marcar como leída
           </button>
         ),

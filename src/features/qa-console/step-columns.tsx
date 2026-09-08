@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import type { TestStep } from "@/features/systems/types";
 import { MethodBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
@@ -74,7 +75,7 @@ export function buildStepColumns({
               disabled={isMoving || index <= 0}
               onClick={() => onMove(row.original, -1)}
             >
-              ↑
+              <ArrowUp className="h-4 w-4" aria-hidden />
             </Button>
             <Button
               className="h-8 px-2 text-xs"
@@ -82,7 +83,7 @@ export function buildStepColumns({
               disabled={isMoving || index >= totalSteps - 1}
               onClick={() => onMove(row.original, 1)}
             >
-              ↓
+              <ArrowDown className="h-4 w-4" aria-hidden />
             </Button>
           </div>
         );

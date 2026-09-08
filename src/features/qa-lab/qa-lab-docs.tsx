@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  ChevronDown,
   FlaskConical,
   KeySquare,
   Layers,
@@ -34,6 +35,7 @@ export function QaLabDocsPanel() {
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
         className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
@@ -49,7 +51,15 @@ export function QaLabDocsPanel() {
             </p>
           </div>
         </div>
-        <Badge tone="info">{expanded ? "Ocultar" : "Ver guía"}</Badge>
+        {/*
+          Antes el estado se decía con una insignia («Ver guía» / «Ocultar»),
+          que se lee como etiqueta y no como control. El chevron dice lo mismo
+          con la dirección y es el mismo gesto que el resto de desplegables.
+        */}
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-atlas-muted transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          aria-hidden
+        />
       </button>
       {expanded ? (
         <CardContent className="grid gap-4 border-t border-atlas-border pt-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">

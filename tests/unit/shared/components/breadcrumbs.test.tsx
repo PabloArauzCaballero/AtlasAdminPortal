@@ -11,12 +11,18 @@ function renderAt(pathname: string) {
   return render(<Breadcrumbs />);
 }
 
-/** Migas visibles, sin los separadores "/". */
+/**
+ * Migas visibles, en orden.
+ *
+ * Se leen los hijos directos del `nav` —el enlace «Inicio» y un `span` por
+ * segmento— en vez de partir el texto por "/": el separador es un icono
+ * (`ChevronRight`) y no aporta texto, así que no hay nada por donde cortar.
+ */
 function crumbs() {
-  return screen
-    .getByRole("navigation", { name: "Breadcrumb" })
-    .textContent?.split("/")
-    .map((part) => part.trim())
+  return Array.from(
+    screen.getByRole("navigation", { name: "Breadcrumb" }).children,
+  )
+    .map((child) => child.textContent?.trim() ?? "")
     .filter(Boolean);
 }
 

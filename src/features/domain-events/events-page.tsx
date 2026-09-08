@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Radio } from "lucide-react";
+import { ChevronLeft, ChevronRight, Radio } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import {
   INTERNAL_PORTAL_ROLE_LIST,
@@ -172,6 +172,7 @@ function AuthorizedDomainEventsPage() {
                 disabled={page === 1}
                 onClick={() => setPage((actual) => Math.max(1, actual - 1))}
               >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
                 Anterior
               </Button>
               <Button
@@ -179,6 +180,7 @@ function AuthorizedDomainEventsPage() {
                 onClick={() => setPage((actual) => actual + 1)}
               >
                 Siguiente
+                <ChevronRight className="h-4 w-4" aria-hidden />
               </Button>
             </div>
           </div>

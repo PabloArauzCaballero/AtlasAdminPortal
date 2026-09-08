@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -132,7 +133,10 @@ export function EntryCard({
                 <span className="font-medium text-atlas-text">
                   {entry.resolvedAction.label}
                 </span>
-                <span aria-hidden>→</span>
+                <ArrowRight
+                  className="h-3.5 w-3.5 self-center text-atlas-muted"
+                  aria-hidden
+                />
                 <span className="break-all font-mono">
                   {entry.resolvedAction.url}
                 </span>

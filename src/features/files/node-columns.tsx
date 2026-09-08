@@ -1,7 +1,13 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Lock, TriangleAlert } from "lucide-react";
+import {
+  ArchiveRestore,
+  Lock,
+  Pencil,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
@@ -124,6 +130,7 @@ export function buildNodeColumns(
       if (nodo.borradoEn) {
         return (
           <Button variant="ghost" onClick={() => acciones.onRestaurar(nodo)}>
+            <ArchiveRestore className="h-3.5 w-3.5" aria-hidden />
             Restaurar
           </Button>
         );
@@ -133,10 +140,11 @@ export function buildNodeColumns(
       return (
         <span className="flex justify-end gap-1">
           <Button variant="ghost" onClick={() => acciones.onRenombrar(nodo)}>
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
             Renombrar
           </Button>
           <Button variant="ghost" onClick={() => acciones.onBorrar(nodo)}>
-            A la papelera
+            <Trash2 className="h-3.5 w-3.5" aria-hidden />A la papelera
           </Button>
         </span>
       );

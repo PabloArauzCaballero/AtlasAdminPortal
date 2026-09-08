@@ -107,8 +107,16 @@ export function JourneyStepCard({
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-medium text-atlas-accent underline"
+          aria-expanded={expanded}
+          className="inline-flex items-center gap-1 text-xs font-medium text-atlas-accent underline"
         >
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 transition-transform duration-200",
+              expanded && "rotate-180",
+            )}
+            aria-hidden
+          />
           {expanded
             ? "Ocultar avanzado"
             : "Mostrar avanzado (path/query/payload/extract)"}
