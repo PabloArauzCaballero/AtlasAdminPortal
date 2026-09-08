@@ -23,6 +23,44 @@ export const RETENTION_POLICY_CODES = [
  */
 export const RUNTIME_JOBS: readonly RuntimeJobDefinition[] = [
   {
+    code: "dispatch-loan-outcomes",
+    title: "Entregar desenlaces al Motor",
+    systems:
+      "Manda en lote las observaciones de cosecha encoladas (`loan_outcome_reports`) a `POST /v1/model-monitoring/outcomes` del Motor. Es el job `dispatch_loan_outcomes`; el Motor deduplica por (ejecución, ventana), así que repetir un lote es seguro.",
+    business:
+      "Sin desenlaces el Motor mide su acierto sobre una muestra congelada. Este disparo adelanta la entrega tras una incidencia o cuando hay que recalibrar hoy.",
+    destructive: false,
+    fields: [
+      {
+        name: "limit",
+        label: "Límite de desenlaces",
+        hint: "Entre 1 y 500. Vacío usa el default del backend (100).",
+        placeholder: "100",
+        min: 1,
+        max: 500,
+      },
+    ],
+  },
+  {
+    code: "sweep-debt-ratings",
+    title: "Recalificar la cartera",
+    systems:
+      "Recorre los clientes con deuda viva y recalifica cada operación y su ficha con la política vigente. Es el job `sweep_debt_ratings`.",
+    business:
+      "La categoría de riesgo y la previsión salen de los días de atraso; recalificar antes de un cierre evita que la contabilidad lea una foto de hace seis horas.",
+    destructive: false,
+    fields: [
+      {
+        name: "limit",
+        label: "Límite de clientes",
+        hint: "Entre 1 y 5000. Vacío usa el default del backend (500).",
+        placeholder: "500",
+        min: 1,
+        max: 5000,
+      },
+    ],
+  },
+  {
     code: "process-outbox",
     title: "Procesar outbox",
     systems:

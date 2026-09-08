@@ -88,9 +88,11 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
-        label: "Cartera y desenlaces",
+        label: "Calificación de cartera",
         href: "/internal/operations/portfolio",
         icon: Gauge,
+        // Calificación contable (de Atlas) y salud de la entrega de desenlaces al Motor. Los
+        // desenlaces se MIDEN en el Motor; entregarlos es un job, no un botón.
         // El backend gatea por @Roles (risk_analyst/internal_operator/admin/platform_admin).
         permissions: [],
         roles: INTERNAL_PORTAL_ROLE_LIST,

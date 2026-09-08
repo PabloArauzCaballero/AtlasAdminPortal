@@ -242,6 +242,18 @@ const OUTCOME_BACKLOG = {
   ],
 };
 
+/** La salud de la entrega de desenlaces al Motor: sustituye a los botones de runbook. */
+const OUTCOME_STATUS = {
+  pending: 4,
+  retrying: 1,
+  exhausted: 1,
+  sent: 40,
+  oldestPendingObservedAt: "2026-08-01T00:00:00.000Z",
+  lastSentAt: "2026-09-07T10:00:00.000Z",
+  configured: true,
+  maxAttempts: 6,
+};
+
 const CATALOGS = {
   items: [
     {
@@ -300,10 +312,11 @@ const VISTAS = [
     rutas: [[/\/operations\/partners\/queue$/, PARTNER_QUEUE]] as const,
   },
   {
-    nombre: "Cartera y desenlaces",
+    nombre: "Calificación de cartera",
     ruta: "/internal/operations/portfolio",
     rutas: [
       [/\/operations\/credit-rating\/portfolio-summary$/, PORTFOLIO],
+      [/\/operations\/loans\/outcome-status$/, OUTCOME_STATUS],
       [/\/operations\/loans\/outcome-backlog$/, OUTCOME_BACKLOG],
     ] as const,
   },

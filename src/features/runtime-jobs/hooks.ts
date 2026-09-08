@@ -17,6 +17,9 @@ import type {
  * `internal`, el mismo desacople que documenta RESUELTO_ATLAS_F1_R6.
  */
 const AFFECTED_QUERY_ROOTS: Record<RuntimeJobCode, readonly string[][]> = {
+  // Los dos mueven la pantalla de calificación de cartera (cola de desenlaces y categorías).
+  "dispatch-loan-outcomes": [["operations", "portfolio"]],
+  "sweep-debt-ratings": [["operations", "portfolio"]],
   "process-outbox": [["notifications"]],
   "process-events": [["notifications"], ["operations"]],
   "expire-stale-sessions": [["operations"]],

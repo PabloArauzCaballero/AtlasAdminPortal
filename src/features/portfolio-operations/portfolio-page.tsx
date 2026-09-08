@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Gauge } from "lucide-react";
+import { ExternalLink, Gauge } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { engineUrl } from "@/shared/decision-engine/engine-links";
 import { buildBacklogColumns, buildGradeColumns } from "./portfolio-columns";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -14,27 +15,34 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatAmount, formatNumber } from "@/shared/lib/format";
 import {
-  useDelinquencySweepMutation,
-  useDispatchOutcomesMutation,
+  formatAmount,
+  formatDateTime,
+  formatNumber,
+} from "@/shared/lib/format";
+import {
   useExhaustedOutcomes,
+  useOutcomeDeliveryStatus,
   usePortfolioSummary,
   useRateCustomerMutation,
   useRateLoanMutation,
   useSweepRatingsMutation,
 } from "./hooks";
+import type { OutcomeDeliveryStatus } from "./types";
 
 /**
- * Operación de cartera.
+ * Calificación de cartera.
  *
- * Reúne las dos mitades que el backend expone y nadie llamaba: **calificar** (qué categoría tiene
- * cada deuda y cuánta previsión exige) y **cerrar el bucle** (recalcular mora y entregarle al motor
- * los desenlaces, que es como el motor llega a saber si acertó al decidir).
+ * Esta vista era «Riesgo y desenlaces»: seis botones de runbook, tres de los cuales eran la única
+ * forma de que ocurrieran la mora, la entrega de desenlaces al Motor y la calificación. Lo que
+ * quedaba en ella era de dos dueños distintos:
  *
- * Están juntas porque se usan juntas y en este orden —antes de un cierre se recalcula mora, se
- * entregan desenlaces y se recalifica—, y separarlas en dos pantallas obligaría a recordar la
- * secuencia en vez de leerla.
+ * - La **calificación** (categoría de riesgo y previsión de cada deuda y su titular) es contable y
+ *   es de Atlas. Se queda, y además corre sola cada seis horas (`sweep_debt_ratings`); el botón
+ *   sirve para adelantarse a un cierre.
+ * - Los **desenlaces** son la medida del acierto del Motor. Entregarlos es integración
+ *   (`dispatch_loan_outcomes`, cada 15 minutos) y medirlos es del Motor (`/decision-quality`).
+ *   Aquí sólo se enseña si la entrega va al día y se enlaza a donde se mide.
  */
 export function PortfolioOperationsPage() {
   return (
@@ -44,22 +52,15 @@ export function PortfolioOperationsPage() {
   );
 }
 
-type Confirmacion =
-  | { tipo: "ratings"; limite: number }
-  | { tipo: "mora"; limite: number; tenantScoped: boolean }
-  | { tipo: "desenlaces"; limite: number }
-  | null;
-
 function AuthorizedPortfolioPage() {
-  const [confirmacion, setConfirmacion] = useState<Confirmacion>(null);
+  const [confirmarBarrido, setConfirmarBarrido] = useState(false);
   const [loanId, setLoanId] = useState("");
   const [customerId, setCustomerId] = useState("");
 
   const resumen = usePortfolioSummary();
+  const entrega = useOutcomeDeliveryStatus();
   const backlog = useExhaustedOutcomes(100);
   const sweepRatings = useSweepRatingsMutation();
-  const sweepMora = useDelinquencySweepMutation();
-  const entregar = useDispatchOutcomesMutation();
   const calificarCredito = useRateLoanMutation();
   const calificarCliente = useRateCustomerMutation();
 
@@ -67,30 +68,14 @@ function AuthorizedPortfolioPage() {
   const pendientes = useMemo(() => backlog.data?.items ?? [], [backlog.data]);
   const columnasGrado = useMemo(() => buildGradeColumns(), []);
   const columnasBacklog = useMemo(() => buildBacklogColumns(), []);
-  const ejecutando =
-    sweepRatings.isPending || sweepMora.isPending || entregar.isPending;
-
-  function confirmar() {
-    if (!confirmacion) return;
-    const promesa =
-      confirmacion.tipo === "ratings"
-        ? sweepRatings.mutateAsync(confirmacion.limite)
-        : confirmacion.tipo === "mora"
-          ? sweepMora.mutateAsync({
-              limit: confirmacion.limite,
-              tenantScoped: confirmacion.tenantScoped,
-            })
-          : entregar.mutateAsync(confirmacion.limite);
-    void promesa.finally(() => setConfirmacion(null));
-  }
 
   return (
     <>
       <PageHeader
         icon={Gauge}
         eyebrow="Operación de cartera"
-        title="Riesgo y desenlaces"
-        description="Recalificar la cartera, recalcular mora y entregarle al motor los desenlaces ya observados. Son las llamadas del runbook, no un acceso a la base."
+        title="Calificación de cartera"
+        description="Categoría de riesgo y previsión de cada deuda con la política vigente. La calificación corre sola cada seis horas; recalificar a mano es para adelantarse a un cierre."
       />
 
       {resumen.isLoading ? <LoadingSkeleton rows={4} /> : null}
@@ -113,7 +98,7 @@ function AuthorizedPortfolioPage() {
 
       {resumen.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <MetricCard
               label="Créditos calificados"
               value={formatNumber(resumen.data.totals.loanCount)}
@@ -125,10 +110,6 @@ function AuthorizedPortfolioPage() {
             <MetricCard
               label="Previsión"
               value={formatAmount(resumen.data.totals.provisionAmount)}
-            />
-            <MetricCard
-              label="Desenlaces agotados"
-              value={formatNumber(pendientes.length)}
             />
           </section>
 
@@ -146,144 +127,199 @@ function AuthorizedPortfolioPage() {
               data={grades}
               columns={columnasGrado}
               emptyTitle="Sin deudas calificadas todavía."
-              emptyDescription="«Recalificar la cartera» las califica con la política vigente."
+              emptyDescription="El job sweep_debt_ratings las califica con la política vigente; «Recalificar la cartera» lo adelanta."
             />
           </Card>
 
-          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-            <Card className="p-5">
-              <h2 className="mb-1 text-base font-semibold text-atlas-text">
-                Recalificar
-              </h2>
-              <p className="mb-4 text-sm text-atlas-muted">
-                Calificar un crédito recalifica también a su titular: su
-                categoría se deriva por arrastre de todas sus operaciones, y
-                hacerlo a medias dejaría la ficha mintiendo.
-              </p>
-              <div className="space-y-3">
+          <Card className="p-5">
+            <h2 className="mb-1 text-base font-semibold text-atlas-text">
+              Recalificar
+            </h2>
+            <p className="mb-4 text-sm text-atlas-muted">
+              Calificar un crédito recalifica también a su titular: su categoría
+              se deriva por arrastre de todas sus operaciones, y hacerlo a
+              medias dejaría la ficha mintiendo.
+            </p>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div>
                 <Button
-                  disabled={ejecutando}
-                  onClick={() =>
-                    setConfirmacion({ tipo: "ratings", limite: 500 })
-                  }
+                  disabled={sweepRatings.isPending}
+                  onClick={() => setConfirmarBarrido(true)}
                 >
                   Recalificar la cartera
                 </Button>
-                <Field
-                  label="Recalificar un crédito"
-                  hint="Identificador del crédito."
-                >
-                  <div className="flex gap-2">
-                    <Input
-                      value={loanId}
-                      onChange={(e) => setLoanId(e.target.value)}
-                    />
-                    <Button
-                      disabled={!loanId || calificarCredito.isPending}
-                      onClick={() => void calificarCredito.mutateAsync(loanId)}
-                    >
-                      Calificar
-                    </Button>
-                  </div>
-                </Field>
-                <Field
-                  label="Recalificar un cliente"
-                  hint="Identificador del cliente."
-                >
-                  <div className="flex gap-2">
-                    <Input
-                      value={customerId}
-                      onChange={(e) => setCustomerId(e.target.value)}
-                    />
-                    <Button
-                      disabled={!customerId || calificarCliente.isPending}
-                      onClick={() =>
-                        void calificarCliente.mutateAsync(customerId)
-                      }
-                    >
-                      Calificar
-                    </Button>
-                  </div>
-                </Field>
               </div>
-            </Card>
-
-            <Card className="p-5">
-              <h2 className="mb-1 text-base font-semibold text-atlas-text">
-                Mora y desenlaces
-              </h2>
-              <p className="mb-4 text-sm text-atlas-muted">
-                Son dos pasos y no uno: el barrido produce observaciones y la
-                entrega las manda. Separados, la mora se sigue midiendo aunque
-                el motor esté caído —que es justo cuando más conviene—, y la
-                cola se entrega cuando vuelva.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  disabled={ejecutando}
-                  onClick={() =>
-                    setConfirmacion({
-                      tipo: "mora",
-                      limite: 200,
-                      tenantScoped: true,
-                    })
-                  }
-                >
-                  Recalcular mora
-                </Button>
-                <Button
-                  disabled={ejecutando}
-                  onClick={() =>
-                    setConfirmacion({ tipo: "desenlaces", limite: 100 })
-                  }
-                >
-                  Entregar desenlaces
-                </Button>
-              </div>
-            </Card>
-          </div>
-
-          <Card className="p-5">
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">
-              Desenlaces que agotaron reintentos
-            </h2>
-            <p className="mb-4 text-sm text-atlas-muted">
-              Cada fila es una decisión de la que el motor nunca supo el
-              resultado. No se reintentan solos: hay que arreglar la causa y
-              volver a entregar.
-            </p>
-            {backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
-            <DataTable
-              data={pendientes}
-              columns={columnasBacklog}
-              emptyTitle="Ningún desenlace agotó sus reintentos."
-              emptyDescription="El motor está recibiendo las observaciones de cosecha."
-            />
+              <Field
+                label="Recalificar un crédito"
+                hint="Identificador del crédito."
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={loanId}
+                    onChange={(e) => setLoanId(e.target.value)}
+                  />
+                  <Button
+                    disabled={!loanId || calificarCredito.isPending}
+                    onClick={() => void calificarCredito.mutateAsync(loanId)}
+                  >
+                    Calificar
+                  </Button>
+                </div>
+              </Field>
+              <Field
+                label="Recalificar un cliente"
+                hint="Identificador del cliente."
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={customerId}
+                    onChange={(e) => setCustomerId(e.target.value)}
+                  />
+                  <Button
+                    disabled={!customerId || calificarCliente.isPending}
+                    onClick={() =>
+                      void calificarCliente.mutateAsync(customerId)
+                    }
+                  >
+                    Calificar
+                  </Button>
+                </div>
+              </Field>
+            </div>
           </Card>
         </div>
       ) : null}
 
+      <section className="mt-6 space-y-6">
+        <Card className="p-5">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-semibold text-atlas-text">
+              Desenlaces hacia el Motor
+            </h2>
+            <EnlaceMotor />
+          </div>
+          <p className="mb-4 text-sm text-atlas-muted">
+            Cada crédito le cuenta al Motor cómo acabó a los 30, 90 y 180 días
+            de la decisión. La mora los observa cada hora
+            (sweep_loan_delinquency) y la entrega los manda cada quince
+            minutos (dispatch_loan_outcomes). Lo que se mide con ellos
+            —acierto, estabilidad, cosechas— vive en el Motor, no aquí.
+          </p>
+          {entrega.isLoading ? <LoadingSkeleton rows={2} /> : null}
+          {entrega.error ? (
+            <ErrorState
+              description={
+                isAtlasApiError(entrega.error)
+                  ? entrega.error.message
+                  : "No se pudo leer el estado de la entrega."
+              }
+              requestId={
+                isAtlasApiError(entrega.error)
+                  ? entrega.error.requestId
+                  : undefined
+              }
+              onRetry={() => void entrega.refetch()}
+            />
+          ) : null}
+          {entrega.data ? <EstadoEntrega estado={entrega.data} /> : null}
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="mb-1 text-base font-semibold text-atlas-text">
+            Desenlaces que agotaron reintentos
+          </h2>
+          <p className="mb-4 text-sm text-atlas-muted">
+            Cada fila es una decisión de la que el Motor nunca supo el
+            resultado. No se reintentan solos: hay que arreglar la causa y
+            volver a entregar desde «Jobs de runtime».
+          </p>
+          {backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
+          <DataTable
+            data={pendientes}
+            columns={columnasBacklog}
+            emptyTitle="Ningún desenlace agotó sus reintentos."
+            emptyDescription="El Motor está recibiendo las observaciones de cosecha."
+          />
+        </Card>
+      </section>
+
       <ConfirmDialog
-        open={confirmacion !== null}
-        title={
-          confirmacion?.tipo === "ratings"
-            ? "Recalificar toda la cartera"
-            : confirmacion?.tipo === "mora"
-              ? "Recalcular la mora"
-              : "Entregar los desenlaces pendientes"
-        }
-        description={
-          confirmacion?.tipo === "ratings"
-            ? "Recorre los clientes con deuda viva y recalifica cada operación y su ficha. Devuelve cuántos se calificaron y cuáles fallaron."
-            : confirmacion?.tipo === "mora"
-              ? "Actualiza días de atraso y tramo de la cartera viva de ESTE inquilino, y encola una observación por cada ventana de cosecha ya vencida."
-              : "Manda en lote las observaciones encoladas. El motor deduplica por ejecución y ventana, así que reintentar un lote es seguro."
-        }
+        open={confirmarBarrido}
+        title="Recalificar toda la cartera"
+        description="Recorre los clientes con deuda viva y recalifica cada operación y su ficha. Devuelve cuántos se calificaron y cuáles fallaron."
         confirmText="Ejecutar"
-        isLoading={ejecutando}
-        onCancel={() => setConfirmacion(null)}
-        onConfirm={confirmar}
+        isLoading={sweepRatings.isPending}
+        onCancel={() => setConfirmarBarrido(false)}
+        onConfirm={() =>
+          void sweepRatings
+            .mutateAsync(500)
+            .finally(() => setConfirmarBarrido(false))
+        }
       />
     </>
+  );
+}
+
+function EstadoEntrega({
+  estado,
+}: Readonly<{ estado: OutcomeDeliveryStatus }>) {
+  return (
+    <div className="space-y-3">
+      {!estado.configured ? (
+        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Falta la credencial del plano de gestión del Motor
+          (DECISION_ENGINE_OUTCOME_API_KEY): el job no puede entregar nada y
+          la cola sólo crece.
+        </p>
+      ) : null}
+      <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Esperando entrega"
+          value={formatNumber(estado.pending)}
+          hint={
+            estado.oldestPendingObservedAt
+              ? `El más antiguo se observó el ${formatDateTime(estado.oldestPendingObservedAt)}`
+              : "Nada en cola"
+          }
+          tone={estado.pending > 0 ? "info" : "default"}
+        />
+        <MetricCard
+          label="Reintentando"
+          value={formatNumber(estado.retrying)}
+          hint={`Hasta ${formatNumber(estado.maxAttempts)} intentos`}
+          tone={estado.retrying > 0 ? "warning" : "default"}
+        />
+        <MetricCard
+          label="Agotados"
+          value={formatNumber(estado.exhausted)}
+          tone={estado.exhausted > 0 ? "critical" : "default"}
+        />
+        <MetricCard
+          label="Entregados"
+          value={formatNumber(estado.sent)}
+          hint={
+            estado.lastSentAt
+              ? `Última entrega: ${formatDateTime(estado.lastSentAt)}`
+              : "Todavía ninguna"
+          }
+          tone="success"
+        />
+      </div>
+    </div>
+  );
+}
+
+function EnlaceMotor() {
+  const enlace = engineUrl("/decision-quality");
+  if (!enlace) return null;
+  return (
+    <a
+      href={enlace}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1 text-sm font-medium text-atlas-accent underline"
+    >
+      Medir en el Motor <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+    </a>
   );
 }

@@ -1,4 +1,6 @@
 export type RuntimeJobCode =
+  | "dispatch-loan-outcomes"
+  | "sweep-debt-ratings"
   | "process-outbox"
   | "process-events"
   | "expire-stale-sessions"

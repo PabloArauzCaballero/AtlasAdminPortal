@@ -1,8 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
 import type {
-  DelinquencySweepResult,
   ExhaustedOutcomeList,
-  OutcomeDispatchResult,
+  OutcomeDeliveryStatus,
   PortfolioSummary,
   RatingSweepResult,
 } from "./types";
@@ -22,40 +21,24 @@ export function sweepRatings(limit: number) {
 
 export function rateLoan(loanId: string) {
   return apiRequest<Record<string, unknown>>(
-    `/operations/credit-rating/loans/${loanId}/rate`,
+    `/operations/credit-rating/loans/${encodeURIComponent(loanId)}/rate`,
     { method: "POST" },
   );
 }
 
 export function rateCustomer(customerId: string) {
   return apiRequest<Record<string, unknown>>(
-    `/operations/credit-rating/customers/${customerId}/rate`,
+    `/operations/credit-rating/customers/${encodeURIComponent(customerId)}/rate`,
     { method: "POST" },
   );
 }
 
 /**
- * `tenantScoped: true` por defecto y a propósito: en `false` barre la cartera de TODOS los
- * inquilinos, que es una operación de plataforma y no algo que deba pasar por descuido.
+ * Salud de la entrega de desenlaces al Motor. Sustituye a los botones «Recalcular mora» y
+ * «Entregar desenlaces»: los dos son jobs, y lo que le toca a la pantalla es decir si van al día.
  */
-export function sweepDelinquency(limit: number, tenantScoped: boolean) {
-  return apiRequest<DelinquencySweepResult>(
-    "/operations/loans/delinquency-sweep",
-    {
-      method: "POST",
-      body: { limit, tenantScoped },
-    },
-  );
-}
-
-export function dispatchOutcomes(limit: number) {
-  return apiRequest<OutcomeDispatchResult>(
-    "/operations/loans/outcome-dispatch",
-    {
-      method: "POST",
-      body: { limit },
-    },
-  );
+export function getOutcomeDeliveryStatus() {
+  return apiRequest<OutcomeDeliveryStatus>("/operations/loans/outcome-status");
 }
 
 export function listExhaustedOutcomes(limit: number) {

@@ -1,10 +1,18 @@
 /**
- * Operación de cartera: calificación de riesgo y cierre del bucle de mora.
+ * Calificación de cartera y salud de la entrega de desenlaces.
  *
- * Diez rutas —cuatro de `operations/credit-rating` y tres de `operations/loans`, más las de
- * partners y workflows que viven en sus propias pantallas— que el backend expone precisamente para
- * que la operación pueda forzarlas «tras una incidencia, antes de un cierre», y que ninguna
- * pantalla llamaba: el runbook seguía siendo un `curl` o un acceso a la base.
+ * ## Lo que se quedó y lo que se fue
+ *
+ * La pantalla reunía seis botones de runbook: recalificar, recalcular mora (con opción de barrer
+ * TODOS los inquilinos), entregar desenlaces al Motor, y la lista de desenlaces agotados. Tres de
+ * ellos eran la ÚNICA forma de que esas cosas ocurrieran.
+ *
+ * - **La calificación** (categoría de riesgo y previsión) es contable y es de Atlas: se queda, y
+ *   además corre sola (`sweep_debt_ratings`). El botón es para adelantarse a un cierre.
+ * - **La mora** ya corría sola (`sweep_loan_delinquency`); el botón aquí sólo duplicaba al job.
+ * - **Los desenlaces** son la medida del acierto del Motor. Entregarlos es integración y lo hace
+ *   el job `dispatch_loan_outcomes`; medirlos es del Motor (`/decision-quality`). Aquí queda lo
+ *   que un operador necesita: saber si la entrega va al día, y dónde mirar lo entregado.
  */
 
 export type PortfolioGrade = {
@@ -40,16 +48,17 @@ export type RatingSweepResult = {
   [key: string]: unknown;
 };
 
-export type DelinquencySweepResult = {
-  evaluated?: number;
-  queued?: number;
-  [key: string]: unknown;
-};
-
-export type OutcomeDispatchResult = {
-  dispatched?: number;
-  requeued?: number;
-  [key: string]: unknown;
+/** Cómo va la entrega de desenlaces al Motor, tal y como la resume `GET /operations/loans/outcome-status`. */
+export type OutcomeDeliveryStatus = {
+  pending: number;
+  retrying: number;
+  exhausted: number;
+  sent: number;
+  oldestPendingObservedAt: string | null;
+  lastSentAt: string | null;
+  /** `false` si falta la credencial del plano de gestión: el job no puede entregar nada. */
+  configured: boolean;
+  maxAttempts: number;
 };
 
 /** Un desenlace que agotó sus reintentos: el motor nunca supo si acertó al decidir. */

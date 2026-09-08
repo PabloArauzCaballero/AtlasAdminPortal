@@ -2,12 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  dispatchOutcomes,
+  getOutcomeDeliveryStatus,
   getPortfolioSummary,
   listExhaustedOutcomes,
   rateCustomer,
   rateLoan,
-  sweepDelinquency,
   sweepRatings,
 } from "./services";
 
@@ -20,6 +19,13 @@ export function usePortfolioSummary() {
   });
 }
 
+export function useOutcomeDeliveryStatus() {
+  return useQuery({
+    queryKey: [...RAIZ, "outcome-status"],
+    queryFn: () => getOutcomeDeliveryStatus(),
+  });
+}
+
 export function useExhaustedOutcomes(limit: number) {
   return useQuery({
     queryKey: [...RAIZ, "backlog", limit],
@@ -27,7 +33,7 @@ export function useExhaustedOutcomes(limit: number) {
   });
 }
 
-/** Toda operación de cartera invalida la misma raíz: las seis mueven los mismos números. */
+/** Toda recalificación invalida la misma raíz: las tres mueven los mismos números. */
 function useOperacion<TInput>(accion: (input: TInput) => Promise<unknown>) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -48,14 +54,4 @@ export function useRateLoanMutation() {
 
 export function useRateCustomerMutation() {
   return useOperacion((customerId: string) => rateCustomer(customerId));
-}
-
-export function useDelinquencySweepMutation() {
-  return useOperacion((input: { limit: number; tenantScoped: boolean }) =>
-    sweepDelinquency(input.limit, input.tenantScoped),
-  );
-}
-
-export function useDispatchOutcomesMutation() {
-  return useOperacion((limit: number) => dispatchOutcomes(limit));
 }

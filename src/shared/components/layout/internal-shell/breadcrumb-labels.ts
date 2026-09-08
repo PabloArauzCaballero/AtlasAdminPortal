@@ -40,7 +40,7 @@ export const breadcrumbLabels: Record<string, string> = {
   "merchant-users": "Usuarios de comercio",
   operations: "Operaciones",
   partners: "Verificación de comercios",
-  portfolio: "Cartera y desenlaces",
+  portfolio: "Calificación de cartera",
   "runtime-jobs": "Jobs de runtime",
   "work-queue": "Cola de trabajo",
   customers: "Clientes",
