@@ -36,6 +36,15 @@ export function PublishEventDialog({
   const [payload, setPayload] = useState("{}");
   const [errorPayload, setErrorPayload] = useState<string | null>(null);
 
+  /*
+   * El catálogo dice sobre qué agregados puede publicarse cada evento. Con la definición elegida,
+   * el tipo se escoge de esa lista: teclearlo a mano producía un 400 `EVENT_AGGREGATE_NOT_ALLOWED`
+   * que sólo se entendía leyendo el registro del backend.
+   */
+  const permitidos =
+    definiciones.find((definicion) => definicion.eventCode === eventCode)
+      ?.allowedAggregateTypes ?? [];
+
   if (!open) return null;
 
   async function enviar(evento: React.FormEvent) {
@@ -99,13 +108,32 @@ export function PublishEventDialog({
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
             label="Tipo de agregado"
-            hint="Sobre qué entidad ocurre: customer, loan, partner…"
+            hint={
+              permitidos.length > 0
+                ? "Los que admite la definición elegida; otro tipo responde EVENT_AGGREGATE_NOT_ALLOWED."
+                : "Sobre qué entidad ocurre: customer, loan, partner…"
+            }
           >
-            <Input
-              required
-              value={aggregateType}
-              onChange={(evento) => setAggregateType(evento.target.value)}
-            />
+            {permitidos.length > 0 ? (
+              <Select
+                required
+                value={aggregateType}
+                onChange={(evento) => setAggregateType(evento.target.value)}
+              >
+                <option value="">— Elige el agregado —</option>
+                {permitidos.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              <Input
+                required
+                value={aggregateType}
+                onChange={(evento) => setAggregateType(evento.target.value)}
+              />
+            )}
           </Field>
           <Field
             label="Id del agregado"
