@@ -7,6 +7,7 @@ import { WorkflowLegend } from "./workflow-controls";
 import { WorkflowDetail } from "./workflow-detail";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
 import type { WorkflowTree } from "./types";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 /** Ficha y leyenda flotando sobre el lienzo, sin robarle ancho. */
 export function SidePanel({
@@ -55,14 +56,16 @@ export function SidePanel({
           className="atlas-scrollbar pointer-events-auto min-h-0 flex-1 overflow-y-auto rounded-2xl border border-atlas-border bg-white/97 shadow-lg backdrop-blur"
         >
           <div className="sticky top-0 z-10 flex justify-end bg-white/90 p-2 backdrop-blur">
-            <button
-              type="button"
-              aria-label="Cerrar la ficha"
-              onClick={onClose}
-              className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <Tooltip text="Cierra la ficha del paso. El flujo sigue dibujado; sólo se oculta el detalle.">
+              <button
+                type="button"
+                aria-label="Cerrar la ficha"
+                onClick={onClose}
+                className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </Tooltip>
           </div>
           <div className="px-4 pb-4">
             <WorkflowDetail tree={tree} selection={selection} />

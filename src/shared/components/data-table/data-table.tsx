@@ -14,6 +14,7 @@ import { Check, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { EmptyState } from "@/shared/components/ui/states";
 import { cn } from "@/shared/lib/cn";
 import type { PaginationMeta } from "@/shared/api/types";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 import { Pagination } from "./pagination";
 
 /**
@@ -180,19 +181,20 @@ function BotonCopiarTabla({
   }
 
   return (
-    <button
-      type="button"
-      onClick={copiar}
-      title="Copiar la tabla al portapapeles"
-      className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-2 py-1 text-xs text-atlas-muted transition-colors hover:border-slate-300 hover:text-atlas-text"
-    >
-      {copiado ? (
-        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
-      ) : (
-        <Copy className="h-3.5 w-3.5" aria-hidden />
-      )}
-      {copiado ? "Copiado" : "Copiar"}
-    </button>
+    <Tooltip text="Copia la tabla entera al portapapeles, en columnas separadas por tabulador: se pega directo en una hoja de cálculo.">
+      <button
+        type="button"
+        onClick={copiar}
+        className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-2 py-1 text-xs text-atlas-muted transition-colors hover:border-slate-300 hover:text-atlas-text"
+      >
+        {copiado ? (
+          <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+        ) : (
+          <Copy className="h-3.5 w-3.5" aria-hidden />
+        )}
+        {copiado ? "Copiado" : "Copiar"}
+      </button>
+    </Tooltip>
   );
 }
 

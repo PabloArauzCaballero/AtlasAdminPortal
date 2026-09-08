@@ -10,6 +10,7 @@ import {
   getRuntimeEnvironmentLabel,
   getServiceOriginLabel,
 } from "@/shared/lib/runtime-environment";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 export function AppTopbar({
   onMenu,
@@ -22,16 +23,18 @@ export function AppTopbar({
          * La hamburguesa es la corrección de fondo de esta barra: por debajo de 1024 px la barra
          * lateral estaba oculta y no había ninguna otra forma de navegar el portal.
          */}
-        <button
-          type="button"
-          onClick={onMenu}
-          aria-label="Abrir navegación"
-          aria-controls="atlas-nav"
-          aria-expanded={menuOpen}
-          className="atlas-press atlas-tap -ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-atlas-text hover:bg-atlas-soft lg:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <Tooltip text="Abre el menú lateral con todas las secciones del portal.">
+          <button
+            type="button"
+            onClick={onMenu}
+            aria-label="Abrir navegación"
+            aria-controls="atlas-nav"
+            aria-expanded={menuOpen}
+            className="atlas-press atlas-tap -ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-atlas-text hover:bg-atlas-soft lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </Tooltip>
         <div className="min-w-0 flex-1">
           <Breadcrumbs />
           {/* El origen del servicio se retira en pantallas estrechas: es la mitad menos urgente de
@@ -54,13 +57,15 @@ export function AppTopbar({
           </div>
           {/* La caja de búsqueda no cabe en móvil, pero la búsqueda sí tiene que estar: el icono
               lleva a la misma pantalla en vez de dejar el hueco. */}
-          <Link
-            href="/internal/search"
-            aria-label="Buscar"
-            className="atlas-press atlas-tap flex h-10 w-10 items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text md:hidden"
-          >
-            <Search className="h-5 w-5" />
-          </Link>
+          <Tooltip text="Busca en todo el portal: clientes, casos, tablas del catálogo y pantallas.">
+            <Link
+              href="/internal/search"
+              aria-label="Buscar"
+              className="atlas-press atlas-tap flex h-10 w-10 items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text md:hidden"
+            >
+              <Search className="h-5 w-5" />
+            </Link>
+          </Tooltip>
           <NotificationBell />
         </div>
       </div>

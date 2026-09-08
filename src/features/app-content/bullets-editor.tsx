@@ -4,6 +4,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import type { ContentBullet } from "./types";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 /**
  * Los puntos de la lista, editables uno a uno.
@@ -78,18 +79,20 @@ export function BulletsEditor({
             />
             destacar
           </label>
-          <Button
-            variant="ghost"
-            onClick={() =>
-              onChange((current) =>
-                current.filter((_, position) => position !== index),
-              )
-            }
-            aria-label={`Quitar el punto ${index + 1}`}
-            className="h-10 w-10 shrink-0 px-0 text-atlas-muted hover:text-red-600"
-          >
-            <X className="h-4 w-4" aria-hidden />
-          </Button>
+          <Tooltip text="Quita este punto de la lista. El cambio no se guarda hasta que confirmes la entrada.">
+            <Button
+              variant="ghost"
+              onClick={() =>
+                onChange((current) =>
+                  current.filter((_, position) => position !== index),
+                )
+              }
+              aria-label={`Quitar el punto ${index + 1}`}
+              className="h-10 w-10 shrink-0 px-0 text-atlas-muted hover:text-red-600"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </Button>
+          </Tooltip>
         </div>
       ))}
       <Button

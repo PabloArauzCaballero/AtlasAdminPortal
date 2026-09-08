@@ -16,6 +16,7 @@ import { DecisionTreeDemo } from "./decision-tree-demo";
 import { LatencyDemoChart } from "./latency-demo-chart";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 /**
  * Tarjeta del tutorial (presentacional): título, explicación orientada a
@@ -86,14 +87,16 @@ export function TutorialCard({
         <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-atlas-accent">
           {title} · {stepIndex + 1}/{total}
         </span>
-        <button
-          type="button"
-          aria-label="Cerrar tutorial"
-          onClick={onClose}
-          className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <Tooltip text="Cierra el tutorial. El progreso queda guardado y puedes retomarlo donde lo dejaste.">
+          <button
+            type="button"
+            aria-label="Cerrar tutorial"
+            onClick={onClose}
+            className="rounded-md p-1 text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </Tooltip>
       </div>
 
       <div className="mb-3 h-1 overflow-hidden rounded-full bg-atlas-soft">

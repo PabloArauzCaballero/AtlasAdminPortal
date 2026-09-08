@@ -4,6 +4,7 @@ import { useId } from "react";
 import { X } from "lucide-react";
 import { Button } from "./button";
 import { DialogShell } from "./dialog-shell";
+import { Tooltip } from "./tooltip";
 
 export function DrawerPanel({
   open,
@@ -33,14 +34,16 @@ export function DrawerPanel({
         <h2 id={titleId} className="text-sm font-semibold text-atlas-text">
           {title}
         </h2>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 px-0"
-          onClick={onClose}
-          aria-label="Cerrar panel"
-        >
-          <X className="h-4 w-4" aria-hidden="true" />
-        </Button>
+        <Tooltip text="Cierra el panel. Lo que no hayas guardado se pierde.">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 px-0"
+            onClick={onClose}
+            aria-label="Cerrar panel"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </Tooltip>
       </div>
       <div className="p-5">{children}</div>
     </DialogShell>

@@ -8,6 +8,7 @@ import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { navGroups, navItems, type InternalNavItem } from "./nav-config";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 function isActivePath(pathname: string, href: string) {
   return (
@@ -142,14 +143,16 @@ export function AppSidebar({
             <p className="text-xs text-slate-300">Portal interno</p>
           </div>
           {/* El cierre explícito va sólo en móvil: en escritorio la barra no se cierra. */}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar navegación"
-            className="atlas-press atlas-tap -mr-2 flex h-10 w-10 items-center justify-center rounded-full text-slate-300 hover:bg-white/10 hover:text-white lg:hidden"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <Tooltip text="Cierra el menú lateral. En pantallas anchas la navegación se queda siempre visible.">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar navegación"
+              className="atlas-press atlas-tap -mr-2 flex h-10 w-10 items-center justify-center rounded-full text-slate-300 hover:bg-white/10 hover:text-white lg:hidden"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </Tooltip>
         </div>
         <nav className="atlas-scrollbar flex-1 space-y-1 overflow-auto px-3 py-4">
           {visibleItems.map((item) => (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
+import { Tooltip } from "./tooltip";
 
 export function CopyButton({
   value,
@@ -17,22 +18,23 @@ export function CopyButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => void copy()}
-      title="Copiar"
-      aria-label="Copiar"
-      className={cn(
-        "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-atlas-border bg-white text-atlas-muted transition-colors hover:border-slate-300 hover:text-atlas-text",
-        className,
-      )}
-    >
-      {copied ? (
-        <Check className="h-3.5 w-3.5 text-emerald-600" />
-      ) : (
-        <Copy className="h-3.5 w-3.5" />
-      )}
-    </button>
+    <Tooltip text="Copia este valor al portapapeles.">
+      <button
+        type="button"
+        onClick={() => void copy()}
+        aria-label="Copiar"
+        className={cn(
+          "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-atlas-border bg-white text-atlas-muted transition-colors hover:border-slate-300 hover:text-atlas-text",
+          className,
+        )}
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-emerald-600" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
+    </Tooltip>
   );
 }
 

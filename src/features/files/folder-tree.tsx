@@ -6,6 +6,7 @@ import { cn } from "@/shared/lib/cn";
 import { useNodos } from "./hooks";
 import { IconoDeNodo } from "./node-icon";
 import type { Nodo } from "./types";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 
 /**
  * El árbol del expediente, con carga PEREZOSA y con los archivos a la vista.
@@ -158,23 +159,25 @@ function RamaCarpeta({
         )}
         style={{ paddingLeft: `${String(nivel * 12 + 8)}px` }}
       >
-        <button
-          type="button"
-          onClick={() => setAbierta((valor) => !valor)}
-          aria-label={
-            abierta
-              ? `Contraer ${carpeta.nombre}`
-              : `Expandir ${carpeta.nombre}`
-          }
-          aria-expanded={abierta}
-          className="p-1 text-slate-400 hover:text-slate-600"
-        >
-          {abierta ? (
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-          )}
-        </button>
+        <Tooltip text="Despliega o pliega esta rama del expediente. No abre la carpeta ni cambia la lista de la derecha.">
+          <button
+            type="button"
+            onClick={() => setAbierta((valor) => !valor)}
+            aria-label={
+              abierta
+                ? `Contraer ${carpeta.nombre}`
+                : `Expandir ${carpeta.nombre}`
+            }
+            aria-expanded={abierta}
+            className="p-1 text-slate-400 hover:text-slate-600"
+          >
+            {abierta ? (
+              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            )}
+          </button>
+        </Tooltip>
         <button
           type="button"
           onClick={() => {
