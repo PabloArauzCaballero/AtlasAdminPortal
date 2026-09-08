@@ -26,5 +26,16 @@ export const INTERNAL_PORTAL_ROLES = [
 /** `RuntimeJobsController`: disparar un job de mantenimiento es más restringido que leerlo. */
 export const RUNTIME_JOB_ROLES = ["admin", "platform_admin", "system"] as const;
 
+/**
+ * `InternalSupportDeskController`: habilitar agentes está restringido a supervisores.
+ *
+ * Se escribe en el vocabulario del TOKEN (`admin`, `platform_admin`) y no en el RBAC del portal
+ * porque es el que mira el `@Roles(...)` del backend. Poner sólo `SUPER_ADMIN` habría escondido la
+ * pantalla a un `SYSTEMS_ADMIN`, cuyo token también sale como `admin` y a quien el backend sí deja
+ * entrar: el ítem desaparecería del menú sobre un endpoint que le contesta 200.
+ */
+export const SUPPORT_ADMIN_ROLES = ["admin", "platform_admin"] as const;
+
 export const INTERNAL_PORTAL_ROLE_LIST: string[] = [...INTERNAL_PORTAL_ROLES];
+export const SUPPORT_ADMIN_ROLE_LIST: string[] = [...SUPPORT_ADMIN_ROLES];
 export const RUNTIME_JOB_ROLE_LIST: string[] = [...RUNTIME_JOB_ROLES];

@@ -100,6 +100,15 @@ export const queryKeys = {
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  supportCases: (params: unknown) => ["support", "cases", params] as const,
+  supportCase: (caseId: string) => ["support", "case", caseId] as const,
+  supportCaseTimeline: (caseId: string) =>
+    ["support", "case", caseId, "timeline"] as const,
+  supportCategories: ["support", "catalog", "categories"] as const,
+  supportQueues: ["support", "catalog", "queues"] as const,
+  supportCodes: ["support", "catalog", "codes"] as const,
+  supportDeskQueue: ["support", "desk", "queue"] as const,
+  supportAgents: ["support", "agents"] as const,
   investigationSummary: (customerId: string) =>
     ["operations", "investigation-summary", customerId] as const,
   sessionInvestigationSummary: (sessionId: string) =>
