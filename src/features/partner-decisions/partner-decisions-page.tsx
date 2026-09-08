@@ -28,6 +28,13 @@ import type { PartnerQueueItem } from "./types";
  * olvidado se queda en «en revisión» para siempre — y con él la afiliación entera, porque sin
  * comercio verificado no hay QR de caja que resuelva ni compra que se le pueda atribuir.
  *
+ * ## Y la decisión la toma el Motor
+ *
+ * La verificación se resuelve con el artefacto `PARTNER_KYB_REVIEW` al enviarse el expediente:
+ * aprueba el completo y sin señales, rechaza el que no cubre los requisitos que impiden cobrar, y
+ * abre SU caso cuando hace falta criterio humano. Esta cola enseña el veredicto y enlaza a la
+ * ejecución; el formulario de decidir queda como degradación, para los expedientes sin caso.
+ *
  * ## La comisión ya no se fija aquí
  *
  * Estaba en esta misma pantalla, junto a la decisión, y son dos cosas distintas: verificar es
@@ -74,15 +81,16 @@ function AuthorizedPartnerDecisionsPage() {
       <PageHeader
         icon={Stamp}
         eyebrow="Onboarding de comercios"
-        title="Verificación de expedientes"
-        description="Los expedientes que esperan decisión, el más antiguo primero. Sin esta decisión el comercio nunca queda verificado."
+        title="Expedientes de comercio"
+        description="Los expedientes que esperan decisión, el más antiguo primero. La verificación la resuelve el Motor; aquí llega lo que exigió criterio humano."
       />
       <BusinessContextNote>
-        Cada fila es un comercio que terminó su onboarding y espera que alguien
-        confirme que es quien dice ser. Aprobar lo deja verificado: sus QR
-        resuelven y sus ventas pueden atribuirse. Rechazar exige motivo, que el
-        comercio verá y es lo que le dice qué corregir. La comisión (MDR) no se
-        fija aquí: es un término comercial y se lleva en el ERP.
+        Cada fila es un comercio que terminó su onboarding y espera decisión. La
+        verificación la resuelve el Motor con una política versionada; lo que
+        llega aquí es lo que exigió criterio humano, y la columna «Decidió» dice
+        cuál fue su veredicto. Un expediente verificado deja resolver sus QR y
+        atribuirle sus ventas. La comisión (MDR) no se fija aquí: es un término
+        comercial y se lleva en el ERP.
       </BusinessContextNote>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -108,9 +116,11 @@ function AuthorizedPartnerDecisionsPage() {
           Expedientes en revisión
         </h2>
         <p className="mb-4 text-sm text-atlas-muted">
-          Sólo se decide desde «en revisión». Volver a decidir sobre un
-          expediente ya resuelto responde 409: la decisión es una sola y queda
-          con quién la firmó.
+          Con caso abierto en el Motor, la decisión se toma allí y esta consola
+          no la ofrece: dos bandejas para el mismo expediente producen dos
+          veredictos y gana el que alguien mire primero. Sin caso —una decisión
+          automática, o el Motor caído al enviar— la decisión manual sigue
+          disponible.
         </p>
 
         {cola.isLoading ? <LoadingSkeleton rows={5} /> : null}

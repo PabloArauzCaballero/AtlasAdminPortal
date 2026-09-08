@@ -7,6 +7,22 @@ import type { PaginatedResponse } from "@/shared/api/types";
  * El backend devuelve el perfil entero; aquí sólo se declaran los campos que la cola usa. El resto
  * se lee en el detalle, que sigue pidiendo el expediente completo.
  */
+/**
+ * QUIÉN decidió, antes de explicar nada.
+ *
+ * `null` en todo el bloque significa que el expediente se decidió (o se envió) antes de que la
+ * verificación pasara al Motor, y se dice así: no se rellena con un valor inventado.
+ */
+export type PartnerDecisionProvenance = {
+  executionId: string | null;
+  outcome: string | null;
+  reason: string | null;
+  artifactVersionId: string | null;
+  /** Con valor, el caso se resuelve en el Motor y esta consola NO ofrece decidir. */
+  manualReviewCaseCode: string | null;
+  evaluatedAt: string | null;
+};
+
 export type PartnerQueueItem = {
   partnerId: string;
   legalName: string | null;
@@ -22,6 +38,7 @@ export type PartnerQueueItem = {
    * cobra son dos decisiones distintas de dos equipos distintos.
    */
   mdrRatePercent?: string | number | null;
+  decision?: PartnerDecisionProvenance | null;
   [key: string]: unknown;
 };
 

@@ -10,8 +10,13 @@ import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Textarea } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import { useDecidePartnerMutation, usePartnerStatus } from "./hooks";
-import type { PartnerQueueItem } from "./types";
+import {
+  useDecidePartnerMutation,
+  usePartnerStatus,
+  useRequestKybReviewMutation,
+} from "./hooks";
+import { PartnerDecisionProvenanceCard } from "./partner-decision-provenance";
+import type { PartnerDecisionProvenance, PartnerQueueItem } from "./types";
 
 /**
  * El expediente de un comercio, abierto desde la cola para decidirlo.
@@ -22,6 +27,14 @@ import type { PartnerQueueItem } from "./types";
  * verificaciones de contacto viven ahí y son justamente lo que hay que revisar.
  *
  * La comisión (MDR) se enseña, no se edita: se negocia y se lleva en el ERP.
+ *
+ * ## Y la decisión, salvo degradación, tampoco se toma aquí
+ *
+ * La verificación la resuelve el Motor con `PARTNER_KYB_REVIEW` al enviarse el expediente. Cuando
+ * su desenlace exige criterio humano abre SU caso, y este cajón enseña cuál y enlaza a él: dos
+ * bandejas para el mismo expediente producen dos veredictos y gana el que alguien mire primero.
+ * El formulario de aprobar/rechazar sólo aparece cuando no hay caso —una decisión automática del
+ * Motor, o el Motor caído al enviar—, que es la degradación para la que existe.
  */
 export function PartnerFileDrawer({
   expediente,
@@ -34,6 +47,7 @@ export function PartnerFileDrawer({
 
   const estado = usePartnerStatus(expediente.partnerId);
   const decidir = useDecidePartnerMutation(expediente.partnerId);
+  const reevaluar = useRequestKybReviewMutation(expediente.partnerId);
 
   const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
     string,
@@ -43,6 +57,11 @@ export function PartnerFileDrawer({
     perfil.onboardingStatus ?? expediente.onboardingStatus,
   );
   const enRevision = onboardingStatus === "under_review";
+  const decision = (perfil.decision ??
+    expediente.decision ??
+    null) as PartnerDecisionProvenance | null;
+  // Con caso abierto en el Motor, decidir aquí responde 409: no se ofrece el formulario.
+  const delegadoAlMotor = Boolean(decision?.manualReviewCaseCode);
 
   return (
     <>
@@ -90,8 +109,44 @@ export function PartnerFileDrawer({
               ]}
             />
 
-            {enRevision ? (
+            <PartnerDecisionProvenanceCard decision={decision} />
+
+            {enRevision && delegadoAlMotor ? (
               <div className="space-y-3">
+                <p className="text-sm text-atlas-muted">
+                  Este expediente lo resuelve una persona en la cola del Motor,
+                  donde está la traza de la ejecución que abrió el caso. Cuando
+                  se resuelva, el expediente se actualiza solo.
+                </p>
+                <Button
+                  disabled={reevaluar.isPending}
+                  onClick={() => void reevaluar.mutateAsync(undefined)}
+                >
+                  Volver a pedir la verificación
+                </Button>
+                {reevaluar.error ? (
+                  <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {isAtlasApiError(reevaluar.error)
+                      ? reevaluar.error.message
+                      : "No se pudo pedir la verificación."}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {enRevision && !delegadoAlMotor ? (
+              <div className="space-y-3">
+                <p className="text-sm text-atlas-muted">
+                  El Motor no abrió caso para este expediente, así que la
+                  decisión manual es la única que hay. Pedir la verificación de
+                  nuevo es preferible cuando el Motor estaba caído al enviarlo.
+                </p>
+                <Button
+                  disabled={reevaluar.isPending}
+                  onClick={() => void reevaluar.mutateAsync(undefined)}
+                >
+                  Pedir la verificación al Motor
+                </Button>
                 <Field
                   label="Motivo del rechazo"
                   hint="Obligatorio para rechazar; el comercio lo verá y es lo que le dice qué corregir."
@@ -118,11 +173,13 @@ export function PartnerFileDrawer({
                   </Button>
                 </div>
               </div>
-            ) : (
+            ) : null}
+
+            {!enRevision ? (
               <p className="text-sm text-atlas-muted">
                 {`Este expediente está en «${onboardingStatus || "sin estado"}», así que no admite decisión.`}
               </p>
-            )}
+            ) : null}
 
             <div>
               <h3 className="mb-2 text-sm font-semibold text-atlas-text">

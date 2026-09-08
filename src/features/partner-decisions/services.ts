@@ -14,6 +14,14 @@ import type { PartnerQueueResponse } from "./types";
  * compra que se le pueda atribuir—. `GET /operations/partners/queue` se añadió justamente para
  * eso.
  *
+ * ## Y ya no se DECIDE aquí, salvo degradación
+ *
+ * La verificación la resuelve el Motor con el artefacto `PARTNER_KYB_REVIEW`, disparada al enviar
+ * el expediente. Esta consola muestra su veredicto y enlaza a la ejecución y al caso. El formulario
+ * de aprobar/rechazar sólo aparece cuando el Motor NO abrió caso —una decisión automática suya, o
+ * el Motor caído cuando se envió—: `decide` responde 409 `PARTNER_DECISION_DELEGADA_AL_MOTOR` en
+ * cuanto hay caso, y se corta en el servicio del backend porque una pantalla se salta con curl.
+ *
  * ## Y ya no se fija la comisión
  *
  * `PATCH /operations/partners/:id/mdr-rate` se retiró del backend. El MDR es un término comercial y
@@ -31,6 +39,17 @@ export function listPartnerQueue(query: QueryParams) {
 export function getPartnerStatus(partnerId: string) {
   return apiRequest<JsonRecord>(
     `/partner-onboarding/${encodeURIComponent(partnerId)}/status`,
+  );
+}
+
+/**
+ * Pide al Motor que verifique el expediente. Es el MISMO camino que dispara el envío del comercio:
+ * existe para reintentar tras subir lo que faltaba, sin que haya una segunda forma de decidir.
+ */
+export function requestKybReview(partnerId: string, reason?: string) {
+  return apiRequest<JsonRecord>(
+    `/operations/partners/${encodeURIComponent(partnerId)}/kyb-review`,
+    { method: "POST", body: reason ? { reason } : {} },
   );
 }
 

@@ -42,6 +42,31 @@ export function buildPartnerQueueColumns(
       cell: ({ row }) => formatDateTime(row.original.submittedAt),
     },
     {
+      id: "veredicto",
+      header: "Decidió",
+      /*
+       * Quién decidió, no sólo en qué estado quedó. Un expediente «en revisión» porque el Motor lo
+       * derivó a una persona y otro «en revisión» porque el Motor estaba caído se atienden de
+       * formas distintas, y hasta ahora se veían igual.
+       */
+      cell: ({ row }) => {
+        const decision = row.original.decision;
+        if (!decision?.outcome) {
+          return <span className="text-xs text-atlas-muted">Sin veredicto</span>;
+        }
+        return (
+          <div className="min-w-0">
+            <StatusBadge value={decision.outcome} />
+            {decision.manualReviewCaseCode ? (
+              <p className="truncate font-mono text-[11px] text-atlas-muted">
+                {`caso ${decision.manualReviewCaseCode}`}
+              </p>
+            ) : null}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "onboardingStatus",
       header: "Estado",
       cell: ({ row }) => <StatusBadge value={row.original.onboardingStatus} />,

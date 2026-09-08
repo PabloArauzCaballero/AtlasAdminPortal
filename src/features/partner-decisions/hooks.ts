@@ -2,7 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { QueryParams } from "@/shared/api/types";
-import { decidePartner, getPartnerStatus, listPartnerQueue } from "./services";
+import {
+  decidePartner,
+  getPartnerStatus,
+  listPartnerQueue,
+  requestKybReview,
+} from "./services";
 
 const RAIZ = ["operations", "partners"] as const;
 const COLA = [...RAIZ, "queue"] as const;
@@ -29,6 +34,17 @@ export function usePartnerStatus(partnerId: string) {
  * Invalidando sólo el detalle, la fila decidida seguía en la lista y la pantalla invitaba a
  * decidirla otra vez — con un 409 esperando al final.
  */
+/** Reintentar la verificación mueve el expediente: invalida la cola igual que decidir. */
+export function useRequestKybReviewMutation(partnerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason?: string) => requestKybReview(partnerId, reason),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: RAIZ });
+    },
+  });
+}
+
 export function useDecidePartnerMutation(partnerId: string) {
   const queryClient = useQueryClient();
   return useMutation({

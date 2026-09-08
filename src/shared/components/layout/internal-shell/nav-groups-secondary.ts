@@ -100,11 +100,12 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
-        label: "Verificar comercios",
+        label: "Expedientes de comercio",
         href: "/internal/operations/partners",
         icon: Stamp,
-        // El backend gatea por @Roles y deja FUERA al rol `merchant`: de aquí en adelante el
-        // onboarding es verificación, no autoservicio.
+        // La verificación la DECIDE el Motor (PARTNER_KYB_REVIEW) al enviarse el expediente; esta
+        // cola enseña su veredicto y resuelve lo que quedó sin caso. El backend gatea por @Roles y
+        // deja FUERA al rol `merchant`: de aquí en adelante el onboarding es verificación.
         permissions: [],
         roles: INTERNAL_PORTAL_ROLE_LIST,
       },

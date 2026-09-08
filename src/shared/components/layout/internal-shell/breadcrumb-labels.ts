@@ -39,7 +39,7 @@ export const breadcrumbLabels: Record<string, string> = {
   "my-notifications": "Mis notificaciones",
   "merchant-users": "Usuarios de comercio",
   operations: "Operaciones",
-  partners: "Verificación de comercios",
+  partners: "Expedientes de comercio",
   portfolio: "Calificación de cartera",
   "runtime-jobs": "Jobs de runtime",
   "work-queue": "Cola de trabajo",

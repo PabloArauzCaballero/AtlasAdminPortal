@@ -128,6 +128,15 @@ const PARTNER_QUEUE = {
       onboardingStatus: "under_review",
       submittedAt: "2026-09-02T11:00:00.000Z",
       mdrRatePercent: null,
+      // El Motor lo derivó a una persona y abrió SU caso: aquí no se decide.
+      decision: {
+        executionId: "exec-4410",
+        outcome: "REVISION_MANUAL",
+        reason: "KYB_SENALES_OPERATIVAS",
+        artifactVersionId: "9",
+        manualReviewCaseCode: "MRC-4410",
+        evaluatedAt: "2026-09-02T11:00:05.000Z",
+      },
     },
     {
       partnerId: "4411",
@@ -137,6 +146,8 @@ const PARTNER_QUEUE = {
       onboardingStatus: "under_review",
       submittedAt: "2026-09-04T16:30:00.000Z",
       mdrRatePercent: "3.50",
+      // Sin veredicto: se envió con el Motor caído. La decisión manual es la que hay.
+      decision: null,
     },
   ],
   meta: meta(2),
@@ -307,7 +318,7 @@ const VISTAS = [
     ] as const,
   },
   {
-    nombre: "Verificar comercios",
+    nombre: "Expedientes de comercio",
     ruta: "/internal/operations/partners",
     rutas: [[/\/operations\/partners\/queue$/, PARTNER_QUEUE]] as const,
   },
