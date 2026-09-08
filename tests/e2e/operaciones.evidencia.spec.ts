@@ -39,6 +39,8 @@ const SESION = {
       // Catálogos operativos se protege con `PermissionGate`, no con roles: sin este permiso la
       // pantalla pinta «Acceso restringido» —sin `h1`— y la prueba parecía un fallo de la vista.
       "operations.catalogs.read",
+      // Dominios del negocio va por el mismo camino: `PermissionGate` con `businessMetadata.read`.
+      "businessMetadata.read",
     ],
   },
   session: { expiresAt: "2099-01-01T00:00:00.000Z" },
@@ -303,6 +305,150 @@ const CATALOGS = {
   ],
 };
 
+/**
+ * El outbox, con la forma REAL del backend: `{ data, pagination }` dentro del sobre global. Es la
+ * que hacía que la pantalla no se abriera —recibía un objeto donde esperaba un array—, así que la
+ * evidencia tiene que usar exactamente ésta y no una lista pelada.
+ */
+const DOMAIN_EVENTS = {
+  data: [
+    {
+      id: "9001",
+      tenantId: "1",
+      eventCode: "customer.onboarding.completed",
+      eventFamily: "onboarding",
+      eventVersion: 1,
+      aggregateType: "customer",
+      aggregateId: "c-8842",
+      status: "processed",
+      priority: 0,
+      attempts: 1,
+      maxAttempts: 3,
+      availableAt: "2026-09-07T09:00:00.000Z",
+      processedAt: "2026-09-07T09:00:02.000Z",
+      failedAt: null,
+      errorCode: null,
+      lastError: null,
+      idempotencyKey: null,
+      correlationId: "corr-8842",
+      causationId: null,
+      sourceModule: "customer_onboarding",
+      sourceAction: "complete",
+      payload: {},
+      metadata: {},
+      createdAt: "2026-09-07T09:00:00.000Z",
+    },
+    {
+      id: "9002",
+      tenantId: "1",
+      eventCode: "loan.disbursed",
+      eventFamily: "credit",
+      eventVersion: 1,
+      aggregateType: "loan",
+      aggregateId: "l-3301",
+      status: "failed",
+      priority: 0,
+      attempts: 3,
+      maxAttempts: 3,
+      availableAt: "2026-09-07T10:00:00.000Z",
+      processedAt: null,
+      failedAt: "2026-09-07T10:00:30.000Z",
+      errorCode: "HANDLER_TIMEOUT",
+      lastError: "El suscriptor no respondió en 30 s",
+      idempotencyKey: null,
+      correlationId: "corr-3301",
+      causationId: null,
+      sourceModule: "loans",
+      sourceAction: "disburse",
+      payload: {},
+      metadata: {},
+      createdAt: "2026-09-07T10:00:00.000Z",
+    },
+  ],
+  pagination: { mode: "offset", page: 1, limit: 20, total: 57, totalPages: 3 },
+};
+
+/** El catálogo llama `code` a lo que el listado llama `eventCode`: la otra mitad del arreglo. */
+const EVENT_CATALOG = {
+  data: [
+    {
+      code: "customer.onboarding.completed",
+      family: "onboarding",
+      version: 1,
+      description: "El alta del cliente terminó.",
+      defaultPriority: 0,
+      allowedAggregateTypes: ["customer"],
+    },
+    {
+      code: "loan.disbursed",
+      family: "credit",
+      version: 1,
+      description: "Se desembolsó un crédito.",
+      defaultPriority: 0,
+      allowedAggregateTypes: ["loan"],
+    },
+  ],
+};
+
+/** El mapa de dominios, ya cruzado en el servidor sobre el catálogo COMPLETO. */
+const DOMAIN_OVERVIEW = {
+  generatedAt: "2026-09-08T12:00:00.000Z",
+  domainSource: "catalog",
+  items: [
+    {
+      domainCode: "RIESGO_CREDITO",
+      domainName: "Riesgo de crédito y decisión",
+      description: "Gobierna cuánto se presta y a quién.",
+      ownerTeam: "risk-analytics",
+      dataNature: "DECISION",
+      status: "ACTIVE",
+      tables: 18,
+      piiTables: 2,
+      endpoints: 57,
+      criticalEndpoints: 9,
+      testSuites: 2,
+      pendingReview: 3,
+      modules: ["credit", "risk"],
+    },
+    {
+      domainCode: "COMERCIOS",
+      domainName: "Comercios y afiliación",
+      description: "El expediente verificable del comercio.",
+      ownerTeam: "commercial-ops",
+      dataNature: "OPERACIONAL",
+      status: "ACTIVE",
+      tables: 6,
+      piiTables: 1,
+      endpoints: 21,
+      criticalEndpoints: 2,
+      testSuites: 1,
+      pendingReview: 0,
+      modules: ["partner_onboarding"],
+    },
+    {
+      domainCode: "PLATAFORMA",
+      domainName: "Plataforma y administración interna",
+      description: "Tenants, usuarios internos y configuración compartida.",
+      ownerTeam: "systems-governance",
+      dataNature: "OPERACIONAL",
+      status: "ACTIVE",
+      tables: 25,
+      piiTables: 0,
+      endpoints: 58,
+      criticalEndpoints: 4,
+      testSuites: 3,
+      pendingReview: 1,
+      modules: ["platform", "systems"],
+    },
+  ],
+  unassigned: {
+    tables: 101,
+    endpoints: 12,
+    modules: [{ module: "operations", tables: 101 }],
+  },
+  totals: { tables: 186, endpoints: 432, testSuites: 6 },
+};
+
 const VISTAS = [
   {
     nombre: "Cola de trabajo",
@@ -330,6 +476,19 @@ const VISTAS = [
       [/\/operations\/loans\/outcome-status$/, OUTCOME_STATUS],
       [/\/operations\/loans\/outcome-backlog$/, OUTCOME_BACKLOG],
     ] as const,
+  },
+  {
+    nombre: "Eventos de dominio",
+    ruta: "/internal/events",
+    rutas: [
+      [/\/operations\/events\/catalog$/, EVENT_CATALOG],
+      [/\/operations\/events$/, DOMAIN_EVENTS],
+    ] as const,
+  },
+  {
+    nombre: "Dominios del negocio",
+    ruta: "/internal/business-metadata/domains",
+    rutas: [[/\/systems\/domains\/overview$/, DOMAIN_OVERVIEW]] as const,
   },
   {
     nombre: "Catalogos operativos",

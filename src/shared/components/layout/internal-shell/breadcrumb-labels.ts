@@ -22,6 +22,8 @@ export const breadcrumbLabels: Record<string, string> = {
   "data-quality": "Calidad de datos",
   definitions: "Definiciones",
   domains: "Dominios",
+  // Sin esta entrada la miga de pan escribía el segmento crudo de la ruta: «events».
+  events: "Eventos de dominio",
   endpoints: "Endpoints",
   governance: "Gobierno de datos",
   glossary: "Glosario",

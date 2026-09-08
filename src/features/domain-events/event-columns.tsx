@@ -1,9 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import type { DomainEventSummary } from "./types";
 import { EventRowActions } from "./event-actions";
 
+/**
+ * Las columnas del outbox.
+ *
+ * Eran OCHO y la tabla desbordaba: la última —la de las acciones— quedaba fuera de la pantalla, así
+ * que las filas parecían no tener ninguna. Se llega arrastrando en horizontal, pero nadie arrastra
+ * lo que no sabe que existe. Se corrige por los dos lados: la correlación baja a la celda del
+ * evento (es un identificador que se copia, no se compara entre filas) y la columna de acciones se
+ * clava a la derecha. Lo comprueba `operaciones.evidencia.spec.ts`: si una tabla desborda, su
+ * última cabecera tiene que ser `position: sticky`.
+ */
 export function buildDomainEventColumns(): ColumnDef<DomainEventSummary>[] {
   return [
     {
@@ -18,6 +29,11 @@ export function buildDomainEventColumns(): ColumnDef<DomainEventSummary>[] {
             {row.original.aggregateType ?? "—"}
             {row.original.aggregateId ? ` · ${row.original.aggregateId}` : ""}
           </p>
+          {row.original.correlationId ? (
+            <p className="font-mono text-[11px] text-atlas-muted">
+              {`corr ${row.original.correlationId}`}
+            </p>
+          ) : null}
         </div>
       ),
     },
@@ -53,17 +69,9 @@ export function buildDomainEventColumns(): ColumnDef<DomainEventSummary>[] {
       ),
     },
     {
-      accessorKey: "correlationId",
-      header: "Correlación",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">
-          {row.original.correlationId ?? "—"}
-        </span>
-      ),
-    },
-    {
       id: "actions",
       header: "Acciones",
+      meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) => <EventRowActions event={row.original} />,
     },
   ];
