@@ -201,6 +201,24 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
           </Row>
         </>
       ) : null}
+      <Row label="Verificación">
+        {flow.verifiedAt ? (
+          <span className="text-xs">
+            {flow.verification} · {flow.verificationEvidence.ok ?? 0} corridas
+            sin error de servidor, {flow.verificationEvidence.failed ?? 0} con
+            5xx · última{" "}
+            {formatDateTime(
+              flow.verificationEvidence.lastAt ?? flow.verifiedAt,
+            )}{" "}
+            (HTTP {flow.verificationEvidence.lastStatus ?? "—"}) · fuente{" "}
+            {flow.verificationEvidence.source ?? "—"}
+          </span>
+        ) : (
+          <span className="text-atlas-muted">
+            Sin corridas en la ventana: no verificado no es roto
+          </span>
+        )}
+      </Row>
       <Row label="Tests">{flow.testStatus}</Row>
       <Row label="Contrato">{flow.contractStatus}</Row>
       <Row label="Analizado">

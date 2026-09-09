@@ -14,6 +14,8 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "headers"> & {
    * usuario y se reenvía en cada reintento para que el backend deduplique.
    */
   idempotencyKey?: string;
+  /** Slug del flujo de Flujos que origina la llamada; viaja como `x-atlas-flow` para la correlación. */
+  flow?: string;
 };
 
 function isMutatingMethod(method?: string): boolean {
@@ -115,6 +117,11 @@ function buildHeaders(
     // redacta AtlasBackend, así que sin esto su membrete sale con un rótulo genérico y quien
     // recibe un PIN pedido desde aquí no puede confirmar a qué portal está entrando.
     "x-atlas-product": "admin-portal",
+    // Un id por request, generado aquí: el middleware del backend lo acepta (patrón corto y seguro)
+    // y lo guarda en system_action_logs, así una pantalla puede correlacionar lo que hizo con lo
+    // que el backend registró. Antes el portal sólo LEÍA el id que la respuesta traía.
+    "x-correlation-id": newCorrelationId(),
+    ...(options.flow ? { "x-atlas-flow": options.flow } : {}),
     ...(tenantId ? { "x-tenant-id": tenantId } : {}),
     ...options.headers,
   };
@@ -144,4 +151,11 @@ function copyRequestOptions(options: ApiRequestOptions): RequestInit {
     signal: options.signal,
     window: options.window,
   };
+}
+
+/** `crypto.randomUUID` no existe en todo contexto (SSR viejo, pruebas): el respaldo cumple igual el patrón del backend. */
+function newCorrelationId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }

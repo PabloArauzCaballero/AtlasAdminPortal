@@ -31,6 +31,7 @@ import {
   useFlowModules,
   useFlows,
   useFlowsSummary,
+  useVerifyFlowsMutation,
 } from "./hooks";
 import { groupCount } from "./services";
 import { FLOW_CLIENTS, FLOW_RISKS, FLOW_SYSTEMS, type Flow } from "./types";
@@ -96,6 +97,7 @@ function AuthorizedFlowsPage() {
   const summary = useFlowsSummary();
   const modules = useFlowModules();
   const imports = useFlowImports();
+  const verify = useVerifyFlowsMutation();
 
   const setFilter = (name: string, value: string) => {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -220,15 +222,42 @@ function AuthorizedFlowsPage() {
         title="Flujos"
         description="Mapa derivado del código: qué puede hacer cada usuario, por qué endpoint, con qué autorización, y qué falta (contrato, tests, callers). Se regenera desde el artefacto de flows:derive; abrir un flujo nunca lo ejecuta."
         actions={
-          lastImport ? (
-            <span className="text-xs text-atlas-muted">
-              Última carga: {lastImport.systemCode} @{" "}
-              <span className="font-mono">
-                {lastImport.analyzedCommit?.slice(0, 7) ?? "—"}
-              </span>{" "}
-              · {formatDateTime(lastImport.createdAt)}
-            </span>
-          ) : null
+          <div className="flex max-w-md flex-col items-end gap-1 text-right">
+            <PermissionGate
+              permissions={["systems.flows.analyze"]}
+              fallback={null}
+            >
+              <Button
+                variant="primary"
+                disabled={verify.isPending}
+                onClick={() =>
+                  verify.mutate({ systemCode: "ATLAS_BACKEND", windowDays: 30 })
+                }
+                title="Cruza el catálogo con las corridas reales de system_action_logs (30 días) y recalcula la frescura contra el commit desplegado"
+              >
+                {verify.isPending ? "Verificando…" : "Verificar con corridas"}
+              </Button>
+            </PermissionGate>
+            {verify.data ? (
+              <span
+                className="text-xs text-atlas-muted"
+                data-testid="verify-result"
+              >
+                {verify.data.verified} verificados · {verify.data.broken} rotos
+                · {verify.data.unverified} sin corridas ·{" "}
+                {verify.data.routesWithRuns} rutas con tráfico
+              </span>
+            ) : null}
+            {lastImport ? (
+              <span className="text-xs text-atlas-muted">
+                Última carga: {lastImport.systemCode} @{" "}
+                <span className="font-mono">
+                  {lastImport.analyzedCommit?.slice(0, 7) ?? "—"}
+                </span>{" "}
+                · {formatDateTime(lastImport.createdAt)}
+              </span>
+            ) : null}
+          </div>
         }
       />
       <div className="mb-6 grid gap-4 md:grid-cols-3 xl:grid-cols-6">

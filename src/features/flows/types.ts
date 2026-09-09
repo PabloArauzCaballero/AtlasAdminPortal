@@ -52,6 +52,17 @@ export type Flow = {
   testStatus: string;
   contractStatus: string;
   findingsCount: number;
+  verifiedAt: string | null;
+  verifiedBy: string | null;
+  verificationEvidence: {
+    source?: string;
+    ok?: number;
+    failed?: number;
+    lastAt?: string | null;
+    lastStatus?: number | null;
+    statuses?: Record<string, number>;
+    correlationSample?: string[];
+  };
   reads: string[];
   writes: string[];
   analysis: {
@@ -167,3 +178,16 @@ export type FindingsListResponse = {
   meta: PaginationMeta;
 };
 export type ScreensListResponse = { items: FlowScreen[]; meta: PaginationMeta };
+
+export type VerifyFlowsResult = {
+  systemCode: string;
+  windowDays: number;
+  deployedCommit: string | null;
+  routesWithRuns: number;
+  verified: number;
+  broken: number;
+  unverified: number;
+  stale: number;
+  fresh: number;
+  skippedNoLogs: number;
+};

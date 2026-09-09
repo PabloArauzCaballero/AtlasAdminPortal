@@ -13,6 +13,7 @@ import type {
   FlowsListResponse,
   FlowsSummary,
   ScreensListResponse,
+  VerifyFlowsResult,
 } from "./types";
 
 /**
@@ -78,6 +79,13 @@ export async function listFlowScreens(
     query: compactQuery(query),
   });
   return normalizePaginatedResponse<FlowScreen>(response, ["screens"]);
+}
+
+export function verifyFlows(body: { systemCode: string; windowDays: number }) {
+  return apiRequest<VerifyFlowsResult>("/systems/flows/verify", {
+    method: "POST",
+    body,
+  });
 }
 
 export function listFlowImports() {

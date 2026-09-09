@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { expect, test, type Page } from "@playwright/test";
 import { capture, PageHealth } from "./evidence";
@@ -17,6 +18,23 @@ const PASSWORD = process.env.TEST_PASSWORD ?? "";
 const TENANT = process.env.TEST_TENANT_ID ?? "1";
 const PIN_PORT = Number(process.env.PW_PIN_INBOX_PORT ?? 8790);
 const PIN = /\b(\d{6})\b/;
+const PIN_FILE = process.env.PW_PIN_FILE;
+
+async function esperarPinEnFichero(
+  file: string,
+  ms = 300_000,
+): Promise<string> {
+  const limite = Date.now() + ms;
+  console.info(`Esperando el PIN en ${file}…`);
+  while (Date.now() < limite) {
+    if (existsSync(file)) {
+      const pin = readFileSync(file, "utf8").match(PIN)?.[1];
+      if (pin) return pin;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error(`No apareció un PIN en ${file}`);
+}
 
 class BuzonPin {
   private readonly correos: Array<{ to: string; body: string }> = [];
@@ -48,6 +66,8 @@ class BuzonPin {
     );
   }
   async esperarPin(destinatario: string, ms = 60_000): Promise<string> {
+    // Contra el servidor publicado el PIN llega al correo real: se lee del fichero PW_PIN_FILE.
+    if (PIN_FILE) return esperarPinEnFichero(PIN_FILE);
     const limite = Date.now() + ms;
     while (Date.now() < limite) {
       const correo = this.correos.find(
@@ -98,7 +118,7 @@ test.describe("Flujos (stack real)", () => {
   }, testInfo) => {
     test.setTimeout(120_000);
     const buzon = new BuzonPin();
-    await buzon.abrir();
+    if (!PIN_FILE) await buzon.abrir();
     const health = new PageHealth(page);
     try {
       await entrarConPin(page, buzon);
@@ -151,6 +171,42 @@ test.describe("Flujos (stack real)", () => {
         page.getByRole("heading", { name: "Hallazgos" }),
       ).toBeVisible();
       await capture(page, testInfo, "hallazgos abiertos");
+
+      // Fase 3: verificar contra corridas reales. Las llamadas de esta misma prueba ya dejaron
+      // filas en system_action_logs, así que al menos GET /systems/flows queda VERIFIED.
+      await page
+        .getByRole("button", { name: /verificar con corridas/i })
+        .click();
+      await expect(page.getByTestId("verify-result")).toBeVisible({
+        timeout: 60_000,
+      });
+      const resultado =
+        (await page.getByTestId("verify-result").textContent()) ?? "";
+      console.info("VERIFICACION", resultado);
+      expect(
+        Number(resultado.match(/(\d+) verificados/)?.[1] ?? 0),
+      ).toBeGreaterThan(0);
+      await page
+        .getByLabel("Buscar por ruta, handler, módulo o slug…")
+        .fill("systems/flows");
+      await expect(tabla.locator("tbody tr").first()).toBeVisible({
+        timeout: 20_000,
+      });
+      await capture(page, testInfo, "verificacion contra corridas reales");
+      await tabla
+        .locator("tbody tr")
+        .first()
+        .getByRole("button")
+        .first()
+        .click();
+      await expect(
+        page.getByRole("dialog").getByText(/corridas sin error de servidor/),
+      ).toBeVisible({ timeout: 20_000 });
+      await capture(page, testInfo, "ficha con evidencia de runtime");
+      await page.keyboard.press("Escape");
+      await page
+        .getByLabel("Buscar por ruta, handler, módulo o slug…")
+        .fill("");
 
       // Grafo del módulo más grande (systems-ops: ~60 rutas) para medir layout y render.
       await page.goto(

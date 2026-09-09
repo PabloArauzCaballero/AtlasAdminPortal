@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -13,6 +13,7 @@ import {
   listFlowModules,
   listFlowScreens,
   listFlows,
+  verifyFlows,
 } from "./services";
 
 export function useFlows(query: QueryParams) {
@@ -87,5 +88,21 @@ export function useFlowImports() {
   return useQuery({
     queryKey: queryKeys.flowImports,
     queryFn: listFlowImports,
+  });
+}
+
+export function useVerifyFlowsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { systemCode: string; windowDays: number }) =>
+      verifyFlows(body),
+    // Cambia verificación y frescura de muchos flujos a la vez: se invalida la raíz de Flujos.
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["systems", "flows"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["systems", "flows-summary"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["systems", "flow"] });
+    },
   });
 }
