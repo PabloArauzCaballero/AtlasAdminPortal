@@ -5,6 +5,8 @@ import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
   getFlow,
+  getFlowGraph,
+  getModuleGraph,
   getFlowsSummary,
   listFlowFindings,
   listFlowImports,
@@ -25,6 +27,31 @@ export function useFlow(flowId: string | null) {
     queryKey: queryKeys.flow(flowId ?? ""),
     queryFn: () => getFlow(flowId ?? ""),
     enabled: Boolean(flowId),
+  });
+}
+
+export function useFlowGraph(flowId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.flowGraph(flowId ?? ""),
+    queryFn: () => getFlowGraph(flowId ?? ""),
+    enabled: Boolean(flowId),
+  });
+}
+
+export function useModuleGraph(
+  systemCode: string | null,
+  moduleName: string | null,
+  includeRoles: boolean,
+) {
+  return useQuery({
+    queryKey: queryKeys.flowModuleGraph(
+      systemCode ?? "",
+      moduleName ?? "",
+      includeRoles,
+    ),
+    queryFn: () =>
+      getModuleGraph(systemCode ?? "", moduleName ?? "", includeRoles),
+    enabled: Boolean(systemCode && moduleName),
   });
 }
 

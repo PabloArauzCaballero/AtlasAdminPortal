@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { GitBranch, ShieldAlert, ShieldOff, Waypoints } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -122,7 +123,19 @@ function AuthorizedFlowsPage() {
         accessorKey: "systemCode",
         cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
       },
-      { header: "Módulo", accessorKey: "module" },
+      {
+        header: "Módulo",
+        accessorKey: "module",
+        cell: ({ row }) => (
+          <Link
+            className="text-atlas-accent underline"
+            title="Ver grafo del módulo"
+            href={`/internal/flows/graph?systemCode=${row.original.systemCode}&module=${row.original.module}`}
+          >
+            {row.original.module}
+          </Link>
+        ),
+      },
       {
         header: "Riesgo",
         accessorKey: "risk",

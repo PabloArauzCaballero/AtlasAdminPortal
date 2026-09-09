@@ -129,11 +129,12 @@ test.describe("Flujos (stack real)", () => {
         .first()
         .click();
       await expect(page).toHaveURL(/flow=flow_[a-f0-9]{12}/);
+      const ficha = page.getByRole("dialog");
       await expect(
-        page.getByText("Autorización", { exact: true }),
+        ficha.getByText("Autorización", { exact: true }),
       ).toBeVisible();
       await expect(
-        page.getByText("Quién la llama", { exact: true }),
+        ficha.getByText("Quién la llama", { exact: true }),
       ).toBeVisible();
       await capture(page, testInfo, "ficha del flujo en el drawer");
 
@@ -150,6 +151,68 @@ test.describe("Flujos (stack real)", () => {
         page.getByRole("heading", { name: "Hallazgos" }),
       ).toBeVisible();
       await capture(page, testInfo, "hallazgos abiertos");
+
+      // Grafo del módulo más grande (systems-ops: ~60 rutas) para medir layout y render.
+      await page.goto(
+        "/internal/flows/graph?systemCode=ATLAS_BACKEND&module=systems-ops",
+      );
+      const grafo = page.getByTestId("flow-graph");
+      await expect(grafo).toBeVisible({ timeout: 60_000 });
+      await expect
+        .poll(async () => await grafo.getAttribute("data-render-ms"), {
+          timeout: 30_000,
+        })
+        .not.toBe("");
+      const medida = {
+        nodes: Number(await grafo.getAttribute("data-nodes")),
+        edges: Number(await grafo.getAttribute("data-edges")),
+        layoutMs: Number(await grafo.getAttribute("data-layout-ms")),
+        renderMs: Number(await grafo.getAttribute("data-render-ms")),
+      };
+      testInfo.annotations.push({
+        type: "medida-grafo-modulo",
+        description: JSON.stringify(medida),
+      });
+      console.info("MEDIDA_GRAFO", JSON.stringify(medida));
+      expect(medida.nodes).toBeGreaterThan(100);
+      // La cifra exacta se registra (anotación + consola) y el PLAN la discute; aquí sólo se exige que
+      // el grafo siga siendo usable. Con `next dev` y ELK en el hilo principal, systems-ops (264 nodos)
+      // ha medido entre 780 y 900 ms; en Node el mismo layout tarda ~110 ms.
+      expect(
+        medida.layoutMs,
+        "el grafo dejó de ser usable: más de 3 s de layout",
+      ).toBeLessThan(3_000);
+      await page.waitForTimeout(800);
+      await capture(page, testInfo, "grafo del modulo systems-ops", {
+        fullPage: false,
+      });
+
+      // Buscar un nodo lo centra y resalta su camino.
+      await page.getByLabel("Buscar nodo").fill("test-suites/:p/run");
+      await page.waitForTimeout(600);
+      await capture(
+        page,
+        testInfo,
+        "grafo con nodo buscado y camino resaltado",
+        { fullPage: false },
+      );
+
+      // Grafo de un solo flujo, abierto desde la ficha.
+      await page.goto(
+        "/internal/flows/graph?flow=" +
+          new URL(enlace).searchParams.get("flow"),
+      );
+      await expect(page.getByTestId("flow-graph")).toBeVisible({
+        timeout: 60_000,
+      });
+      await expect(page.locator("[data-node-type='UNKNOWN']")).toHaveCount(1);
+      await page.waitForTimeout(800);
+      await capture(
+        page,
+        testInfo,
+        "grafo de un flujo con el hueco sin resolver",
+        { fullPage: false },
+      );
     } finally {
       await buzon.cerrar();
     }

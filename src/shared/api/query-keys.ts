@@ -26,6 +26,9 @@ export const queryKeys = {
   flowScreens: (params: unknown) =>
     ["systems", "flows-screens", params] as const,
   flowImports: ["systems", "flows-imports"] as const,
+  flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
+  flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
+    ["systems", "flow-module-graph", systemCode, module, roles] as const,
   testSuite: (suiteId: string) => ["systems", "test-suite", suiteId] as const,
   testRuns: (params: unknown) => ["systems", "test-runs", params] as const,
   testRun: (runId: string) => ["systems", "test-run", runId] as const,

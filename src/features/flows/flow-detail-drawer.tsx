@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import {
   Badge,
@@ -94,6 +95,22 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
           <MethodBadge method={flow.httpMethod} />
           {flow.path}
           <CopyButton value={`${flow.httpMethod} ${flow.path}`} />
+        </span>
+      </Row>
+      <Row label="Grafo">
+        <span className="flex flex-wrap gap-3 text-xs">
+          <Link
+            className="text-atlas-accent underline"
+            href={`/internal/flows/graph?flow=${flow.id}`}
+          >
+            Ver grafo del flujo
+          </Link>
+          <Link
+            className="text-atlas-accent underline"
+            href={`/internal/flows/graph?systemCode=${flow.systemCode}&module=${flow.module}`}
+          >
+            Ver grafo del módulo
+          </Link>
         </span>
       </Row>
       <Row label="Identidad">

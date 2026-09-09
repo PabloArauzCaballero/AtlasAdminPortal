@@ -5,6 +5,7 @@ import type {
   FindingsListResponse,
   Flow,
   FlowDetail,
+  FlowGraph,
   FlowFinding,
   FlowImport,
   FlowModule,
@@ -37,6 +38,20 @@ export async function listFlows(
 
 export function getFlow(flowId: string) {
   return apiRequest<FlowDetail>(`/systems/flows/${flowId}`);
+}
+
+export function getFlowGraph(flowId: string) {
+  return apiRequest<FlowGraph>(`/systems/flows/${flowId}/graph`);
+}
+
+export function getModuleGraph(
+  systemCode: string,
+  moduleName: string,
+  includeRoles: boolean,
+) {
+  return apiRequest<FlowGraph>("/systems/flows/graph", {
+    query: { systemCode, module: moduleName, includeRoles },
+  });
 }
 
 export function getFlowsSummary() {

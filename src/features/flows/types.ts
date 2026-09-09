@@ -114,6 +114,36 @@ export type FlowImport = {
   createdAt: string;
 };
 
+export type GraphNode = {
+  id: string;
+  type:
+    | "ACTOR"
+    | "CLIENT"
+    | "ENDPOINT"
+    | "GUARD"
+    | "CONTROLLER"
+    | "HANDLER"
+    | "UNKNOWN";
+  layer: "CLIENT" | "API" | "BACKEND" | "DATA";
+  label: string;
+  sublabel?: string;
+  meta?: Record<string, unknown>;
+};
+export type GraphEdge = {
+  id: string;
+  source: string;
+  target: string;
+  relation: string;
+  confidence: number;
+  evidence: string[];
+  label?: string;
+};
+export type FlowGraph = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  stats: { nodes: number; edges: number; flows: number; unknown: number };
+};
+
 export type FlowsListResponse = { items: Flow[]; meta: PaginationMeta };
 export type FindingsListResponse = {
   items: FlowFinding[];
