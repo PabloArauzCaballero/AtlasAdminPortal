@@ -160,6 +160,47 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
           <span className="text-atlas-muted">No expuesta en este entorno</span>
         )}
       </Row>
+      <Row label="Escribe">
+        <Chips
+          values={flow.writes}
+          empty={flow.analysis ? "Ninguna tabla" : "Sin analizar (fase 2)"}
+        />
+      </Row>
+      <Row label="Lee">
+        <Chips
+          values={flow.reads}
+          empty={flow.analysis ? "Ninguna tabla" : "Sin analizar (fase 2)"}
+        />
+      </Row>
+      {flow.analysis ? (
+        <>
+          <Row label="Services">
+            <Chips values={flow.analysis.services} empty="Ninguno resuelto" />
+          </Row>
+          <Row label="Errores">
+            <Chips
+              values={flow.analysis.errors}
+              empty="Ninguna excepción lanzada"
+            />
+          </Row>
+          <Row label="Transacción">
+            {flow.analysis.transactional ? "Sí" : "No"}
+          </Row>
+          <Row label="Huecos">
+            {flow.analysis.unknowns.length ? (
+              <ul className="space-y-1 text-xs">
+                {flow.analysis.unknowns.map((gap) => (
+                  <li key={`${gap.reason}-${gap.at}`}>
+                    <span className="font-mono">{gap.reason}</span> · {gap.at}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-atlas-muted">Ninguno</span>
+            )}
+          </Row>
+        </>
+      ) : null}
       <Row label="Tests">{flow.testStatus}</Row>
       <Row label="Contrato">{flow.contractStatus}</Row>
       <Row label="Analizado">

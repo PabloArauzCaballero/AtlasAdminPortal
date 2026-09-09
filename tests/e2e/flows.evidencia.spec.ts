@@ -205,14 +205,17 @@ test.describe("Flujos (stack real)", () => {
       await expect(page.getByTestId("flow-graph")).toBeVisible({
         timeout: 60_000,
       });
-      await expect(page.locator("[data-node-type='UNKNOWN']")).toHaveCount(1);
+      // Fase 2: el flujo llega a tablas reales; el hueco sólo aparece por lo que el AST no resolvió.
+      await expect(
+        page.locator("[data-node-type='DATABASE']").first(),
+      ).toBeVisible();
+      expect(
+        await page.locator("[data-node-type='UNKNOWN']").count(),
+      ).toBeLessThanOrEqual(1);
       await page.waitForTimeout(800);
-      await capture(
-        page,
-        testInfo,
-        "grafo de un flujo con el hueco sin resolver",
-        { fullPage: false },
-      );
+      await capture(page, testInfo, "grafo de un flujo con services y tablas", {
+        fullPage: false,
+      });
     } finally {
       await buzon.cerrar();
     }

@@ -2,10 +2,14 @@
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import {
+  AlertTriangle,
   Boxes,
   CircleHelp,
   Code2,
+  Cog,
+  Database,
   Globe,
+  Send,
   ShieldCheck,
   UserRound,
   Waypoints,
@@ -45,6 +49,23 @@ const STYLE: Record<
     icon: Boxes,
     border: "border-emerald-300",
     eyebrow: "CONTROLLER",
+  },
+  SERVICE: { icon: Cog, border: "border-emerald-300", eyebrow: "SERVICE" },
+  REPOSITORY: {
+    icon: Boxes,
+    border: "border-emerald-300",
+    eyebrow: "REPOSITORY",
+  },
+  DATABASE: { icon: Database, border: "border-violet-300", eyebrow: "TABLA" },
+  ERROR: {
+    icon: AlertTriangle,
+    border: "border-red-300",
+    eyebrow: "RAMA DE ERROR",
+  },
+  BLOCK_CALL: {
+    icon: Send,
+    border: "border-orange-300",
+    eyebrow: "HTTP SALIENTE",
   },
   UNKNOWN: {
     icon: CircleHelp,

@@ -28,6 +28,11 @@ const MINIMAP_COLOR: Record<string, string> = {
   GUARD: "#fcd34d",
   HANDLER: "#6ee7b7",
   CONTROLLER: "#6ee7b7",
+  SERVICE: "#6ee7b7",
+  REPOSITORY: "#6ee7b7",
+  DATABASE: "#c4b5fd",
+  ERROR: "#fca5a5",
+  BLOCK_CALL: "#fdba74",
   UNKNOWN: "#cbd5e1",
 };
 

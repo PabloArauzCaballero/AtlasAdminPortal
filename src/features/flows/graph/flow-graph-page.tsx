@@ -67,8 +67,8 @@ function AuthorizedFlowGraphPage() {
         title={title}
         description={
           flowId
-            ? "Cliente → endpoint → autorización → handler. Lo que la fase 1 no resuelve (service y tablas) aparece como nodo punteado «sin resolver», nunca como un hecho."
-            : "Todos los flujos del módulo compartiendo clientes y controllers. Pulsa un endpoint para abrir su ficha; busca un nodo para centrarlo; selecciona para resaltar su camino."
+            ? "Cliente → endpoint → autorización → handler → services → tablas y ramas de error, resuelto por tipo desde el código. Lo que el análisis no alcanza (SQL dinámico, profundidad) aparece como nodo punteado con su motivo, nunca como un hecho."
+            : "Todos los flujos del módulo compartiendo clientes, controllers, services y tablas. Pulsa un endpoint para abrir su ficha; busca un nodo para centrarlo; selecciona para resaltar su camino."
         }
         actions={
           <div className="flex gap-2">

@@ -52,6 +52,18 @@ export type Flow = {
   testStatus: string;
   contractStatus: string;
   findingsCount: number;
+  reads: string[];
+  writes: string[];
+  analysis: {
+    status: string;
+    chainLength: number;
+    services: string[];
+    writes: Array<{ table: string; op: string; via: string }>;
+    errors: string[];
+    blockCalls: Array<{ target: string; at: string }>;
+    unknowns: Array<{ reason: string; at: string }>;
+    transactional: boolean;
+  } | null;
   analyzedCommit: string | null;
   analyzedBranch: string | null;
   updatedAt: string;
@@ -123,6 +135,11 @@ export type GraphNode = {
     | "GUARD"
     | "CONTROLLER"
     | "HANDLER"
+    | "SERVICE"
+    | "REPOSITORY"
+    | "DATABASE"
+    | "ERROR"
+    | "BLOCK_CALL"
     | "UNKNOWN";
   layer: "CLIENT" | "API" | "BACKEND" | "DATA";
   label: string;
