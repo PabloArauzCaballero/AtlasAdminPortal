@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Database,
   FileClock,
+  FileSignature,
   FileText,
   Gauge,
   GitBranch,
@@ -18,6 +19,7 @@ import {
   Waypoints,
   Wrench,
 } from "lucide-react";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import type { InternalNavGroup } from "./nav-config";
 
 export const navGroupsPrimary: InternalNavGroup[] = [
@@ -150,6 +152,19 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         href: "/internal/settings/consent-documents",
         icon: FileText,
         permissions: ["governance.policies.read"],
+      },
+      {
+        /*
+         * El contrato del COMERCIO va junto al consentimiento del CLIENTE: son los dos textos que
+         * alguien acepta para entrar, y quien revisa uno revisa el otro. Verificar que un comercio
+         * existe no es tener algo firmado con él, y hasta ahora no había dónde fijar ese texto.
+         */
+        label: "Contrato de comercios",
+        href: "/internal/settings/partner-contracts",
+        icon: FileSignature,
+        // El backend gatea por @Roles, como el resto de operaciones sobre el expediente.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
         /*

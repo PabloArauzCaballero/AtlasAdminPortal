@@ -449,6 +449,39 @@ const DOMAIN_OVERVIEW = {
   totals: { tables: 186, endpoints: 432, testSuites: 6 },
 };
 
+/** El contrato de afiliación: una versión vigente y la anterior, archivada y conservada. */
+const CONTRATOS = {
+  items: [
+    {
+      templateId: "2",
+      templateCode: "AFILIACION",
+      name: "Contrato de afiliación de comercios",
+      version: 3,
+      body:
+        "PRIMERA. Objeto. El COMERCIO acepta operar como punto de venta afiliado a Atlas, " +
+        "aceptando pagos financiados a sus clientes.\n\nSEGUNDA. Comisión. Atlas retendrá la " +
+        "comisión pactada sobre cada venta financiada, liquidando el saldo en los plazos de la " +
+        "cláusula cuarta.\n\nTERCERA. Devoluciones. Una devolución revierte la comisión de la " +
+        "operación correspondiente.",
+      status: "active",
+      isDefault: true,
+      effectiveFrom: "2026-09-01T00:00:00.000Z",
+      createdAt: "2026-09-01T00:00:00.000Z",
+    },
+    {
+      templateId: "1",
+      templateCode: "AFILIACION",
+      name: "Contrato de afiliación de comercios",
+      version: 2,
+      body: "PRIMERA. Objeto. Versión anterior, conservada como prueba de qué regía hasta el 1 de septiembre.",
+      status: "archived",
+      isDefault: false,
+      effectiveFrom: "2026-06-01T00:00:00.000Z",
+      createdAt: "2026-06-01T00:00:00.000Z",
+    },
+  ],
+};
+
 const VISTAS = [
   {
     nombre: "Cola de trabajo",
@@ -476,6 +509,11 @@ const VISTAS = [
       [/\/operations\/loans\/outcome-status$/, OUTCOME_STATUS],
       [/\/operations\/loans\/outcome-backlog$/, OUTCOME_BACKLOG],
     ] as const,
+  },
+  {
+    nombre: "Contrato de comercios",
+    ruta: "/internal/settings/partner-contracts",
+    rutas: [[/\/operations\/partner-contract-templates$/, CONTRATOS]] as const,
   },
   {
     nombre: "Eventos de dominio",

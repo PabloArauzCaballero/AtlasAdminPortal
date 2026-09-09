@@ -24,6 +24,7 @@ export const breadcrumbLabels: Record<string, string> = {
   domains: "Dominios",
   // Sin esta entrada la miga de pan escribía el segmento crudo de la ruta: «events».
   events: "Eventos de dominio",
+  "partner-contracts": "Contrato de comercios",
   endpoints: "Endpoints",
   governance: "Gobierno de datos",
   glossary: "Glosario",
