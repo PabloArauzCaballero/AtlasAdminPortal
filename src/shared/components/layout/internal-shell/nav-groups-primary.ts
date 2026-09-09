@@ -1,20 +1,21 @@
 import {
-  FileText,
   Activity,
-  Boxes,
-  Network,
   BarChart3,
   BookOpen,
+  Boxes,
   ClipboardCheck,
   Database,
   FileClock,
+  FileText,
   Gauge,
   GitBranch,
   GraduationCap,
+  Network,
   ShieldCheck,
   SlidersHorizontal,
   Stethoscope,
   TestTube2,
+  Waypoints,
   Wrench,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
@@ -35,6 +36,12 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         href: "/internal/systems/endpoints",
         icon: Activity,
         permissions: ["systems.endpoints.read"],
+      },
+      {
+        label: "Flujos",
+        href: "/internal/flows",
+        icon: Waypoints,
+        permissions: ["systems.flows.read"],
       },
       {
         label: "Herramientas",

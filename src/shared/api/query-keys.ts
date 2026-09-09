@@ -17,6 +17,15 @@ export const queryKeys = {
   tableImpact: (schemaName: string, tableName: string) =>
     ["systems", "impact-by-table", schemaName, tableName] as const,
   testSuites: (params: unknown) => ["systems", "test-suites", params] as const,
+  flows: (params: unknown) => ["systems", "flows", params] as const,
+  flow: (flowId: string) => ["systems", "flow", flowId] as const,
+  flowsSummary: ["systems", "flows-summary"] as const,
+  flowModules: ["systems", "flows-modules"] as const,
+  flowFindings: (params: unknown) =>
+    ["systems", "flows-findings", params] as const,
+  flowScreens: (params: unknown) =>
+    ["systems", "flows-screens", params] as const,
+  flowImports: ["systems", "flows-imports"] as const,
   testSuite: (suiteId: string) => ["systems", "test-suite", suiteId] as const,
   testRuns: (params: unknown) => ["systems", "test-runs", params] as const,
   testRun: (runId: string) => ["systems", "test-run", runId] as const,

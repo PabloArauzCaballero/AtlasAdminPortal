@@ -1,0 +1,122 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
+export const FLOW_RISKS = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
+export const FLOW_KINDS = [
+  "READ",
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+  "ACTION",
+] as const;
+export const FLOW_VERIFICATIONS = ["UNVERIFIED", "VERIFIED", "BROKEN"] as const;
+export const FLOW_FRESHNESS = ["FRESH", "STALE"] as const;
+export const FLOW_SYSTEMS = [
+  "ATLAS_BACKEND",
+  "DECISION_ENGINE",
+  "ERP_BACKEND",
+  "DASHBOARDS",
+] as const;
+export const FLOW_CLIENTS = [
+  "ADMIN_PORTAL",
+  "MOTOR_PORTAL",
+  "ERP_PORTAL",
+  "DASHBOARDS_PORTAL",
+  "CONSUMER_APP",
+] as const;
+
+/** Un flujo derivado del código: una fila por operación HTTP de un bloque (nivel 2 del plan de Flujos). */
+export type Flow = {
+  id: string;
+  slug: string;
+  systemCode: string;
+  name: string;
+  module: string;
+  kind: string;
+  risk: string;
+  riskBasis: string;
+  badges: string[];
+  discovery: string;
+  verification: string;
+  freshness: string;
+  httpMethod: string;
+  path: string;
+  controller: string;
+  handler: string;
+  sourceFile: string | null;
+  sourceLine: number | null;
+  isPublic: boolean;
+  roles: string[];
+  internalPermissions: string[];
+  guards: string[];
+  callers: string[];
+  testStatus: string;
+  contractStatus: string;
+  findingsCount: number;
+  analyzedCommit: string | null;
+  analyzedBranch: string | null;
+  updatedAt: string;
+};
+
+export type FlowFinding = {
+  id: string;
+  key: string;
+  kind: string;
+  severity: string;
+  systemCode: string;
+  ref: string;
+  module: string | null;
+  summary: string;
+  extra: Record<string, unknown>;
+  knownSince: string | null;
+  status: string;
+  updatedAt: string;
+};
+
+export type FlowDetail = Flow & { findings: FlowFinding[] };
+
+export type FlowScreen = {
+  clientCode: string;
+  route: string;
+  sourceFile: string | null;
+  navLabel: string | null;
+  navPermissions: string[];
+  navRoles: string[];
+  analyzedCommit: string | null;
+};
+
+/** Conteos agrupados tal como los devuelve Sequelize (`count({ group })`): una fila por valor. */
+export type GroupCount = Record<string, unknown> & { count: number };
+
+export type FlowsSummary = {
+  total: number;
+  byRisk: GroupCount[];
+  byVerification: GroupCount[];
+  byFreshness: GroupCount[];
+  bySystem: GroupCount[];
+  openFindings: GroupCount[];
+  publicWrites: number;
+  untestedCritical: number;
+};
+
+export type FlowModule = { systemCode: string; module: string; count: number };
+
+export type FlowImport = {
+  id: string;
+  scope: string;
+  systemCode: string;
+  analyzedCommit: string | null;
+  analyzedBranch: string | null;
+  contentHash: string | null;
+  rowsReceived: number;
+  rowsUpserted: number;
+  rowsRemoved: number;
+  createdBy: string | null;
+  createdAt: string;
+};
+
+export type FlowsListResponse = { items: Flow[]; meta: PaginationMeta };
+export type FindingsListResponse = {
+  items: FlowFinding[];
+  meta: PaginationMeta;
+};
+export type ScreensListResponse = { items: FlowScreen[]; meta: PaginationMeta };
