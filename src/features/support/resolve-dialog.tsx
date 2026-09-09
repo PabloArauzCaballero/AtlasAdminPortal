@@ -77,7 +77,10 @@ export function ResolveDialog({
         >
           <Field
             label="Cómo se resolvió"
-            hint={descripcion(codigos.data.resolutionCodes, resolutionCode) ?? undefined}
+            hint={
+              descripcion(codigos.data.resolutionCodes, resolutionCode) ??
+              undefined
+            }
           >
             <Select
               value={resolutionCode}
@@ -94,7 +97,10 @@ export function ResolveDialog({
 
           <Field
             label="Por qué pasó (causa raíz)"
-            hint={descripcion(codigos.data.rootCauseCodes, rootCauseCode) ?? undefined}
+            hint={
+              descripcion(codigos.data.rootCauseCodes, rootCauseCode) ??
+              undefined
+            }
           >
             <Select
               value={rootCauseCode}

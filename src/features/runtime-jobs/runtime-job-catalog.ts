@@ -1,3 +1,4 @@
+import { DATA_LIFECYCLE_JOBS } from "./runtime-job-catalog-data-jobs";
 import type { RuntimeJobDefinition } from "./types";
 
 /**
@@ -21,7 +22,7 @@ export const RETENTION_POLICY_CODES = [
  * (`scheduled-jobs.catalog.ts`); esta pantalla es el disparo manual para cuando
  * hay que adelantar una tanda o comprobar una hipótesis en un incidente.
  */
-export const RUNTIME_JOBS: readonly RuntimeJobDefinition[] = [
+const QUEUE_JOBS: readonly RuntimeJobDefinition[] = [
   {
     code: "dispatch-loan-outcomes",
     title: "Entregar desenlaces al Motor",
@@ -225,90 +226,15 @@ export const RUNTIME_JOBS: readonly RuntimeJobDefinition[] = [
       },
     ],
   },
-  {
-    code: "mark-abandoned-onboardings",
-    title: "Cerrar onboardings abandonados",
-    systems:
-      "Marca como `abandoned` los flujos sin terminar cuya ÚLTIMA ACTIVIDAD supera el umbral. Cierra el flujo, no al cliente: quien dejó el registro a medias puede volver y retomar.",
-    business:
-      "Sin este cierre no existe tasa de abandono, que es la métrica que dice si el registro funciona: los flujos se quedaban en `in_progress` para siempre.",
-    destructive: false,
-    path: "/customer-onboarding/jobs/mark-abandoned",
-    // Su cuerpo se valida en modo estricto: un `dryRun` de más es un 400.
-    supportsDryRun: false,
-    fields: [
-      {
-        name: "olderThanDays",
-        label: "Inactividad mínima (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
-        placeholder: "30",
-        min: 1,
-        max: 365,
-      },
-      {
-        name: "limit",
-        label: "Límite de flujos",
-        hint: "Entre 1 y 2000. Vacío usa el default del backend (500).",
-        placeholder: "500",
-        min: 1,
-        max: 2000,
-      },
-    ],
-  },
-  {
-    code: "purge-idempotency-keys",
-    title: "Purgar claves de idempotencia",
-    systems:
-      "Borra las claves ya resueltas más antiguas que la retención indicada.",
-    business:
-      "La tabla crece sin techo en la ruta más caliente de escritura. Purgar demasiado pronto es peor: convierte un reintento legítimo en una segunda ejecución del comando.",
-    destructive: true,
-    fields: [
-      {
-        name: "retentionDays",
-        label: "Retención (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
-        placeholder: "30",
-        min: 1,
-        max: 365,
-      },
-      {
-        name: "limit",
-        label: "Límite de filas",
-        hint: "Entre 1 y 10000. Vacío usa el default del backend (1000).",
-        placeholder: "1000",
-        min: 1,
-        max: 10000,
-      },
-    ],
-  },
-  {
-    code: "purge-processed-outbox",
-    title: "Purgar outbox ya procesado",
-    systems:
-      "Borra los eventos de outbox en estado `processed` pasada su retención.",
-    business:
-      "El outbox drenado seguía acumulando filas para siempre y degradaba el índice con el que se reclaman los pendientes; pasada la ventana, esa evidencia ya no sirve para diagnosticar.",
-    destructive: true,
-    fields: [
-      {
-        name: "retentionDays",
-        label: "Retención (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
-        placeholder: "30",
-        min: 1,
-        max: 365,
-      },
-      {
-        name: "limit",
-        label: "Límite de filas",
-        hint: "Entre 1 y 10000. Vacío usa el default del backend (1000).",
-        placeholder: "1000",
-        min: 1,
-        max: 10000,
-      },
-    ],
-  },
+];
+
+/**
+ * El catálogo completo, en el orden declarado: primero lo que mueve cola, después lo que toca
+ * dato persistido.
+ */
+export const RUNTIME_JOBS: readonly RuntimeJobDefinition[] = [
+  ...QUEUE_JOBS,
+  ...DATA_LIFECYCLE_JOBS,
 ];
 
 export function findRuntimeJob(code: string): RuntimeJobDefinition | undefined {

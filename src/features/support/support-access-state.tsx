@@ -45,10 +45,10 @@ export function AccesoASoporte({
               Tu usuario todavía no es agente de soporte
             </h3>
             <p className="mt-1 text-sm leading-6 text-amber-800">
-              Tener rol interno abre estas rutas, pero atender casos exige además
-              un perfil de agente habilitado. No es un fallo de la pantalla ni de
-              los datos: la cola existe y no se te muestra hasta que alguien te
-              habilite.
+              Tener rol interno abre estas rutas, pero atender casos exige
+              además un perfil de agente habilitado. No es un fallo de la
+              pantalla ni de los datos: la cola existe y no se te muestra hasta
+              que alguien te habilite.
             </p>
             <p className="mt-3 text-sm">
               <Link

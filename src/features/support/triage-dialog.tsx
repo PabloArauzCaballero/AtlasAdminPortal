@@ -44,7 +44,9 @@ export function TriageDialog({
     () => aplanar(categorias.data?.categories ?? []),
     [categorias.data],
   );
-  const elegida = planas.find((categoria) => categoria.categoryCode === categoryCode);
+  const elegida = planas.find(
+    (categoria) => categoria.categoryCode === categoryCode,
+  );
   const listo = reason.trim().length >= 4;
 
   return (
@@ -100,7 +102,10 @@ export function TriageDialog({
             >
               <option value="">Sin cambiar</option>
               {planas.map((categoria) => (
-                <option key={categoria.categoryCode} value={categoria.categoryCode}>
+                <option
+                  key={categoria.categoryCode}
+                  value={categoria.categoryCode}
+                >
                   {categoria.sangria}
                   {categoria.label}
                 </option>

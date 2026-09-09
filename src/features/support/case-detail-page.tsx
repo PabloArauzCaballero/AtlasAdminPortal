@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Badge, SeverityBadge, StatusBadge } from "@/shared/components/ui/badges";
+import {
+  Badge,
+  SeverityBadge,
+  StatusBadge,
+} from "@/shared/components/ui/badges";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { AccesoASoporte } from "./support-access-state";
@@ -11,7 +15,9 @@ import { useSupportCase, useSupportCaseTimeline } from "./hooks";
 import type { SupportCaseEvent } from "./types";
 import { LifeBuoy } from "lucide-react";
 
-export function SupportCaseDetailPage({ caseId }: Readonly<{ caseId: string }>) {
+export function SupportCaseDetailPage({
+  caseId,
+}: Readonly<{ caseId: string }>) {
   const caso = useSupportCase(caseId);
   const historia = useSupportCaseTimeline(caseId);
 
@@ -34,7 +40,10 @@ export function SupportCaseDetailPage({ caseId }: Readonly<{ caseId: string }>) 
 
       {caso.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {caso.error ? (
-        <AccesoASoporte error={caso.error} onRetry={() => void caso.refetch()} />
+        <AccesoASoporte
+          error={caso.error}
+          onRetry={() => void caso.refetch()}
+        />
       ) : null}
 
       {caso.data ? (
@@ -149,7 +158,11 @@ function Historia({
   eventos,
   cargando,
   error,
-}: Readonly<{ eventos: SupportCaseEvent[]; cargando: boolean; error: unknown }>) {
+}: Readonly<{
+  eventos: SupportCaseEvent[];
+  cargando: boolean;
+  error: unknown;
+}>) {
   return (
     <section className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-atlas-muted">

@@ -45,9 +45,10 @@ export function AuditsPage() {
         description="Ocho comprobaciones de solo lectura sobre cómo están configurados los proveedores externos, cómo se portaron, cuánto costaron y qué se guarda de sus respuestas."
       />
       <BusinessContextNote>
-        Cada pestaña explica arriba qué comprueba y cuándo se da por fallada. Ninguna de estas
-        comprobaciones modifica nada: son lecturas. El detalle técnico completo está al final de
-        cada una, en &quot;Ver datos crudos&quot;.
+        Cada pestaña explica arriba qué comprueba y cuándo se da por fallada.
+        Ninguna de estas comprobaciones modifica nada: son lecturas. El detalle
+        técnico completo está al final de cada una, en &quot;Ver datos
+        crudos&quot;.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
       {activeTab === "Configuración" ? <QualityAuditTab /> : null}

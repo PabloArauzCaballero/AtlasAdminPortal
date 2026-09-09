@@ -33,9 +33,10 @@ export function RequestsActionsPage() {
         description="Las consultas hechas a proveedores externos, con lo que pasó con cada una, y las acciones que se pueden tomar sobre una en concreto."
       />
       <BusinessContextNote>
-        Las acciones trabajan sobre UNA solicitud, identificada por su ID. El listado es de dónde
-        se saca: cada fila copia su identificador con un clic. Aprobar y editar costos está
-        restringido a <span className="font-mono">admin</span>/
+        Las acciones trabajan sobre UNA solicitud, identificada por su ID. El
+        listado es de dónde se saca: cada fila copia su identificador con un
+        clic. Aprobar y editar costos está restringido a{" "}
+        <span className="font-mono">admin</span>/
         <span className="font-mono">platform_admin</span> en el backend.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />

@@ -217,7 +217,8 @@ const SIN_PERFIL = {
     requestId: "req-evidencia-403",
     error: {
       code: "SUPPORT_AGENT_PROFILE_REQUIRED",
-      message: "Este usuario interno no tiene perfil de agente de soporte habilitado.",
+      message:
+        "Este usuario interno no tiene perfil de agente de soporte habilitado.",
     },
     timestamp: "2026-09-08T12:00:00.000Z",
   },
@@ -350,6 +351,8 @@ test("Soporte — sin perfil de agente, la pantalla explica qué falta", async (
   await expect(
     page.getByRole("link", { name: "Ir a Soporte · Agentes" }),
   ).toBeVisible();
-  await expect(page.getByText("No hay casos para estos filtros.")).toHaveCount(0);
+  await expect(page.getByText("No hay casos para estos filtros.")).toHaveCount(
+    0,
+  );
   await capturar(page, "sin-perfil-de-agente");
 });

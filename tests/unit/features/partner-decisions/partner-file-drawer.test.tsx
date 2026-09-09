@@ -107,7 +107,9 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     );
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Aprobar" })).toBeInTheDocument(),
+      expect(
+        screen.getByRole("button", { name: "Aprobar" }),
+      ).toBeInTheDocument(),
     );
     expect(screen.getByText("Decidió el Motor")).toBeInTheDocument();
   });

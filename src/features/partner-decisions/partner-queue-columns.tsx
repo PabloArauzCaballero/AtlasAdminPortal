@@ -52,7 +52,9 @@ export function buildPartnerQueueColumns(
       cell: ({ row }) => {
         const decision = row.original.decision;
         if (!decision?.outcome) {
-          return <span className="text-xs text-atlas-muted">Sin veredicto</span>;
+          return (
+            <span className="text-xs text-atlas-muted">Sin veredicto</span>
+          );
         }
         return (
           <div className="min-w-0">

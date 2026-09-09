@@ -14,7 +14,10 @@ import type { HealthPoint } from "../types";
 export function HealthSparkline({
   points,
   tone,
-}: Readonly<{ points: HealthPoint[]; tone: "success" | "warning" | "critical" | "muted" }>) {
+}: Readonly<{
+  points: HealthPoint[];
+  tone: "success" | "warning" | "critical" | "muted";
+}>) {
   const STROKE = {
     success: "stroke-emerald-500",
     warning: "stroke-amber-500",
@@ -62,7 +65,13 @@ export function HealthSparkline({
       aria-label={`Últimas ${points.length} mediciones. La más reciente: ${last.latencyMs} ms, estado ${last.status}.`}
     >
       <path d={area} className={FILL} stroke="none" />
-      <path d={line} className={STROKE} fill="none" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+      <path
+        d={line}
+        className={STROKE}
+        fill="none"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   );
 }

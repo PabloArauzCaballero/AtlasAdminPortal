@@ -17,14 +17,19 @@ export function isMeasured(mode: string): boolean {
   return mode === "mock_server" || mode === "sandbox" || mode === "production";
 }
 
-function toneForHealth(provider: DashboardProvider): "success" | "warning" | "critical" | "muted" {
+function toneForHealth(
+  provider: DashboardProvider,
+): "success" | "warning" | "critical" | "muted" {
   if (!provider.health || !isMeasured(provider.mode)) return "muted";
   if (provider.health.status === "UP") return "success";
   if (provider.health.status === "DEGRADED") return "warning";
   return "critical";
 }
 
-function Row({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
+function Row({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
       <span className="text-atlas-muted">{label}</span>
@@ -44,7 +49,10 @@ function Row({ label, value }: Readonly<{ label: string; value: React.ReactNode 
 export function ProviderActivityCard({
   provider,
   onSimulate,
-}: Readonly<{ provider: DashboardProvider; onSimulate: (provider: DashboardProvider) => void }>) {
+}: Readonly<{
+  provider: DashboardProvider;
+  onSimulate: (provider: DashboardProvider) => void;
+}>) {
   const { activity } = provider;
   const measured = isMeasured(provider.mode);
   const sinLlamadas = activity.total === 0;
@@ -53,8 +61,12 @@ export function ProviderActivityCard({
     <div className="flex flex-col gap-3 rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-atlas-text">{provider.providerCode}</p>
-          <p className="truncate text-xs text-atlas-muted">{provider.name ?? "—"}</p>
+          <p className="truncate font-semibold text-atlas-text">
+            {provider.providerCode}
+          </p>
+          <p className="truncate text-xs text-atlas-muted">
+            {provider.name ?? "—"}
+          </p>
         </div>
         <span className="shrink-0">
           {measured ? (
@@ -65,17 +77,28 @@ export function ProviderActivityCard({
         </span>
       </div>
 
-      <HealthSparkline points={measured ? provider.healthSeries : []} tone={toneForHealth(provider)} />
+      <HealthSparkline
+        points={measured ? provider.healthSeries : []}
+        tone={toneForHealth(provider)}
+      />
 
       <div className="flex flex-col gap-1">
         <Row label="Llamadas" value={formatNumber(activity.total)} />
         <Row
           label="Éxito"
-          value={activity.successRate === null ? "—" : `${formatNumber(activity.successRate)} %`}
+          value={
+            activity.successRate === null
+              ? "—"
+              : `${formatNumber(activity.successRate)} %`
+          }
         />
         <Row
           label="Latencia p95"
-          value={activity.p95LatencyMs === null ? "—" : `${formatNumber(activity.p95LatencyMs)} ms`}
+          value={
+            activity.p95LatencyMs === null
+              ? "—"
+              : `${formatNumber(activity.p95LatencyMs)} ms`
+          }
         />
         <Row
           label={sinLlamadas ? "Último chequeo" : "Última llamada"}
@@ -103,8 +126,16 @@ export function ProviderActivityCard({
         <span className="min-w-0 [&_span]:whitespace-nowrap">
           <ProviderModeBadge value={provider.mode} />
         </span>
-        <Button variant="ghost" className="shrink-0" onClick={() => onSimulate(provider)}>
-          {measured ? <Play className="h-4 w-4" aria-hidden /> : <Activity className="h-4 w-4" aria-hidden />}
+        <Button
+          variant="ghost"
+          className="shrink-0"
+          onClick={() => onSimulate(provider)}
+        >
+          {measured ? (
+            <Play className="h-4 w-4" aria-hidden />
+          ) : (
+            <Activity className="h-4 w-4" aria-hidden />
+          )}
           Simular
         </Button>
       </div>

@@ -56,7 +56,9 @@ describe("AccesoASoporte", () => {
     );
 
     expect(screen.getByText(/Tu rol no alcanza/)).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Soporte · Agentes/ })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: /Soporte · Agentes/ }),
+    ).toBeNull();
   });
 
   /** Reintentar un 403 no cambia nada: el botón sólo aparece cuando el fallo puede ser transitorio. */

@@ -14,7 +14,8 @@ import type { Severity } from "./types";
  * porque nadie lo tradujo todavía.
  */
 
-export type Tone = "default" | "success" | "warning" | "critical" | "info" | "muted";
+export type Tone =
+  "default" | "success" | "warning" | "critical" | "info" | "muted";
 
 type Explicacion = {
   label: string;
@@ -26,8 +27,10 @@ type Explicacion = {
 const HALLAZGOS: Record<string, Explicacion> = {
   ADAPTER_MISSING: {
     label: "Sin conector",
-    summary: "El proveedor está en el catálogo pero no hay código que sepa hablar con él.",
-    action: "Registrar su adaptador en el backend o retirar el proveedor del catálogo.",
+    summary:
+      "El proveedor está en el catálogo pero no hay código que sepa hablar con él.",
+    action:
+      "Registrar su adaptador en el backend o retirar el proveedor del catálogo.",
   },
   CONSENT_DISABLED_FOR_SENSITIVE_PROVIDER: {
     label: "Consulta sin consentimiento",
@@ -37,29 +40,36 @@ const HALLAZGOS: Record<string, Explicacion> = {
   },
   MISSING_COST_POLICY: {
     label: "Sin política de costo",
-    summary: "Nadie fijó cuánto cuesta consultarlo ni cuántas veces se puede consultar.",
+    summary:
+      "Nadie fijó cuánto cuesta consultarlo ni cuántas veces se puede consultar.",
     action: "Definir su política de costo por tipo de consulta.",
   },
   HIGH_COST_NOT_BLOCKED: {
     label: "Consulta cara sin freno",
     summary:
       "Una consulta de costo alto puede ejecutarse sola, sin aprobación de nadie. Es el control que evita que el gasto se dispare.",
-    action: "Marcar esa consulta como bloqueada por defecto y con aprobación manual.",
+    action:
+      "Marcar esa consulta como bloqueada por defecto y con aprobación manual.",
   },
   POLICY_WITHOUT_ALLOWED_STAGES: {
     label: "Política sin etapas",
-    summary: "La política no dice en qué momento del proceso se permite esa consulta, así que vale en todos.",
+    summary:
+      "La política no dice en qué momento del proceso se permite esa consulta, así que vale en todos.",
     action: "Declarar las etapas permitidas.",
   },
   PRODUCTION_INTEGRATION_GATE_BLOCKED: {
     label: "No puede pasar a producción",
-    summary: "Falta algo para hablar con el proveedor real: la integración, una credencial, o ambas.",
-    action: "Ver el detalle del bloqueo; cada uno nombra exactamente qué falta.",
+    summary:
+      "Falta algo para hablar con el proveedor real: la integración, una credencial, o ambas.",
+    action:
+      "Ver el detalle del bloqueo; cada uno nombra exactamente qué falta.",
   },
   PRODUCTION_MODE_IN_NON_PRODUCTION_PROVIDER: {
     label: "Contradicción de configuración",
-    summary: "Está puesto en modo producción un proveedor marcado como sólo simulado o sólo sandbox.",
-    action: "Corregir el modo o el estado del proveedor: los dos no pueden ser ciertos.",
+    summary:
+      "Está puesto en modo producción un proveedor marcado como sólo simulado o sólo sandbox.",
+    action:
+      "Corregir el modo o el estado del proveedor: los dos no pueden ser ciertos.",
   },
   IDEMPOTENCY_KEY_REUSED_DIFFERENT_SCOPE: {
     label: "Clave reutilizada con otro contenido",
@@ -69,13 +79,16 @@ const HALLAZGOS: Record<string, Explicacion> = {
   },
   IDEMPOTENCY_REPLAY_SAME_SCOPE: {
     label: "Repetición idéntica",
-    summary: "La misma consulta se pidió más de una vez con la misma clave. Es el comportamiento esperado.",
+    summary:
+      "La misma consulta se pidió más de una vez con la misma clave. Es el comportamiento esperado.",
     tone: "muted",
   },
   POSSIBLE_UNREDACTED_SECRET_KEY: {
     label: "Posible dato sin tachar",
-    summary: "En una respuesta guardada aparece una clave que suele contener un secreto o un dato personal.",
-    action: "Revisar esa respuesta y añadir la clave a la lista de campos que se tachan.",
+    summary:
+      "En una respuesta guardada aparece una clave que suele contener un secreto o un dato personal.",
+    action:
+      "Revisar esa respuesta y añadir la clave a la lista de campos que se tachan.",
   },
 };
 
@@ -88,26 +101,45 @@ const BLOQUEOS: Record<string, string> = {
   HEALTH_DOWN: "La última comprobación dice que no responde.",
   PROVIDER_NOT_FOUND: "No existe un proveedor con ese código.",
   CRITICAL_QUALITY_FINDINGS: "Hay hallazgos críticos de calidad sin resolver.",
-  HIGH_QUALITY_FINDINGS_STRICT_MODE: "Hay hallazgos altos y la comprobación se pidió en modo estricto.",
+  HIGH_QUALITY_FINDINGS_STRICT_MODE:
+    "Hay hallazgos altos y la comprobación se pidió en modo estricto.",
   SANITIZATION_AUDIT_FAILED: "La auditoría de datos tachados no pasó.",
 };
 
 /** Estados de respuesta de una solicitud. */
 const ESTADOS: Record<string, Explicacion> = {
-  COMPLETED: { label: "Completada", summary: "El proveedor respondió con datos.", tone: "success" },
+  COMPLETED: {
+    label: "Completada",
+    summary: "El proveedor respondió con datos.",
+    tone: "success",
+  },
   MOCKED: {
     label: "Simulada",
-    summary: "Respondió un simulador, no el proveedor real. Los datos no valen para decidir.",
+    summary:
+      "Respondió un simulador, no el proveedor real. Los datos no valen para decidir.",
     tone: "info",
   },
-  CACHED: { label: "Desde caché", summary: "Se reutilizó una respuesta anterior, sin volver a llamar.", tone: "muted" },
+  CACHED: {
+    label: "Desde caché",
+    summary: "Se reutilizó una respuesta anterior, sin volver a llamar.",
+    tone: "muted",
+  },
   DATA_NOT_AVAILABLE: {
     label: "Sin datos",
-    summary: "El proveedor respondió, pero no tiene información de esta persona.",
+    summary:
+      "El proveedor respondió, pero no tiene información de esta persona.",
     tone: "warning",
   },
-  FAILED: { label: "Falló", summary: "La llamada no llegó a completarse.", tone: "critical" },
-  PROVIDER_UNAVAILABLE: { label: "Proveedor caído", summary: "El proveedor no respondió.", tone: "critical" },
+  FAILED: {
+    label: "Falló",
+    summary: "La llamada no llegó a completarse.",
+    tone: "critical",
+  },
+  PROVIDER_UNAVAILABLE: {
+    label: "Proveedor caído",
+    summary: "El proveedor no respondió.",
+    tone: "critical",
+  },
   PROVIDER_AUTH_FAILED: {
     label: "Credencial rechazada",
     summary: "El proveedor rechazó nuestras credenciales.",
@@ -133,7 +165,11 @@ const ESTADOS: Record<string, Explicacion> = {
     summary: "Necesita que un administrador la apruebe antes de ejecutarse.",
     tone: "warning",
   },
-  PENDING: { label: "En curso", summary: "La solicitud se registró y todavía no tiene respuesta.", tone: "muted" },
+  PENDING: {
+    label: "En curso",
+    summary: "La solicitud se registró y todavía no tiene respuesta.",
+    tone: "muted",
+  },
 };
 
 export const SEVERIDADES: Record<Severity, { label: string; tone: Tone }> = {
@@ -144,7 +180,12 @@ export const SEVERIDADES: Record<Severity, { label: string; tone: Tone }> = {
 };
 
 export function explainFinding(code: string): Explicacion {
-  return HALLAZGOS[code] ?? { label: code, summary: "Hallazgo sin descripción en el catálogo del portal." };
+  return (
+    HALLAZGOS[code] ?? {
+      label: code,
+      summary: "Hallazgo sin descripción en el catálogo del portal.",
+    }
+  );
 }
 
 /**
@@ -182,5 +223,10 @@ export function explainBlocker(blocker: string): string {
 }
 
 export function explainStatus(status: string): Explicacion {
-  return ESTADOS[status.toUpperCase()] ?? { label: status, summary: "Estado sin descripción en el catálogo del portal." };
+  return (
+    ESTADOS[status.toUpperCase()] ?? {
+      label: status,
+      summary: "Estado sin descripción en el catálogo del portal.",
+    }
+  );
 }

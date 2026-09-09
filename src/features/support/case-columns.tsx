@@ -3,7 +3,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
-import { Badge, SeverityBadge, StatusBadge } from "@/shared/components/ui/badges";
+import {
+  Badge,
+  SeverityBadge,
+  StatusBadge,
+} from "@/shared/components/ui/badges";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import type { SupportCase } from "./types";
 

@@ -112,15 +112,23 @@ describe("PortfolioOperationsPage — calificación de Atlas, desenlaces del Mot
       ).toBeInTheDocument(),
     );
     await waitFor(() =>
-      expect(screen.getByText("Esperando entrega").parentElement).toHaveTextContent("4"),
+      expect(
+        screen.getByText("Esperando entrega").parentElement,
+      ).toHaveTextContent("4"),
     );
     expect(screen.getByText("Agotados").parentElement).toHaveTextContent("2");
-    expect(screen.getByText("Entregados").parentElement).toHaveTextContent("40");
+    expect(screen.getByText("Entregados").parentElement).toHaveTextContent(
+      "40",
+    );
 
     // Los dos botones que eran la única forma de que ocurrieran la mora y la entrega ya no están:
     // son jobs. Recalificar sí sigue, porque la calificación es de Atlas.
-    expect(screen.queryByRole("button", { name: /entregar desenlaces/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /recalcular mora/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /entregar desenlaces/i }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /recalcular mora/i }),
+    ).toBeNull();
     expect(
       screen.getByRole("button", { name: "Recalificar la cartera" }),
     ).toBeInTheDocument();
@@ -157,6 +165,8 @@ describe("PortfolioOperationsPage — calificación de Atlas, desenlaces del Mot
       expect(screen.getByText("Entregados")).toBeInTheDocument(),
     );
     // `engine-links` lee la variable al cargar el módulo: sin ella, ningún enlace.
-    expect(screen.queryByRole("link", { name: /medir en el motor/i })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: /medir en el motor/i }),
+    ).toBeNull();
   });
 });

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, CircleCheck, CircleX, Info } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  CircleCheck,
+  CircleX,
+  Info,
+} from "lucide-react";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -41,8 +47,14 @@ export function ReportShell<T>({
   if (query.error) {
     return (
       <ErrorState
-        description={isAtlasApiError(query.error) ? query.error.message : `No se pudo cargar "${title}".`}
-        requestId={isAtlasApiError(query.error) ? query.error.requestId : undefined}
+        description={
+          isAtlasApiError(query.error)
+            ? query.error.message
+            : `No se pudo cargar "${title}".`
+        }
+        requestId={
+          isAtlasApiError(query.error) ? query.error.requestId : undefined
+        }
         onRetry={() => void query.refetch()}
       />
     );
@@ -69,10 +81,16 @@ export function RawData({ value }: Readonly<{ value: unknown }>) {
         onClick={() => setAbierto((valor) => !valor)}
         className="flex items-center gap-1.5 text-sm text-atlas-muted hover:text-atlas-text"
       >
-        {abierto ? <ChevronDown className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
+        {abierto ? (
+          <ChevronDown className="h-4 w-4" aria-hidden />
+        ) : (
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        )}
         {abierto ? "Ocultar datos crudos" : "Ver datos crudos"}
       </button>
-      {abierto ? <JsonViewer title="Respuesta del backend" value={value} /> : null}
+      {abierto ? (
+        <JsonViewer title="Respuesta del backend" value={value} />
+      ) : null}
     </div>
   );
 }
@@ -86,7 +104,11 @@ export function SimpleTable({
   headers,
   children,
   align,
-}: Readonly<{ headers: string[]; children: React.ReactNode; align?: Record<number, "right"> }>) {
+}: Readonly<{
+  headers: string[];
+  children: React.ReactNode;
+  align?: Record<number, "right">;
+}>) {
   return (
     <div className="overflow-x-auto rounded-xl border border-atlas-border bg-white shadow-subtle">
       <table className="w-full text-sm">
@@ -95,7 +117,10 @@ export function SimpleTable({
             {headers.map((header, index) => (
               <th
                 key={header}
-                className={cn("whitespace-nowrap px-3 py-2 text-left", align?.[index] === "right" && "text-right")}
+                className={cn(
+                  "whitespace-nowrap px-3 py-2 text-left",
+                  align?.[index] === "right" && "text-right",
+                )}
               >
                 {header}
               </th>
@@ -127,7 +152,9 @@ export function Td({
 }
 
 export function Tr({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <tr className="border-b border-atlas-border last:border-0">{children}</tr>;
+  return (
+    <tr className="border-b border-atlas-border last:border-0">{children}</tr>
+  );
 }
 
 /**
@@ -145,11 +172,16 @@ export function GateBanner({
     <div
       className={cn(
         "flex items-start gap-2.5 rounded-xl border p-4",
-        pass ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-900",
+        pass
+          ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+          : "border-red-200 bg-red-50 text-red-900",
       )}
     >
       {pass ? (
-        <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+        <CircleCheck
+          className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600"
+          aria-hidden
+        />
       ) : (
         <CircleX className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-hidden />
       )}
@@ -159,10 +191,15 @@ export function GateBanner({
 }
 
 /** Sin hallazgos es una BUENA noticia y hay que decirlo, no dejar la tabla vacía. */
-export function EmptyGood({ children }: Readonly<{ children: React.ReactNode }>) {
+export function EmptyGood({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <p className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-      <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
+      <CircleCheck
+        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
+        aria-hidden
+      />
       <span>{children}</span>
     </p>
   );

@@ -68,8 +68,7 @@ function AuthorizedDomainEventsPage() {
 
   const definiciones = useMemo(() => catalogo.data ?? [], [catalogo.data]);
   const opcionesCodigo = useMemo(
-    () =>
-      definiciones.map((d) => ({ value: d.eventCode, label: d.eventCode })),
+    () => definiciones.map((d) => ({ value: d.eventCode, label: d.eventCode })),
     [definiciones],
   );
 
@@ -146,9 +145,8 @@ function AuthorizedDomainEventsPage() {
             <MetricCard
               label="Pendientes en esta página"
               value={formatNumber(
-                items.filter(
-                  (item) => item.status?.toLowerCase() === "pending",
-                ).length,
+                items.filter((item) => item.status?.toLowerCase() === "pending")
+                  .length,
               )}
             />
             <MetricCard

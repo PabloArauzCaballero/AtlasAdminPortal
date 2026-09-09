@@ -159,11 +159,7 @@ export type AssignInput = {
 
 export type EscalateInput = {
   escalationType:
-    | "FUNCTIONAL"
-    | "HIERARCHICAL"
-    | "SECURITY"
-    | "FRAUD"
-    | "PRIVACY";
+    "FUNCTIONAL" | "HIERARCHICAL" | "SECURITY" | "FRAUD" | "PRIVACY";
   targetQueueCode?: string;
   reason: string;
   notifyCustomer?: boolean;

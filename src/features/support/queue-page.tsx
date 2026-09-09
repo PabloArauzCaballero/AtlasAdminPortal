@@ -23,7 +23,10 @@ const VISTAS = [
   { label: "Abiertos (todos)", value: ESTADOS_ABIERTOS },
   { label: "Sin clasificar", value: "NEW" },
   { label: "En curso", value: "ASSIGNED,IN_PROGRESS" },
-  { label: "Esperando a alguien", value: "WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER" },
+  {
+    label: "Esperando a alguien",
+    value: "WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER",
+  },
   { label: "Escalados", value: "ESCALATED" },
   { label: "Resueltos y cerrados", value: "RESOLVED,CLOSED" },
 ];
@@ -71,11 +74,12 @@ export function SupportQueuePage() {
       />
       <BusinessContextNote>
         Cada fila es un expediente real de <code>support.support_cases</code>.
-        Atender exige, además del rol interno, un perfil de agente habilitado: sin
-        él el backend responde 403 y esta pantalla lo dice explícitamente en vez
-        de enseñar una tabla vacía. Los casos marcados como restringidos sólo los
-        ve un supervisor o el agente que los tiene asignados, así que dos personas
-        del mismo equipo pueden ver cuentas distintas aquí, y es correcto.
+        Atender exige, además del rol interno, un perfil de agente habilitado:
+        sin él el backend responde 403 y esta pantalla lo dice explícitamente en
+        vez de enseñar una tabla vacía. Los casos marcados como restringidos
+        sólo los ve un supervisor o el agente que los tiene asignados, así que
+        dos personas del mismo equipo pueden ver cuentas distintas aquí, y es
+        correcto.
       </BusinessContextNote>
 
       <section className="mb-4 grid gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle sm:grid-cols-2 xl:grid-cols-5">
@@ -141,7 +145,9 @@ export function SupportQueuePage() {
             <option value="UNKNOWN">Sin determinar (UNKNOWN)</option>
             <option value="APPLICATION_DEFECT">Defecto de la aplicación</option>
             <option value="THIRD_PARTY">Proveedor externo</option>
-            <option value="USER_MISUNDERSTANDING">Malentendido del usuario</option>
+            <option value="USER_MISUNDERSTANDING">
+              Malentendido del usuario
+            </option>
           </Select>
         </Field>
         <Field label="Asignación">
@@ -177,7 +183,9 @@ export function SupportQueuePage() {
             <MetricCard
               label="P1 y P2 visibles"
               value={formatNumber(
-                items.filter((caso) => caso.priority === "P1" || caso.priority === "P2").length,
+                items.filter(
+                  (caso) => caso.priority === "P1" || caso.priority === "P2",
+                ).length,
               )}
             />
             <MetricCard
@@ -208,7 +216,9 @@ export function SupportQueuePage() {
               disabled={!casos.data.nextCursor}
               onClick={() =>
                 setCursores((pila) =>
-                  casos.data?.nextCursor ? [...pila, casos.data.nextCursor] : pila,
+                  casos.data?.nextCursor
+                    ? [...pila, casos.data.nextCursor]
+                    : pila,
                 )
               }
             >

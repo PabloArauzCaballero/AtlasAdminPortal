@@ -63,7 +63,11 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary" disabled={cerrado} onClick={() => setAbierto("triage")}>
+        <Button
+          variant="primary"
+          disabled={cerrado}
+          onClick={() => setAbierto("triage")}
+        >
           Clasificar
         </Button>
         <Button
@@ -73,7 +77,11 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
         >
           Reclamar
         </Button>
-        <Button variant="primary" disabled={cerrado || resuelto} onClick={() => setAbierto("resolve")}>
+        <Button
+          variant="primary"
+          disabled={cerrado || resuelto}
+          onClick={() => setAbierto("resolve")}
+        >
           Resolver
         </Button>
       </div>
@@ -93,7 +101,10 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
         }
       >
         <Field label="Cola destino">
-          <Select value={colaDestino} onChange={(event) => setColaDestino(event.target.value)}>
+          <Select
+            value={colaDestino}
+            onChange={(event) => setColaDestino(event.target.value)}
+          >
             <option value="">Elegir…</option>
             {(colas.data?.queues ?? []).map((cola) => (
               <option key={cola.queueCode} value={cola.queueCode}>
@@ -126,7 +137,10 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
         }
       >
         <Field label="Tipo">
-          <Select value={tipoEscalado} onChange={(event) => setTipoEscalado(event.target.value)}>
+          <Select
+            value={tipoEscalado}
+            onChange={(event) => setTipoEscalado(event.target.value)}
+          >
             {TIPOS_ESCALADO.map((tipo) => (
               <option key={tipo.value} value={tipo.value}>
                 {tipo.label}
@@ -134,7 +148,10 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
             ))}
           </Select>
         </Field>
-        <Field label="Razón" hint="Mínimo 10 caracteres: el escalado avisa al cliente.">
+        <Field
+          label="Razón"
+          hint="Mínimo 10 caracteres: el escalado avisa al cliente."
+        >
           <Textarea
             className="min-h-16"
             value={razonEscalado}
@@ -154,7 +171,10 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
           nota.mutate(textoNota.trim(), { onSuccess: () => setTextoNota("") })
         }
       >
-        <Field label="Texto" hint="No lo ve el cliente. Queda en la transcripción como nota interna.">
+        <Field
+          label="Texto"
+          hint="No lo ve el cliente. Queda en la transcripción como nota interna."
+        >
           <Textarea
             className="min-h-20"
             value={textoNota}

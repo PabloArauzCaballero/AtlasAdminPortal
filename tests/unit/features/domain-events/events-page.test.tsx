@@ -16,7 +16,8 @@ vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-const { DomainEventsPage } = await import("@/features/domain-events/events-page");
+const { DomainEventsPage } =
+  await import("@/features/domain-events/events-page");
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
@@ -53,7 +54,13 @@ const RESPUESTA_LISTADO = {
         createdAt: "2026-09-01T00:00:00.000Z",
       },
     ],
-    pagination: { mode: "offset", page: 1, limit: 20, total: 57, totalPages: 3 },
+    pagination: {
+      mode: "offset",
+      page: 1,
+      limit: 20,
+      total: 57,
+      totalPages: 3,
+    },
   },
   timestamp: "2026-09-08T00:00:00.000Z",
 };
@@ -121,9 +128,13 @@ describe("DomainEventsPage — con la forma real del backend", () => {
       ).toBeInTheDocument(),
     );
     // El total viene de `pagination.total`, no de contar la página.
-    expect(screen.getByText("Total con este filtro").parentElement).toHaveTextContent("57");
+    expect(
+      screen.getByText("Total con este filtro").parentElement,
+    ).toHaveTextContent("57");
     // La definición del catálogo se contó aunque venga como `code`.
-    expect(screen.getByText("Definiciones del catálogo").parentElement).toHaveTextContent("2");
+    expect(
+      screen.getByText("Definiciones del catálogo").parentElement,
+    ).toHaveTextContent("2");
   });
 
   it("ofrece los cinco estados del outbox en minúsculas, como los guarda el backend", async () => {
@@ -153,7 +164,9 @@ describe("DomainEventsPage — con la forma real del backend", () => {
         screen.getByRole("cell", { name: /user\.registered/ }),
       ).toBeInTheDocument(),
     );
-    const codigos = screen.getByLabelText("Código del catálogo") as HTMLSelectElement;
+    const codigos = screen.getByLabelText(
+      "Código del catálogo",
+    ) as HTMLSelectElement;
     const valores = Array.from(codigos.options).map((o) => o.value);
     expect(valores).toEqual(
       expect.arrayContaining(["user.registered", "loan.disbursed"]),

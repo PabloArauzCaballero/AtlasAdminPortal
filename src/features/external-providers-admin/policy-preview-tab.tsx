@@ -118,7 +118,10 @@ export function PolicyPreviewTab() {
         Previsualizar política
       </Button>
       {preview.data ? (
-        <RequestResultCard title="Vista previa de la política" result={preview.data} />
+        <RequestResultCard
+          title="Vista previa de la política"
+          result={preview.data}
+        />
       ) : null}
     </Card>
   );

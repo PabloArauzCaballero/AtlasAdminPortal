@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ExternalLink, Gauge } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
-import { engineUrl } from "@/shared/decision-engine/engine-links";
 import { buildBacklogColumns, buildGradeColumns } from "./portfolio-columns";
+import { EnlaceMotor, EstadoEntrega } from "./portfolio-delivery";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
@@ -15,11 +15,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import {
-  formatAmount,
-  formatDateTime,
-  formatNumber,
-} from "@/shared/lib/format";
+import { formatAmount, formatNumber } from "@/shared/lib/format";
 import {
   useExhaustedOutcomes,
   useOutcomeDeliveryStatus,
@@ -28,7 +24,6 @@ import {
   useRateLoanMutation,
   useSweepRatingsMutation,
 } from "./hooks";
-import type { OutcomeDeliveryStatus } from "./types";
 
 /**
  * Calificación de cartera.
@@ -201,9 +196,9 @@ function AuthorizedPortfolioPage() {
           <p className="mb-4 text-sm text-atlas-muted">
             Cada crédito le cuenta al Motor cómo acabó a los 30, 90 y 180 días
             de la decisión. La mora los observa cada hora
-            (sweep_loan_delinquency) y la entrega los manda cada quince
-            minutos (dispatch_loan_outcomes). Lo que se mide con ellos
-            —acierto, estabilidad, cosechas— vive en el Motor, no aquí.
+            (sweep_loan_delinquency) y la entrega los manda cada quince minutos
+            (dispatch_loan_outcomes). Lo que se mide con ellos —acierto,
+            estabilidad, cosechas— vive en el Motor, no aquí.
           </p>
           {entrega.isLoading ? <LoadingSkeleton rows={2} /> : null}
           {entrega.error ? (
@@ -257,69 +252,5 @@ function AuthorizedPortfolioPage() {
         }
       />
     </>
-  );
-}
-
-function EstadoEntrega({
-  estado,
-}: Readonly<{ estado: OutcomeDeliveryStatus }>) {
-  return (
-    <div className="space-y-3">
-      {!estado.configured ? (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          Falta la credencial del plano de gestión del Motor
-          (DECISION_ENGINE_OUTCOME_API_KEY): el job no puede entregar nada y
-          la cola sólo crece.
-        </p>
-      ) : null}
-      <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="Esperando entrega"
-          value={formatNumber(estado.pending)}
-          hint={
-            estado.oldestPendingObservedAt
-              ? `El más antiguo se observó el ${formatDateTime(estado.oldestPendingObservedAt)}`
-              : "Nada en cola"
-          }
-          tone={estado.pending > 0 ? "info" : "default"}
-        />
-        <MetricCard
-          label="Reintentando"
-          value={formatNumber(estado.retrying)}
-          hint={`Hasta ${formatNumber(estado.maxAttempts)} intentos`}
-          tone={estado.retrying > 0 ? "warning" : "default"}
-        />
-        <MetricCard
-          label="Agotados"
-          value={formatNumber(estado.exhausted)}
-          tone={estado.exhausted > 0 ? "critical" : "default"}
-        />
-        <MetricCard
-          label="Entregados"
-          value={formatNumber(estado.sent)}
-          hint={
-            estado.lastSentAt
-              ? `Última entrega: ${formatDateTime(estado.lastSentAt)}`
-              : "Todavía ninguna"
-          }
-          tone="success"
-        />
-      </div>
-    </div>
-  );
-}
-
-function EnlaceMotor() {
-  const enlace = engineUrl("/decision-quality");
-  if (!enlace) return null;
-  return (
-    <a
-      href={enlace}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1 text-sm font-medium text-atlas-accent underline"
-    >
-      Medir en el Motor <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-    </a>
   );
 }

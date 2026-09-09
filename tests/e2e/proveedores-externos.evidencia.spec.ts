@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Fuera de `test-results/`: Playwright la vacía en cada corrida. */
-const SALIDA = process.env.PROVEEDORES_SHOTS ?? "test-results/proveedores-externos";
+const SALIDA =
+  process.env.PROVEEDORES_SHOTS ?? "test-results/proveedores-externos";
 
 /**
  * Evidencia visual de Proveedores externos: el tablero de actividad, la tabla con las etiquetas
@@ -41,7 +42,9 @@ function serie(base: number, puntos: number) {
   return Array.from({ length: puntos }, (_, index) => ({
     status: "UP",
     latencyMs: Math.round(base + Math.sin(index / 2) * base * 0.25),
-    checkedAt: new Date(Date.parse(AHORA) - (puntos - index) * 60_000).toISOString(),
+    checkedAt: new Date(
+      Date.parse(AHORA) - (puntos - index) * 60_000,
+    ).toISOString(),
   }));
 }
 
@@ -86,9 +89,27 @@ const PROVEEDORES = [
 ];
 
 const SALUD = [
-  { providerCode: "SEGIP", status: "UP", mode: "mock_server", latencyMs: 812, checkedAt: AHORA },
-  { providerCode: "INFOCENTER", status: "DEGRADED", mode: "mock_server", latencyMs: 2410, checkedAt: AHORA },
-  { providerCode: "WHATSAPP_GENERIC", status: "UP", mode: "mock_local", latencyMs: 0, checkedAt: AHORA },
+  {
+    providerCode: "SEGIP",
+    status: "UP",
+    mode: "mock_server",
+    latencyMs: 812,
+    checkedAt: AHORA,
+  },
+  {
+    providerCode: "INFOCENTER",
+    status: "DEGRADED",
+    mode: "mock_server",
+    latencyMs: 2410,
+    checkedAt: AHORA,
+  },
+  {
+    providerCode: "WHATSAPP_GENERIC",
+    status: "UP",
+    mode: "mock_local",
+    latencyMs: 0,
+    checkedAt: AHORA,
+  },
 ];
 
 const TABLERO = {
@@ -117,7 +138,14 @@ const TABLERO = {
       mode: "mock_server",
       isCostly: false,
       requiresManualApproval: false,
-      health: { status: "UP", latencyMs: 812, checkedAt: AHORA, modeChecked: "mock_server", errorCode: null, errorMessageSafe: null },
+      health: {
+        status: "UP",
+        latencyMs: 812,
+        checkedAt: AHORA,
+        modeChecked: "mock_server",
+        errorCode: null,
+        errorMessageSafe: null,
+      },
       healthSeries: serie(800, 24),
       activity: {
         total: 128,
@@ -176,7 +204,14 @@ const TABLERO = {
       mode: "mock_local",
       isCostly: false,
       requiresManualApproval: false,
-      health: { status: "UP", latencyMs: 0, checkedAt: AHORA, modeChecked: "mock_local", errorCode: null, errorMessageSafe: null },
+      health: {
+        status: "UP",
+        latencyMs: 0,
+        checkedAt: AHORA,
+        modeChecked: "mock_local",
+        errorCode: null,
+        errorMessageSafe: null,
+      },
       healthSeries: [],
       activity: {
         total: 0,
@@ -265,7 +300,8 @@ const CALIDAD = {
       severity: "CRITICAL",
       providerCode: "INFOCENTER",
       code: "PRODUCTION_INTEGRATION_GATE_BLOCKED",
-      message: "Producción bloqueada: INFOCENTER_REAL_INTEGRATION_NOT_IMPLEMENTED.",
+      message:
+        "Producción bloqueada: INFOCENTER_REAL_INTEGRATION_NOT_IMPLEMENTED.",
     },
     {
       severity: "HIGH",
@@ -299,7 +335,10 @@ type Ruta = readonly [RegExp, unknown];
 
 async function preparar(page: Page, rutas: readonly Ruta[]): Promise<void> {
   await page.addInitScript((sesion) => {
-    window.sessionStorage.setItem("atlas_internal_session_v3", JSON.stringify(sesion));
+    window.sessionStorage.setItem(
+      "atlas_internal_session_v3",
+      JSON.stringify(sesion),
+    );
   }, SESION);
 
   // Sólo `/api/v1`: con el comodín sobre todo, `next dev` pierde sus cargas RSC y la navegación
@@ -316,7 +355,9 @@ async function preparar(page: Page, rutas: readonly Ruta[]): Promise<void> {
 
 async function capturar(page: Page, nombre: string): Promise<void> {
   await page.waitForTimeout(1200);
-  await page.addStyleTag({ content: "nextjs-portal{display:none!important}" }).catch(() => undefined);
+  await page
+    .addStyleTag({ content: "nextjs-portal{display:none!important}" })
+    .catch(() => undefined);
   await page.screenshot({ path: `${SALIDA}/${nombre}.png`, fullPage: true });
 }
 
@@ -325,15 +366,24 @@ const RUTAS_BASE: readonly Ruta[] = [
   [/\/admin\/external-providers\/health$/, SALUD],
   [/\/admin\/external-providers\/dashboard$/, TABLERO],
   [/\/admin\/external-providers\/requests$/, SOLICITUDES],
-  [/\/admin\/external-providers\/auth-broker\/availability$/, { configured: false, reachable: false }],
+  [
+    /\/admin\/external-providers\/auth-broker\/availability$/,
+    { configured: false, reachable: false },
+  ],
 ];
 
-test("Proveedores externos — tablero de actividad y catálogo", async ({ page }) => {
+test("Proveedores externos — tablero de actividad y catálogo", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await preparar(page, RUTAS_BASE);
-  await page.goto("/internal/external-providers", { waitUntil: "domcontentloaded" });
+  await page.goto("/internal/external-providers", {
+    waitUntil: "domcontentloaded",
+  });
 
-  await expect(page.getByRole("heading", { name: "Proveedores externos" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Proveedores externos" }),
+  ).toBeVisible();
   // El tablero abre la pantalla.
   await expect(page.getByText("Responden", { exact: true })).toBeVisible();
   await expect(page.getByText("7 días", { exact: true })).toBeVisible();
@@ -359,8 +409,19 @@ test("Proveedores externos — tablero de actividad y catálogo", async ({ page 
   // La ÚLTIMA tabla de la página es la del catálogo; la primera es «Últimas llamadas», que también
   // tiene una cabecera «Proveedor».
   const catalogo = page.locator("table").last();
-  for (const cabecera of ["Proveedor", "Tipo de proveedor", "Cómo se le llama", "Salud", "Autenticación", "Política", "Detalle"]) {
-    const celda = catalogo.getByRole("columnheader", { name: cabecera, exact: true });
+  for (const cabecera of [
+    "Proveedor",
+    "Tipo de proveedor",
+    "Cómo se le llama",
+    "Salud",
+    "Autenticación",
+    "Política",
+    "Detalle",
+  ]) {
+    const celda = catalogo.getByRole("columnheader", {
+      name: cabecera,
+      exact: true,
+    });
     await expect(celda).toBeVisible();
     // `toBeVisible` sólo exige que esté en el DOM con caja no vacía: una columna empujada fuera
     // del viewport la pasa igual. Lo que hay que medir es que su borde derecho entre en pantalla.
@@ -375,30 +436,49 @@ test("Proveedores externos — tablero de actividad y catálogo", async ({ page 
   await capturar(page, "01-tablero-y-catalogo");
 });
 
-test("Proveedores externos — la auditoría de configuración se lee sin JSON", async ({ page }) => {
+test("Proveedores externos — la auditoría de configuración se lee sin JSON", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await preparar(page, [...RUTAS_BASE, [/\/admin\/external-providers\/quality-audit$/, CALIDAD]]);
-  await page.goto("/internal/external-providers/audits", { waitUntil: "domcontentloaded" });
+  await preparar(page, [
+    ...RUTAS_BASE,
+    [/\/admin\/external-providers\/quality-audit$/, CALIDAD],
+  ]);
+  await page.goto("/internal/external-providers/audits", {
+    waitUntil: "domcontentloaded",
+  });
 
-  await expect(page.getByRole("heading", { name: "Auditorías y diagnóstico" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Auditorías y diagnóstico" }),
+  ).toBeVisible();
 
   // Los hallazgos se leen en castellano, con su gravedad y qué hacer.
-  await expect(page.getByText("No puede pasar a producción").first()).toBeVisible();
+  await expect(
+    page.getByText("No puede pasar a producción").first(),
+  ).toBeVisible();
   await expect(page.getByText("Sin conector").first()).toBeVisible();
   await expect(page.getByText("Crítico").first()).toBeVisible();
 
   // El JSON sigue disponible, pero PLEGADO: no es lo primero que se ve.
-  await expect(page.getByRole("button", { name: "Ver datos crudos" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Ver datos crudos" }),
+  ).toBeVisible();
 
   await capturar(page, "02-auditoria-configuracion");
 });
 
-test("Proveedores externos — el listado de solicitudes existe", async ({ page }) => {
+test("Proveedores externos — el listado de solicitudes existe", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await preparar(page, RUTAS_BASE);
-  await page.goto("/internal/external-providers/requests", { waitUntil: "domcontentloaded" });
+  await page.goto("/internal/external-providers/requests", {
+    waitUntil: "domcontentloaded",
+  });
 
-  await expect(page.getByRole("heading", { name: "Solicitudes a proveedores" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Solicitudes a proveedores" }),
+  ).toBeVisible();
   // Sin listado, estas cuatro acciones pedían el identificador de memoria.
   await expect(page.getByText("4021")).toBeVisible();
   await expect(page.getByText("Proveedor caído").first()).toBeVisible();

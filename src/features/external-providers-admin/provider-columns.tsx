@@ -92,7 +92,8 @@ export function buildProviderColumns(
       cell: ({ row }) => {
         const { health, defaultMode } = row.original;
         if (!health) return <span className="text-atlas-muted">—</span>;
-        if (!esMedido(defaultMode)) return <Badge tone="muted">Sin llamada</Badge>;
+        if (!esMedido(defaultMode))
+          return <Badge tone="muted">Sin llamada</Badge>;
         return (
           <div className="space-y-1">
             <ProviderHealthBadge value={health.status} />

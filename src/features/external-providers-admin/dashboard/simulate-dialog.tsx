@@ -19,15 +19,47 @@ import type { DashboardProvider } from "../types";
  * más barato que abrir un proxy para leerlos.
  */
 const ESCENARIOS: Array<{ value: string; label: string; hint: string }> = [
-  { value: "", label: "Normal", hint: "El proveedor responde con datos válidos." },
-  { value: "provider_down", label: "Proveedor caído", hint: "Contesta 503, como un proveedor fuera de servicio." },
-  { value: "timeout", label: "No contesta", hint: "Se queda callado hasta que la llamada se rinde." },
-  { value: "slow_response", label: "Lento", hint: "Contesta bien, pero tardísimo. Para ver el p95 subir." },
-  { value: "unauthorized", label: "Credencial rechazada", hint: "Contesta 401." },
+  {
+    value: "",
+    label: "Normal",
+    hint: "El proveedor responde con datos válidos.",
+  },
+  {
+    value: "provider_down",
+    label: "Proveedor caído",
+    hint: "Contesta 503, como un proveedor fuera de servicio.",
+  },
+  {
+    value: "timeout",
+    label: "No contesta",
+    hint: "Se queda callado hasta que la llamada se rinde.",
+  },
+  {
+    value: "slow_response",
+    label: "Lento",
+    hint: "Contesta bien, pero tardísimo. Para ver el p95 subir.",
+  },
+  {
+    value: "unauthorized",
+    label: "Credencial rechazada",
+    hint: "Contesta 401.",
+  },
   { value: "rate_limited", label: "Límite alcanzado", hint: "Contesta 429." },
-  { value: "not_found", label: "Sin coincidencia", hint: "El dato consultado no existe en el proveedor." },
-  { value: "partial_match", label: "Coincidencia parcial", hint: "Coincide a medias: pide revisión manual." },
-  { value: "fraud_signal_high", label: "Señal de fraude", hint: "Devuelve indicadores de riesgo altos." },
+  {
+    value: "not_found",
+    label: "Sin coincidencia",
+    hint: "El dato consultado no existe en el proveedor.",
+  },
+  {
+    value: "partial_match",
+    label: "Coincidencia parcial",
+    hint: "Coincide a medias: pide revisión manual.",
+  },
+  {
+    value: "fraud_signal_high",
+    label: "Señal de fraude",
+    hint: "Devuelve indicadores de riesgo altos.",
+  },
 ];
 
 /**
@@ -48,7 +80,12 @@ export function SimulateDialog({
   const elegido = ESCENARIOS.find((item) => item.value === scenario);
 
   return (
-    <DialogShell open labelledBy={titleId} onClose={onClose} panelClassName="w-full max-w-xl">
+    <DialogShell
+      open
+      labelledBy={titleId}
+      onClose={onClose}
+      panelClassName="w-full max-w-xl"
+    >
       <div className="max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -56,8 +93,9 @@ export function SimulateDialog({
               Simular una llamada a {provider.providerCode}
             </h2>
             <p className="mt-1 text-sm text-atlas-muted">
-              Ejecuta una llamada de prueba de verdad y la registra como cualquier otra. Aparecerá en el
-              tablero y en el listado de solicitudes.
+              Ejecuta una llamada de prueba de verdad y la registra como
+              cualquier otra. Aparecerá en el tablero y en el listado de
+              solicitudes.
             </p>
           </div>
           <Button variant="ghost" onClick={onClose} aria-label="Cerrar">
@@ -81,8 +119,9 @@ export function SimulateDialog({
 
         {provider.mode !== "mock_server" ? (
           <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Este proveedor está en modo <strong>{provider.mode}</strong>. Los escenarios los aplica el emulador,
-            que sólo interviene en «simulado servidor»: en cualquier otro modo la respuesta la fabrica el propio
+            Este proveedor está en modo <strong>{provider.mode}</strong>. Los
+            escenarios los aplica el emulador, que sólo interviene en «simulado
+            servidor»: en cualquier otro modo la respuesta la fabrica el propio
             backend y el escenario se ignora en su mayor parte.
           </p>
         ) : null}
@@ -90,8 +129,14 @@ export function SimulateDialog({
         {test.error ? (
           <ErrorState
             title="La llamada falló"
-            description={isAtlasApiError(test.error) ? test.error.message : "Error inesperado."}
-            requestId={isAtlasApiError(test.error) ? test.error.requestId : undefined}
+            description={
+              isAtlasApiError(test.error)
+                ? test.error.message
+                : "Error inesperado."
+            }
+            requestId={
+              isAtlasApiError(test.error) ? test.error.requestId : undefined
+            }
           />
         ) : null}
 
@@ -103,7 +148,9 @@ export function SimulateDialog({
             variant="primary"
             isLoading={test.isPending}
             loadingText="Llamando…"
-            onClick={() => test.mutate({ scenario: scenario || undefined, input: {} })}
+            onClick={() =>
+              test.mutate({ scenario: scenario || undefined, input: {} })
+            }
           >
             <Play className="h-4 w-4" aria-hidden />
             Llamar ahora
@@ -112,7 +159,10 @@ export function SimulateDialog({
 
         {test.data ? (
           <div className="mt-4">
-            <RequestResultCard title={`Respuesta de ${provider.providerCode}`} result={test.data} />
+            <RequestResultCard
+              title={`Respuesta de ${provider.providerCode}`}
+              result={test.data}
+            />
           </div>
         ) : null}
       </div>

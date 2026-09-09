@@ -7,10 +7,21 @@ import { Select } from "@/shared/components/ui/input";
 import { EmptyState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
-import { useClaimChannelMutation, useQueuedChannels, useSetPresenceMutation } from "./hooks";
+import {
+  useClaimChannelMutation,
+  useQueuedChannels,
+  useSetPresenceMutation,
+} from "./hooks";
 import { MessagesSquare } from "lucide-react";
 
-const PRESENCIAS = ["AVAILABLE", "BUSY", "AWAY", "WRAP_UP", "TRAINING", "OFFLINE"];
+const PRESENCIAS = [
+  "AVAILABLE",
+  "BUSY",
+  "AWAY",
+  "WRAP_UP",
+  "TRAINING",
+  "OFFLINE",
+];
 
 /**
  * Las conversaciones que esperan a alguien.

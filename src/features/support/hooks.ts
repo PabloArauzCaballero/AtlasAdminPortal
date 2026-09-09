@@ -107,7 +107,8 @@ export function useSupportAgents() {
 
 function useAgentsInvalidation() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ["support", "agents"] });
+  return () =>
+    queryClient.invalidateQueries({ queryKey: ["support", "agents"] });
 }
 
 export function useCreateSupportAgentMutation() {
@@ -165,7 +166,9 @@ function useCaseActionMutation<TInput, TResult>(
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["support", "cases"] }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.supportCase(caseId) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.supportCase(caseId),
+        }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.supportCaseTimeline(caseId),
         }),

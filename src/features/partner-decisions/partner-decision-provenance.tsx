@@ -1,7 +1,10 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import { engineExecutionUrl, engineUrl } from "@/shared/decision-engine/engine-links";
+import {
+  engineExecutionUrl,
+  engineUrl,
+} from "@/shared/decision-engine/engine-links";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime } from "@/shared/lib/format";
 import type { PartnerDecisionProvenance } from "./types";

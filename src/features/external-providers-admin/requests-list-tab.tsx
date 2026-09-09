@@ -23,8 +23,14 @@ const PAGINA = 25;
  */
 const ESTADOS = [
   { value: "", label: "Todas" },
-  { value: "FAILED,PROVIDER_UNAVAILABLE,PROVIDER_AUTH_FAILED,RATE_LIMITED", label: "Con problema" },
-  { value: "BLOCKED_BY_COST_POLICY,CONSENT_REQUIRED,MANUAL_APPROVAL_REQUIRED", label: "Frenadas por política" },
+  {
+    value: "FAILED,PROVIDER_UNAVAILABLE,PROVIDER_AUTH_FAILED,RATE_LIMITED",
+    label: "Con problema",
+  },
+  {
+    value: "BLOCKED_BY_COST_POLICY,CONSENT_REQUIRED,MANUAL_APPROVAL_REQUIRED",
+    label: "Frenadas por política",
+  },
   { value: "COMPLETED,MOCKED", label: "Con respuesta" },
   { value: "CACHED", label: "Servidas desde caché" },
 ];
@@ -62,7 +68,9 @@ export function RequestsListTab() {
         <Field label="Proveedor">
           <Input
             value={providerCode}
-            onChange={(event) => filtrar(() => setProviderCode(event.target.value.toUpperCase()))}
+            onChange={(event) =>
+              filtrar(() => setProviderCode(event.target.value.toUpperCase()))
+            }
             placeholder="ej: SEGIP"
             className="w-44 font-mono text-xs"
           />
@@ -70,7 +78,9 @@ export function RequestsListTab() {
         <Field label="Cómo acabó">
           <Select
             value={responseStatus}
-            onChange={(event) => filtrar(() => setResponseStatus(event.target.value))}
+            onChange={(event) =>
+              filtrar(() => setResponseStatus(event.target.value))
+            }
             className="w-56"
           >
             {ESTADOS.map((estado) => (
@@ -87,7 +97,9 @@ export function RequestsListTab() {
             max={90}
             className="w-32"
             value={days}
-            onChange={(event) => filtrar(() => setDays(Number(event.target.value) || 7))}
+            onChange={(event) =>
+              filtrar(() => setDays(Number(event.target.value) || 7))
+            }
           />
         </Field>
       </ReportFilters>
@@ -96,9 +108,13 @@ export function RequestsListTab() {
       {query.error ? (
         <ErrorState
           description={
-            isAtlasApiError(query.error) ? query.error.message : "No se pudo cargar el listado de solicitudes."
+            isAtlasApiError(query.error)
+              ? query.error.message
+              : "No se pudo cargar el listado de solicitudes."
           }
-          requestId={isAtlasApiError(query.error) ? query.error.requestId : undefined}
+          requestId={
+            isAtlasApiError(query.error) ? query.error.requestId : undefined
+          }
           onRetry={() => void query.refetch()}
         />
       ) : null}
@@ -107,21 +123,34 @@ export function RequestsListTab() {
         <>
           {query.data.requests.length === 0 ? (
             <p className="rounded-xl border border-atlas-border bg-white p-4 text-sm text-atlas-muted shadow-subtle">
-              No hay solicitudes que cumplan estos filtros en el período elegido.
+              No hay solicitudes que cumplan estos filtros en el período
+              elegido.
             </p>
           ) : (
             <SimpleTable
-              headers={["ID", "Cuándo", "Proveedor", "Qué se pidió", "Cliente", "Cómo acabó", "Tardó"]}
+              headers={[
+                "ID",
+                "Cuándo",
+                "Proveedor",
+                "Qué se pidió",
+                "Cliente",
+                "Cómo acabó",
+                "Tardó",
+              ]}
               align={{ 6: "right" }}
             >
               {query.data.requests.map((request) => {
-                const explicacion = request.responseStatus ? explainStatus(request.responseStatus) : null;
+                const explicacion = request.responseStatus
+                  ? explainStatus(request.responseStatus)
+                  : null;
                 return (
                   <Tr key={request.requestId}>
                     <Td>
                       <button
                         type="button"
-                        onClick={() => void navigator.clipboard?.writeText(request.requestId)}
+                        onClick={() =>
+                          void navigator.clipboard?.writeText(request.requestId)
+                        }
                         className="inline-flex items-center gap-1.5 font-mono text-xs text-atlas-text hover:text-atlas-accent"
                         title="Copiar el identificador"
                       >
@@ -138,10 +167,16 @@ export function RequestsListTab() {
                         {explicacion?.label ?? request.responseStatus ?? "—"}
                       </Badge>
                       {request.errorMessageSafe ? (
-                        <p className="mt-1 text-xs text-atlas-muted">{request.errorMessageSafe}</p>
+                        <p className="mt-1 text-xs text-atlas-muted">
+                          {request.errorMessageSafe}
+                        </p>
                       ) : null}
                     </Td>
-                    <Td right>{request.latencyMs === null ? "—" : `${formatNumber(request.latencyMs)} ms`}</Td>
+                    <Td right>
+                      {request.latencyMs === null
+                        ? "—"
+                        : `${formatNumber(request.latencyMs)} ms`}
+                    </Td>
                   </Tr>
                 );
               })}
@@ -155,7 +190,10 @@ export function RequestsListTab() {
                 : `${offset + 1}–${Math.min(offset + PAGINA, query.data.total)} de ${formatNumber(query.data.total)}`}
             </span>
             <div className="flex gap-2">
-              <Button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGINA))}>
+              <Button
+                disabled={offset === 0}
+                onClick={() => setOffset(Math.max(0, offset - PAGINA))}
+              >
                 <ChevronLeft className="h-4 w-4" aria-hidden />
                 Anteriores
               </Button>

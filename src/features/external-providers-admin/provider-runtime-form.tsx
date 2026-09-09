@@ -19,16 +19,22 @@ import type { ProviderRow } from "./provider-columns";
  * nombre y es la que decide si el emulador interviene o no.
  */
 const AYUDA_MODO: Record<string, string> = {
-  mock_local: "El backend fabrica la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
-  mock_server: "Llama por red al emulador de proveedores. Es el modo que permite medir salud y latencia de verdad.",
-  sandbox: "Entorno de pruebas del proveedor real. Hoy ningún conector lo implementa: falla explícitamente.",
-  production: "El proveedor real. Exige credenciales cargadas y la integración implementada.",
+  mock_local:
+    "El backend fabrica la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
+  mock_server:
+    "Llama por red al emulador de proveedores. Es el modo que permite medir salud y latencia de verdad.",
+  sandbox:
+    "Entorno de pruebas del proveedor real. Hoy ningún conector lo implementa: falla explícitamente.",
+  production:
+    "El proveedor real. Exige credenciales cargadas y la integración implementada.",
   disabled: "No se le llama. Cualquier solicitud a este proveedor se rechaza.",
 };
 
 const AYUDA_ESTADO: Record<string, string> = {
-  ACTIVE: "Es el proveedor oficial para esta categoría. No implica que ya se le llame de verdad: eso lo dice el modo.",
-  MOCK_ONLY: "Existe para fijar el contrato mientras no haya proveedor firmado.",
+  ACTIVE:
+    "Es el proveedor oficial para esta categoría. No implica que ya se le llame de verdad: eso lo dice el modo.",
+  MOCK_ONLY:
+    "Existe para fijar el contrato mientras no haya proveedor firmado.",
   SANDBOX_ONLY: "Sólo autorizado contra el entorno de pruebas del proveedor.",
   DISABLED: "Retirado del catálogo operativo.",
 };
@@ -53,11 +59,11 @@ export function ProviderRuntimeForm({
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         {/*
-          * Las opciones se escribían con el literal del backend (`mock_local`, `MOCK_ONLY`). El
-          * mismo concepto se pintaba en castellano en la tabla y en inglés técnico aquí, en el
-          * único sitio donde hay que ELEGIR — que es justo donde importa entender la diferencia
-          * entre simular en proceso y simular por red.
-          */}
+         * Las opciones se escribían con el literal del backend (`mock_local`, `MOCK_ONLY`). El
+         * mismo concepto se pintaba en castellano en la tabla y en inglés técnico aquí, en el
+         * único sitio donde hay que ELEGIR — que es justo donde importa entender la diferencia
+         * entre simular en proceso y simular por red.
+         */}
         <Field label="Cómo se le llama" hint={AYUDA_MODO[defaultMode ?? ""]}>
           <Select
             value={defaultMode}
@@ -74,7 +80,10 @@ export function ProviderRuntimeForm({
             <option value="disabled">No llamar</option>
           </Select>
         </Field>
-        <Field label="Tipo de proveedor" hint={AYUDA_ESTADO[providerStatus ?? ""]}>
+        <Field
+          label="Tipo de proveedor"
+          hint={AYUDA_ESTADO[providerStatus ?? ""]}
+        >
           <Select
             value={providerStatus}
             onChange={(event) =>
