@@ -1,7 +1,11 @@
 import { apiRequest } from "@/shared/api/client";
+import { getApiBaseUrl } from "@/shared/api/config";
+import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   AssignInput,
+  SupportLiveEvent,
+  SupportTranscript,
   CloseInput,
   CreateAgentInput,
   EscalateInput,
@@ -166,4 +170,132 @@ export function closeCase(caseId: string, body: CloseInput) {
     "support-close",
     body,
   );
+}
+
+export function readTranscript(
+  channelId: string,
+  query: QueryParams = {},
+): Promise<SupportTranscript> {
+  return apiRequest<SupportTranscript>(
+    `/support/channels/${channelId}/messages`,
+    { query },
+  );
+}
+
+/**
+ * El `clientMessageId` lo pone el cliente y no el servidor.
+ *
+ * Es lo que hace que reenviar tras un timeout no duplique el mensaje en la transcripción: el
+ * backend lo usa para reconocer el reintento. Un identificador generado en el servidor no podría
+ * hacerlo, porque el cliente no sabría cuál mandó.
+ */
+export function sendChannelMessage(channelId: string, body: string) {
+  return apiRequest<{ messageId: string; sequence: string }>(
+    `/support/channels/${channelId}/messages`,
+    {
+      method: "POST",
+      body: {
+        clientMessageId: idempotencyKey("agent-msg"),
+        body,
+        messageType: "TEXT",
+      },
+    },
+  );
+}
+
+export function markChannelRead(channelId: string, upToSequence: string) {
+  return apiRequest<unknown>(`/support/channels/${channelId}/read`, {
+    method: "POST",
+    body: { upToSequence },
+  });
+}
+
+/**
+ * El hilo en vivo, con `fetch` y no con `EventSource`.
+ *
+ * `EventSource` no admite cabeceras, y la sesión del portal viaja en `Authorization: Bearer`: no hay
+ * forma de autenticar el stream con él sin poner el token en la URL, donde acabaría en los registros
+ * del proxy. Con `fetch` el token va en su cabecera y el corte es un `AbortController`. Lo único que
+ * se pierde es la reconexión automática del navegador, que aquí se escribe explícitamente y con
+ * espera —sin la pausa, un backend caído recibiría un bucle de peticiones que le impediría
+ * levantarse—. Es el mismo patrón que ya usa el ERP.
+ *
+ * Devuelve la función para cerrarlo, y quien la llama DEBE invocarla al desmontar: una suscripción
+ * que sobrevive a la pantalla sigue recibiendo mensajes de una conversación que ya nadie mira, y
+ * cada navegación deja otra abierta.
+ */
+export function subscribeToChannel(
+  channelId: string,
+  onEvent: (event: SupportLiveEvent) => void,
+  onConnectionChange?: (connected: boolean) => void,
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+
+  const control = new AbortController();
+  let closed = false;
+
+  const listen = async (): Promise<void> => {
+    const token = getStoredInternalSession()?.accessToken;
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl().replace(/\/+$/, "")}/support/channels/${channelId}/stream`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "text/event-stream",
+          },
+          signal: control.signal,
+        },
+      );
+      if (!response.ok || !response.body)
+        throw new Error(`stream HTTP ${response.status}`);
+
+      onConnectionChange?.(true);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let pending = "";
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        pending += decoder.decode(value, { stream: true });
+
+        /*
+         * Los eventos SSE se separan por línea en blanco, y un trozo puede cortar uno por la mitad:
+         * sólo se procesa lo que ya está completo y el resto espera al siguiente.
+         */
+        const blocks = pending.split("\n\n");
+        pending = blocks.pop() ?? "";
+
+        for (const block of blocks) {
+          const payload = block
+            .split("\n")
+            .filter((line) => line.startsWith("data:"))
+            .map((line) => line.slice(5).trim())
+            .join("");
+          if (!payload) continue;
+          try {
+            onEvent(JSON.parse(payload) as SupportLiveEvent);
+          } catch {
+            // Un evento ilegible no puede tumbar el hilo: se ignora y se sigue escuchando.
+          }
+        }
+      }
+    } catch {
+      // Abortar al desmontar entra por aquí y no es fallo: por eso se comprueba `closed`.
+    } finally {
+      onConnectionChange?.(false);
+    }
+
+    if (!closed) setTimeout(() => void listen(), 3000);
+  };
+
+  void listen();
+
+  return () => {
+    closed = true;
+    control.abort();
+  };
 }

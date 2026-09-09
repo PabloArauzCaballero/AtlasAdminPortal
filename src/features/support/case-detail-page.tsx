@@ -11,6 +11,7 @@ import { LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { AccesoASoporte } from "./support-access-state";
 import { CaseActions } from "./case-actions";
+import { ChatPanel } from "./chat-panel";
 import { useSupportCase, useSupportCaseTimeline } from "./hooks";
 import type { SupportCaseEvent } from "./types";
 import { LifeBuoy } from "lucide-react";
@@ -125,6 +126,7 @@ export function SupportCaseDetailPage({
           </div>
 
           <aside className="space-y-4">
+            <ChatPanel channels={caso.data.channels ?? []} />
             <CaseActions caso={caso.data} />
           </aside>
         </div>

@@ -48,13 +48,65 @@ export type SupportCaseListResponse = {
 
 export type SupportChannel = {
   channelId: string;
+  channelCode?: string;
   caseId: string | null;
   status: string;
   channelType: string;
-  queueId: string | null;
-  assignedAgentId: string | null;
   requestedAt: string | null;
-  lastMessageAt: string | null;
+  openedAt?: string | null;
+  closedAt?: string | null;
+  closeReason?: string | null;
+  lastMessageSequence?: string;
+  hasAgent?: boolean;
+};
+
+/**
+ * El caso trae sus canales con TRES campos, no con la ficha completa del canal.
+ *
+ * `getCase` proyecta `{ channelId, status, type }` y nada más — no `channelType`, que es como se
+ * llama en `toChannelDto`. Escribir aquí la forma larga hacía que el panel de chat leyera
+ * `channelType` y encontrara `undefined` en el único sitio donde el dato viene de esta ruta.
+ */
+export type SupportCaseChannelRef = {
+  channelId: string;
+  status: string;
+  type: string;
+};
+
+export type SupportMessage = {
+  messageId: string;
+  sequence: string;
+  clientMessageId: string;
+  senderActorType: "CUSTOMER" | "PARTNER_USER" | "AGENT" | "SUPERVISOR" | "SYSTEM";
+  messageType: string;
+  visibility: string;
+  body: string | null;
+  redacted: boolean;
+  createdAt: string;
+  attachments: {
+    attachmentId: string;
+    filename: string;
+    mime: string | null;
+    sizeBytes: number;
+    scanStatus: string;
+  }[];
+};
+
+export type SupportTranscript = {
+  messages: SupportMessage[];
+  readState: {
+    actorType: string;
+    roleInChannel: string;
+    lastReadSequence: string;
+    lastReadAt: string | null;
+  }[];
+  nextCursor: string | null;
+};
+
+/** Lo que llega por el hilo en vivo. El tipo viaja DENTRO del dato, no como nombre de evento SSE. */
+export type SupportLiveEvent = {
+  type: "message.created" | "message.read" | "agent.typing" | "channel.closed" | string;
+  data: Record<string, unknown>;
 };
 
 export type SupportCaseEvent = {
@@ -76,7 +128,7 @@ export type SupportAssignment = {
 };
 
 export type SupportCaseDetail = SupportCase & {
-  channels?: SupportChannel[];
+  channels?: SupportCaseChannelRef[];
 };
 
 export type SupportCaseTimeline = {

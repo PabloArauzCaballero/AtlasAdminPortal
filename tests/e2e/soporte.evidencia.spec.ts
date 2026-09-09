@@ -58,6 +58,7 @@ const CASOS = {
       subjectCustomerId: "9001",
       subjectPartnerProfileId: null,
       internalSummary: "El comprobante existe y no está conciliado.",
+      channels: [{ channelId: "770", status: "OPEN", type: "CHAT" }],
       escalationLevel: 0,
       transferCount: 1,
       legalHold: false,
@@ -146,6 +147,49 @@ const CANALES = {
       lastMessageAt: "2026-09-07T10:06:00.000Z",
     },
   ],
+};
+
+const TRANSCRIPCION = {
+  messages: [
+    {
+      messageId: "9001",
+      sequence: "1",
+      clientMessageId: "c-1",
+      senderActorType: "CUSTOMER",
+      messageType: "TEXT",
+      visibility: "PUBLIC",
+      body: "Pagué la cuota 3 el viernes por el banco y sigue apareciendo pendiente.",
+      redacted: false,
+      createdAt: "2026-09-05T14:12:00.000Z",
+      attachments: [],
+    },
+    {
+      messageId: "9002",
+      sequence: "2",
+      clientMessageId: "c-2",
+      senderActorType: "AGENT",
+      messageType: "TEXT",
+      visibility: "PUBLIC",
+      body: "Gracias, ya veo el comprobante. Lo estoy revisando con el equipo de conciliación.",
+      redacted: false,
+      createdAt: "2026-09-05T14:20:00.000Z",
+      attachments: [],
+    },
+    {
+      messageId: "9003",
+      sequence: "3",
+      clientMessageId: "c-3",
+      senderActorType: "CUSTOMER",
+      messageType: "TEXT",
+      visibility: "PUBLIC",
+      body: "Mi tarjeta termina en ****",
+      redacted: true,
+      createdAt: "2026-09-06T09:00:00.000Z",
+      attachments: [],
+    },
+  ],
+  readState: [],
+  nextCursor: null,
 };
 
 const HISTORIA = {
@@ -286,6 +330,7 @@ test("Soporte — ficha del caso con su historia", async ({ page }) => {
   await preparar(page, [
     [/\/internal\/support\/cases\/5001\/timeline$/, HISTORIA],
     [/\/internal\/support\/cases\/5001$/, CASOS.cases[0]],
+    [/\/support\/channels\/770\/messages$/, TRANSCRIPCION],
     ...RUTAS_BASE,
   ]);
   await page.goto("/internal/support/cases/5001", {
@@ -298,6 +343,17 @@ test("Soporte — ficha del caso con su historia", async ({ page }) => {
   );
   await expect(page.getByText("CASE_TRIAGED")).toBeVisible();
   await expect(page.getByRole("button", { name: "Resolver" })).toBeVisible();
+
+  /*
+   * La conversación dentro del expediente: hasta este cambio el portal podía TOMAR un chat de la
+   * cola y no leerlo. Se comprueba además que un mensaje redactado no salga en blanco —eso se
+   * leería como un fallo de carga— sino diciendo que el contenido se retiró.
+   */
+  await expect(page.getByText("Conversación")).toBeVisible();
+  await expect(page.getByText(/sigue apareciendo pendiente/)).toBeVisible();
+  await expect(
+    page.getByText("Contenido retirado por contener datos sensibles."),
+  ).toBeVisible();
   await capturar(page, "ficha-caso");
 });
 
