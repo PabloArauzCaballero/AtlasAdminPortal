@@ -86,7 +86,12 @@ export function FlowNodeCard({
   data,
   selected,
 }: NodeProps & { data: FlowNodeData }) {
-  const style = STYLE[data.type];
+  // Un tipo que este portal aún no conoce (el backend se desplegó antes) se pinta como «sin resolver»
+  // en vez de tumbar la página: el grafo entero caía con un TypeError por un solo nodo nuevo.
+  const style =
+    (STYLE as Record<string, (typeof STYLE)[keyof typeof STYLE] | undefined>)[
+      data.type
+    ] ?? STYLE.UNKNOWN;
   const Icon = style.icon;
   const risk = data.meta?.risk as string | undefined;
   return (
