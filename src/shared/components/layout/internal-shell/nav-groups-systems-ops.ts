@@ -1,5 +1,6 @@
 import {
   Activity,
+  BadgeCheck,
   Boxes,
   ClipboardCheck,
   Gauge,
@@ -66,6 +67,12 @@ export const systemsOpsGroup: InternalNavGroup = {
       label: "Revisión de flujos",
       href: "/internal/flows/review",
       icon: ClipboardCheck,
+      permissions: ["systems.flows.read"],
+    },
+    {
+      label: "Compuerta de documentación",
+      href: "/internal/flows/gate",
+      icon: BadgeCheck,
       permissions: ["systems.flows.read"],
     },
     {
