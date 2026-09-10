@@ -68,6 +68,13 @@ function AuthorizedRbacDriftPage() {
           tone={sinGuarda ? "warning" : "success"}
         />
       </div>
+      {data?.notMeasured?.length ? (
+        <p className="mb-4 text-xs text-atlas-muted">
+          No se mide aquí para {data.notMeasured.join(", ")}: sus pantallas
+          llaman a otros bloques, y la deriva se calcula contra los endpoints de
+          AtlasBackend. Que no aparezcan no significa que no tengan deriva.
+        </p>
+      ) : null}
       {data?.truncated ? (
         <p className="mb-4 text-xs text-amber-700">
           La consulta de llamadas vino cortada: esto opina sobre datos

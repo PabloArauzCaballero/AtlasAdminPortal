@@ -79,6 +79,8 @@ export type RbacDriftScreen = {
 };
 
 export type RbacDriftResponse = {
+  /** Clientes cuyas pantallas llaman a otro bloque: aquí no se mide su deriva. */
+  notMeasured?: string[];
   screensWithObservedEdges: number;
   truncated: boolean;
   screens: RbacDriftScreen[];
