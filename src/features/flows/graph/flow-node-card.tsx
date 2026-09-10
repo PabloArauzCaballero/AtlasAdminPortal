@@ -9,6 +9,7 @@ import {
   Cog,
   Database,
   Globe,
+  Megaphone,
   Send,
   ShieldCheck,
   UserRound,
@@ -66,6 +67,13 @@ const STYLE: Record<
     icon: Send,
     border: "border-orange-300",
     eyebrow: "HTTP SALIENTE",
+  },
+  // Un evento que el flujo publica: el flujo no termina al responder. El texto dice quién lo recoge,
+  // no si avisa a alguien, que se mide en «Trabajo pendiente».
+  EVENT: {
+    icon: Megaphone,
+    border: "border-pink-300",
+    eyebrow: "EVENTO PUBLICADO",
   },
   UNKNOWN: {
     icon: CircleHelp,

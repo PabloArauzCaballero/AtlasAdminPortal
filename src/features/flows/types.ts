@@ -151,6 +151,7 @@ export type GraphNode = {
     | "DATABASE"
     | "ERROR"
     | "BLOCK_CALL"
+    | "EVENT"
     | "UNKNOWN";
   layer: "CLIENT" | "API" | "BACKEND" | "DATA";
   label: string;

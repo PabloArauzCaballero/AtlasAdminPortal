@@ -33,6 +33,7 @@ const MINIMAP_COLOR: Record<string, string> = {
   DATABASE: "#c4b5fd",
   ERROR: "#fca5a5",
   BLOCK_CALL: "#fdba74",
+  EVENT: "#f9a8d4",
   UNKNOWN: "#cbd5e1",
 };
 
