@@ -1,26 +1,14 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
-import { FileSignature } from "lucide-react";
+import { useId, useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
-import { RoleGate } from "@/shared/auth/role-gate";
-import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
-import { MetricCard } from "@/shared/components/layout/metric-card";
-import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { StatusBadge } from "@/shared/components/ui/badges";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
-import {
-  useContractTemplates,
-  usePublishContractTemplate,
-  useSetDefaultContractTemplate,
-} from "./hooks";
+import { formatDateTime } from "@/shared/lib/format";
+import { usePublishContractTemplate } from "./hooks";
 import type { PartnerContractTemplate } from "./types";
 
 /**

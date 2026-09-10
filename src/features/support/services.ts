@@ -1,6 +1,4 @@
 import { apiRequest } from "@/shared/api/client";
-import { getApiBaseUrl } from "@/shared/api/config";
-import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   AssignInput,

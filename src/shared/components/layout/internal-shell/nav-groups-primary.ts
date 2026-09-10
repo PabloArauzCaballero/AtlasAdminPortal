@@ -1,8 +1,6 @@
 import {
-  Activity,
   BarChart3,
   BookOpen,
-  Boxes,
   ClipboardCheck,
   Database,
   FileClock,
@@ -11,79 +9,15 @@ import {
   Gauge,
   GitBranch,
   GraduationCap,
-  Network,
-  Route,
   ShieldCheck,
-  SlidersHorizontal,
-  Stethoscope,
   TestTube2,
-  Waypoints,
-  Wrench,
 } from "lucide-react";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import type { InternalNavGroup } from "./nav-config";
+import { systemsOpsGroup } from "./nav-groups-systems-ops";
 
 export const navGroupsPrimary: InternalNavGroup[] = [
-  {
-    label: "Systems Ops",
-    icon: Activity,
-    items: [
-      {
-        label: "Panel de control",
-        href: "/internal/systems/dashboard",
-        icon: Gauge,
-        permissions: ["systems.endpoints.read", "systems.tools.health.read"],
-      },
-      {
-        label: "Endpoints",
-        href: "/internal/systems/endpoints",
-        icon: Activity,
-        permissions: ["systems.endpoints.read"],
-      },
-      {
-        label: "Flujos",
-        href: "/internal/flows",
-        icon: Waypoints,
-        permissions: ["systems.flows.read"],
-      },
-      {
-        label: "Procesos de negocio",
-        href: "/internal/flows/business",
-        icon: Route,
-        permissions: ["systems.flows.read"],
-      },
-      {
-        label: "Herramientas",
-        href: "/internal/systems/tools",
-        icon: Wrench,
-        permissions: ["systems.tools.read"],
-      },
-      {
-        label: "Salud herramientas",
-        href: "/internal/systems/tools/health",
-        icon: Stethoscope,
-        permissions: ["systems.tools.health.read"],
-      },
-      {
-        label: "Salud de la red",
-        href: "/internal/systems/network-health",
-        icon: Network,
-        permissions: ["systems.network.read"],
-      },
-      {
-        label: "Artefactos del motor",
-        href: "/internal/systems/decision-engine/artifacts",
-        icon: Boxes,
-        permissions: ["systems.decisionEngine.artifacts.read"],
-      },
-      {
-        label: "Cola de revisión",
-        href: "/internal/review-queue",
-        icon: SlidersHorizontal,
-        permissions: ["systems.reviewQueue.read"],
-      },
-    ],
-  },
+  systemsOpsGroup,
   {
     label: "Catálogo y metadata",
     icon: Database,
