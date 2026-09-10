@@ -1,4 +1,7 @@
-import ELK, { type ElkNode } from "elkjs/lib/elk.bundled.js";
+import ELK, {
+  type ELK as ElkInstance,
+  type ElkNode,
+} from "elkjs/lib/elk-api.js";
 import type { FlowGraph } from "../types";
 
 export const CARD_WIDTH = 232;
@@ -20,7 +23,29 @@ export type LayoutResult = {
   elapsedMs: number;
 };
 
-const elk = new ELK();
+/**
+ * ELK en un Web Worker, no en el hilo principal.
+ *
+ * El coste medido no baja (el módulo `systems-ops`, 288 nodos, tarda ~1 s en cualquier caso), pero
+ * deja de congelar la interfaz: con `elk.bundled` el navegador no repintaba ni respondía al ratón
+ * durante ese segundo, y el skeleton se quedaba a medias. Con el worker, la página sigue viva y el
+ * `elapsedMs` que se muestra es el mismo dato de antes, medido igual.
+ *
+ * `elk-api` + worker propio en vez de `elk.bundled`: el bundle del hilo principal baja de ~1 MB al
+ * cliente ligero, y el motor (lo pesado) se carga aparte, sólo cuando hay un grafo que calcular.
+ */
+let elkInstance: ElkInstance | null = null;
+function getElk(): ElkInstance {
+  if (elkInstance) return elkInstance;
+  elkInstance = new ELK({
+    // `new URL(..., import.meta.url)` es lo que hace que el bundler emita el worker como chunk propio.
+    workerFactory: () =>
+      new Worker(new URL("elkjs/lib/elk-worker.min.js", import.meta.url), {
+        type: "classic",
+      }),
+  });
+  return elkInstance;
+}
 
 export async function layoutGraph(graph: FlowGraph): Promise<LayoutResult> {
   const started = performance.now();
@@ -45,7 +70,7 @@ export async function layoutGraph(graph: FlowGraph): Promise<LayoutResult> {
       targets: [edge.target],
     })),
   };
-  const laid = await elk.layout(root);
+  const laid = await getElk().layout(root);
   const positions = new Map<string, Positioned>();
   for (const child of laid.children ?? []) {
     positions.set(child.id, { id: child.id, x: child.x ?? 0, y: child.y ?? 0 });
