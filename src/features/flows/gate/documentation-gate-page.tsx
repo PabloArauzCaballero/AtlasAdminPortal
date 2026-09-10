@@ -28,7 +28,7 @@ export function DocumentationGatePage() {
 function AuthorizedDocumentationGatePage() {
   const query = useDocumentationGate();
   const gate = query.data;
-  const fallan = gate?.checks.filter((check) => !check.passed).length ?? 0;
+  const fallan = gate?.checks.filter((check) => !check.passed).length;
 
   return (
     <>
@@ -53,8 +53,10 @@ function AuthorizedDocumentationGatePage() {
         />
         <MetricCard
           label="Comprobaciones que fallan"
-          value={gate ? fallan : "—"}
-          tone={fallan ? "warning" : "success"}
+          value={fallan ?? "—"}
+          tone={
+            fallan === undefined ? "default" : fallan ? "warning" : "success"
+          }
         />
         <MetricCard
           label="Evaluada"

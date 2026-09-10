@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { fecha } from "../async/labels";
+import { FlowDetailDrawer } from "../flow-detail-drawer";
 import { useFlowReviewQueue, useReviewFlowMutation } from "./hooks";
 import { ESTADO, MOTIVO } from "./labels";
 import type {
@@ -49,6 +50,8 @@ function AuthorizedFlowReviewPage() {
   const [page, setPage] = useState(1);
   const query = useFlowReviewQueue({ reviewStatus: estado, page, limit: 20 });
   const decidir = useReviewFlowMutation();
+  // La ficha del flujo, para que quien decide vea lo que aprueba: la cola sólo enseña ruta y motivos.
+  const [abierto, setAbierto] = useState<string | null>(null);
   const totalPaginas = query.data?.meta.totalPages ?? 1;
   // Al decidir el último elemento de la última página, esa página deja de existir: sin esto la tabla se
   // quedaba vacía («nada que revisar») mientras las anteriores seguían llenas.
@@ -93,6 +96,12 @@ function AuthorizedFlowReviewPage() {
             <span className="flex items-center gap-2">
               <MethodBadge method={row.original.httpMethod} />
               <span className="font-mono text-xs">{row.original.path}</span>
+              <Button
+                className="h-7 px-2 text-xs"
+                onClick={() => setAbierto(row.original.id)}
+              >
+                Ver flujo
+              </Button>
             </span>
             <span className="text-xs text-atlas-muted">
               {row.original.systemCode} · {row.original.module}
@@ -150,7 +159,7 @@ function AuthorizedFlowReviewPage() {
         ),
       },
     ];
-  }, [decidir, puedeRevisar]);
+  }, [decidir, puedeRevisar, setAbierto]);
 
   return (
     <>
@@ -214,6 +223,7 @@ function AuthorizedFlowReviewPage() {
           emptyDescription="La cola sólo recibe flujos de riesgo alto con análisis incierto y los revisados cuyo código cambió. Se llena al recargar el catálogo de Flujos."
         />
       ) : null}
+      <FlowDetailDrawer flowId={abierto} onClose={() => setAbierto(null)} />
     </>
   );
 }

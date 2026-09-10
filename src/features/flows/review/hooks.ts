@@ -18,7 +18,9 @@ export function useReviewFlowMutation() {
   return useMutation({
     mutationFn: (input: { flowId: string; body: FlowReviewDecision }) =>
       reviewFlow(input.flowId, input.body),
-    onSuccess: async () => {
+    // También al fallar: tras un 409 la fila sigue con la huella vieja, y sin recargar cada nuevo intento
+    // volvía a dar 409 hasta que la caché caducaba.
+    onSettled: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["systems", "flows-review-queue"],
       });
