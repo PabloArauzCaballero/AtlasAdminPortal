@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { AppProviders } from "@/shared/providers/app-providers";
 import { InternalProtectedShell } from "@/shared/auth/internal-protected-shell";
 import { RouteProgress } from "@/shared/components/layout/route-progress";
+import { ScreenTracker } from "@/shared/api/screen-tracker";
 
 // Portal interno autenticado: no se prerenderiza como contenido público.
 // Reduce generación estática innecesaria en build y evita exponer rutas internas como SSG.
@@ -19,6 +20,8 @@ export default function InternalLayout({
       <Suspense fallback={null}>
         <RouteProgress />
       </Suspense>
+      {/* Declara la pantalla abierta para que cada llamada al backend lleve su origen. */}
+      <ScreenTracker />
       <InternalProtectedShell>{children}</InternalProtectedShell>
     </AppProviders>
   );

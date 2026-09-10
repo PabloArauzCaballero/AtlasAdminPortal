@@ -1,4 +1,5 @@
 import { getApiBaseUrl, getCsrfHeaderName } from "./config";
+import { getCurrentScreen } from "./current-screen";
 import type { QueryParams } from "./types";
 import type { InternalSession } from "@/shared/auth/types";
 
@@ -121,7 +122,12 @@ function buildHeaders(
     // y lo guarda en system_action_logs, así una pantalla puede correlacionar lo que hizo con lo
     // que el backend registró. Antes el portal sólo LEÍA el id que la respuesta traía.
     "x-correlation-id": newCorrelationId(),
-    ...(options.flow ? { "x-atlas-flow": options.flow } : {}),
+    // La pantalla de origen. Explícita si quien llama la pasa; si no, la que esté abierta. El
+    // backend la guarda en `origin_screen` y con eso una pantalla pasa de «existe en el código» a
+    // «alguien la usó»; sin ninguna de las dos, no viaja nada y el backend registra un nulo.
+    ...((options.flow ?? getCurrentScreen())
+      ? { "x-atlas-flow": (options.flow ?? getCurrentScreen()) as string }
+      : {}),
     ...(tenantId ? { "x-tenant-id": tenantId } : {}),
     ...options.headers,
   };
