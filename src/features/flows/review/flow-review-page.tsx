@@ -70,7 +70,10 @@ function AuthorizedFlowReviewPage() {
         title={puedeRevisar ? undefined : "Requiere systems.flows.review"}
         onClick={() => {
           decidir.reset();
-          decidir.mutate({ flowId: flujo.id, body: { reviewStatus } });
+          decidir.mutate({
+            flowId: flujo.id,
+            body: { reviewStatus, depsHash: flujo.depsHash },
+          });
         }}
       >
         {texto}

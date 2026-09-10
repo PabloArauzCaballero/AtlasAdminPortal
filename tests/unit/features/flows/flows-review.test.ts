@@ -33,10 +33,13 @@ describe("revisión de flujos", () => {
 
   it("decide con PATCH sobre el flujo, por su id estable", async () => {
     apiRequest.mockResolvedValueOnce({});
-    await reviewFlow("flow_abc123def456", { reviewStatus: "APPROVED" });
+    await reviewFlow("flow_abc123def456", {
+      reviewStatus: "APPROVED",
+      depsHash: "abc",
+    });
     expect(apiRequest).toHaveBeenCalledWith(
       "/systems/flows/flow_abc123def456/review",
-      { method: "PATCH", body: { reviewStatus: "APPROVED" } },
+      { method: "PATCH", body: { reviewStatus: "APPROVED", depsHash: "abc" } },
     );
   });
 
