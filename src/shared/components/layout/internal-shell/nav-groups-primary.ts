@@ -12,6 +12,7 @@ import {
   GitBranch,
   GraduationCap,
   Network,
+  Route,
   ShieldCheck,
   SlidersHorizontal,
   Stethoscope,
@@ -43,6 +44,12 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         label: "Flujos",
         href: "/internal/flows",
         icon: Waypoints,
+        permissions: ["systems.flows.read"],
+      },
+      {
+        label: "Procesos de negocio",
+        href: "/internal/flows/business",
+        icon: Route,
         permissions: ["systems.flows.read"],
       },
       {

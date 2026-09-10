@@ -1,40 +1,17 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { GitBranch, ShieldAlert, ShieldOff, Waypoints } from "lucide-react";
+
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
-import { DataTable } from "@/shared/components/data-table/data-table";
-import { FilterBar } from "@/shared/components/data-table/filter-bar";
-import { MetricCard } from "@/shared/components/layout/metric-card";
-import {
-  PageHeader,
-  SectionHeader,
-} from "@/shared/components/layout/page-header";
+
 import {
   Badge,
   BlockBadge,
   MethodBadge,
   RiskBadge,
 } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime } from "@/shared/lib/format";
-import { FlowDetailDrawer } from "./flow-detail-drawer";
-import { FlowsFindingsTable } from "./flows-findings-table";
-import {
-  useFlowImports,
-  useFlowModules,
-  useFlows,
-  useFlowsSummary,
-  useVerifyFlowsMutation,
-} from "./hooks";
-import { groupCount } from "./services";
-import { FLOW_CLIENTS, FLOW_RISKS, FLOW_SYSTEMS, type Flow } from "./types";
+
+import { type Flow } from "./types";
 
 /**
  * Las columnas de la tabla de flujos.

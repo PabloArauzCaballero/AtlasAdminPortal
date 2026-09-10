@@ -2,6 +2,7 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import { normalizePaginatedResponse } from "@/features/systems/normalizers";
 import type {
+  BusinessFlowsResponse,
   FindingsListResponse,
   Flow,
   FlowDetail,
@@ -53,6 +54,10 @@ export function getModuleGraph(
   return apiRequest<FlowGraph>("/systems/flows/graph", {
     query: { systemCode, module: moduleName, includeRoles },
   });
+}
+
+export function getBusinessFlows() {
+  return apiRequest<BusinessFlowsResponse>("/systems/flows/business");
 }
 
 export function getFlowsSummary() {

@@ -272,6 +272,28 @@ test.describe("Flujos (stack real)", () => {
       await capture(page, testInfo, "grafo de un flujo con services y tablas", {
         fullPage: false,
       });
+      // Procesos de negocio: el `workflow-catalog` leído como historias, con cada paso enlazado.
+      await page.goto("/internal/flows/business");
+      await expect(
+        page.getByRole("heading", { name: "Procesos de negocio" }),
+      ).toBeVisible({ timeout: 30_000 });
+      // Cada tarjeta de proceso es un botón con `aria-expanded`: se localizan por ese atributo.
+      const procesos = page.locator("button[aria-expanded]");
+      await expect(procesos.first()).toBeVisible({ timeout: 30_000 });
+      const cuantos = await procesos.count();
+      expect(cuantos, "el catálogo de procesos está vacío").toBeGreaterThan(0);
+      // Todo enlazado: si un paso quedara sin flujo, la tarjeta lo diría y la insignia cambiaría.
+      await expect(page.getByText("todo enlazado").first()).toBeVisible();
+      await capture(page, testInfo, "procesos de negocio con sus pasos");
+      // Un paso lleva a la ficha del flujo que lo implementa.
+      await page.locator("li button").first().click();
+      await expect(
+        page.getByRole("dialog").getByText("Autorización", { exact: true }),
+      ).toBeVisible({ timeout: 30_000 });
+      await expect(page).toHaveURL(/flow=flow_[a-f0-9]{12}/);
+      await capture(page, testInfo, "paso de negocio abre su flujo");
+      // La ficha se cierra por su botón: `Escape` compite con el foco del botón del paso.
+      await page.getByRole("dialog").getByRole("button").first().click();
     } finally {
       await buzon.cerrar();
     }

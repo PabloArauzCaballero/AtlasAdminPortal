@@ -191,3 +191,39 @@ export type VerifyFlowsResult = {
   fresh: number;
   skippedNoLogs: number;
 };
+
+/** Un paso de un proceso de negocio del `workflow-catalog`, con el flujo que lo implementa. */
+export type BusinessStep = {
+  stepCode: string;
+  name: string;
+  stage: string | null;
+  order: number;
+  method: string;
+  path: string;
+  mandatory: boolean;
+  requiresAuth: boolean;
+  requiresIdempotencyKey: boolean;
+  /** Nulo = el paso declara una ruta que el catálogo no tiene: cambió o ya no existe. */
+  flowId: string | null;
+  risk: string | null;
+  verification: string | null;
+  testStatus: string | null;
+  module: string | null;
+};
+
+export type BusinessProcess = {
+  workflowCode: string;
+  name: string;
+  version: string;
+  steps: BusinessStep[];
+  stepCount: number;
+  linked: number;
+  unlinked: number;
+  verified: number;
+  critical: number;
+};
+
+export type BusinessFlowsResponse = {
+  processes: BusinessProcess[];
+  totals: { processes: number; steps: number; unlinked: number };
+};

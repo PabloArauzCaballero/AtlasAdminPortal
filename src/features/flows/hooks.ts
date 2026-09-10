@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
+  getBusinessFlows,
   getFlow,
   getFlowGraph,
   getModuleGraph,
@@ -53,6 +54,13 @@ export function useModuleGraph(
     queryFn: () =>
       getModuleGraph(systemCode ?? "", moduleName ?? "", includeRoles),
     enabled: Boolean(systemCode && moduleName),
+  });
+}
+
+export function useBusinessFlows() {
+  return useQuery({
+    queryKey: queryKeys.flowBusiness,
+    queryFn: getBusinessFlows,
   });
 }
 
