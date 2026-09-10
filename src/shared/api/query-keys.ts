@@ -27,6 +27,9 @@ export const queryKeys = {
     ["systems", "flows-screens", params] as const,
   flowImports: ["systems", "flows-imports"] as const,
   flowBusiness: ["systems", "flows-business"] as const,
+  flowPendingWork: (windowDays: number) =>
+    ["systems", "flows-pending-work", windowDays] as const,
+  flowRbacDrift: ["systems", "flows-rbac-drift"] as const,
   flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
   flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
     ["systems", "flow-module-graph", systemCode, module, roles] as const,
