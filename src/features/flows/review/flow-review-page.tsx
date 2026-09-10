@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { ClipboardCheck } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -49,6 +49,12 @@ function AuthorizedFlowReviewPage() {
   const [page, setPage] = useState(1);
   const query = useFlowReviewQueue({ reviewStatus: estado, page, limit: 20 });
   const decidir = useReviewFlowMutation();
+  const totalPaginas = query.data?.meta.totalPages ?? 1;
+  // Al decidir el último elemento de la última página, esa página deja de existir: sin esto la tabla se
+  // quedaba vacía («nada que revisar») mientras las anteriores seguían llenas.
+  useEffect(() => {
+    if (query.data && page > totalPaginas) setPage(totalPaginas);
+  }, [page, query.data, totalPaginas]);
 
   const columns = useMemo<ColumnDef<FlowReviewItem>[]>(() => {
     const accion = (
@@ -62,9 +68,10 @@ function AuthorizedFlowReviewPage() {
         variant={variant}
         disabled={!puedeRevisar || decidir.isPending}
         title={puedeRevisar ? undefined : "Requiere systems.flows.review"}
-        onClick={() =>
-          decidir.mutate({ flowId: flujo.id, body: { reviewStatus } })
-        }
+        onClick={() => {
+          decidir.reset();
+          decidir.mutate({ flowId: flujo.id, body: { reviewStatus } });
+        }}
       >
         {texto}
       </Button>
