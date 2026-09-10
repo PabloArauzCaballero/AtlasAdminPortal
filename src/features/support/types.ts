@@ -77,7 +77,8 @@ export type SupportMessage = {
   messageId: string;
   sequence: string;
   clientMessageId: string;
-  senderActorType: "CUSTOMER" | "PARTNER_USER" | "AGENT" | "SUPERVISOR" | "SYSTEM";
+  senderActorType:
+    "CUSTOMER" | "PARTNER_USER" | "AGENT" | "SUPERVISOR" | "SYSTEM";
   messageType: string;
   visibility: string;
   body: string | null;
@@ -105,7 +106,12 @@ export type SupportTranscript = {
 
 /** Lo que llega por el hilo en vivo. El tipo viaja DENTRO del dato, no como nombre de evento SSE. */
 export type SupportLiveEvent = {
-  type: "message.created" | "message.read" | "agent.typing" | "channel.closed" | string;
+  type:
+    | "message.created"
+    | "message.read"
+    | "agent.typing"
+    | "channel.closed"
+    | string;
   data: Record<string, unknown>;
 };
 

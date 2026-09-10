@@ -42,8 +42,8 @@ export function ChatPanel({
       <Bloque titulo="Conversación">
         <p className="text-sm text-atlas-muted">
           Este caso no tiene ninguna conversación. Se abrió por otra vía —la
-          pantalla de casos de la app o del portal de comercio— y se responde por
-          el expediente, no por chat.
+          pantalla de casos de la app o del portal de comercio— y se responde
+          por el expediente, no por chat.
         </p>
       </Bloque>
     );
@@ -93,7 +93,10 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
     return subscribeToChannel(
       channelId,
       (evento) => {
-        if (evento.type === "message.created" || evento.type === "channel.closed") {
+        if (
+          evento.type === "message.created" ||
+          evento.type === "channel.closed"
+        ) {
           refrescar();
         }
       },
@@ -204,7 +207,8 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
  */
 function Mensaje({ mensaje }: Readonly<{ mensaje: SupportMessage }>) {
   const deNuestroLado =
-    mensaje.senderActorType === "AGENT" || mensaje.senderActorType === "SUPERVISOR";
+    mensaje.senderActorType === "AGENT" ||
+    mensaje.senderActorType === "SUPERVISOR";
   const delSistema = mensaje.senderActorType === "SYSTEM";
 
   return (

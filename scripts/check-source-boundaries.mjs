@@ -18,6 +18,10 @@ const checks = [
       // backend sigue mandando —firma el permiso y verifica el objeto después—, pero los bytes
       // no lo atraviesan.
       "src/features/files/upload.ts",
+      // El lector de eventos del servidor (SSE). Es transporte, y está aquí por eso: `EventSource`
+      // sería lo natural pero no admite cabeceras, así que el token viajaría en la URL y acabaría
+      // en los registros de cualquier proxy. Con `fetch` va en `Authorization`, como el resto.
+      "src/shared/api/server-events.ts",
     ]),
   },
   {

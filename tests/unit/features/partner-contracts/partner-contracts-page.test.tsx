@@ -78,7 +78,9 @@ describe("PartnerContractsPage — el contrato se versiona, no se edita", () => 
     await waitFor(() =>
       expect(screen.getByTestId("contrato-2")).toBeInTheDocument(),
     );
-    expect(screen.getByText("Contrato vigente").parentElement).toHaveTextContent("v3");
+    expect(
+      screen.getByText("Contrato vigente").parentElement,
+    ).toHaveTextContent("v3");
     // La archivada NO se oculta: es la prueba de qué regía cada día.
     expect(screen.getByTestId("contrato-1")).toBeInTheDocument();
   });

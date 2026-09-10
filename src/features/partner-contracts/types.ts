@@ -20,7 +20,9 @@ export type PartnerContractTemplate = {
 };
 
 export type PartnerContractTemplateList = { items: PartnerContractTemplate[] };
-export type PartnerContractDefault = { template: PartnerContractTemplate | null };
+export type PartnerContractDefault = {
+  template: PartnerContractTemplate | null;
+};
 
 export type PublishContractTemplate = {
   templateCode: string;

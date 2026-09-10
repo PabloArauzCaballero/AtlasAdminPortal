@@ -23,7 +23,9 @@ export function useDefaultContractTemplate() {
 }
 
 /** Publicar y cambiar el predeterminado mueven las DOS consultas: la lista y el vigente. */
-function useContratoMutation<TInput>(accion: (input: TInput) => Promise<unknown>) {
+function useContratoMutation<TInput>(
+  accion: (input: TInput) => Promise<unknown>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: accion,

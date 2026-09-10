@@ -20,6 +20,7 @@ import type {
   SupportQueue,
   TriageInput,
 } from "./types";
+import { subscribeToServerEvents } from "@/shared/api/server-events";
 
 /**
  * Cada acción del caso lleva clave de idempotencia.
@@ -229,73 +230,9 @@ export function subscribeToChannel(
   onEvent: (event: SupportLiveEvent) => void,
   onConnectionChange?: (connected: boolean) => void,
 ): () => void {
-  if (typeof window === "undefined") return () => undefined;
-
-  const control = new AbortController();
-  let closed = false;
-
-  const listen = async (): Promise<void> => {
-    const token = getStoredInternalSession()?.accessToken;
-    if (!token) return;
-
-    try {
-      const response = await fetch(
-        `${getApiBaseUrl().replace(/\/+$/, "")}/support/channels/${channelId}/stream`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "text/event-stream",
-          },
-          signal: control.signal,
-        },
-      );
-      if (!response.ok || !response.body)
-        throw new Error(`stream HTTP ${response.status}`);
-
-      onConnectionChange?.(true);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let pending = "";
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        pending += decoder.decode(value, { stream: true });
-
-        /*
-         * Los eventos SSE se separan por línea en blanco, y un trozo puede cortar uno por la mitad:
-         * sólo se procesa lo que ya está completo y el resto espera al siguiente.
-         */
-        const blocks = pending.split("\n\n");
-        pending = blocks.pop() ?? "";
-
-        for (const block of blocks) {
-          const payload = block
-            .split("\n")
-            .filter((line) => line.startsWith("data:"))
-            .map((line) => line.slice(5).trim())
-            .join("");
-          if (!payload) continue;
-          try {
-            onEvent(JSON.parse(payload) as SupportLiveEvent);
-          } catch {
-            // Un evento ilegible no puede tumbar el hilo: se ignora y se sigue escuchando.
-          }
-        }
-      }
-    } catch {
-      // Abortar al desmontar entra por aquí y no es fallo: por eso se comprueba `closed`.
-    } finally {
-      onConnectionChange?.(false);
-    }
-
-    if (!closed) setTimeout(() => void listen(), 3000);
-  };
-
-  void listen();
-
-  return () => {
-    closed = true;
-    control.abort();
-  };
+  return subscribeToServerEvents<SupportLiveEvent>(
+    `/support/channels/${channelId}/stream`,
+    onEvent,
+    onConnectionChange,
+  );
 }

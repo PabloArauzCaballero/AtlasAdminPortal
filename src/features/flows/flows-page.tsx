@@ -35,6 +35,8 @@ import {
 } from "./hooks";
 import { groupCount } from "./services";
 import { FLOW_CLIENTS, FLOW_RISKS, FLOW_SYSTEMS, type Flow } from "./types";
+import { buildFlowColumns } from "./flows-columns";
+import { FlowsSummaryTiles } from "./flows-summary-tiles";
 
 const option = (value: string) => ({ label: value, value });
 
@@ -105,92 +107,7 @@ function AuthorizedFlowsPage() {
   };
 
   const columns = useMemo<ColumnDef<Flow>[]>(
-    () => [
-      {
-        header: "Ruta",
-        accessorKey: "path",
-        cell: ({ row }) => (
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 text-left font-mono text-xs text-atlas-accent underline"
-            onClick={() => openFlow(row.original.id)}
-          >
-            <MethodBadge method={row.original.httpMethod} />
-            {row.original.path}
-          </button>
-        ),
-      },
-      {
-        header: "Bloque",
-        accessorKey: "systemCode",
-        cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
-      },
-      {
-        header: "Módulo",
-        accessorKey: "module",
-        cell: ({ row }) => (
-          <Link
-            className="text-atlas-accent underline"
-            title="Ver grafo del módulo"
-            href={`/internal/flows/graph?systemCode=${row.original.systemCode}&module=${row.original.module}`}
-          >
-            {row.original.module}
-          </Link>
-        ),
-      },
-      {
-        header: "Riesgo",
-        accessorKey: "risk",
-        cell: ({ row }) => <RiskBadge value={row.original.risk} />,
-      },
-      {
-        header: "Autorización",
-        accessorKey: "isPublic",
-        cell: ({ row }) => {
-          const flow = row.original;
-          if (flow.isPublic) return <Badge tone="warning">Pública</Badge>;
-          if (flow.internalPermissions.length)
-            return <Badge tone="info">Permiso interno</Badge>;
-          if (flow.roles.length)
-            return <Badge tone="default">{flow.roles.length} roles</Badge>;
-          return <Badge tone="muted">Sólo JWT</Badge>;
-        },
-      },
-      {
-        header: "Callers",
-        accessorKey: "callers",
-        cell: ({ row }) =>
-          row.original.callers.length ? (
-            row.original.callers.join(", ")
-          ) : (
-            <span className="text-atlas-muted">—</span>
-          ),
-      },
-      {
-        header: "Señales",
-        accessorKey: "findingsCount",
-        cell: ({ row }) => {
-          const flow = row.original;
-          return (
-            <span className="inline-flex items-center gap-1 text-xs">
-              <span title="Test que nombra la ruta">
-                {flow.testStatus === "TESTED" ? "T✓" : "T✗"}
-              </span>
-              <span title="En el contrato OpenAPI">
-                {flow.contractStatus === "IN_CONTRACT"
-                  ? "C✓"
-                  : flow.contractStatus === "CODE_ONLY"
-                    ? "C✗"
-                    : "C—"}
-              </span>
-              {flow.findingsCount ? (
-                <Badge tone="warning">{flow.findingsCount}</Badge>
-              ) : null}
-            </span>
-          );
-        },
-      },
-    ],
+    () => buildFlowColumns(openFlow),
     [openFlow],
   );
 
@@ -260,58 +177,13 @@ function AuthorizedFlowsPage() {
           </div>
         }
       />
-      <div className="mb-6 grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <MetricCard
-          label="Flujos"
-          value={summary.data?.total ?? "—"}
-          icon={GitBranch}
-          hint="Una fila por operación HTTP de cada bloque"
-        />
-        <button
-          type="button"
-          className="text-left"
-          onClick={() => setFilter("risk", "CRITICAL")}
-        >
-          <MetricCard
-            label="Críticos"
-            value={summary.data ? critical : "—"}
-            tone="critical"
-            hint="Escriben en identidad, crédito, dinero o borran"
-          />
-        </button>
-        <button
-          type="button"
-          className="text-left"
-          onClick={() => setFilter("verification", "BROKEN")}
-        >
-          <MetricCard
-            label="Rotos"
-            value={summary.data ? broken : "—"}
-            tone={broken ? "critical" : "success"}
-            hint="Una corrida contradijo el mapa"
-          />
-        </button>
-        <MetricCard
-          label="Desactualizados"
-          value={summary.data ? stale : "—"}
-          tone={stale ? "warning" : "default"}
-          hint="Cambió código desde la última verificación"
-        />
-        <MetricCard
-          label="Escrituras públicas"
-          value={summary.data?.publicWrites ?? "—"}
-          icon={ShieldOff}
-          tone={summary.data?.publicWrites ? "warning" : "default"}
-          hint="POST/PUT/PATCH/DELETE con @Public"
-        />
-        <MetricCard
-          label="Críticos sin test"
-          value={summary.data?.untestedCritical ?? "—"}
-          icon={ShieldAlert}
-          tone={summary.data?.untestedCritical ? "warning" : "success"}
-          hint="Riesgo HIGH o CRITICAL sin test que nombre la ruta"
-        />
-      </div>
+      <FlowsSummaryTiles
+        summary={summary.data}
+        critical={critical}
+        broken={broken}
+        stale={stale}
+        setFilter={setFilter}
+      />
       <FilterBar
         search={filters.q}
         searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
