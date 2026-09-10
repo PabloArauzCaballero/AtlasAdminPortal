@@ -1,6 +1,7 @@
 import {
   Activity,
   Boxes,
+  ClipboardCheck,
   Gauge,
   Hourglass,
   Network,
@@ -59,6 +60,12 @@ export const systemsOpsGroup: InternalNavGroup = {
       label: "Deriva de permisos",
       href: "/internal/flows/rbac-drift",
       icon: ShieldAlert,
+      permissions: ["systems.flows.read"],
+    },
+    {
+      label: "Revisión de flujos",
+      href: "/internal/flows/review",
+      icon: ClipboardCheck,
       permissions: ["systems.flows.read"],
     },
     {

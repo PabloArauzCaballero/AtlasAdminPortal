@@ -30,6 +30,8 @@ export const queryKeys = {
   flowPendingWork: (windowDays: number) =>
     ["systems", "flows-pending-work", windowDays] as const,
   flowRbacDrift: ["systems", "flows-rbac-drift"] as const,
+  flowReviewQueue: (params: unknown) =>
+    ["systems", "flows-review-queue", params] as const,
   flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
   flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
     ["systems", "flow-module-graph", systemCode, module, roles] as const,
