@@ -20,8 +20,13 @@ import { HealthSparkline } from "./health-sparkline";
  * su latencia dejará de ser cero y esto se vuelve cierto solo, sin que nadie recuerde tocarlo.
  */
 export function isMeasured(mode: string, latencyMs?: number | null): boolean {
-  if (typeof latencyMs === "number" && latencyMs > 0) return true;
-  return mode === "mock_server";
+  // `mock_server` primero y sin mirar la latencia: el chequeo de salud contra el emulador es un
+  // ida y vuelta local que se mide en 1 ms, así que puede redondear a 0 y seguir siendo una
+  // medición real. Medido en el VPS el 2026-09-10: entre 1 y 49 ms en los ocho.
+  if (mode === "mock_server") return true;
+  // Y al revés: una latencia positiva vale aunque el modo no sea `mock_server`, para que el día
+  // que `production` mida de verdad esto se vuelva cierto solo.
+  return typeof latencyMs === "number" && latencyMs > 0;
 }
 
 function toneForHealth(
