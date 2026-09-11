@@ -25,6 +25,11 @@ export function useReviewFlowMutation() {
         queryKey: ["systems", "flows-review-queue"],
       });
       await queryClient.invalidateQueries({ queryKey: ["systems", "flow"] });
+      // Y el grafo de la ficha: si la decisión dio 409 porque el código cambió, la ficha abierta tiene que
+      // enseñar el análisis nuevo, no el que se leyó antes de decidir.
+      await queryClient.invalidateQueries({
+        queryKey: ["systems", "flow-graph"],
+      });
     },
   });
 }
