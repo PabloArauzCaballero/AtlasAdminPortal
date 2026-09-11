@@ -19,11 +19,15 @@ import {
 import type { Provider, ProviderAuthState, ProviderHealth } from "./types";
 
 /**
- * Sólo estos modos salen a la red y cronometran la respuesta. `mock_local` y `disabled` devuelven
- * un veredicto constante sin llamar a nadie.
+ * Hubo medición de verdad.
+ *
+ * Se mira el RESULTADO además del modo: hoy sólo `mock_server` sale a la red —`sandbox` y
+ * `production` tampoco, porque sus adaptadores no tienen integración real—, pero el día que la
+ * tengan su latencia dejará de ser cero y esto se vuelve cierto solo.
  */
-export function esMedido(mode: string): boolean {
-  return mode === "mock_server" || mode === "sandbox" || mode === "production";
+export function esMedido(mode: string, latencyMs?: number | null): boolean {
+  if (typeof latencyMs === "number" && latencyMs > 0) return true;
+  return mode === "mock_server";
 }
 
 export type ProviderRow = Provider & {
@@ -92,7 +96,7 @@ export function buildProviderColumns(
       cell: ({ row }) => {
         const { health, defaultMode } = row.original;
         if (!health) return <span className="text-atlas-muted">—</span>;
-        if (!esMedido(defaultMode))
+        if (!esMedido(defaultMode, health.latencyMs))
           return <Badge tone="muted">Sin llamada</Badge>;
         return (
           <div className="space-y-1">

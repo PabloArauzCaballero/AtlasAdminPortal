@@ -9,12 +9,19 @@ import type { DashboardProvider } from "../types";
 import { HealthSparkline } from "./health-sparkline";
 
 /**
- * La latencia sólo se puede afirmar cuando alguien la midió. En modo simulado local el backend
- * devuelve `UP` y `0 ms` como constante, sin llamar a nadie: pintar «Responde · 0 ms» ahí es
- * afirmar el resultado de una medición que no ocurrió.
+ * La latencia sólo se puede afirmar cuando alguien la midió.
+ *
+ * Hoy el único modo que sale a la red es `mock_server`: en los demás —incluidos `sandbox` y
+ * `production`, cuyos adaptadores no tienen integración real todavía— `checkMockHealth` devuelve
+ * `UP` con `0 ms` sin llamar a nadie, y pintar «Responde · 0 ms» afirma una comprobación que no
+ * ocurrió.
+ *
+ * Por eso la condición mira el RESULTADO y no sólo el modo: en cuanto `production` mida de verdad,
+ * su latencia dejará de ser cero y esto se vuelve cierto solo, sin que nadie recuerde tocarlo.
  */
-export function isMeasured(mode: string): boolean {
-  return mode === "mock_server" || mode === "sandbox" || mode === "production";
+export function isMeasured(mode: string, latencyMs?: number | null): boolean {
+  if (typeof latencyMs === "number" && latencyMs > 0) return true;
+  return mode === "mock_server";
 }
 
 function toneForHealth(
@@ -54,7 +61,7 @@ export function ProviderActivityCard({
   onSimulate: (provider: DashboardProvider) => void;
 }>) {
   const { activity } = provider;
-  const measured = isMeasured(provider.mode);
+  const measured = isMeasured(provider.mode, provider.health?.latencyMs);
   const sinLlamadas = activity.total === 0;
 
   return (
