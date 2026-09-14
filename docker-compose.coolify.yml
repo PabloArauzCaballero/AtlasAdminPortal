@@ -137,6 +137,9 @@ services:
       traefik.docker.network: coolify
       traefik.http.routers.atlas-portal-ts.rule: 'Host(`pablo-h310.taila8f993.ts.net`)'
       traefik.http.routers.atlas-portal-ts.entryPoints: http
+      # El servicio, explicito: el contenedor ya expone el que genera Coolify, y con dos a la vista
+      # Traefik se niega a adivinar («cannot be linked automatically with multiple Services»).
+      traefik.http.routers.atlas-portal-ts.service: atlas-portal-ts
       traefik.http.services.atlas-portal-ts.loadbalancer.server.port: '5273'
     expose: ['5273']
     stop_grace_period: 20s
