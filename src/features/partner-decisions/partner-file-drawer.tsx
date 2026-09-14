@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { useAuth } from "@/shared/auth/auth-context";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
@@ -48,6 +49,10 @@ export function PartnerFileDrawer({
   const estado = usePartnerStatus(expediente.partnerId);
   const decidir = useDecidePartnerMutation(expediente.partnerId);
   const reevaluar = useRequestKybReviewMutation(expediente.partnerId);
+  // `POST :partnerId/kyb-review` exige `partner.kyb.request` (OPERATIONS_MANAGER / SUPER_ADMIN):
+  // el botón sólo se ofrece a quien el backend va a dejar pasar.
+  const { hasPermission } = useAuth();
+  const puedePedirVerificacion = hasPermission("partner.kyb.request");
 
   const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
     string,
@@ -118,12 +123,19 @@ export function PartnerFileDrawer({
                   donde está la traza de la ejecución que abrió el caso. Cuando
                   se resuelva, el expediente se actualiza solo.
                 </p>
-                <Button
-                  disabled={reevaluar.isPending}
-                  onClick={() => void reevaluar.mutateAsync(undefined)}
-                >
-                  Volver a pedir la verificación
-                </Button>
+                {puedePedirVerificacion ? (
+                  <Button
+                    disabled={reevaluar.isPending}
+                    onClick={() => void reevaluar.mutateAsync(undefined)}
+                  >
+                    Volver a pedir la verificación
+                  </Button>
+                ) : (
+                  <p className="text-xs text-atlas-muted">
+                    Volver a pedir la verificación exige el permiso
+                    «partner.kyb.request» (OPERATIONS_MANAGER o SUPER_ADMIN).
+                  </p>
+                )}
                 {reevaluar.error ? (
                   <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                     {isAtlasApiError(reevaluar.error)

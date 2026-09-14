@@ -97,6 +97,12 @@ export function buildRequestColumns(
     peticion: MerchantProvisioningRequest,
     accion: "aprobar" | "rechazar",
   ) => void,
+  /**
+   * Si la sesión lleva `merchant.users.manage`. Conceder es de `MERCHANT_OPERATIONS`; quien sólo
+   * puede PEDIR (`OPERATIONS_MANAGER`) ve la cola pero no los botones: antes se le ofrecían y el
+   * backend respondía 403.
+   */
+  puedeDecidir = true,
 ): ColumnDef<MerchantProvisioningRequest>[] {
   return [
     {
@@ -158,7 +164,14 @@ export function buildRequestColumns(
        */
       meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) =>
-        row.original.status === "pending" ? (
+        row.original.status === "pending" && !puedeDecidir ? (
+          <span
+            className="text-xs text-atlas-muted"
+            title="Hace falta el permiso merchant.users.manage (rol MERCHANT_OPERATIONS)."
+          >
+            Pendiente · la concede MERCHANT_OPERATIONS
+          </span>
+        ) : row.original.status === "pending" ? (
           <div className="flex items-center gap-2">
             <Button
               variant="primary"

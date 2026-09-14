@@ -16,6 +16,21 @@ const { PartnerFileDrawer } =
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
+const { AuthProvider } = await import("@/shared/auth/auth-context");
+const { setStoredInternalSession } =
+  await import("@/shared/auth/session-storage");
+const { makeSession, makeUser } =
+  await import("../../../helpers/session-fixtures");
+
+/** El cajón lee los permisos de la sesión: por defecto, los de quien puede pedir la verificación. */
+function renderCajon(permissions: string[] = ["partner.kyb.request"]) {
+  setStoredInternalSession(makeSession({ user: makeUser({ permissions }) }));
+  return renderWithProviders(
+    <AuthProvider>
+      <PartnerFileDrawer expediente={EXPEDIENTE} onClose={() => {}} />
+    </AuthProvider>,
+  );
+}
 
 const EXPEDIENTE = {
   partnerId: "10",
@@ -73,9 +88,7 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
       ),
     );
 
-    renderWithProviders(
-      <PartnerFileDrawer expediente={EXPEDIENTE} onClose={() => {}} />,
-    );
+    renderCajon();
 
     await waitFor(() => expect(screen.getByText("MRC-3")).toBeInTheDocument());
     // Dos bandejas para el mismo expediente producen dos veredictos: aquí no se decide.
@@ -84,6 +97,32 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     expect(
       screen.getByRole("button", { name: /volver a pedir la verificación/i }),
     ).toBeInTheDocument();
+  });
+
+  it("sin `partner.kyb.request` no ofrece volver a pedir la verificación, y dice qué permiso falta", async () => {
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(
+          estadoCon({
+            executionId: "exec-1",
+            outcome: "REVISION_MANUAL",
+            reason: "KYB_SENALES_OPERATIVAS",
+            artifactVersionId: "9",
+            manualReviewCaseCode: "MRC-3",
+            evaluatedAt: "2026-09-08T00:00:00.000Z",
+          }),
+        ),
+      ),
+    );
+
+    renderCajon([]);
+
+    await waitFor(() => expect(screen.getByText("MRC-3")).toBeInTheDocument());
+    // El backend respondería 403: no se promete lo que no va a pasar.
+    expect(
+      screen.queryByRole("button", { name: /volver a pedir la verificación/i }),
+    ).toBeNull();
+    expect(screen.getByText(/partner\.kyb\.request/)).toBeInTheDocument();
   });
 
   it("sin caso del Motor la decisión manual sigue disponible: es la degradación", async () => {
@@ -102,9 +141,7 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
       ),
     );
 
-    renderWithProviders(
-      <PartnerFileDrawer expediente={EXPEDIENTE} onClose={() => {}} />,
-    );
+    renderCajon();
 
     await waitFor(() =>
       expect(
@@ -121,9 +158,7 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
       ),
     );
 
-    renderWithProviders(
-      <PartnerFileDrawer expediente={EXPEDIENTE} onClose={() => {}} />,
-    );
+    renderCajon();
 
     await waitFor(() =>
       expect(screen.getByText(/Sin veredicto del Motor/)).toBeInTheDocument(),

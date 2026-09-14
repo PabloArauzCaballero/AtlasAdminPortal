@@ -27,6 +27,7 @@ import {
 import type { InternalNavGroup } from "./nav-config";
 import {
   INTERNAL_PORTAL_ROLE_LIST,
+  PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
   SUPPORT_ADMIN_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
@@ -96,7 +97,9 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         icon: Store,
         // Identidad del canal del comercio, administrada por personal interno: aquí no entra un
         // comercio. La membresía (a qué comercio pertenece) vive en el ERP, en otra base.
-        permissions: [],
+        // El backend gatea la cola por PERMISO (`merchant.users.read`; conceder/rechazar exige
+        // además `merchant.users.manage`): con `[]` el ítem salía para todos y respondía 403.
+        permissions: ["merchant.users.read"],
         roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
@@ -104,10 +107,11 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         href: "/internal/operations/partners",
         icon: Stamp,
         // La verificación la DECIDE el Motor (PARTNER_KYB_REVIEW) al enviarse el expediente; esta
-        // cola enseña su veredicto y resuelve lo que quedó sin caso. El backend gatea por @Roles y
-        // deja FUERA al rol `merchant`: de aquí en adelante el onboarding es verificación.
+        // cola enseña su veredicto y resuelve lo que quedó sin caso. El backend gatea por @Roles
+        // (`PartnerOperationsController`: los cuatro de abajo) y deja FUERA al rol `merchant`: de
+        // aquí en adelante el onboarding es verificación. Es una copia declarada de su lista.
         permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
+        roles: PARTNER_OPERATIONS_ROLE_LIST,
       },
       {
         label: "Calificación de cartera",

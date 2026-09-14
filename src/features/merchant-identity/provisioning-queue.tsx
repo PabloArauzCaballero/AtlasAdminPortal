@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { useAuth } from "@/shared/auth/auth-context";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { Card } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -42,14 +43,17 @@ export function ProvisioningQueue({
 
   const aprobar = useApproveRequestMutation();
   const rechazar = useRejectRequestMutation();
+  const { hasPermission } = useAuth();
+  const puedeDecidir = hasPermission("merchant.users.manage");
 
   const items = useMemo(() => query.data?.items ?? [], [query.data]);
   const columns = useMemo(
     () =>
-      buildRequestColumns((peticion, accion) =>
-        setDecision({ peticion, accion }),
+      buildRequestColumns(
+        (peticion, accion) => setDecision({ peticion, accion }),
+        puedeDecidir,
       ),
-    [],
+    [puedeDecidir],
   );
 
   const errorDeDecision = aprobar.error ?? rechazar.error;
