@@ -1,5 +1,6 @@
 "use client";
 
+import { RUN_STATUS_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -17,13 +18,7 @@ import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
 
-const statusOptions = [
-  { label: "Queued", value: "QUEUED" },
-  { label: "Running", value: "RUNNING" },
-  { label: "Passed", value: "PASSED" },
-  { label: "Failed", value: "FAILED" },
-  { label: "Cancelled", value: "CANCELLED" },
-];
+const statusOptions = RUN_STATUS_OPTIONS;
 
 export function TestRunsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -115,6 +110,7 @@ function AuthorizedTestRunsPage() {
       <FilterBar
         search=""
         searchPlaceholder="Búsqueda por suite pendiente del servicio interno"
+        searchTooltip="Todavía no filtra: el servicio interno no admite buscar corridas por suite."
         onSearchChange={() => undefined}
         onFilterChange={(name, value) => {
           if (name === "status") setStatus(value);
@@ -128,6 +124,8 @@ function AuthorizedTestRunsPage() {
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Resultado de la corrida; FAILED es lo que conviene revisar primero.",
             value: status,
             options: statusOptions,
           },

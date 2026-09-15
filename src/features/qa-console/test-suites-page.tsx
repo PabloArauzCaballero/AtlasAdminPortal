@@ -1,5 +1,6 @@
 "use client";
 
+import { SUITE_TYPE_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
@@ -23,7 +24,7 @@ import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-bu
 import { useTutorial } from "@/features/qa-tutorials/tutorial-provider";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import { optionsToDescriptions, uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { ClipboardList } from "lucide-react";
 
@@ -48,7 +49,11 @@ function AuthorizedTestSuitesPage() {
   const suites = useTestSuites({ page, limit: 20, module, suiteType });
   const items = useMemo(() => suites.data?.items ?? [], [suites.data?.items]);
   const suiteTypeOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.suiteType)),
+    () =>
+      uniqueTextOptions(
+        items.map((item) => item.suiteType),
+        optionsToDescriptions(SUITE_TYPE_OPTIONS),
+      ),
     [items],
   );
 
@@ -172,6 +177,7 @@ function AuthorizedTestSuitesPage() {
       <FilterBar
         search={module}
         searchPlaceholder="Filtrar por módulo…"
+        searchTooltip="Escribe el módulo del backend, p. ej. internal-auth, para ver sólo sus suites."
         onSearchChange={(value) => {
           setModule(value);
           setPage(1);
@@ -189,6 +195,8 @@ function AuthorizedTestSuitesPage() {
           {
             name: "suiteType",
             label: "Tipo de suite",
+            tooltip:
+              "Qué clase de prueba es: humo, regresión, integración, extremo a extremo o carga.",
             value: suiteType,
             options: suiteTypeOptions,
           },

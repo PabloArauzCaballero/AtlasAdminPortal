@@ -1,5 +1,6 @@
 "use client";
 
+import { STRESS_PROFILE_STATUS_OPTIONS } from "@/features/qa-console/qa-options";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -23,9 +24,7 @@ import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Gauge } from "lucide-react";
 
-const statusOptions = ["ACTIVE", "DISABLED", "NEEDS_REVIEW", "DEPRECATED"].map(
-  (value) => ({ label: value, value }),
-);
+const statusOptions = STRESS_PROFILE_STATUS_OPTIONS;
 
 export function StressProfilesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -180,6 +179,7 @@ function AuthorizedStressProfilesPage() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar perfil o endpoint…"
+        searchTooltip="Busca por nombre o código del perfil, o por la ruta del endpoint."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -197,6 +197,8 @@ function AuthorizedStressProfilesPage() {
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Si el perfil se puede encolar o está apagado, en revisión u obsoleto.",
             value: status,
             options: statusOptions,
           },

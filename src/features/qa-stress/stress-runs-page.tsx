@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  ENVIRONMENT_OPTIONS,
+  RUN_STATUS_OPTIONS,
+} from "@/features/qa-console/qa-options";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useStressRuns } from "@/features/systems/hooks";
@@ -17,16 +21,8 @@ import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Waves } from "lucide-react";
 
-const statusOptions = [
-  "QUEUED",
-  "RUNNING",
-  "PASSED",
-  "FAILED",
-  "CANCELLED",
-].map((value) => ({ label: value, value }));
-const environmentOptions = ["LOCAL", "STAGING", "PRODUCTION_READONLY"].map(
-  (value) => ({ label: value, value }),
-);
+const statusOptions = RUN_STATUS_OPTIONS;
+const environmentOptions = ENVIRONMENT_OPTIONS;
 
 export function StressRunsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -112,6 +108,7 @@ function AuthorizedStressRunsPage() {
       <FilterBar
         search={suiteId}
         searchPlaceholder="Filtrar por suiteId/perfil si aplica…"
+        searchTooltip="Pega el ID de suite o de perfil para ver sólo sus corridas."
         onSearchChange={(value) => {
           setSuiteId(value);
           setPage(1);
@@ -131,12 +128,15 @@ function AuthorizedStressRunsPage() {
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Resultado de la corrida de carga; FAILED superó algún umbral.",
             value: status,
             options: statusOptions,
           },
           {
             name: "environment",
             label: "Ambiente",
+            tooltip: "Entorno contra el que se lanzó la carga.",
             value: environment,
             options: environmentOptions,
           },

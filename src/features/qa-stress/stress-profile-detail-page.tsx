@@ -1,5 +1,6 @@
 "use client";
 
+import { ENVIRONMENT_OPTIONS } from "@/features/qa-console/qa-options";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -184,6 +185,7 @@ function AuthorizedStressProfileDetailPage({
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <Field
                     label="Ambiente"
+                    tooltip="Entorno contra el que se encola la corrida de este perfil."
                     hint={
                       productionAllowedByProfile
                         ? "Producción aparece como scope pero está bloqueada para stress."
@@ -191,22 +193,21 @@ function AuthorizedStressProfileDetailPage({
                     }
                   >
                     <Select
+                      name="ambiente"
+                      options={ENVIRONMENT_OPTIONS.filter(
+                        (option) =>
+                          productionAllowedByProfile ||
+                          option.value !== "PRODUCTION_READONLY",
+                      )}
                       value={environment}
-                      onChange={(event) =>
-                        setEnvironment(event.target.value as typeof environment)
+                      onChange={(valor) =>
+                        setEnvironment(valor as typeof environment)
                       }
-                    >
-                      <option value="LOCAL">LOCAL</option>
-                      <option value="STAGING">STAGING</option>
-                      {productionAllowedByProfile ? (
-                        <option value="PRODUCTION_READONLY">
-                          PRODUCTION_READONLY
-                        </option>
-                      ) : null}
-                    </Select>
+                    />
                   </Field>
                   <Field
                     label="Ticket de aprobación"
+                    tooltip="Número del cambio aprobado que autoriza la corrida. Ej.: CHG-123"
                     hint="Opcional para dry-run; obligatorio si el servicio interno habilita ejecución real controlada."
                   >
                     <Input

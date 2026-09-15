@@ -1,5 +1,8 @@
 "use client";
 
+import { FormSelect } from "@/shared/components/ui/form-select";
+import { endpointOption } from "@/features/systems/endpoint-options";
+import { STRESS_PROFILE_STATUS_OPTIONS } from "@/features/qa-console/qa-options";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useAllEndpoints } from "@/features/systems/all-endpoints";
@@ -7,12 +10,11 @@ import { useUpsertStressProfileMutation } from "@/features/systems/stress-hooks"
 import type { StressProfile } from "@/features/systems/types";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import {
   emptyStressProfileForm,
   STRESS_ENVIRONMENTS,
-  STRESS_PROFILE_STATUSES,
   stressProfileSchema,
   toStressProfileForm,
   toUpsertInput,
@@ -53,21 +55,22 @@ export function StressProfileForm({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Endpoint objetivo"
+          tooltip="Endpoint del catálogo que recibe la carga; no se cambia al editar el perfil."
           hint="El perfil aplica carga sobre este endpoint del catálogo."
           error={errors.endpointId?.message}
         >
-          <Select disabled={isEdit} {...register("endpointId")}>
-            <option value="">Selecciona un endpoint…</option>
-            {(endpoints.data ?? []).map((endpoint) => (
-              <option key={endpoint.endpointId} value={endpoint.endpointId}>
-                {endpoint.method} {endpoint.fullPath}
-              </option>
-            ))}
-          </Select>
+          <FormSelect
+            control={control}
+            name="endpointId"
+            disabled={isEdit}
+            placeholder="Selecciona un endpoint…"
+            options={(endpoints.data ?? []).map(endpointOption)}
+          />
         </Field>
 
         <Field
           label={isEdit ? "Código (no editable)" : "Código (opcional)"}
+          tooltip="Identificador único del perfil; vacío lo deriva del código del endpoint."
           hint={
             isEdit
               ? "El código identifica al perfil: cambiarlo no lo renombra, crearía otro perfil distinto."
@@ -83,22 +86,29 @@ export function StressProfileForm({
           />
         </Field>
 
-        <Field label="Nombre" error={errors.name?.message}>
+        <Field
+          label="Nombre"
+          tooltip="Nombre legible del perfil que describe el escenario de carga."
+          error={errors.name?.message}
+        >
           <Input placeholder="Login — pico de mañana" {...register("name")} />
         </Field>
 
-        <Field label="Estado" error={errors.status?.message}>
-          <Select {...register("status")}>
-            {STRESS_PROFILE_STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </Select>
+        <Field
+          label="Estado"
+          tooltip="Si el perfil se puede usar para encolar corridas o está apartado."
+          error={errors.status?.message}
+        >
+          <FormSelect
+            control={control}
+            name="status"
+            options={STRESS_PROFILE_STATUS_OPTIONS}
+          />
         </Field>
 
         <Field
           label="RPS objetivo"
+          tooltip="Peticiones por segundo que intenta sostener la corrida contra el endpoint."
           hint="Entre 1 y 10000."
           error={errors.targetRps?.message}
         >
@@ -112,6 +122,7 @@ export function StressProfileForm({
 
         <Field
           label="Duración (segundos)"
+          tooltip="Cuánto dura la carga sostenida; más tiempo detecta fugas de memoria."
           hint="Entre 5 y 86400."
           error={errors.durationSeconds?.message}
         >
@@ -125,6 +136,7 @@ export function StressProfileForm({
 
         <Field
           label="Concurrencia"
+          tooltip="Cuántas conexiones abiertas a la vez simulan usuarios simultáneos."
           hint="Entre 1 y 5000."
           error={errors.concurrency?.message}
         >
@@ -138,6 +150,7 @@ export function StressProfileForm({
 
         <Field
           label="Error máximo aceptable (%)"
+          tooltip="Porcentaje de respuestas fallidas a partir del cual la corrida se da por fallida."
           hint="Umbral de fallo del perfil. Se envía como fracción al backend."
           error={errors.maxErrorRatePercent?.message}
         >
@@ -152,6 +165,7 @@ export function StressProfileForm({
 
         <Field
           label="P95 máximo (ms)"
+          tooltip="Latencia que el 95 % de las peticiones no debe superar para aprobar."
           hint="Entre 1 y 300000."
           error={errors.maxP95Ms?.message}
         >
@@ -170,6 +184,7 @@ export function StressProfileForm({
         render={({ field }) => (
           <Field
             label="Ambientes habilitados"
+            tooltip="Dónde se permite lanzar este perfil; producción queda bloqueada para carga real."
             hint="PRODUCTION_READONLY solo tiene efecto si la política interna lo permite; el backend bloquea stress real en producción."
             error={errors.environmentScope?.message}
           >
@@ -229,6 +244,7 @@ export function StressProfileForm({
 
       <Field
         label="Notas (opcional)"
+        tooltip="Por qué existe el perfil y qué se espera medir con él."
         hint="Contexto para quien encuentre este perfil después: por qué existe y qué se espera medir."
         error={errors.notes?.message}
       >
