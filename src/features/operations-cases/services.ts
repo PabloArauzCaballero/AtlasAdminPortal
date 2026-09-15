@@ -9,6 +9,8 @@ import type {
   FraudDecisionResult,
   InvestigationSummary,
   ManualReviewDecisionInput,
+  PendingContactVerificationResponse,
+  ResendContactVerificationInput,
   ManualReviewDecisionResult,
   WorkQueueListResponse,
 } from "./types";
@@ -87,5 +89,39 @@ export function decideIdentityVerification(
   return apiRequest<IdentityDecisionResult>(
     `/operations/customers/${customerId}/identity-verification/decision`,
     { method: "POST", body },
+  );
+}
+
+/** Correos y teléfonos declarados por clientes y todavía sin confirmar. */
+export function listPendingContactVerification() {
+  return apiRequest<PendingContactVerificationResponse>(
+    "/operations/customers/pending-contact-verification",
+  );
+}
+
+/**
+ * Vuelve a mandar el código de verificación al contacto del cliente.
+ *
+ * Es el mismo endpoint que usa la app (`contact-verification/request`), que ya admite roles
+ * internos: el operador no inventa un código ni ve el valor del contacto, sólo dispara el envío.
+ * El canal sale del tipo: correo por email; teléfono por SMS.
+ */
+export function resendContactVerification(
+  customerId: string,
+  body: ResendContactVerificationInput,
+) {
+  return apiRequest<{ verificationStatus?: string; nextStep?: string }>(
+    `/customer-onboarding/${customerId}/contact-verification/request`,
+    {
+      method: "POST",
+      body: {
+        contactType: body.contactType,
+        verificationChannel: body.contactType === "email" ? "email" : "sms",
+        ...(body.contactMethodId
+          ? { contactMethodId: body.contactMethodId }
+          : {}),
+      },
+      headers: { "X-Idempotency-Key": idempotencyKey("resend-contact") },
+    },
   );
 }

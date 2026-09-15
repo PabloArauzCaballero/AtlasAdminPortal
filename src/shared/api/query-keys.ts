@@ -119,6 +119,10 @@ export const queryKeys = {
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  pendingContactVerification: [
+    "operations",
+    "pending-contact-verification",
+  ] as const,
   supportCases: (params: unknown) => ["support", "cases", params] as const,
   supportCase: (caseId: string) => ["support", "case", caseId] as const,
   supportCaseTimeline: (caseId: string) =>

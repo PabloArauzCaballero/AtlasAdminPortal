@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -8,6 +10,7 @@ import {
   SeverityBadge,
   StatusBadge,
 } from "@/shared/components/ui/badges";
+import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
@@ -15,13 +18,18 @@ import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import { ListCard } from "./list-card";
-import { useInvestigationSummary } from "./hooks";
-import { Search } from "lucide-react";
+import {
+  useInvestigationSummary,
+  useResendContactVerificationMutation,
+} from "./hooks";
+import { MailCheck, Search } from "lucide-react";
 
 export function InvestigationSummaryPage({
   customerId,
 }: Readonly<{ customerId: string }>) {
   const summary = useInvestigationSummary(customerId);
+  const reenvio = useResendContactVerificationMutation();
+  const [reenvioAviso, setReenvioAviso] = useState<string | null>(null);
 
   return (
     <>
@@ -237,9 +245,46 @@ export function InvestigationSummaryPage({
                       </Badge>
                     ) : null}
                   </span>
-                  <StatusBadge value={contact.status} />
+                  <span className="flex items-center gap-2">
+                    <StatusBadge value={contact.status} />
+                    {contact.status === "unverified" &&
+                    (contact.contactType === "email" ||
+                      contact.contactType === "phone") ? (
+                      <Button
+                        variant="secondary"
+                        disabled={reenvio.isPending}
+                        onClick={() =>
+                          reenvio.mutate(
+                            {
+                              customerId,
+                              body: {
+                                contactType: contact.contactType as
+                                  "email" | "phone",
+                              },
+                            },
+                            {
+                              onSuccess: () =>
+                                setReenvioAviso("Código reenviado al cliente."),
+                              onError: (error) =>
+                                setReenvioAviso(
+                                  `No se pudo reenviar: ${isAtlasApiError(error) ? error.message : "inténtalo en un minuto."}`,
+                                ),
+                            },
+                          )
+                        }
+                      >
+                        <MailCheck className="h-3.5 w-3.5" />
+                        Reenviar código
+                      </Button>
+                    ) : null}
+                  </span>
                 </li>
               ))}
+              {reenvioAviso ? (
+                <li className="py-1.5 text-xs text-atlas-muted" role="status">
+                  {reenvioAviso}
+                </li>
+              ) : null}
             </ListCard>
             <ListCard
               title="Consentimientos"

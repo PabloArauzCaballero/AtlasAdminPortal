@@ -15,6 +15,7 @@ import {
   Plug,
   Settings,
   Store,
+  MailCheck,
   ShieldAlert,
   ShieldCheck,
   Siren,
@@ -44,6 +45,13 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: [],
         // Solo superadmin: el listado también está embebido en "Versiones de esquema".
         roles: ["SUPER_ADMIN"],
+      },
+      {
+        label: "Contactos sin verificar",
+        href: "/internal/operations/pending-contacts",
+        icon: MailCheck,
+        // Mismo gate por rol que la cola de trabajo (@Roles del OperationsController).
+        permissions: [],
       },
       {
         label: "Cola de trabajo",

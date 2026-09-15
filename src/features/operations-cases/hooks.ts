@@ -10,12 +10,15 @@ import {
   downloadEvidenceDocument,
   getInvestigationSummary,
   listEvidenceDocuments,
+  listPendingContactVerification,
   listWorkQueue,
+  resendContactVerification,
 } from "./services";
 import type {
   FraudDecisionInput,
   IdentityDecisionInput,
   ManualReviewDecisionInput,
+  ResendContactVerificationInput,
 } from "./types";
 
 export function useWorkQueue(query: QueryParams) {
@@ -100,6 +103,31 @@ export function useDecideIdentityMutation() {
           queryKey: ["operations", "work-queue"],
         }),
       ]);
+    },
+  });
+}
+
+export function usePendingContactVerification() {
+  return useQuery({
+    queryKey: queryKeys.pendingContactVerification,
+    queryFn: () => listPendingContactVerification(),
+  });
+}
+
+export function useResendContactVerificationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      customerId,
+      body,
+    }: {
+      customerId: string;
+      body: ResendContactVerificationInput;
+    }) => resendContactVerification(customerId, body),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.pendingContactVerification,
+      });
     },
   });
 }

@@ -192,3 +192,26 @@ export type IdentityDecisionResult = {
   lifecycleStatus: string | null;
   eligible: boolean;
 };
+
+/** Una fila de «contactos sin verificar»: el cliente, el contacto declarado y desde cuándo espera. */
+export type PendingContactVerificationItem = {
+  customerId: string;
+  customerCode: string | null;
+  lifecycleStatus: string | null;
+  customerCreatedAt: string | null;
+  contactMethodId: string;
+  contactType: string | null;
+  valueLast4: string | null;
+  emailDomain: string | null;
+  isPrimary: boolean | null;
+  contactCreatedAt: string | null;
+};
+
+export type PendingContactVerificationResponse = {
+  items: PendingContactVerificationItem[];
+};
+
+export type ResendContactVerificationInput = {
+  contactType: "email" | "phone";
+  contactMethodId?: string;
+};
