@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import {
+  normalizeForSearch,
+  optionLabel,
+  optionsToDescriptions,
+  uniqueTextOptions,
+} from "@/shared/lib/options";
 
 describe("uniqueTextOptions", () => {
   it("deduplica valores repetidos", () => {
@@ -56,5 +61,78 @@ describe("uniqueTextOptions", () => {
   it("devuelve lista vacía si no hay valores utilizables", () => {
     expect(uniqueTextOptions([])).toEqual([]);
     expect(uniqueTextOptions([null, undefined, ""])).toEqual([]);
+  });
+});
+
+describe("uniqueTextOptions · descripciones de dominio", () => {
+  const MAPA = {
+    ACTIVE: {
+      label: "Activo",
+      description: "Sigue operando y acepta tráfico real.",
+    },
+    PAUSED: "Detenido a mano; ninguna llamada llega al proveedor.",
+  };
+
+  it("los valores conocidos toman etiqueta y descripción del mapa", () => {
+    expect(uniqueTextOptions(["ACTIVE"], MAPA)).toEqual([
+      {
+        value: "ACTIVE",
+        label: "Activo",
+        description: "Sigue operando y acepta tráfico real.",
+      },
+    ]);
+  });
+
+  it("un texto suelto en el mapa es la descripción, y la etiqueta sigue siendo el código", () => {
+    expect(uniqueTextOptions(["PAUSED"], MAPA)).toEqual([
+      {
+        value: "PAUSED",
+        label: "PAUSED",
+        description: "Detenido a mano; ninguna llamada llega al proveedor.",
+      },
+    ]);
+  });
+
+  it("lo que NO está en el mapa va sin descripción: un texto inventado sería peor", () => {
+    // Los filtros derivados de los datos traen códigos que nadie ha documentado (un `tenantId`,
+    // un nombre de tabla). Describirlos «por si acaso» sería adivinar.
+    expect(uniqueTextOptions(["RARO"], MAPA)).toEqual([
+      { value: "RARO", label: "RARO" },
+    ]);
+  });
+});
+
+describe("optionsToDescriptions", () => {
+  it("convierte un catálogo en el mapa que espera uniqueTextOptions", () => {
+    expect(
+      optionsToDescriptions([
+        { value: "A", label: "Alta", description: "Se atiende el mismo día." },
+        { value: "B", label: "Baja" },
+      ]),
+    ).toEqual({
+      A: { label: "Alta", description: "Se atiende el mismo día." },
+    });
+  });
+});
+
+describe("normalizeForSearch", () => {
+  it("quita tildes y baja a minúsculas: «facturacion» encuentra «Facturación»", () => {
+    expect(normalizeForSearch("  Facturación ")).toBe("facturacion");
+  });
+});
+
+describe("optionLabel", () => {
+  const OPCIONES = [{ value: "A", label: "Alta" }];
+
+  it("devuelve la etiqueta del catálogo", () => {
+    expect(optionLabel(OPCIONES, "A")).toBe("Alta");
+  });
+
+  it("un valor desconocido se enseña tal cual, no en blanco", () => {
+    expect(optionLabel(OPCIONES, "Z")).toBe("Z");
+  });
+
+  it("sin valor no inventa nada", () => {
+    expect(optionLabel(OPCIONES, null)).toBe("");
   });
 });
