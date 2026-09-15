@@ -100,17 +100,16 @@ export function TrafficLatencySection() {
             ) : null}
           </label>
           <Select
+            name="windowHours"
             className="w-48"
-            aria-label="Ventana de tiempo del gráfico"
-            value={windowHours}
-            onChange={(event) => setWindowHours(Number(event.target.value))}
-          >
-            {windowOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            ariaLabel="Ventana de tiempo del gráfico"
+            value={String(windowHours)}
+            onChange={(valor) => setWindowHours(Number(valor))}
+            options={windowOptions.map((option) => ({
+              value: String(option.value),
+              label: option.label,
+            }))}
+          />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

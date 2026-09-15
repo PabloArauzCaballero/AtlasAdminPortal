@@ -64,22 +64,17 @@ export function buildIdentityColumns(
       meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) => (
         <Select
-          aria-label={`Cambiar estado de ${row.original.fullName}`}
+          name={`estado-${row.original.id}`}
+          ariaLabel={`Cambiar estado de ${row.original.fullName}`}
           value=""
-          onChange={(evento) => {
-            if (evento.target.value)
-              onCambiar(row.original, evento.target.value);
+          placeholder="Cambiar estado…"
+          onChange={(valor) => {
+            if (valor) onCambiar(row.original, valor);
           }}
-        >
-          <option value="">Cambiar estado…</option>
-          {MERCHANT_USER_STATUSES.filter(
+          options={MERCHANT_USER_STATUSES.filter(
             (estado) => estado !== row.original.status,
-          ).map((estado) => (
-            <option key={estado} value={estado}>
-              {estado}
-            </option>
-          ))}
-        </Select>
+          ).map((estado) => ({ value: estado, label: estado }))}
+        />
       ),
     },
   ];

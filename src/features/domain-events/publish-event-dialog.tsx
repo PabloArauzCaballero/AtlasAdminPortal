@@ -92,17 +92,16 @@ export function PublishEventDialog({
           hint="Sale del catálogo registrado: un código libre no lo consume ningún suscriptor."
         >
           <Select
+            name="eventCode"
             required
             value={eventCode}
-            onChange={(evento) => setEventCode(evento.target.value)}
-          >
-            <option value="">— Elige un evento —</option>
-            {definiciones.map((definicion) => (
-              <option key={definicion.eventCode} value={definicion.eventCode}>
-                {definicion.eventCode}
-              </option>
-            ))}
-          </Select>
+            onChange={setEventCode}
+            placeholder="— Elige un evento —"
+            options={definiciones.map((definicion) => ({
+              value: definicion.eventCode,
+              label: definicion.eventCode,
+            }))}
+          />
         </Field>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -116,17 +115,16 @@ export function PublishEventDialog({
           >
             {permitidos.length > 0 ? (
               <Select
+                name="aggregateType"
                 required
                 value={aggregateType}
-                onChange={(evento) => setAggregateType(evento.target.value)}
-              >
-                <option value="">— Elige el agregado —</option>
-                {permitidos.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo}
-                  </option>
-                ))}
-              </Select>
+                onChange={setAggregateType}
+                placeholder="— Elige el agregado —"
+                options={permitidos.map((tipo) => ({
+                  value: tipo,
+                  label: tipo,
+                }))}
+              />
             ) : (
               <Input
                 required

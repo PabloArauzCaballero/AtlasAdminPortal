@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useProposeSchemaTableMutation } from "./hooks";
@@ -58,12 +59,16 @@ export function ProposeTableForm({
             />
           </Field>
           <Field label="Tipo">
-            <Select {...register("tableType")}>
-              <option value="transactional">Transactional</option>
-              <option value="catalog">Catalog</option>
-              <option value="audit">Audit</option>
-              <option value="operational">Operational</option>
-            </Select>
+            <FormSelect
+              control={control}
+              name="tableType"
+              options={[
+                { value: "transactional", label: "Transactional" },
+                { value: "catalog", label: "Catalog" },
+                { value: "audit", label: "Audit" },
+                { value: "operational", label: "Operational" },
+              ]}
+            />
           </Field>
         </div>
         <div className="flex gap-4">

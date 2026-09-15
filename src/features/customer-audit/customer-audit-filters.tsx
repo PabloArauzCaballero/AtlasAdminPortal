@@ -30,21 +30,20 @@ export function CustomerAuditFilters({
     <div className="mb-4 grid gap-3 rounded-lg border border-atlas-border bg-white p-3 grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
       <Field label="Tipo de evento">
         <Select
+          name="eventType"
           value={value.eventType}
-          onChange={(event) =>
-            onChange({
-              ...value,
-              eventType: event.target.value as CustomerAuditEventType,
-            })
+          onChange={(valor) =>
+            onChange({ ...value, eventType: valor as CustomerAuditEventType })
           }
-        >
-          <option value="all">Todos</option>
-          {eventTypeOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
+          options={[
+            {
+              value: "all",
+              label: "Todos",
+              description: "Sin filtrar: enseña eventos de cualquier tipo.",
+            },
+            ...eventTypeOptions,
+          ]}
+        />
       </Field>
       <Field label="Desde">
         <Input

@@ -141,17 +141,11 @@ function GovernanceSection({
       <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Modo de mutación">
           <Select
+            name="mutationMode"
             value={values.governance.mutationMode}
-            onChange={(event) =>
-              setGovernance({ mutationMode: event.target.value })
-            }
-          >
-            {mutationModes.map((mode) => (
-              <option key={mode.value} value={mode.value}>
-                {mode.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(valor) => setGovernance({ mutationMode: valor })}
+            options={mutationModes}
+          />
         </Field>
         <BooleanField
           label="Contiene PII"

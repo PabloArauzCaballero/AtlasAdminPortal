@@ -20,6 +20,14 @@ const REVIEW_STATUSES: ReviewDecisionInput["reviewStatus"][] = [
 
 const CONFIDENCE_LEVELS = ["LOW", "MEDIUM", "HIGH"] as const;
 
+const REVIEW_STATUS_HELP: Record<string, string> = {
+  APPROVED:
+    "Da por buena la inferencia: la columna se puede usar para decisiones de gobierno.",
+  NEEDS_REVIEW:
+    "La devuelve a la cola de revisión: todavía no es catálogo confiable.",
+  REJECTED: "La marca como incorrecta.",
+};
+
 export function ColumnReviewDialog({
   column,
   onClose,
@@ -84,19 +92,17 @@ export function ColumnReviewDialog({
           hint="APPROVED da por buena la inferencia; NEEDS_REVIEW la devuelve a la cola; REJECTED la marca como incorrecta."
         >
           <Select
+            name="reviewStatus"
             value={reviewStatus}
-            onChange={(event) =>
-              setReviewStatus(
-                event.target.value as ReviewDecisionInput["reviewStatus"],
-              )
+            onChange={(valor) =>
+              setReviewStatus(valor as ReviewDecisionInput["reviewStatus"])
             }
-          >
-            {REVIEW_STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </Select>
+            options={REVIEW_STATUSES.map((value) => ({
+              value,
+              label: value,
+              description: REVIEW_STATUS_HELP[value],
+            }))}
+          />
         </Field>
 
         <Field
@@ -104,16 +110,14 @@ export function ColumnReviewDialog({
           hint="Qué tan seguro estás de la metadata inferida para esta columna."
         >
           <Select
+            name="confidenceLevel"
             value={confidenceLevel}
-            onChange={(event) => setConfidenceLevel(event.target.value)}
-          >
-            <option value="">Sin especificar</option>
-            {CONFIDENCE_LEVELS.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </Select>
+            onChange={setConfidenceLevel}
+            options={[
+              { value: "", label: "Sin especificar" },
+              ...CONFIDENCE_LEVELS.map((value) => ({ value, label: value })),
+            ]}
+          />
         </Field>
 
         <Field

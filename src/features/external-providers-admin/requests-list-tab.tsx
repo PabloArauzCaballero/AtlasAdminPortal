@@ -77,18 +77,12 @@ export function RequestsListTab() {
         </Field>
         <Field label="Cómo acabó">
           <Select
-            value={responseStatus}
-            onChange={(event) =>
-              filtrar(() => setResponseStatus(event.target.value))
-            }
+            name="responseStatus"
             className="w-56"
-          >
-            {ESTADOS.map((estado) => (
-              <option key={estado.label} value={estado.value}>
-                {estado.label}
-              </option>
-            ))}
-          </Select>
+            value={responseStatus}
+            onChange={(valor) => filtrar(() => setResponseStatus(valor))}
+            options={ESTADOS}
+          />
         </Field>
         <Field label="Últimos (días)">
           <Input

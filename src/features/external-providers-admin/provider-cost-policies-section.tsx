@@ -156,19 +156,15 @@ function CostPolicyEditForm({
     <div className="mt-3 space-y-3 border-t border-atlas-border pt-3">
       <Field label="Nivel de costo">
         <Select
+          name="costTier"
           value={costTier}
-          onChange={(event) =>
-            setCostTier(
-              event.target.value as NonNullable<CostPolicy["costTier"]>,
-            )
+          onChange={(valor) =>
+            setCostTier(valor as NonNullable<CostPolicy["costTier"]>)
           }
-        >
-          <option value="FREE">FREE</option>
-          <option value="LOW">LOW</option>
-          <option value="MEDIUM">MEDIUM</option>
-          <option value="HIGH">HIGH</option>
-          <option value="CRITICAL">CRITICAL</option>
-        </Select>
+          options={["FREE", "LOW", "MEDIUM", "HIGH", "CRITICAL"].map(
+            (value) => ({ value, label: value }),
+          )}
+        />
       </Field>
       <div className="flex flex-wrap gap-3 text-xs text-atlas-text">
         <label className="flex items-center gap-1.5">

@@ -13,7 +13,8 @@ import {
 import type { CreateInternalUserResult } from "./types";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -87,13 +88,11 @@ export function UserCreateForm() {
               <Input {...register("jobTitle")} />
             </Field>
             <Field label="Departamento" error={errors.department?.message}>
-              <Select {...register("department")}>
-                {DEPARTMENTS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
+              <FormSelect
+                control={control}
+                name="department"
+                options={DEPARTMENTS.map((value) => ({ value, label: value }))}
+              />
             </Field>
           </div>
 

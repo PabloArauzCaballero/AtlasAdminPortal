@@ -15,7 +15,8 @@ import {
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -28,6 +29,7 @@ export function UserEditForm({
   const isSelf = currentUser?.id === user.id;
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
@@ -68,13 +70,14 @@ export function UserEditForm({
               <Input {...register("jobTitle")} />
             </Field>
             <Field label="Departamento" error={errors.department?.message}>
-              <Select {...register("department")}>
-                {EDIT_DEPARTMENTS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
+              <FormSelect
+                control={control}
+                name="department"
+                options={EDIT_DEPARTMENTS.map((value) => ({
+                  value,
+                  label: value,
+                }))}
+              />
             </Field>
             <Field
               label="Estado"
@@ -87,13 +90,15 @@ export function UserEditForm({
                     : undefined
               }
             >
-              <Select {...register("status")} disabled={isSelf}>
-                {EDIT_STATUSES.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
+              <FormSelect
+                control={control}
+                name="status"
+                disabled={isSelf}
+                options={EDIT_STATUSES.map((value) => ({
+                  value,
+                  label: value,
+                }))}
+              />
             </Field>
           </div>
           <label className="flex items-center gap-2 text-sm">

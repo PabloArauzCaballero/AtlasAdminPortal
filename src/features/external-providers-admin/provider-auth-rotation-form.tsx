@@ -39,17 +39,11 @@ export function RotationForm({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field label="Campo a rotar">
           <Select
+            name="credentialField"
             value={field}
-            onChange={(event) =>
-              setField(event.target.value as CredentialField)
-            }
-          >
-            {fields.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
+            onChange={(valor) => setField(valor as CredentialField)}
+            options={fields.map((option) => ({ value: option, label: option }))}
+          />
         </Field>
         <Field label="Motivo">
           <Input

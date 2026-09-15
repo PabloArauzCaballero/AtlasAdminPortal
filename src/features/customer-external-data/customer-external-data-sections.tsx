@@ -183,14 +183,33 @@ export function ConsultarProveedorCard({
         </Field>
         <Field label="Etapa de decisión">
           <Select
+            name="etapa"
             value={etapa}
-            onChange={(evento) => setEtapa(evento.target.value)}
-          >
-            <option value="ONBOARDING">ONBOARDING</option>
-            <option value="UNDERWRITING">UNDERWRITING</option>
-            <option value="MONITORING">MONITORING</option>
-            <option value="COLLECTIONS">COLLECTIONS</option>
-          </Select>
+            onChange={setEtapa}
+            options={[
+              {
+                value: "ONBOARDING",
+                label: "ONBOARDING",
+                description:
+                  "Alta del cliente: la consulta sirve a la verificación inicial.",
+              },
+              {
+                value: "UNDERWRITING",
+                label: "UNDERWRITING",
+                description: "Evaluación de una solicitud de crédito.",
+              },
+              {
+                value: "MONITORING",
+                label: "MONITORING",
+                description: "Seguimiento de un cliente que ya opera.",
+              },
+              {
+                value: "COLLECTIONS",
+                label: "COLLECTIONS",
+                description: "Gestión de cobranza de una deuda vencida.",
+              },
+            ]}
+          />
         </Field>
         {/* Propósito y proveedor son los MISMOS que los del paso 1: se consulta con el propósito
             que se consintió, o no se consulta. Tenerlos separados invitaba a que no coincidieran. */}

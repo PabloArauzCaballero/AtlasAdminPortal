@@ -66,38 +66,75 @@ export function ProviderRuntimeForm({
          */}
         <Field label="Cómo se le llama" hint={AYUDA_MODO[defaultMode ?? ""]}>
           <Select
+            name="defaultMode"
             value={defaultMode}
-            onChange={(event) =>
-              setDefaultMode(
-                event.target.value as ProviderRuntimePatchInput["defaultMode"],
-              )
+            onChange={(valor) =>
+              setDefaultMode(valor as ProviderRuntimePatchInput["defaultMode"])
             }
-          >
-            <option value="mock_local">Simulado en proceso (sin red)</option>
-            <option value="mock_server">Simulado por red (emulador)</option>
-            <option value="sandbox">Sandbox del proveedor</option>
-            <option value="production">Producción</option>
-            <option value="disabled">No llamar</option>
-          </Select>
+            options={[
+              {
+                value: "mock_local",
+                label: "Simulado en proceso (sin red)",
+                description: AYUDA_MODO.mock_local,
+              },
+              {
+                value: "mock_server",
+                label: "Simulado por red (emulador)",
+                description: AYUDA_MODO.mock_server,
+              },
+              {
+                value: "sandbox",
+                label: "Sandbox del proveedor",
+                description: AYUDA_MODO.sandbox,
+              },
+              {
+                value: "production",
+                label: "Producción",
+                description: AYUDA_MODO.production,
+              },
+              {
+                value: "disabled",
+                label: "No llamar",
+                description: AYUDA_MODO.disabled,
+              },
+            ]}
+          />
         </Field>
         <Field
           label="Tipo de proveedor"
           hint={AYUDA_ESTADO[providerStatus ?? ""]}
         >
           <Select
+            name="providerStatus"
             value={providerStatus}
-            onChange={(event) =>
+            onChange={(valor) =>
               setProviderStatus(
-                event.target
-                  .value as ProviderRuntimePatchInput["providerStatus"],
+                valor as ProviderRuntimePatchInput["providerStatus"],
               )
             }
-          >
-            <option value="ACTIVE">Oficial (Atlas lo usará de verdad)</option>
-            <option value="MOCK_ONLY">De prueba (relleno contractual)</option>
-            <option value="SANDBOX_ONLY">Sólo sandbox</option>
-            <option value="DISABLED">Deshabilitado</option>
-          </Select>
+            options={[
+              {
+                value: "ACTIVE",
+                label: "Oficial (Atlas lo usará de verdad)",
+                description: AYUDA_ESTADO.ACTIVE,
+              },
+              {
+                value: "MOCK_ONLY",
+                label: "De prueba (relleno contractual)",
+                description: AYUDA_ESTADO.MOCK_ONLY,
+              },
+              {
+                value: "SANDBOX_ONLY",
+                label: "Sólo sandbox",
+                description: AYUDA_ESTADO.SANDBOX_ONLY,
+              },
+              {
+                value: "DISABLED",
+                label: "Deshabilitado",
+                description: AYUDA_ESTADO.DISABLED,
+              },
+            ]}
+          />
         </Field>
       </div>
       {defaultMode === "production" ? (

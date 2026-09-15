@@ -10,6 +10,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { valoresDeOpciones } from "../../shared/option-select-helpers";
 
 const mockUseAuth = vi.fn();
 vi.mock("@/shared/auth/auth-context", () => ({
@@ -144,8 +145,7 @@ describe("DomainEventsPage — con la forma real del backend", () => {
         screen.getByRole("cell", { name: /user\.registered/ }),
       ).toBeInTheDocument(),
     );
-    const estados = screen.getByLabelText("Estado") as HTMLSelectElement;
-    const valores = Array.from(estados.options).map((o) => o.value);
+    const valores = await valoresDeOpciones(screen.getByLabelText("Estado"));
     expect(valores).toEqual(
       expect.arrayContaining([
         "pending",
@@ -164,10 +164,9 @@ describe("DomainEventsPage — con la forma real del backend", () => {
         screen.getByRole("cell", { name: /user\.registered/ }),
       ).toBeInTheDocument(),
     );
-    const codigos = screen.getByLabelText(
-      "Código del catálogo",
-    ) as HTMLSelectElement;
-    const valores = Array.from(codigos.options).map((o) => o.value);
+    const valores = await valoresDeOpciones(
+      screen.getByLabelText("Código del catálogo"),
+    );
     expect(valores).toEqual(
       expect.arrayContaining(["user.registered", "loan.disbursed"]),
     );
