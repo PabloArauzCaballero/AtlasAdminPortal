@@ -84,7 +84,11 @@ export function LoginPinForm({
       ) : null}
 
       <form className="space-y-4" onSubmit={(event) => void onSubmit(event)}>
-        <Field label="Código de verificación" error={errors.pin?.message}>
+        <Field
+          tooltip="Código de 6 dígitos que llegó a tu correo tras escribir la contraseña."
+          label="Código de verificación"
+          error={errors.pin?.message}
+        >
           <Input
             {...register("pin")}
             inputMode="numeric"

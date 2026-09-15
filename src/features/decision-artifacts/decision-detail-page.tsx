@@ -7,6 +7,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Field, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { DecisionConsumersSection } from "./decision-consumers-section";
 import { useAssignDecisionArtifact, useDecisionArtifacts } from "./hooks";
@@ -143,51 +144,69 @@ export function DecisionDetailPage({
           ) : null}
 
           <div className="flex flex-wrap items-end gap-3">
-            <label className="flex min-w-64 flex-1 flex-col gap-1">
-              <span className="text-xs font-medium text-atlas-muted">
-                Artefacto que decide
-              </span>
-              <select
-                className="h-9 rounded-lg border border-atlas-border bg-white px-3 text-sm text-atlas-text"
-                value={elegido}
-                disabled={motorSinResponder}
-                onChange={(event) => setArtefacto(event.target.value)}
+            <div className="min-w-64 flex-1">
+              <Field
+                label="Artefacto que decide"
+                tooltip="Artefacto del motor que resuelve esta decisión; sólo se ofrecen los que publica su catálogo."
               >
-                <option value="">Sin configurar</option>
-                {disponibles.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.code}
-                    {item.name ? ` — ${item.name}` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <Select
+                  name="artefacto"
+                  value={elegido}
+                  disabled={motorSinResponder}
+                  onChange={setArtefacto}
+                  options={[
+                    {
+                      value: "",
+                      label: "Sin configurar",
+                      description:
+                        "Deja la decisión sin artefacto del motor asignado.",
+                    },
+                    ...disponibles.map((item) => ({
+                      value: item.code, // sin-ayuda: artefactos del catálogo del motor, sin ficha que resumir
+                      label: item.name
+                        ? `${item.code} — ${item.name}`
+                        : item.code,
+                    })),
+                  ]}
+                />
+              </Field>
+            </div>
 
             {/*
               Fijar la version es la otra mitad de la decision: sin fijarla, publicar una version
               nueva en el motor cambia lo que decide en produccion sin que nadie lo apruebe.
             */}
-            <label className="flex w-56 flex-col gap-1">
-              <span className="text-xs font-medium text-atlas-muted">
-                Versión
-              </span>
-              <select
-                className="h-9 rounded-lg border border-atlas-border bg-white px-3 text-sm text-atlas-text"
-                value={versionElegida}
-                disabled={motorSinResponder || !elegido}
-                onChange={(event) => setVersion(event.target.value)}
+            <div className="w-56">
+              <Field
+                label="Versión"
+                tooltip="Qué versión del artefacto decide: la vigente en cada momento o una fijada."
               >
-                <option value="">Seguir la vigente</option>
-                {artefactoElegido?.latestVersion ? (
-                  <option value={artefactoElegido.latestVersion}>
-                    Fijar {artefactoElegido.latestVersion}
-                    {artefactoElegido.status
-                      ? ` · ${artefactoElegido.status}`
-                      : ""}
-                  </option>
-                ) : null}
-              </select>
-            </label>
+                <Select
+                  name="version"
+                  value={versionElegida}
+                  disabled={motorSinResponder || !elegido}
+                  onChange={setVersion}
+                  options={[
+                    {
+                      value: "",
+                      label: "Seguir la vigente",
+                      description:
+                        "Sin fijar: una versión nueva publicada en el motor pasa a decidir sola.",
+                    },
+                    ...(artefactoElegido?.latestVersion
+                      ? [
+                          {
+                            value: artefactoElegido.latestVersion,
+                            label: `Fijar ${artefactoElegido.latestVersion}${artefactoElegido.status ? ` · ${artefactoElegido.status}` : ""}`,
+                            description:
+                              "Fija esta versión: publicar otra en el motor no cambia lo que decide.",
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </Field>
+            </div>
 
             <Button
               variant="primary"

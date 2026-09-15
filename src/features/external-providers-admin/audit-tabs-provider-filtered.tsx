@@ -18,7 +18,10 @@ export function ProductionGateTab() {
   return (
     <div className="space-y-4">
       <ReportFilters>
-        <Field label="Código de proveedor (opcional)">
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
@@ -47,7 +50,10 @@ export function SlaReportTab() {
   return (
     <div className="space-y-4">
       <ReportFilters>
-        <Field label="Código de proveedor (opcional)">
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
@@ -57,7 +63,10 @@ export function SlaReportTab() {
             className="w-44 font-mono text-xs"
           />
         </Field>
-        <Field label="Ventana (días)">
+        <Field
+          tooltip="Cuántos días hacia atrás abarca el informe, de 1 a 366."
+          label="Ventana (días)"
+        >
           <Input
             type="number"
             min={1}
@@ -84,7 +93,10 @@ export function UsageReportTab() {
   return (
     <div className="space-y-4">
       <ReportFilters>
-        <Field label="Código de proveedor (opcional)">
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
@@ -94,7 +106,10 @@ export function UsageReportTab() {
             className="w-44 font-mono text-xs"
           />
         </Field>
-        <Field label="Ventana (días)">
+        <Field
+          tooltip="Cuántos días hacia atrás abarca el informe, de 1 a 366."
+          label="Ventana (días)"
+        >
           <Input
             type="number"
             min={1}

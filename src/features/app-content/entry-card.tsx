@@ -145,7 +145,10 @@ export function EntryCard({
           </>
         ) : (
           <div className="mt-4 flex flex-col gap-3">
-            <Field label="Título / pregunta">
+            <Field
+              tooltip="Encabezado que ve el cliente en la app; en preguntas frecuentes, la pregunta tal cual."
+              label="Título / pregunta"
+            >
               <Input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -153,7 +156,10 @@ export function EntryCard({
               />
             </Field>
 
-            <Field label="Subtítulo">
+            <Field
+              tooltip="Línea corta bajo el título que resume el contenido en la app."
+              label="Subtítulo"
+            >
               <Input
                 value={subtitle}
                 onChange={(event) => setSubtitle(event.target.value)}
@@ -161,7 +167,10 @@ export function EntryCard({
               />
             </Field>
 
-            <Field label="Respuesta">
+            <Field
+              tooltip="Texto completo que la app muestra al abrir la entrada."
+              label="Respuesta"
+            >
               <Textarea
                 value={body}
                 onChange={(event) => setBody(event.target.value)}

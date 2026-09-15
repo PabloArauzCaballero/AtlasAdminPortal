@@ -145,6 +145,7 @@ function AuthorizedPortfolioPage() {
                 </Button>
               </div>
               <Field
+                tooltip="Identificador del crédito cuya calificación se recalcula ahora."
                 label="Recalificar un crédito"
                 hint="Identificador del crédito."
               >
@@ -162,6 +163,7 @@ function AuthorizedPortfolioPage() {
                 </div>
               </Field>
               <Field
+                tooltip="Identificador del cliente cuya calificación se recalcula ahora."
                 label="Recalificar un cliente"
                 hint="Identificador del cliente."
               >

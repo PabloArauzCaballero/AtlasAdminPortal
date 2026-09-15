@@ -35,7 +35,10 @@ export function ApproveRequestTab() {
         <span className="font-mono">admin</span>/
         <span className="font-mono">platform_admin</span>.
       </p>
-      <Field label="ID de solicitud">
+      <Field
+        tooltip="Número de la solicitud al proveedor que quieres aprobar."
+        label="ID de solicitud"
+      >
         <Input
           value={requestId}
           onChange={(event) => setRequestId(event.target.value)}
@@ -43,7 +46,10 @@ export function ApproveRequestTab() {
           className="font-mono text-xs"
         />
       </Field>
-      <Field label="Motivo de aprobación (opcional)">
+      <Field
+        tooltip="Por qué apruebas esta solicitud frenada por política."
+        label="Motivo de aprobación (opcional)"
+      >
         <Textarea
           value={approvalReason}
           onChange={(event) => setApprovalReason(event.target.value)}
@@ -95,7 +101,10 @@ export function RetryRequestTab() {
         Reintenta una solicitud fallida a un proveedor externo, reutilizando sus
         parámetros originales.
       </p>
-      <Field label="ID de solicitud">
+      <Field
+        tooltip="Número de la solicitud al proveedor que quieres reintentar."
+        label="ID de solicitud"
+      >
         <Input
           value={requestId}
           onChange={(event) => setRequestId(event.target.value)}
@@ -143,7 +152,10 @@ export function RebuildFeaturesTab() {
         Recalcula el snapshot de features a partir de la respuesta ya almacenada
         de una solicitud, sin volver a consultar al proveedor.
       </p>
-      <Field label="ID de solicitud">
+      <Field
+        tooltip="Número de la solicitud al proveedor sobre la que actúas."
+        label="ID de solicitud"
+      >
         <Input
           value={requestId}
           onChange={(event) => setRequestId(event.target.value)}

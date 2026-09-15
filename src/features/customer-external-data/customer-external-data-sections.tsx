@@ -63,14 +63,21 @@ export function ConsentimientosCard({
         </p>
       ) : null}
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto]">
-        <Field label="Propósito">
+        <Field
+          tooltip="Finalidad para la que el cliente consintió la consulta, p. ej. onboarding."
+          label="Propósito"
+        >
           <Input
             value={proposito}
             onChange={(evento) => onProposito(evento.target.value)}
             placeholder="onboarding"
           />
         </Field>
-        <Field label="Proveedor" hint="Vacío = para todos.">
+        <Field
+          tooltip="Código del proveedor externo del consentimiento; vacío aplica a todos."
+          label="Proveedor"
+          hint="Vacío = para todos."
+        >
           <Input
             value={proveedor}
             onChange={(evento) => onProveedor(evento.target.value)}
@@ -106,6 +113,7 @@ export function ConsentimientosCard({
       ) : null}
       <div className="mt-3">
         <Field
+          tooltip="Identificador del consentimiento a revocar, tomado de la lista de arriba."
           label="Revocar un consentimiento"
           hint="El identificador sale de la lista de arriba. Revocar corta lo que venga a partir de ahora; lo ya obtenido se conserva porque con ello se decidió."
         >
@@ -168,20 +176,29 @@ export function ConsultarProveedorCard({
         description="La vista previa dice qué política aplica y qué costaría, sin llamar al proveedor. Es lo que separa una consulta gobernada de una factura sorpresa."
       />
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Field label="Proveedor">
+        <Field
+          tooltip="Código del proveedor externo al que se hace la consulta, p. ej. SEGIP."
+          label="Proveedor"
+        >
           <Input
             value={proveedor}
             onChange={(evento) => onProveedor(evento.target.value)}
           />
         </Field>
-        <Field label="Tipo de consulta">
+        <Field
+          tooltip="Qué se le pide al proveedor, p. ej. IDENTITY_VERIFICATION."
+          label="Tipo de consulta"
+        >
           <Input
             value={queryType}
             onChange={(evento) => setQueryType(evento.target.value)}
             placeholder="IDENTITY_VERIFICATION"
           />
         </Field>
-        <Field label="Etapa de decisión">
+        <Field
+          tooltip="Momento del ciclo del cliente para el que se usa la consulta."
+          label="Etapa de decisión"
+        >
           <Select
             name="etapa"
             value={etapa}
@@ -213,7 +230,11 @@ export function ConsultarProveedorCard({
         </Field>
         {/* Propósito y proveedor son los MISMOS que los del paso 1: se consulta con el propósito
             que se consintió, o no se consulta. Tenerlos separados invitaba a que no coincidieran. */}
-        <Field label="Propósito" hint="Por defecto, «onboarding».">
+        <Field
+          tooltip="Finalidad consentida con la que se consulta; debe coincidir con el consentimiento."
+          label="Propósito"
+          hint="Por defecto, «onboarding»."
+        >
           <Input
             value={proposito}
             onChange={(evento) => onProposito(evento.target.value)}

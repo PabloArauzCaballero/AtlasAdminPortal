@@ -170,7 +170,10 @@ function DocumentCard({
           </>
         ) : (
           <div className="mt-4 flex flex-col gap-3">
-            <Field label="Título">
+            <Field
+              tooltip="Nombre del documento legal tal como lo ve el cliente al aceptarlo."
+              label="Título"
+            >
               <Input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -178,7 +181,10 @@ function DocumentCard({
               />
             </Field>
 
-            <Field label="Resumen">
+            <Field
+              tooltip="Frase breve que explica al cliente de qué trata el documento."
+              label="Resumen"
+            >
               <Input
                 value={summary}
                 onChange={(event) => setSummary(event.target.value)}
@@ -187,6 +193,7 @@ function DocumentCard({
             </Field>
 
             <Field
+              tooltip="Texto íntegro que acepta el cliente; aquí sólo se corrige la redacción."
               label="Texto del documento"
               hint="Se corrige la redacción, nunca el fondo: un cambio de fondo se publica como versión nueva."
             >

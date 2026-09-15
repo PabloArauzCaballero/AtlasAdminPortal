@@ -178,6 +178,7 @@ export function LoginPage() {
                 onSubmit={(event) => void onSubmit(event)}
               >
                 <Field
+                  tooltip="Identificador de la organización a la que pertenece tu cuenta interna."
                   label="Tenant"
                   error={errors.tenantId?.message}
                   hint="Usa el tenant configurado para el ambiente interno."
@@ -187,14 +188,22 @@ export function LoginPage() {
                     autoComplete="organization"
                   />
                 </Field>
-                <Field label="Correo interno" error={errors.email?.message}>
+                <Field
+                  tooltip="Correo con el que se dio de alta tu cuenta interna de Atlas."
+                  label="Correo interno"
+                  error={errors.email?.message}
+                >
                   <Input
                     {...register("email")}
                     type="email"
                     autoComplete="email"
                   />
                 </Field>
-                <Field label="Contraseña" error={errors.password?.message}>
+                <Field
+                  tooltip="Tu contraseña de la cuenta interna; después se pide el código del correo."
+                  label="Contraseña"
+                  error={errors.password?.message}
+                >
                   <Input
                     {...register("password")}
                     type="password"

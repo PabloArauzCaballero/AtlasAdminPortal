@@ -88,6 +88,7 @@ export function ColumnReviewDialog({
         </p>
 
         <Field
+          tooltip="Veredicto sobre la metadata inferida de esta columna."
           label="Decisión"
           hint="APPROVED da por buena la inferencia; NEEDS_REVIEW la devuelve a la cola; REJECTED la marca como incorrecta."
         >
@@ -106,6 +107,7 @@ export function ColumnReviewDialog({
         </Field>
 
         <Field
+          tooltip="Qué tan seguro estás de la metadata inferida para esta columna."
           label="Nivel de confianza (opcional)"
           hint="Qué tan seguro estás de la metadata inferida para esta columna."
         >
@@ -114,13 +116,19 @@ export function ColumnReviewDialog({
             value={confidenceLevel}
             onChange={setConfidenceLevel}
             options={[
-              { value: "", label: "Sin especificar" },
+              {
+                value: "",
+                label: "Sin especificar",
+                description:
+                  "No declara nivel de confianza para esta revisión.",
+              },
               ...CONFIDENCE_LEVELS.map((value) => ({ value, label: value })),
             ]}
           />
         </Field>
 
         <Field
+          tooltip="Explica tu decisión; al rechazar es obligatorio y queda en el registro de revisión."
           label={
             notesRequired
               ? "Motivo del rechazo (obligatorio, mínimo 10 caracteres)"

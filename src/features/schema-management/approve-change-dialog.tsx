@@ -43,6 +43,7 @@ export function ApproveChangeDialog({
         </p>
         <JsonViewer title="Payload propuesto" value={change.changePayload} />
         <Field
+          tooltip="Justificación de tu decisión sobre el cambio; obligatoria para rechazar."
           label="Notas de aprobación"
           hint="Obligatorio para rechazar (requisito de auditoría)."
         >

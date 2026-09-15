@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "./button";
 import { DialogShell } from "./dialog-shell";
+import { FieldLabel } from "./field-label";
 import { Input } from "./input";
 
 export function ConfirmDialog({
@@ -70,13 +71,11 @@ export function ConfirmDialog({
       </div>
       {requiresTypedConfirmation ? (
         <div className="mt-4">
-          <label
+          <FieldLabel
             htmlFor={inputId}
-            className="text-xs font-medium text-atlas-muted"
-          >
-            Escribe &quot;{typedConfirmationPhrase}&quot; para habilitar la
-            ejecución
-          </label>
+            label={`Escribe "${typedConfirmationPhrase}" para habilitar la ejecución`}
+            tooltip="Frase de seguridad: escribirla confirma que entiendes el efecto de la acción."
+          />
           <Input
             id={inputId}
             value={typedValue}

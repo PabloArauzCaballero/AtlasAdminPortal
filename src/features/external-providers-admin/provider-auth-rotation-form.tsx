@@ -37,7 +37,10 @@ export function RotationForm({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field label="Campo a rotar">
+        <Field
+          tooltip="Qué parte de la credencial del proveedor se reemplaza."
+          label="Campo a rotar"
+        >
           <Select
             name="credentialField"
             value={field}
@@ -45,7 +48,10 @@ export function RotationForm({
             options={fields.map((option) => ({ value: option, label: option }))}
           />
         </Field>
-        <Field label="Motivo">
+        <Field
+          tooltip="Por qué se rota, p. ej. rotación programada o sospecha de compromiso."
+          label="Motivo"
+        >
           <Input
             value={reason}
             onChange={(event) => setReason(event.target.value)}
@@ -53,7 +59,10 @@ export function RotationForm({
           />
         </Field>
       </div>
-      <Field label="Material nuevo">
+      <Field
+        tooltip="El valor secreto nuevo, que se envía al broker de credenciales."
+        label="Material nuevo"
+      >
         <Input
           type="password"
           autoComplete="off"

@@ -111,7 +111,7 @@ function AuthorizedLearningCenter() {
               Todos los tutoriales
             </h2>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="relative">
+              <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
                 <input
                   value={query}
@@ -120,7 +120,7 @@ function AuthorizedLearningCenter() {
                   aria-label="Buscar tutorial"
                   className="h-9 w-56 rounded-lg border border-atlas-border bg-white pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
                 />
-              </label>
+              </div>
               {/* Los módulos son nombres propios de las pantallas del portal: van sin descripción. */}
               <Select
                 name="modulo"

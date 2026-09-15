@@ -64,7 +64,11 @@ export function ProviderRuntimeForm({
          * único sitio donde hay que ELEGIR — que es justo donde importa entender la diferencia
          * entre simular en proceso y simular por red.
          */}
-        <Field label="Cómo se le llama" hint={AYUDA_MODO[defaultMode ?? ""]}>
+        <Field
+          tooltip="Si Atlas simula al proveedor, usa su sandbox, producción o no lo llama."
+          label="Cómo se le llama"
+          hint={AYUDA_MODO[defaultMode ?? ""]}
+        >
           <Select
             name="defaultMode"
             value={defaultMode}
@@ -101,6 +105,7 @@ export function ProviderRuntimeForm({
           />
         </Field>
         <Field
+          tooltip="Papel del proveedor en el catálogo: oficial, de prueba, sólo sandbox o retirado."
           label="Tipo de proveedor"
           hint={AYUDA_ESTADO[providerStatus ?? ""]}
         >
@@ -150,7 +155,10 @@ export function ProviderRuntimeForm({
           para producción.
         </label>
       ) : null}
-      <Field label="Motivo (opcional)">
+      <Field
+        tooltip="Por qué cambias el modo o el tipo del proveedor."
+        label="Motivo (opcional)"
+      >
         <Input
           value={reason}
           onChange={(event) => setReason(event.target.value)}

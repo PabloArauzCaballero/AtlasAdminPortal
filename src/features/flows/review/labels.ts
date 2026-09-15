@@ -22,6 +22,15 @@ export const MOTIVO: Record<FlowReviewReason, { label: string; hint: string }> =
     },
   };
 
+/** Qué significa cada estado de la cola, para el desplegable de filtro. */
+export const ESTADO_AYUDA: Record<FlowReviewStatus, string> = {
+  AUTO_DETECTED:
+    "Detectado por el análisis; nadie ha pedido revisarlo todavía.",
+  NEEDS_REVIEW: "Espera que una persona lo revise antes de darse por bueno.",
+  APPROVED: "Una persona aprobó este código del flujo.",
+  REJECTED: "Una persona rechazó este código del flujo.",
+};
+
 export const ESTADO: Record<FlowReviewStatus, { label: string; tone: Tono }> = {
   AUTO_DETECTED: { label: "Sin revisión pedida", tone: "muted" },
   NEEDS_REVIEW: { label: "Pendiente", tone: "warning" },

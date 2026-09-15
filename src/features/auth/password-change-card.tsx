@@ -122,6 +122,7 @@ export function PasswordChangeCard() {
               onSubmit={(event) => void onConfirm(event)}
             >
               <Field
+                tooltip="Código de 6 dígitos enviado a tu correo para confirmar el cambio."
                 label="Código del correo"
                 error={confirmForm.formState.errors.code?.message}
               >
@@ -133,6 +134,7 @@ export function PasswordChangeCard() {
                 />
               </Field>
               <Field
+                tooltip="La contraseña que usarás desde ahora: mínimo 10 caracteres, con letra y número o símbolo."
                 label="Contraseña nueva"
                 error={confirmForm.formState.errors.newPassword?.message}
                 hint="Mínimo 10 caracteres, con al menos una letra y un número o símbolo."
@@ -144,6 +146,7 @@ export function PasswordChangeCard() {
                 />
               </Field>
               <Field
+                tooltip="Escríbela otra vez para descartar un error de tecleo."
                 label="Repite la contraseña nueva"
                 error={confirmForm.formState.errors.repeatPassword?.message}
               >
@@ -179,6 +182,7 @@ export function PasswordChangeCard() {
               onSubmit={(event) => void onRequest(event)}
             >
               <Field
+                tooltip="La contraseña con la que entraste; confirma que el cambio lo pides tú."
                 label="Contraseña actual"
                 error={requestForm.formState.errors.currentPassword?.message}
               >

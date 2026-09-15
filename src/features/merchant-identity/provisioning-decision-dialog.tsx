@@ -82,6 +82,7 @@ export function ProvisioningDecisionDialog({
 
       {aprobar ? (
         <Field
+          tooltip="Código opcional que Atlas asigna al usuario del comercio."
           label="Código de usuario"
           hint="Opcional, y el único dato que pone Atlas: el resto viene del ERP."
         >
@@ -91,7 +92,11 @@ export function ProvisioningDecisionDialog({
           />
         </Field>
       ) : (
-        <Field label="Motivo del rechazo" hint="Mínimo ocho caracteres.">
+        <Field
+          tooltip="Por qué se rechaza la solicitud de alta; mínimo ocho caracteres."
+          label="Motivo del rechazo"
+          hint="Mínimo ocho caracteres."
+        >
           <Textarea
             rows={3}
             value={motivo}

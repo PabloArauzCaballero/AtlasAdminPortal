@@ -28,7 +28,10 @@ export function CustomerAuditFilters({
 }>) {
   return (
     <div className="mb-4 grid gap-3 rounded-lg border border-atlas-border bg-white p-3 grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
-      <Field label="Tipo de evento">
+      <Field
+        tooltip="Filtra la auditoría del cliente por la clase de suceso registrado."
+        label="Tipo de evento"
+      >
         <Select
           name="eventType"
           value={value.eventType}
@@ -45,14 +48,20 @@ export function CustomerAuditFilters({
           ]}
         />
       </Field>
-      <Field label="Desde">
+      <Field
+        tooltip="Límite inicial del rango de fechas de los eventos mostrados."
+        label="Desde"
+      >
         <Input
           type="datetime-local"
           value={value.from}
           onChange={(event) => onChange({ ...value, from: event.target.value })}
         />
       </Field>
-      <Field label="Hasta">
+      <Field
+        tooltip="Límite final del rango de fechas de los eventos mostrados."
+        label="Hasta"
+      >
         <Input
           type="datetime-local"
           value={value.to}

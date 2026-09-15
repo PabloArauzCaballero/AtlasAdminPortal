@@ -9,12 +9,13 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { Badge, MethodBadge, RiskBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
+import { Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { fecha } from "../async/labels";
 import { FlowDetailDrawer } from "../flow-detail-drawer";
 import { useFlowReviewQueue, useReviewFlowMutation } from "./hooks";
-import { ESTADO, MOTIVO } from "./labels";
+import { ESTADO, ESTADO_AYUDA, MOTIVO } from "./labels";
 import type {
   FlowReviewDecision,
   FlowReviewItem,
@@ -169,21 +170,20 @@ function AuthorizedFlowReviewPage() {
         title="Revisión de flujos"
         description="Flujos de riesgo alto cuyo análisis no se puede dar por bueno solo, y los ya revisados cuyo código cambió. Aprobar un flujo es aprobar ESE código: si cambia, vuelve aquí."
         actions={
-          <select
-            aria-label="Estado de revisión"
-            className="rounded-md border border-atlas-border bg-white px-2 py-1 text-sm"
+          <Select
+            name="estadoRevision"
+            ariaLabel="Estado de revisión"
             value={estado}
-            onChange={(event) => {
-              setEstado(event.target.value as FlowReviewStatus);
+            onChange={(valor) => {
+              setEstado(valor as FlowReviewStatus);
               setPage(1);
             }}
-          >
-            {ESTADOS.map((valor) => (
-              <option key={valor} value={valor}>
-                {ESTADO[valor].label}
-              </option>
-            ))}
-          </select>
+            options={ESTADOS.map((valor) => ({
+              value: valor,
+              label: ESTADO[valor].label,
+              description: ESTADO_AYUDA[valor],
+            }))}
+          />
         }
       />
       {!puedeRevisar ? (

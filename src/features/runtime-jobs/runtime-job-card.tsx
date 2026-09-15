@@ -90,6 +90,11 @@ export function RuntimeJobCard({
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           {definition.fields.map((field) => (
             <Field
+              tooltip={
+                field.placeholder
+                  ? `Parámetro del trabajo. Ej.: ${field.placeholder}`
+                  : `Parámetro «${field.label}» con el que se ejecuta el trabajo.`
+              }
               key={field.name}
               label={field.label}
               hint={field.hint}

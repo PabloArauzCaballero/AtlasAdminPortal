@@ -3,10 +3,17 @@
 import { useId, useState } from "react";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badges";
 import { useCompartir, useConcesiones } from "./hooks";
 import { NIVELES, type Nivel, type Nodo } from "./types";
+
+const NIVEL_AYUDA: Record<Nivel, string> = {
+  leer: "Puede ver el expediente y sus archivos sin cambiarlos.",
+  escribir: "Además de ver, puede subir o cambiar archivos del expediente.",
+  compartir: "Además de escribir, puede dar acceso a otras personas.",
+  administrar: "Control total del expediente, incluido retirar accesos.",
+};
 
 const ROLES_SUGERIDOS = [
   "OPERATIONS_ANALYST",
@@ -124,49 +131,59 @@ export function DialogoDeCompartir({
             Dar acceso
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-sm">
-              <span className="mb-1 block text-xs text-slate-600">A quién</span>
-              <select
+            <Field
+              label="A quién"
+              tooltip="Si el acceso se da a todo un rol o a una sola persona interna."
+            >
+              <Select
+                name="principalTipo"
                 value={principalTipo}
-                onChange={(evento) =>
-                  setPrincipalTipo(
-                    evento.target.value as "rol" | "usuario_interno",
-                  )
+                onChange={(valor) =>
+                  setPrincipalTipo(valor as "rol" | "usuario_interno")
                 }
-                className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-              >
-                <option value="rol">Un rol</option>
-                <option value="usuario_interno">Una persona</option>
-              </select>
-            </label>
-            <label className="text-sm">
-              <span className="mb-1 block text-xs text-slate-600">Nivel</span>
-              <select
+                options={[
+                  {
+                    value: "rol",
+                    label: "Un rol",
+                    description:
+                      "Todas las personas con ese rol reciben el acceso.",
+                  },
+                  {
+                    value: "usuario_interno",
+                    label: "Una persona",
+                    description: "Sólo esa persona interna recibe el acceso.",
+                  },
+                ]}
+              />
+            </Field>
+            <Field
+              label="Nivel"
+              tooltip="Qué podrá hacer con el expediente quien recibe el acceso."
+            >
+              <Select
+                name="nivel"
                 value={nivel}
-                onChange={(evento) => setNivel(evento.target.value as Nivel)}
-                className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-              >
-                {NIVELES.map((valor) => (
-                  <option key={valor} value={valor}>
-                    {valor}
-                  </option>
-                ))}
-              </select>
-            </label>
+                onChange={(valor) => setNivel(valor as Nivel)}
+                options={NIVELES.map((valor) => ({
+                  value: valor,
+                  label: valor,
+                  description: NIVEL_AYUDA[valor],
+                }))}
+              />
+            </Field>
           </div>
 
           {principalTipo === "rol" ? (
-            <select
+            <Select
+              name="principalId"
+              ariaLabel="Rol que recibe el acceso"
               value={principalId}
-              onChange={(evento) => setPrincipalId(evento.target.value)}
-              className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              {ROLES_SUGERIDOS.map((rol) => (
-                <option key={rol} value={rol}>
-                  {rol}
-                </option>
-              ))}
-            </select>
+              onChange={setPrincipalId}
+              options={ROLES_SUGERIDOS.map((rol) => ({
+                value: rol, // sin-ayuda: códigos de rol interno, ya dicen a quién nombran
+                label: rol,
+              }))}
+            />
           ) : (
             <Input
               value={principalId}
@@ -175,9 +192,11 @@ export function DialogoDeCompartir({
             />
           )}
 
-          <label className="block text-sm">
-            <span className="mb-1 block text-xs text-slate-600">Por qué</span>
-            <textarea
+          <Field
+            label="Por qué"
+            tooltip="Motivo del acceso; queda en la bitácora del expediente."
+          >
+            <Textarea
               value={motivo}
               onChange={(evento) => setMotivo(evento.target.value)}
               rows={2}
@@ -185,7 +204,7 @@ export function DialogoDeCompartir({
               placeholder="Queda en la bitácora del expediente."
               className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
             />
-          </label>
+          </Field>
 
           <div className="flex items-center gap-2">
             <Button

@@ -154,7 +154,10 @@ function CostPolicyEditForm({
 
   return (
     <div className="mt-3 space-y-3 border-t border-atlas-border pt-3">
-      <Field label="Nivel de costo">
+      <Field
+        tooltip="Categoría de costo por consulta del proveedor, de FREE a CRITICAL."
+        label="Nivel de costo"
+      >
         <Select
           name="costTier"
           value={costTier}

@@ -65,7 +65,10 @@ export function RequestsListTab() {
   return (
     <div className="space-y-4">
       <ReportFilters>
-        <Field label="Proveedor">
+        <Field
+          tooltip="Código del proveedor cuyas solicitudes quieres ver, p. ej. SEGIP."
+          label="Proveedor"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
@@ -75,7 +78,10 @@ export function RequestsListTab() {
             className="w-44 font-mono text-xs"
           />
         </Field>
-        <Field label="Cómo acabó">
+        <Field
+          tooltip="Filtra las solicitudes por su desenlace: problema, política, respuesta o caché."
+          label="Cómo acabó"
+        >
           <Select
             name="responseStatus"
             className="w-56"
@@ -84,7 +90,10 @@ export function RequestsListTab() {
             options={ESTADOS}
           />
         </Field>
-        <Field label="Últimos (días)">
+        <Field
+          tooltip="Cuántos días hacia atrás se buscan solicitudes, hasta 90."
+          label="Últimos (días)"
+        >
           <Input
             type="number"
             min={1}

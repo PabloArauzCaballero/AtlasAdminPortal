@@ -130,7 +130,7 @@ export const RUN_STATUS_OPTIONS: Option[] = [
   {
     value: "RUNNING",
     label: "RUNNING",
-    description: "Ejecutándose ahora mismo.",
+    description: "Se está ejecutando ahora mismo.",
   },
   {
     value: "PASSED",

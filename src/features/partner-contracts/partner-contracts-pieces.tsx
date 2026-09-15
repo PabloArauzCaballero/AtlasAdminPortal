@@ -103,6 +103,7 @@ export function DialogoPublicar({
         </p>
 
         <Field
+          tooltip="Identificador fijo del contrato entre versiones, en mayúsculas y sin espacios."
           label="Código del contrato"
           hint="En mayúsculas y sin espacios. Identifica el MISMO contrato entre versiones, así que no cambia al publicar una nueva."
         >
@@ -112,7 +113,10 @@ export function DialogoPublicar({
             onChange={(evento) => setTemplateCode(evento.target.value)}
           />
         </Field>
-        <Field label="Nombre">
+        <Field
+          tooltip="Nombre legible del contrato para el equipo y el comercio."
+          label="Nombre"
+        >
           <Input
             required
             value={name}
@@ -120,6 +124,7 @@ export function DialogoPublicar({
           />
         </Field>
         <Field
+          tooltip="Texto íntegro que el comercio acepta al afiliarse, mínimo 50 caracteres."
           label="Texto del contrato"
           hint="Al menos 50 caracteres. Es lo que el comercio acepta al afiliarse."
         >

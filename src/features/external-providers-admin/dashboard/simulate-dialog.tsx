@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { Play, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
-import { Field } from "@/shared/components/ui/input";
+import { Field, Select } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useTestProviderMutation } from "../hooks";
@@ -103,18 +103,21 @@ export function SimulateDialog({
           </Button>
         </div>
 
-        <Field label="Qué quieres que pase" hint={elegido?.hint}>
-          <select
+        <Field
+          tooltip="Escenario que simulará el emulador del proveedor en esta llamada."
+          label="Qué quieres que pase"
+          hint={elegido?.hint}
+        >
+          <Select
+            name="scenario"
             value={scenario}
-            onChange={(event) => setScenario(event.target.value)}
-            className="h-11 w-full rounded-lg border border-atlas-border bg-white px-3 text-sm text-atlas-text"
-          >
-            {ESCENARIOS.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+            onChange={setScenario}
+            options={ESCENARIOS.map((item) => ({
+              value: item.value,
+              label: item.label,
+              description: item.hint,
+            }))}
+          />
         </Field>
 
         {provider.mode !== "mock_server" ? (

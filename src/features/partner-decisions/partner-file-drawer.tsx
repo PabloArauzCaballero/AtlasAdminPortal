@@ -160,6 +160,7 @@ export function PartnerFileDrawer({
                   Pedir la verificación al Motor
                 </Button>
                 <Field
+                  tooltip="Lo que el comercio debe corregir; lo lee tal cual en su portal."
                   label="Motivo del rechazo"
                   hint="Obligatorio para rechazar; el comercio lo verá y es lo que le dice qué corregir."
                 >

@@ -48,6 +48,7 @@ export function ProposeTableForm({
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
+            tooltip="Nombre técnico en snake_case, p. ej. customer_watchlist_entries."
             label="Nombre de tabla"
             hint="snake_case, mín. 3 caracteres."
             error={errors.tableName?.message}
@@ -58,15 +59,37 @@ export function ProposeTableForm({
               {...register("tableName")}
             />
           </Field>
-          <Field label="Tipo">
+          <Field
+            tooltip="Naturaleza de la tabla: transaccional, catálogo, auditoría u operacional."
+            label="Tipo"
+          >
             <FormSelect
               control={control}
               name="tableType"
               options={[
-                { value: "transactional", label: "Transactional" },
-                { value: "catalog", label: "Catalog" },
-                { value: "audit", label: "Audit" },
-                { value: "operational", label: "Operational" },
+                {
+                  value: "transactional",
+                  label: "Transactional",
+                  description:
+                    "Registra operaciones del negocio que se crean continuamente.",
+                },
+                {
+                  value: "catalog",
+                  label: "Catalog",
+                  description:
+                    "Valores de referencia que cambian poco, como listas cerradas.",
+                },
+                {
+                  value: "audit",
+                  label: "Audit",
+                  description:
+                    "Rastro de lo que ocurrió y quién lo hizo, para auditoría.",
+                },
+                {
+                  value: "operational",
+                  label: "Operational",
+                  description: "Estado de trabajo interno de procesos y colas.",
+                },
               ]}
             />
           </Field>
@@ -81,7 +104,10 @@ export function ProposeTableForm({
             Multi-tenant
           </label>
         </div>
-        <Field label="Descripción (opcional)">
+        <Field
+          tooltip="Qué guarda la tabla, para quien revise la propuesta."
+          label="Descripción (opcional)"
+        >
           <Textarea className="min-h-16" {...register("description")} />
         </Field>
 
@@ -155,6 +181,7 @@ export function ProposeTableForm({
         </div>
 
         <Field
+          tooltip="Por qué se necesita esta tabla; mínimo 10 caracteres."
           label="Justificación"
           hint="Mín. 10 caracteres: por qué se necesita esta tabla."
           error={errors.justification?.message}

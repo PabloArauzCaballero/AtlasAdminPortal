@@ -74,20 +74,36 @@ export function UserCreateForm() {
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <Field label="Correo institucional" error={errors.email?.message}>
+            <Field
+              tooltip="Correo corporativo de la persona; con él entra y recibe el código."
+              label="Correo institucional"
+              error={errors.email?.message}
+            >
               <Input
                 type="email"
                 placeholder="nombre.apellido@empresa.com"
                 {...register("email")}
               />
             </Field>
-            <Field label="Nombre completo" error={errors.fullName?.message}>
+            <Field
+              tooltip="Nombre y apellidos de la persona tal como aparecerán en la auditoría."
+              label="Nombre completo"
+              error={errors.fullName?.message}
+            >
               <Input {...register("fullName")} />
             </Field>
-            <Field label="Cargo (opcional)" error={errors.jobTitle?.message}>
+            <Field
+              tooltip="Puesto de la persona en la empresa, p. ej. analista de riesgo."
+              label="Cargo (opcional)"
+              error={errors.jobTitle?.message}
+            >
               <Input {...register("jobTitle")} />
             </Field>
-            <Field label="Departamento" error={errors.department?.message}>
+            <Field
+              tooltip="Área de la empresa a la que pertenece la cuenta."
+              label="Departamento"
+              error={errors.department?.message}
+            >
               <FormSelect
                 control={control}
                 name="department"
@@ -101,6 +117,7 @@ export function UserCreateForm() {
             name="roles"
             render={({ field }) => (
               <Field
+                tooltip="Roles que dan permisos a la cuenta desde el primer acceso."
                 label="Roles"
                 hint="Determina los permisos efectivos que tendrá la cuenta desde el primer login."
                 error={errors.roles?.message}
@@ -136,6 +153,7 @@ export function UserCreateForm() {
           />
 
           <Field
+            tooltip="Por qué se da de alta la cuenta; queda en la auditoría del alta."
             label="Motivo (obligatorio, mínimo 8 caracteres)"
             hint="Se guarda en el registro de auditoría junto con el alta del usuario."
             error={errors.reason?.message}

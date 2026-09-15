@@ -63,13 +63,25 @@ export function UserEditForm({
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <Field label="Nombre completo" error={errors.fullName?.message}>
+            <Field
+              tooltip="Nombre y apellidos de la persona tal como aparecerán en la auditoría."
+              label="Nombre completo"
+              error={errors.fullName?.message}
+            >
               <Input {...register("fullName")} />
             </Field>
-            <Field label="Cargo" error={errors.jobTitle?.message}>
+            <Field
+              tooltip="Puesto de la persona en la empresa, p. ej. analista de riesgo."
+              label="Cargo"
+              error={errors.jobTitle?.message}
+            >
               <Input {...register("jobTitle")} />
             </Field>
-            <Field label="Departamento" error={errors.department?.message}>
+            <Field
+              tooltip="Área de la empresa a la que pertenece la cuenta."
+              label="Departamento"
+              error={errors.department?.message}
+            >
               <FormSelect
                 control={control}
                 name="department"
@@ -80,6 +92,7 @@ export function UserEditForm({
               />
             </Field>
             <Field
+              tooltip="Si la cuenta puede entrar; dejar de estar activa revoca sus sesiones."
               label="Estado"
               error={errors.status?.message}
               hint={
@@ -106,6 +119,7 @@ export function UserEditForm({
             Forzar cambio de contraseña en el próximo login
           </label>
           <Field
+            tooltip="Por qué se modifica la cuenta; queda en la auditoría con los cambios."
             label="Motivo (obligatorio, mínimo 8 caracteres)"
             error={errors.reason?.message}
             hint="Se guarda en el registro de auditoría junto con los campos modificados."

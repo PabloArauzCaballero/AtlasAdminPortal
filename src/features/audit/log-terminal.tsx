@@ -150,7 +150,7 @@ export function LogTerminal({
         ) : null}
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
           {actions}
-          <label className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-950/80 px-2 py-1">
+          <div className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-950/80 px-2 py-1">
             <Search className="h-3.5 w-3.5 text-slate-500" aria-hidden />
             <input
               value={needle}
@@ -159,7 +159,7 @@ export function LogTerminal({
               aria-label="Filtrar líneas del log"
               className="w-28 bg-transparent font-mono text-[11px] text-slate-200 outline-none placeholder:text-slate-600 focus:w-40"
             />
-          </label>
+          </div>
         </div>
       </header>
 

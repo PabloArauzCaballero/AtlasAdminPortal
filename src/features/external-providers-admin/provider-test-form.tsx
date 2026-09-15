@@ -47,38 +47,56 @@ export function ProviderTestForm({
         QA/debug). Usa valores por defecto razonables si dejás campos vacíos.
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field label="Customer ID">
+        <Field
+          tooltip="Cliente sobre el que se lanza la consulta de prueba."
+          label="Customer ID"
+        >
           <Input
             value={customerId}
             onChange={(event) => setCustomerId(event.target.value)}
           />
         </Field>
-        <Field label="Query type">
+        <Field
+          tooltip="Tipo de consulta de prueba, p. ej. IDENTITY_VERIFICATION."
+          label="Query type"
+        >
           <Input
             value={queryType}
             onChange={(event) => setQueryType(event.target.value)}
           />
         </Field>
-        <Field label="Propósito">
+        <Field
+          tooltip="Finalidad declarada de la consulta de prueba, p. ej. onboarding."
+          label="Propósito"
+        >
           <Input
             value={purpose}
             onChange={(event) => setPurpose(event.target.value)}
           />
         </Field>
-        <Field label="Etapa de decisión">
+        <Field
+          tooltip="Etapa del ciclo del cliente para la prueba, p. ej. ONBOARDING."
+          label="Etapa de decisión"
+        >
           <Input
             value={decisionStage}
             onChange={(event) => setDecisionStage(event.target.value)}
           />
         </Field>
       </div>
-      <Field label="Escenario (opcional, adapters mock)">
+      <Field
+        tooltip="Caso que fuerza un adapter simulado, p. ej. happy_path o provider_down."
+        label="Escenario (opcional, adapters mock)"
+      >
         <Input
           value={scenario}
           onChange={(event) => setScenario(event.target.value)}
         />
       </Field>
-      <Field label="Input (JSON)">
+      <Field
+        tooltip="Datos de entrada de la consulta de prueba en JSON."
+        label="Input (JSON)"
+      >
         <Textarea
           value={inputJson}
           onChange={(event) => setInputJson(event.target.value)}

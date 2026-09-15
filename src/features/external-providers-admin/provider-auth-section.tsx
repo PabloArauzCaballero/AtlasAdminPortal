@@ -91,7 +91,10 @@ function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
       <p className="text-sm font-semibold text-red-800">
         Acciones de contención
       </p>
-      <Field label="Motivo">
+      <Field
+        tooltip="Por qué se ejecuta esta acción sobre la credencial del proveedor."
+        label="Motivo"
+      >
         <Input
           value={reason}
           onChange={(event) => setReason(event.target.value)}

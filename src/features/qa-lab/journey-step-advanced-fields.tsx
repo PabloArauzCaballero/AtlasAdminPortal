@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import type { QaJourneyStepSpec } from "./journey-types";
 import { Input } from "@/shared/components/ui/input";
+import { FieldLabel } from "@/shared/components/ui/field-label";
 import { cn } from "@/shared/lib/cn";
 
 /**
@@ -66,9 +67,12 @@ function ExpectedStatusField({ step, onChange }: Readonly<StepFieldProps>) {
   );
   return (
     <div>
-      <label htmlFor={id} className={MINI_LABEL_CLASS}>
-        HTTP esperados
-      </label>
+      <FieldLabel
+        htmlFor={id}
+        className={MINI_LABEL_CLASS}
+        label="HTTP esperados"
+        tooltip="Códigos HTTP que cuentan como éxito del paso, separados por comas. Ej.: 200, 201."
+      />
       <Input
         id={id}
         value={text}
@@ -124,9 +128,12 @@ function JsonMiniField({
 
   return (
     <div>
-      <label htmlFor={id} className={MINI_LABEL_CLASS}>
-        {label}
-      </label>
+      <FieldLabel
+        htmlFor={id}
+        className={MINI_LABEL_CLASS}
+        label={label}
+        tooltip={`JSON de «${label}» que usa este paso del recorrido; debe ser un objeto válido.`}
+      />
       <textarea
         id={id}
         value={text}

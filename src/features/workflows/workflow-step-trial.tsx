@@ -6,6 +6,7 @@ import { Play } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { FieldLabel } from "@/shared/components/ui/field-label";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { pathParamNames, runWorkflowStepTrial } from "./services";
 import type { WorkflowStep } from "./types";
@@ -72,11 +73,14 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
       {params.length > 0 ? (
         <div className="space-y-1.5">
           {params.map((name) => (
-            <label key={name} className="block">
-              <span className="font-mono text-[0.6875rem] text-atlas-muted">
-                :{name}
-              </span>
+            <div key={name} className="block">
+              <FieldLabel
+                className="font-mono text-[0.6875rem] text-atlas-muted"
+                label={`:${name}`}
+                tooltip={`Valor que sustituye al parámetro :${name} de la ruta en la llamada de prueba.`}
+              />
               <input
+                aria-label={`Valor de :${name}`}
                 value={values[name] ?? ""}
                 onChange={(event) =>
                   setValues((current) => ({
@@ -87,16 +91,18 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
                 placeholder={`valor de ${name}`}
                 className="mt-0.5 h-8 w-full rounded-md border border-atlas-border bg-white px-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
               />
-            </label>
+            </div>
           ))}
         </div>
       ) : null}
 
       {writes ? (
-        <label className="block">
-          <span className="text-[0.6875rem] text-atlas-muted">
-            Payload de prueba (propuesto por el contrato declarado)
-          </span>
+        <div className="block">
+          <FieldLabel
+            className="text-[0.6875rem] text-atlas-muted"
+            label="Payload de prueba (propuesto por el contrato declarado)"
+            tooltip="JSON que se envía en la llamada de prueba; parte del contrato declarado del paso."
+          />
           <textarea
             value={payload}
             onChange={(event) => setPayload(event.target.value)}
@@ -105,7 +111,7 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
             aria-label="Payload de prueba"
             className="atlas-scrollbar mt-0.5 w-full rounded-md border border-atlas-border bg-white p-2 font-mono text-[0.6875rem] leading-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
           />
-        </label>
+        </div>
       ) : null}
 
       {jsonError ? (

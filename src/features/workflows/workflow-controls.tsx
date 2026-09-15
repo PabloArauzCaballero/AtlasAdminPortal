@@ -1,6 +1,9 @@
 "use client";
 
 import { cn } from "@/shared/lib/cn";
+import type { Option } from "@/shared/lib/options";
+import { Field } from "@/shared/components/ui/input";
+import { OptionSelect } from "@/shared/components/ui/option-select";
 import { CONDITION_COLOR, CONDITION_LABEL } from "./workflow-edges";
 import { ACTOR_COLOR, ACTOR_LABEL } from "./workflow-node";
 import type { WorkflowSummary, WorkflowTree, WorkflowTreeQuery } from "./types";
@@ -39,47 +42,65 @@ export function WorkflowControls({
     <div className="flex flex-wrap items-end gap-3">
       <Select
         label="Flujo"
+        tooltip="Flujo del catálogo cuyo árbol de etapas y pasos quieres ver."
         value={workflowCode}
         onChange={onWorkflowChange}
         options={codes.map((code) => ({
-          value: code,
+          value: code, // sin-ayuda: flujos del catálogo, entidades sin ficha
           label:
             workflows.find((item) => item.workflowCode === code)?.name ?? code,
         }))}
       />
       <Select
         label="Versión"
+        tooltip="Versión del flujo que se dibuja: la vigente o una concreta."
         value={filters.version ?? "latest"}
         onChange={(version) => onFiltersChange({ ...filters, version })}
         options={[
-          { value: "latest", label: "Vigente (latest)" },
+          {
+            value: "latest",
+            label: "Vigente (latest)",
+            description:
+              "La versión marcada como vigente del flujo en este momento.",
+          },
           ...versions.map((item) => ({
-            value: item.version,
+            value: item.version, // sin-ayuda: versiones publicadas, entidades de los datos
             label: `${item.version} · ${item.status}${item.isDefault ? " · predeterminada" : ""}`,
           })),
         ]}
       />
       <Select
         label="Módulo"
+        tooltip="Limita el árbol a los pasos de un módulo del backend."
         value={filters.moduleCode ?? ""}
         onChange={(moduleCode) =>
           onFiltersChange({ ...filters, moduleCode: moduleCode || undefined })
         }
         options={[
-          { value: "", label: "Todos" },
+          {
+            value: "",
+            label: "Todos",
+            description: "Sin filtrar: muestra los pasos de todos los módulos.",
+          },
+          // sin-ayuda: módulos que salen del propio árbol, sin mapa de dominio
           ...modules.map((code) => ({ value: code, label: code })),
         ]}
       />
       <Select
         label="Actor"
+        tooltip="Limita el árbol a los pasos que ejecuta un tipo de actor."
         value={filters.actorType ?? ""}
         onChange={(actorType) =>
           onFiltersChange({ ...filters, actorType: actorType || undefined })
         }
         options={[
-          { value: "", label: "Todos" },
+          {
+            value: "",
+            label: "Todos",
+            description: "Sin filtrar: muestra los pasos de cualquier actor.",
+          },
           ...ACTORS.map((actor) => ({
-            value: actor,
+            value: actor, // sin-ayuda: el tipo de actor ya lo nombra su etiqueta y su color en el lienzo
             label: ACTOR_LABEL[actor] ?? actor,
           })),
         ]}
@@ -99,32 +120,30 @@ export function WorkflowControls({
 
 function Select({
   label,
+  tooltip,
   value,
   options,
   onChange,
 }: Readonly<{
   label: string;
+  tooltip: string;
   value: string;
-  options: { value: string; label: string }[];
+  options: Option[];
   onChange: (value: string) => void;
 }>) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-atlas-muted">
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-9 min-w-[10rem] rounded-lg border border-atlas-border bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="min-w-[10rem]">
+      <Field label={label} tooltip={tooltip}>
+        {/* sin-ayuda: el tooltip lo pinta el Field que lo envuelve */}
+        <OptionSelect
+          name={label}
+          value={value}
+          onChange={onChange}
+          options={options}
+          compact
+        />
+      </Field>
+    </div>
   );
 }
 

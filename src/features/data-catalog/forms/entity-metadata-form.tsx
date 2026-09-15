@@ -107,7 +107,10 @@ function MetadataSection({
           values={values}
           onChange={onChange}
         />
-        <Field label="Propósito de negocio">
+        <Field
+          tooltip="Para qué existe esta entidad en el negocio, en lenguaje de operación."
+          label="Propósito de negocio"
+        >
           <Textarea
             value={values.businessPurpose}
             onChange={(event) =>
@@ -139,7 +142,10 @@ function GovernanceSection({
         />
       </CardHeader>
       <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field label="Modo de mutación">
+        <Field
+          tooltip="Cómo se permite cambiar los datos: sólo agregar, actualizar, libre o sólo lectura."
+          label="Modo de mutación"
+        >
           <Select
             name="mutationMode"
             value={values.governance.mutationMode}
@@ -182,7 +188,10 @@ function GovernanceSection({
           value={values.isAuditCritical}
           onChange={(value) => onChange({ ...values, isAuditCritical: value })}
         />
-        <Field label="Notas de gobierno">
+        <Field
+          tooltip="Reglas o salvedades de gobierno de datos que deba conocer quien use la entidad."
+          label="Notas de gobierno"
+        >
           <Textarea
             value={values.governance.notes}
             onChange={(event) => setGovernance({ notes: event.target.value })}
@@ -208,7 +217,10 @@ function TextField({
   onChange: (values: DataEntityMetadataInput) => void;
 }>) {
   return (
-    <Field label={label}>
+    <Field
+      tooltip={`Valor de «${label}» que se guarda en la metadata de la entidad.`}
+      label={label}
+    >
       <Input
         value={values[field]}
         onChange={(event) =>

@@ -2,6 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import realTree from "./fixtures/customer-credit-journey.json";
 import type { WorkflowTree } from "@/features/workflows/types";
 
@@ -111,8 +112,8 @@ describe("WorkflowCanvas · lectura del catálogo", () => {
     renderWithProviders(<WorkflowCanvas />);
     await screen.findByText("etapas");
 
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Módulo" }),
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Módulo/ }),
       "risk",
     );
 

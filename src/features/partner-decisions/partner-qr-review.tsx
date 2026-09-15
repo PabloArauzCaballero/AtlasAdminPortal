@@ -140,6 +140,7 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
       {puedeRevisar ? (
         <div className="space-y-2">
           <Field
+            tooltip="Explicación que lee el comercio; obligatoria si rechazas su QR."
             label="Nota para el comercio"
             hint="Obligatoria para rechazar: es lo que el comercio lee para corregir."
           >

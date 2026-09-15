@@ -88,6 +88,7 @@ export function PublishEventDialog({
         </p>
 
         <Field
+          tooltip="Evento del catálogo registrado que se inyecta en el outbox."
           label="Código de evento"
           hint="Sale del catálogo registrado: un código libre no lo consume ningún suscriptor."
         >
@@ -106,6 +107,7 @@ export function PublishEventDialog({
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
+            tooltip="Entidad sobre la que ocurre el evento, p. ej. customer o loan."
             label="Tipo de agregado"
             hint={
               permitidos.length > 0
@@ -134,6 +136,7 @@ export function PublishEventDialog({
             )}
           </Field>
           <Field
+            tooltip="Identificador concreto de la entidad afectada; es opcional."
             label="Id del agregado"
             hint="Opcional: el identificador concreto."
           >
@@ -145,6 +148,7 @@ export function PublishEventDialog({
         </div>
 
         <Field
+          tooltip="JSON que recibirán los suscriptores del evento."
           label="Payload"
           hint="JSON. Es lo que recibirán los suscriptores."
           error={errorPayload ?? undefined}

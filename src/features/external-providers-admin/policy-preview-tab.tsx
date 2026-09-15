@@ -51,13 +51,19 @@ export function PolicyPreviewTab() {
         costo? ¿requiere aprobación manual?) sin llamar realmente al proveedor.
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field label="Customer ID (opcional)">
+        <Field
+          tooltip="Cliente para el que se evalúa la política; es opcional."
+          label="Customer ID (opcional)"
+        >
           <Input
             value={customerId}
             onChange={(event) => setCustomerId(event.target.value)}
           />
         </Field>
-        <Field label="Código de proveedor">
+        <Field
+          tooltip="Proveedor cuya política de consulta se previsualiza, p. ej. SEGIP."
+          label="Código de proveedor"
+        >
           <Input
             value={providerCode}
             onChange={(event) => setProviderCode(event.target.value)}
@@ -65,26 +71,38 @@ export function PolicyPreviewTab() {
             className="font-mono text-xs"
           />
         </Field>
-        <Field label="Query type">
+        <Field
+          tooltip="Tipo de consulta a evaluar, p. ej. IDENTITY_VERIFICATION."
+          label="Query type"
+        >
           <Input
             value={queryType}
             onChange={(event) => setQueryType(event.target.value)}
           />
         </Field>
-        <Field label="Propósito">
+        <Field
+          tooltip="Finalidad declarada de la consulta, p. ej. onboarding."
+          label="Propósito"
+        >
           <Input
             value={purpose}
             onChange={(event) => setPurpose(event.target.value)}
           />
         </Field>
       </div>
-      <Field label="Etapa de decisión">
+      <Field
+        tooltip="Etapa del ciclo del cliente, p. ej. ONBOARDING."
+        label="Etapa de decisión"
+      >
         <Input
           value={decisionStage}
           onChange={(event) => setDecisionStage(event.target.value)}
         />
       </Field>
-      <Field label="Input (JSON)">
+      <Field
+        tooltip="Datos de entrada de la consulta en JSON, como los mandaría el backend."
+        label="Input (JSON)"
+      >
         <Textarea
           value={inputJson}
           onChange={(event) => setInputJson(event.target.value)}

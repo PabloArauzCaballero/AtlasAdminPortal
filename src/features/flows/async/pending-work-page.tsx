@@ -9,6 +9,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { Badge, MethodBadge } from "@/shared/components/ui/badges";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { DomainEventsTable } from "./domain-events-table";
@@ -89,18 +90,17 @@ function AuthorizedPendingWorkPage() {
         title="Trabajo pendiente"
         description="Lo que cada flujo deja encargado al responder (eventos del outbox), si alguien lo recoge y qué eventos de dominio terminan de verdad en un aviso."
         actions={
-          <select
-            aria-label="Ventana"
-            className="rounded-md border border-atlas-border bg-white px-2 py-1 text-sm"
-            value={ventana}
-            onChange={(event) => setVentana(Number(event.target.value))}
-          >
-            {VENTANAS.map((dias) => (
-              <option key={dias} value={dias}>
-                Últimos {dias} días
-              </option>
-            ))}
-          </select>
+          <Select
+            name="ventana"
+            ariaLabel="Ventana"
+            value={String(ventana)}
+            onChange={(valor) => setVentana(Number(valor))}
+            options={VENTANAS.map((dias) => ({
+              value: String(dias),
+              label: `Últimos ${dias} días`,
+              description: `Cuenta el trabajo encargado en los últimos ${dias} días.`,
+            }))}
+          />
         }
       />
       <div className="mb-6 grid gap-4 md:grid-cols-4">
