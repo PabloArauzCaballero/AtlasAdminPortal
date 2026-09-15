@@ -14,6 +14,7 @@ export type EnginePhase =
   | "idle"
   | "running" // paso mostrado, esperando Siguiente (acción `none`)
   | "awaiting-action" // esperando la acción real del usuario
+  | "action-done" // la acción ya estaba hecha al entrar: se muestra y espera Siguiente
   | "element-missing" // el target no está en el DOM (modo recuperación)
   | "completed";
 
@@ -29,6 +30,7 @@ export type EngineAction =
   | { type: "PREV" }
   | { type: "SKIP_STEP" }
   | { type: "ACTION_SATISFIED" }
+  | { type: "ACTION_ALREADY_DONE" }
   | { type: "SET_MISSING"; missing: boolean }
   | { type: "CLOSE" };
 
@@ -104,6 +106,13 @@ export function tutorialReducer(
     case "SKIP_STEP":
     case "ACTION_SATISFIED":
       return advance(definition, state);
+    case "ACTION_ALREADY_DONE":
+      // Sólo tiene sentido mientras se espera la acción: si el elemento ya
+      // estaba, el paso NO se salta solo (el usuario no lo habría leído); se
+      // marca como hecho y avanza con Siguiente.
+      return state.phase === "awaiting-action"
+        ? { ...state, phase: "action-done" }
+        : state;
     case "PREV": {
       if (state.stepIndex === 0) return state;
       const prevIndex = state.stepIndex - 1;
@@ -114,12 +123,17 @@ export function tutorialReducer(
       };
     }
     case "SET_MISSING":
-      return {
-        ...state,
-        phase: action.missing
-          ? "element-missing"
-          : phaseForStep(definition.steps[state.stepIndex]),
-      };
+      if (action.missing) {
+        return state.phase === "element-missing"
+          ? state
+          : { ...state, phase: "element-missing" };
+      }
+      // Sólo se sale de "element-missing"; cualquier otra fase (p. ej.
+      // "action-done") se conserva: el overlay avisa «encontrado» en cada
+      // paso y no debe pisar lo que decidió el runtime.
+      return state.phase === "element-missing"
+        ? { ...state, phase: phaseForStep(definition.steps[state.stepIndex]) }
+        : state;
     default:
       return state;
   }

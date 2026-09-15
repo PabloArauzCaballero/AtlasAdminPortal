@@ -10,41 +10,68 @@ import {
   type Rect,
   type Size,
 } from "./dom-utils";
+import {
+  DIM,
+  DIM_SOFT,
+  FullDim,
+  SpotlightMask,
+  type Spotlight,
+} from "./spotlight-mask";
 import { TutorialCard } from "./tutorial-card";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
 
-const CARD_SIZE = { width: 352, height: 300 };
-// Cuánto esperamos a que un elemento estático aparezca antes de mostrar el
-// estado discreto "ubicando…". Generoso: tras navegar a la herramienta, la
-// página puede tardar en montar/compilar. Igual seguimos buscando en cada
-// frame, así que si aparece más tarde se resalta de todas formas.
-const WAIT_TIMEOUT_MS = 10_000;
-const QUICK_TIMEOUT_MS = 6_000;
-const DIM = "rgba(15,16,26,0.55)";
-const PAD = 6;
-
-type Spotlight = Readonly<{ rect: Rect; viewport: Size }>;
+// Tamaño de arranque hasta que la tarjeta se mide de verdad (ResizeObserver).
+const DEFAULT_CARD_SIZE: Size = { width: 352, height: 300 };
+// Cuánto esperamos a que un elemento aparezca antes de decir «no lo encuentro».
+// Tras navegar a la herramienta la página puede tardar en montar; se sigue
+// buscando en cada frame, así que si aparece más tarde se resalta igual.
+const WAIT_TIMEOUT_MS = 8_000;
+const QUICK_TIMEOUT_MS = 4_000;
 
 /**
- * Capa de spotlight: encuentra el target por `data-tutorial-id`, RECORTA su
- * rectángulo al viewport y lo resalta atenuando el resto con cuatro bandas
- * (nunca fuera de pantalla, funcione o no el elemento más grande que la
- * ventana). Recalcula cada frame y avisa `onMissingChange` si no aparece.
+ * Capa de spotlight: encuentra el target por `data-tutorial-id`, recorta su
+ * rectángulo al viewport, lo resalta atenuando el resto y coloca la tarjeta
+ * con su TAMAÑO REAL (medido) para que nunca tape el hueco ni se salga de la
+ * pantalla. Recalcula cada frame y avisa `onMissingChange` si no aparece.
  */
 export function SpotlightOverlay(props: Readonly<OverlayProps>) {
-  const { step, onMissingChange } = props;
+  const { step, phase, onMissingChange } = props;
   const [mounted, setMounted] = useState(false);
   const [spot, setSpot] = useState<Spotlight | null>(null);
   const [cardPos, setCardPos] = useState({ top: 0, left: 0 });
+  const [cardSize, setCardSize] = useState<Size>(DEFAULT_CARD_SIZE);
 
+  const cardRef = useRef<HTMLDivElement>(null);
   const scrolledRef = useRef(false);
   const missingRef = useRef<boolean | null>(null);
   const startRef = useRef(0);
   const spotRef = useRef<Spotlight | null>(null);
   const posRef = useRef<{ top: number; left: number } | null>(null);
+  const sizeRef = useRef<Size>(DEFAULT_CARD_SIZE);
 
   useEffect(() => setMounted(true), []);
+
+  // Mide la tarjeta: su alto cambia con el contenido (demos, ejemplos, avisos).
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      const box = node.getBoundingClientRect();
+      const next = { width: box.width, height: box.height };
+      if (
+        next.width > 0 &&
+        next.height > 0 &&
+        (next.width !== sizeRef.current.width ||
+          next.height !== sizeRef.current.height)
+      ) {
+        sizeRef.current = next;
+        setCardSize(next);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [mounted]);
 
   // Reinicia el rastreo al cambiar de paso.
   useEffect(() => {
@@ -85,6 +112,7 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
 
     const tick = () => {
       const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const size = sizeRef.current;
       const element = step.target
         ? document.querySelector<HTMLElement>(selectorFor(step.target))
         : null;
@@ -108,18 +136,18 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
           applySpot({ rect: clamped, viewport });
           const placement = resolvePlacement(
             clamped,
-            CARD_SIZE,
+            size,
             viewport,
             step.position,
           );
-          applyPos(placeTooltip(clamped, CARD_SIZE, viewport, placement));
+          applyPos(placeTooltip(clamped, size, viewport, placement));
           raf = window.requestAnimationFrame(tick);
           return;
         }
       }
 
       // Sin elemento visible: o esperamos una acción que lo revele (no es error),
-      // o pasado un tiempo mostramos el estado discreto "ubicando…".
+      // o pasado un tiempo avisamos «no lo encuentro» con la salida a mano.
       if (step.target && !step.requiredAction) {
         const elapsed =
           (typeof performance !== "undefined" ? performance.now() : 0) -
@@ -130,7 +158,7 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
         report(false);
       }
       applySpot(null);
-      applyPos(centered(viewport));
+      applyPos(centered(viewport, size));
       raf = window.requestAnimationFrame(tick);
     };
 
@@ -148,19 +176,36 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
 
   if (!mounted) return null;
 
+  // El velo bloquea los clics detrás del tutorial en los pasos que sólo
+  // explican. Cuando se espera una acción del usuario NO bloquea: la acción
+  // puede abrir un diálogo de confirmación o una fila fuera del hueco, y un velo
+  // que los tapara dejaría al usuario sin poder hacer justo lo que se le pide.
+  const awaiting = phase === "awaiting-action";
+  const blocking = !awaiting;
+  const dim = awaiting ? DIM_SOFT : DIM;
+
   return createPortal(
     <div
       className="pointer-events-none fixed inset-0 z-[100]"
       data-testid="tutorial-overlay"
+      // Los diálogos del portal marcan `inert` al resto del body: esta capa se
+      // exime porque guía al usuario también dentro de ellos (ver dialog-backdrop).
+      data-atlas-above-dialogs=""
+      data-card-size={`${Math.round(cardSize.width)}x${Math.round(cardSize.height)}`}
     >
-      {spot ? <SpotlightMask spot={spot} /> : <FullDim />}
+      {spot ? (
+        <SpotlightMask spot={spot} blocking={blocking} dim={dim} />
+      ) : (
+        <FullDim blocking={blocking} dim={dim} />
+      )}
       <div
+        ref={cardRef}
         className="absolute"
         style={{ top: cardPos.top, left: cardPos.left }}
       >
         <TutorialCard
           step={step}
-          phase={props.phase}
+          phase={phase}
           stepIndex={props.stepIndex}
           total={props.total}
           title={props.title}
@@ -170,90 +215,12 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
           onSkipStep={props.onSkipStep}
           onSkipTutorial={props.onSkipTutorial}
           onClose={props.onClose}
+          onLocate={props.onLocate}
+          canLocate={props.canLocate}
         />
       </div>
     </div>,
     document.body,
-  );
-}
-
-/** Atenúa con 4 bandas alrededor del hueco y dibuja el aro. Siempre en pantalla. */
-function SpotlightMask({ spot }: Readonly<{ spot: Spotlight }>) {
-  const { rect, viewport } = spot;
-  const hole = {
-    top: Math.max(0, rect.top - PAD),
-    left: Math.max(0, rect.left - PAD),
-    right: Math.min(viewport.width, rect.left + rect.width + PAD),
-    bottom: Math.min(viewport.height, rect.top + rect.height + PAD),
-  };
-  const band = "pointer-events-none absolute";
-  return (
-    <>
-      <div
-        aria-hidden
-        className={band}
-        style={{
-          top: 0,
-          left: 0,
-          width: viewport.width,
-          height: hole.top,
-          background: DIM,
-        }}
-      />
-      <div
-        aria-hidden
-        className={band}
-        style={{
-          top: hole.bottom,
-          left: 0,
-          width: viewport.width,
-          height: Math.max(0, viewport.height - hole.bottom),
-          background: DIM,
-        }}
-      />
-      <div
-        aria-hidden
-        className={band}
-        style={{
-          top: hole.top,
-          left: 0,
-          width: hole.left,
-          height: hole.bottom - hole.top,
-          background: DIM,
-        }}
-      />
-      <div
-        aria-hidden
-        className={band}
-        style={{
-          top: hole.top,
-          left: hole.right,
-          width: Math.max(0, viewport.width - hole.right),
-          height: hole.bottom - hole.top,
-          background: DIM,
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute rounded-lg ring-2 ring-atlas-accent transition-[top,left,width,height] duration-150"
-        style={{
-          top: hole.top,
-          left: hole.left,
-          width: hole.right - hole.left,
-          height: hole.bottom - hole.top,
-        }}
-      />
-    </>
-  );
-}
-
-function FullDim() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0"
-      style={{ background: DIM }}
-    />
   );
 }
 
@@ -270,10 +237,10 @@ function spotEquals(a: Spotlight | null, b: Spotlight | null): boolean {
   );
 }
 
-function centered(viewport: { width: number; height: number }) {
+function centered(viewport: Size, card: Size) {
   return {
-    top: Math.max(16, viewport.height / 2 - CARD_SIZE.height / 2),
-    left: Math.max(16, viewport.width / 2 - CARD_SIZE.width / 2),
+    top: Math.max(16, viewport.height / 2 - card.height / 2),
+    left: Math.max(16, viewport.width / 2 - card.width / 2),
   };
 }
 
@@ -289,5 +256,7 @@ type OverlayProps = {
   onSkipStep: () => void;
   onSkipTutorial: () => void;
   onClose: () => void;
+  onLocate: () => void;
+  canLocate: boolean;
   onMissingChange: (missing: boolean) => void;
 };

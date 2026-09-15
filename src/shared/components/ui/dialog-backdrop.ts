@@ -50,6 +50,11 @@ function aplicar(): void {
 
   for (const hijo of Array.from(document.body.children)) {
     if (!(hijo instanceof HTMLElement) || hijo === cima) continue;
+    // Capas que viven POR ENCIMA de cualquier diálogo (el tutorial interactivo):
+    // guían al usuario también dentro del diálogo, así que tienen que seguir
+    // recibiendo clics. Un tutorial inerte dejaba su «Siguiente» muerto en cuanto
+    // el paso abría un cajón, y el recorrido parecía colgado.
+    if (hijo.hasAttribute("data-atlas-above-dialogs")) continue;
     // Lo que ya estaba inerte por su cuenta se deja como está: soltarlo al cerrar el diálogo sería
     // devolver al recorrido algo que nadie pidió devolver.
     if (hijo.hasAttribute("inert")) continue;

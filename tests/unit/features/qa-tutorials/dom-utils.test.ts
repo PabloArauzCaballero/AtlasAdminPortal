@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampRectToViewport,
+  matchesLocation,
   placeTooltip,
   resolvePlacement,
   selectorFor,
@@ -62,5 +63,34 @@ describe("dom-utils · posicionamiento", () => {
     expect(pos.top).toBe(100 + 50 + 12);
     // centro del target (500) menos media tarjeta (150) = 350
     expect(pos.left).toBe(350);
+  });
+
+  it("si el elemento llena la pantalla, la tarjeta va a la esquina inferior izquierda", () => {
+    const huge: Rect = { top: 0, left: 0, width: 1000, height: 800 };
+    const placement = resolvePlacement(huge, tooltip, viewport, "auto");
+    expect(placement).toBe("corner");
+    const pos = placeTooltip(huge, tooltip, viewport, placement);
+    expect(pos.left).toBe(12);
+    expect(pos.top).toBe(viewport.height - tooltip.height - 12);
+  });
+
+  it("matchesLocation compara ruta exacta y los parámetros pedidos", () => {
+    const here = {
+      pathname: "/internal/qa/lab",
+      search: "?tab=unitaria&sub=carga",
+    };
+    expect(matchesLocation(here, "/internal/qa/lab")).toBe(true);
+    expect(matchesLocation(here, "/internal/qa/lab?tab=unitaria")).toBe(true);
+    expect(matchesLocation(here, "/internal/qa/lab?tab=journey")).toBe(false);
+    expect(
+      matchesLocation(here, "/internal/qa/lab?sub=carga&tab=unitaria"),
+    ).toBe(true);
+    expect(matchesLocation(here, "/internal/qa/suites")).toBe(false);
+    expect(
+      matchesLocation(
+        { pathname: "/internal/qa/lab/", search: "" },
+        "/internal/qa/lab",
+      ),
+    ).toBe(true);
   });
 });

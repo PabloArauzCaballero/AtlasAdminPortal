@@ -28,6 +28,7 @@ export function SidePanel({
           type="button"
           onClick={() => setLegendOpen((open) => !open)}
           aria-expanded={legendOpen}
+          data-tutorial-id="workflow-legend-toggle"
           className="inline-flex items-center gap-1.5 rounded-lg border border-atlas-border bg-white/95 px-3 py-1.5 text-xs font-medium text-atlas-text shadow-subtle hover:bg-atlas-soft"
         >
           <ChevronDown

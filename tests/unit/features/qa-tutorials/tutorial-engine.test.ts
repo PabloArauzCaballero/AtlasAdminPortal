@@ -149,4 +149,51 @@ describe("tutorial-engine · progreso persistido", () => {
     expect(reconcileVersion(def, old)).toBe("needs-update");
     expect(reconcileVersion(def, undefined)).toBe("not-started");
   });
+
+  it("ACTION_ALREADY_DONE no salta el paso: lo deja en action-done esperando Siguiente", () => {
+    const awaiting = tutorialReducer(def, initialEngineState, {
+      type: "START",
+      tutorialId: "t",
+      stepIndex: 1,
+    });
+    expect(awaiting.phase).toBe("awaiting-action");
+    const done = tutorialReducer(def, awaiting, {
+      type: "ACTION_ALREADY_DONE",
+    });
+    expect(done.phase).toBe("action-done");
+    expect(done.stepIndex).toBe(1);
+    // Fuera de la espera no hace nada.
+    const running = tutorialReducer(def, initialEngineState, {
+      type: "START",
+      tutorialId: "t",
+    });
+    expect(
+      tutorialReducer(def, running, { type: "ACTION_ALREADY_DONE" }).phase,
+    ).toBe("running");
+    // Y Siguiente avanza desde action-done.
+    expect(tutorialReducer(def, done, { type: "NEXT" }).stepIndex).toBe(2);
+  });
+
+  it("SET_MISSING(false) no pisa action-done: sólo sale de element-missing", () => {
+    const awaiting = tutorialReducer(def, initialEngineState, {
+      type: "START",
+      tutorialId: "t",
+      stepIndex: 1,
+    });
+    const done = tutorialReducer(def, awaiting, {
+      type: "ACTION_ALREADY_DONE",
+    });
+    expect(
+      tutorialReducer(def, done, { type: "SET_MISSING", missing: false }).phase,
+    ).toBe("action-done");
+    const missing = tutorialReducer(def, done, {
+      type: "SET_MISSING",
+      missing: true,
+    });
+    expect(missing.phase).toBe("element-missing");
+    expect(
+      tutorialReducer(def, missing, { type: "SET_MISSING", missing: false })
+        .phase,
+    ).toBe("awaiting-action");
+  });
 });

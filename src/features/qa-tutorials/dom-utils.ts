@@ -14,12 +14,35 @@ export type Rect = Readonly<{
 
 export type Size = Readonly<{ width: number; height: number }>;
 
-export type Placement = "top" | "right" | "bottom" | "left";
+/** `corner`: nada cabe alrededor (el elemento llena la pantalla); la tarjeta va a
+ * la esquina inferior izquierda, donde menos tapa lo que el paso explica. */
+export type Placement = "top" | "right" | "bottom" | "left" | "corner";
 
 const GAP = 12;
 
 export function selectorFor(tutorialId: string): string {
   return `[data-tutorial-id="${tutorialId}"]`;
+}
+
+export type Location = Readonly<{ pathname: string; search: string }>;
+
+/**
+ * ¿La ubicación actual ya es la que pide el paso? Un `nextRoute` puede llevar
+ * query (`/internal/qa/lab?tab=carga`): la ruta debe coincidir exacta y cada
+ * parámetro pedido debe estar con ese valor; parámetros extra no estorban.
+ * Es lo que evita re-navegar (y perder estado) cuando ya estamos donde toca.
+ */
+export function matchesLocation(current: Location, target: string): boolean {
+  const [targetPath, targetQuery = ""] = target.split("?");
+  if (current.pathname.replace(/\/$/, "") !== targetPath.replace(/\/$/, "")) {
+    return false;
+  }
+  const wanted = new URLSearchParams(targetQuery);
+  const have = new URLSearchParams(current.search);
+  for (const [key, value] of wanted) {
+    if (have.get(key) !== value) return false;
+  }
+  return true;
 }
 
 /** Elige una colocación que quepa; cae a otras si la preferida se sale. */
@@ -29,18 +52,18 @@ export function resolvePlacement(
   viewport: Size,
   preferred: TutorialStep["position"] = "auto",
 ): Placement {
-  const fits: Record<Placement, boolean> = {
+  const fits: Record<Exclude<Placement, "corner">, boolean> = {
     bottom:
       target.top + target.height + GAP + tooltip.height <= viewport.height,
     top: target.top - GAP - tooltip.height >= 0,
     right: target.left + target.width + GAP + tooltip.width <= viewport.width,
     left: target.left - GAP - tooltip.width >= 0,
   };
-  const order: Placement[] =
+  const order: Exclude<Placement, "corner">[] =
     preferred && preferred !== "auto"
       ? [preferred, "bottom", "top", "right", "left"]
       : ["bottom", "top", "right", "left"];
-  return order.find((p) => fits[p]) ?? "bottom";
+  return order.find((p) => fits[p]) ?? "corner";
 }
 
 /**
@@ -85,6 +108,10 @@ export function placeTooltip(
     case "left":
       top = target.top + target.height / 2 - tooltip.height / 2;
       left = target.left - tooltip.width - GAP;
+      break;
+    case "corner":
+      top = viewport.height - tooltip.height - GAP;
+      left = GAP;
       break;
   }
   return {

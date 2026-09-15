@@ -153,9 +153,6 @@ export function WorkflowGraphView({
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           dragRef.current = { x: event.clientX, y: event.clientY };
-          // jsdom no implementa la captura de puntero; en el navegador evita
-          // perder el arrastre al salirse del lienzo.
-          event.currentTarget.setPointerCapture?.(event.pointerId);
         }}
         onPointerMove={(event) => {
           const origin = dragRef.current;
@@ -164,6 +161,15 @@ export function WorkflowGraphView({
             x: event.clientX - origin.x,
             y: event.clientY - origin.y,
           };
+          // La captura de puntero se toma al EMPEZAR a arrastrar, no al pulsar:
+          // capturar en pointerdown hacía que el `click` se disparara sobre el
+          // lienzo y no sobre la etapa o el paso pulsado, así que en un
+          // navegador real seleccionar un nodo no abría su ficha (jsdom no
+          // implementa la captura y las pruebas unitarias no lo veían).
+          if (!event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+            if (Math.abs(delta.x) + Math.abs(delta.y) < 3) return;
+            event.currentTarget.setPointerCapture?.(event.pointerId);
+          }
           dragRef.current = { x: event.clientX, y: event.clientY };
           setViewport((current) => panBy(current, delta));
         }}

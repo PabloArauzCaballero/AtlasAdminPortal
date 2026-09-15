@@ -148,12 +148,14 @@ function AuthorizedTestRunsPage() {
         />
       ) : null}
       {runs.data ? (
-        <DataTable
-          data={runs.data.items}
-          columns={columns}
-          meta={runs.data.meta}
-          onPageChange={setPage}
-        />
+        <div data-tutorial-id="qa-runs-table">
+          <DataTable
+            data={runs.data.items}
+            columns={columns}
+            meta={runs.data.meta}
+            onPageChange={setPage}
+          />
+        </div>
       ) : null}
     </>
   );

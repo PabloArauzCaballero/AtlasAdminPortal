@@ -8,8 +8,8 @@ import { useTutorial } from "./tutorial-provider";
 
 /**
  * Acceso visible y consistente al tutorial de una sección. Muestra el estado
- * (disponible/en progreso/completado) y arranca —o retoma— el recorrido en el
- * paso guardado. Con teclado, foco y aria-label; variante compacta para barras
+ * (disponible/en progreso/completado) y arranca —o retoma— el recorrido: el
+ * provider decide el paso exacto a partir del progreso guardado. Con teclado, foco y aria-label; variante compacta para barras
  * de acciones apretadas.
  */
 export function TutorialLaunchButton({
@@ -21,17 +21,12 @@ export function TutorialLaunchButton({
   variant?: "full" | "compact";
   className?: string;
 }>) {
-  const { start, statusFor, percentFor } = useTutorial();
+  const { start, statusFor } = useTutorial();
   const definition = getTutorial(tutorialId);
   if (!definition) return null;
 
   const status = statusFor(tutorialId);
   const visual = statusVisual(status);
-  const percent = percentFor(tutorialId);
-  const resumeStep =
-    status === "in-progress" || status === "skipped"
-      ? Math.max(0, percentToStep(definition.steps.length, percent) - 1)
-      : 0;
 
   const tooltip = `${visual.actionLabel} · ${definition.title}`;
 
@@ -40,7 +35,7 @@ export function TutorialLaunchButton({
       <button
         type="button"
         data-tutorial-id={`launch-${tutorialId}`}
-        onClick={() => start(tutorialId, resumeStep)}
+        onClick={() => start(tutorialId)}
         aria-label={tooltip}
         title={tooltip}
         className={cn(
@@ -58,7 +53,7 @@ export function TutorialLaunchButton({
     <button
       type="button"
       data-tutorial-id={`launch-${tutorialId}`}
-      onClick={() => start(tutorialId, resumeStep)}
+      onClick={() => start(tutorialId)}
       aria-label={tooltip}
       title="Iniciar tutorial interactivo de esta sección"
       className={cn(
@@ -75,8 +70,4 @@ export function TutorialLaunchButton({
       </span>
     </button>
   );
-}
-
-function percentToStep(total: number, percent: number): number {
-  return Math.round((percent / 100) * total);
 }

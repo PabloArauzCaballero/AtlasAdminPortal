@@ -154,4 +154,43 @@ describe("recorrido interactivo · reactividad y persistencia", () => {
     );
     expect(statuses).toContain("skipped");
   });
+
+  it("una acción ya cumplida al entrar NO salta el paso: lo marca hecho y espera Siguiente", async () => {
+    const user = userEvent.setup();
+    renderHarness();
+    // El formulario ya está abierto antes de llegar al paso que lo pide.
+    await user.click(screen.getByRole("button", { name: "Nueva suite" }));
+    await user.click(screen.getByRole("button", { name: "arrancar" }));
+    await screen.findByText("¿Qué es una suite?");
+    await user.click(screen.getByRole("button", { name: /Siguiente paso/i }));
+    await screen.findByText("Tus suites registradas");
+    await user.click(screen.getByRole("button", { name: /Siguiente paso/i }));
+
+    // Paso 3 (pide abrir el formulario): sigue en pantalla, avisa y no avanza solo.
+    expect(await screen.findByText("Crea una suite nueva")).toBeInTheDocument();
+    expect(await screen.findByText(/Esto ya está hecho/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Siguiente paso/i }),
+    ).toBeEnabled();
+    expect(screen.queryByText("Rellena los datos")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Siguiente paso/i }));
+    expect(await screen.findByText("Rellena los datos")).toBeInTheDocument();
+  });
+
+  it("recuerda la corrida activa en sessionStorage y la borra al cerrar", async () => {
+    const user = userEvent.setup();
+    renderHarness();
+    await user.click(screen.getByRole("button", { name: "arrancar" }));
+    await screen.findByText("¿Qué es una suite?");
+    await user.click(screen.getByRole("button", { name: /Siguiente paso/i }));
+    await screen.findByText("Tus suites registradas");
+    expect(
+      JSON.parse(sessionStorage.getItem("qa-tutorials-active-run") ?? "null"),
+    ).toEqual({ tutorialId: "qa-suites-list", stepIndex: 1 });
+    await user.click(screen.getByRole("button", { name: "Cerrar tutorial" }));
+    await waitFor(() =>
+      expect(sessionStorage.getItem("qa-tutorials-active-run")).toBeNull(),
+    );
+  });
 });

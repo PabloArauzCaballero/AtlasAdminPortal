@@ -13,14 +13,12 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { WorkflowCanvas } from "@/features/workflows/workflow-canvas";
 import { EndpointPicker } from "./endpoint-picker";
+import { TABS, UNIT_TABS, useUrlTabs } from "./qa-lab-tabs";
 import { EndpointTestCard } from "./endpoint-test-card";
 import { JourneyRunnerPanel } from "./journey-runner-panel";
 import { QaLabDocsPanel } from "./qa-lab-docs";
 import { SelectedEndpointBar } from "./selected-endpoint-bar";
 import { StressTestCard } from "./stress-test-card";
-
-const TABS = ["Prueba unitaria", "Journey (encadenado)", "Árbol de decisión"];
-const UNIT_TABS = ["Funcional", "Carga"];
 
 /** Cada pestaña abre el recorrido que explica esa herramienta, no uno genérico. */
 const TUTORIAL_BY_TAB: Record<string, string> = {
@@ -43,8 +41,7 @@ export function QaLabPage(props: Readonly<{ initialEndpointId: string }>) {
 function AuthorizedQaLabPage({
   initialEndpointId,
 }: Readonly<{ initialEndpointId: string }>) {
-  const [activeTab, setActiveTab] = useState(TABS[0]);
-  const [unitTab, setUnitTab] = useState(UNIT_TABS[0]);
+  const { activeTab, unitTab, setActiveTab, setUnitTab } = useUrlTabs();
   const [endpointId, setEndpointId] = useState(initialEndpointId);
   const [picking, setPicking] = useState(!initialEndpointId);
   const endpoint = useEndpoint(endpointId);
@@ -95,16 +92,20 @@ function AuthorizedQaLabPage({
         <div className="space-y-5">
           <QaLabDocsPanel />
 
-          {picking || !item ? (
-            <div data-tutorial-id="qa-lab-endpoint-picker">
+          {/* Un único ancla para «dónde se elige el endpoint», esté la lista
+              abierta o ya haya uno elegido: el tutorial siempre encuentra algo. */}
+          <div data-tutorial-id="qa-lab-endpoint-picker">
+            {picking || !item ? (
               <EndpointPicker selectedId={endpointId} onSelect={select} />
-            </div>
-          ) : (
-            <SelectedEndpointBar
-              endpoint={item}
-              onChange={() => setPicking(true)}
-            />
-          )}
+            ) : (
+              <div data-tutorial-id="qa-lab-endpoint-selected">
+                <SelectedEndpointBar
+                  endpoint={item}
+                  onChange={() => setPicking(true)}
+                />
+              </div>
+            )}
+          </div>
 
           {endpointId && !picking ? (
             <EndpointState endpoint={endpoint} />

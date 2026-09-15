@@ -5,8 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Loader2,
-  MousePointerClick,
+  Lightbulb,
   SkipForward,
   X,
 } from "lucide-react";
@@ -14,14 +13,21 @@ import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { DecisionTreeDemo } from "./decision-tree-demo";
 import { LatencyDemoChart } from "./latency-demo-chart";
+import {
+  AlreadyDoneNotice,
+  AwaitingNotice,
+  CompletionCard,
+  MissingNotice,
+} from "./tutorial-card-parts";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 
 /**
- * Tarjeta del tutorial (presentacional): título, explicación orientada a
- * negocio, ejemplo, barra de progreso, controles y navegación por teclado.
- * El overlay se encarga de posicionarla; esto sólo pinta y captura foco.
+ * Tarjeta del tutorial (presentacional): qué paso es, qué hacer AHORA, y los
+ * controles. Pensada para quien no lee: la instrucción va en una caja aparte
+ * y en imperativo; la explicación larga y el ejemplo quedan plegados.
+ * El overlay se encarga de posicionarla y medirla; esto sólo pinta y captura foco.
  */
 export function TutorialCard({
   step,
@@ -35,6 +41,8 @@ export function TutorialCard({
   onSkipStep,
   onSkipTutorial,
   onClose,
+  onLocate,
+  canLocate,
 }: Readonly<{
   step: TutorialStep;
   phase: EnginePhase;
@@ -47,11 +55,15 @@ export function TutorialCard({
   onSkipStep: () => void;
   onSkipTutorial: () => void;
   onClose: () => void;
+  onLocate: () => void;
+  canLocate: boolean;
 }>) {
   const ref = useRef<HTMLDivElement>(null);
   const awaiting = phase === "awaiting-action";
+  const done = phase === "action-done";
   const missing = phase === "element-missing";
   const completed = phase === "completed";
+  const nextDisabled = awaiting && !step.optional;
   const percent = Math.round(((stepIndex + 1) / total) * 100);
 
   useEffect(() => {
@@ -64,11 +76,11 @@ export function TutorialCard({
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
       else if (event.key === "ArrowLeft" && stepIndex > 0) onPrev();
-      else if (event.key === "ArrowRight" && !awaiting) onNext();
+      else if (event.key === "ArrowRight" && !nextDisabled) onNext();
     };
     document.addEventListener("keydown", handler, true);
     return () => document.removeEventListener("keydown", handler, true);
-  }, [stepIndex, awaiting, onClose, onPrev, onNext]);
+  }, [stepIndex, nextDisabled, onClose, onPrev, onNext]);
 
   if (completed) {
     return <CompletionCard cardRef={ref} title={title} onClose={onClose} />;
@@ -81,11 +93,11 @@ export function TutorialCard({
       aria-modal="true"
       aria-label={`Tutorial: ${title} — paso ${stepIndex + 1} de ${total}`}
       tabIndex={-1}
-      className="pointer-events-auto w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-atlas-border bg-white p-4 shadow-xl focus:outline-none"
+      className="atlas-scrollbar pointer-events-auto max-h-[calc(100vh-2rem)] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-atlas-border bg-white p-4 shadow-xl focus:outline-none"
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-atlas-accent">
-          {title} · {stepIndex + 1}/{total}
+          {title} · paso {stepIndex + 1} de {total}
         </span>
         <Tooltip text="Cierra el tutorial. El progreso queda guardado y puedes retomarlo donde lo dejaste.">
           <button
@@ -106,48 +118,46 @@ export function TutorialCard({
         />
       </div>
 
-      <h3 className="text-sm font-semibold text-atlas-text">{step.title}</h3>
+      <h3 className="text-base font-semibold text-atlas-text">{step.title}</h3>
       <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-atlas-muted">
         {step.content}
       </p>
       {step.example ? (
-        <p className="mt-3 rounded-lg border border-atlas-border bg-atlas-soft p-2.5 text-xs leading-5 text-atlas-text">
-          <span className="font-semibold">Ejemplo — </span>
-          {step.example}
-        </p>
+        <details className="group mt-2 rounded-lg border border-atlas-border bg-atlas-soft/60 text-xs text-atlas-text">
+          <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 font-semibold text-atlas-muted hover:text-atlas-text">
+            <Lightbulb className="h-3.5 w-3.5" aria-hidden />
+            Ver un ejemplo
+          </summary>
+          <p className="border-t border-atlas-border px-2.5 py-2 leading-5">
+            {step.example}
+          </p>
+        </details>
       ) : null}
       {step.demo === "latency" ? <LatencyDemoChart /> : null}
       {step.demo === "decision-tree" ? <DecisionTreeDemo /> : null}
 
+      {awaiting ? <AwaitingNotice hint={step.validation?.hint} /> : null}
+      {done ? <AlreadyDoneNotice /> : null}
       {missing ? (
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-atlas-muted">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-          Ubicando el elemento en esta pantalla… o continúa con «Siguiente».
-        </p>
-      ) : null}
-      {awaiting ? (
-        <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-blue-700">
-          <MousePointerClick className="h-3.5 w-3.5" />
-          {step.validation?.hint ?? "Realiza la acción para continuar…"}
-        </p>
+        <MissingNotice onLocate={onLocate} canLocate={canLocate} />
       ) : null}
 
-      <div className="mt-4 flex items-center justify-between gap-2">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <button
           type="button"
           onClick={onSkipTutorial}
-          className="text-xs text-atlas-muted underline hover:text-atlas-text"
+          className="whitespace-nowrap text-xs text-atlas-muted underline hover:text-atlas-text"
         >
           Omitir tutorial
         </button>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
           {stepIndex > 0 ? (
             <Button variant="ghost" onClick={onPrev} aria-label="Paso anterior">
               <ArrowLeft className="h-4 w-4" />
               Atrás
             </Button>
           ) : null}
-          {(step.optional || awaiting) && !isLast ? (
+          {awaiting && !isLast ? (
             <Button
               variant="secondary"
               onClick={onSkipStep}
@@ -160,9 +170,9 @@ export function TutorialCard({
           <Button
             variant="primary"
             onClick={onNext}
-            disabled={awaiting && !step.optional}
+            disabled={nextDisabled}
             aria-label={isLast ? "Finalizar tutorial" : "Siguiente paso"}
-            className={cn(awaiting && !step.optional && "opacity-60")}
+            className={cn(nextDisabled && "opacity-60")}
           >
             {isLast ? <Check className="h-4 w-4" /> : null}
             {isLast ? "Finalizar" : "Siguiente"}
@@ -170,48 +180,6 @@ export function TutorialCard({
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function CompletionCard({
-  cardRef,
-  title,
-  onClose,
-}: Readonly<{
-  cardRef: React.RefObject<HTMLDivElement | null>;
-  title: string;
-  onClose: () => void;
-}>) {
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handler, true);
-    return () => document.removeEventListener("keydown", handler, true);
-  }, [onClose]);
-  return (
-    <div
-      ref={cardRef}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Tutorial completado: ${title}`}
-      tabIndex={-1}
-      className="pointer-events-auto w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-atlas-border bg-white p-5 text-center shadow-xl focus:outline-none"
-    >
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-        <Check className="h-6 w-6" />
-      </div>
-      <h3 className="text-base font-semibold text-atlas-text">
-        ¡Tutorial completado!
-      </h3>
-      <p className="mt-1.5 text-sm text-atlas-muted">
-        Terminaste «{title}». Tu progreso quedó guardado; puedes repetirlo
-        cuando quieras desde el Centro de aprendizaje.
-      </p>
-      <Button variant="primary" className="mt-4 w-full" onClick={onClose}>
-        Entendido
-      </Button>
     </div>
   );
 }

@@ -21,6 +21,8 @@ export function useTutorialProgress() {
 
   const query = useQuery({
     queryKey,
+    // Sin usuario (pantalla de login) no hay nada que pedir al backend.
+    enabled: Boolean(user),
     initialData: () => readProgressCache(userId),
     queryFn: async () => {
       const items = await fetchRemoteProgress(userId);

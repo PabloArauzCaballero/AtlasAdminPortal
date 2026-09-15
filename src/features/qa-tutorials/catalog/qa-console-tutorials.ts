@@ -3,6 +3,10 @@ import type { TutorialDefinition } from "../types";
 /**
  * Recorridos de la QA Console: suites, pasos/casos y runs (ejecuciones).
  * Rutas: `/internal/qa/suites`, `/internal/qa/suites/[id]`, `/internal/qa/runs`.
+ *
+ * Los recorridos que necesitan una página de DETALLE arrancan en la lista y le
+ * piden al usuario abrir una fila (acción `route-change`): antes apuntaban
+ * directamente a elementos del detalle desde la lista y nunca los encontraban.
  */
 
 const suitesList: TutorialDefinition = {
@@ -14,7 +18,7 @@ const suitesList: TutorialDefinition = {
   description:
     "Agrupa casos relacionados en una suite para ejecutarlos juntos y con confianza.",
   level: "basic",
-  version: 1,
+  version: 2,
   route: "/internal/qa/suites",
   estimatedMinutes: 5,
   goal: "Crear mi primera suite",
@@ -23,14 +27,16 @@ const suitesList: TutorialDefinition = {
       id: "what",
       title: "¿Qué es una suite?",
       content:
-        "Una suite de pruebas reúne varios casos relacionados para ejecutarlos juntos.\n\nPor ejemplo, una suite «Inicio de sesión» puede comprobar: acceso con credenciales correctas, rechazo de contraseña incorrecta, recuperación de contraseña y bloqueo tras varios intentos.\n\nAsí verificas que TODA una funcionalidad sigue trabajando antes de publicarla.",
+        "Una suite de pruebas reúne varios casos relacionados para ejecutarlos juntos.\n\nAsí verificas que TODA una funcionalidad sigue trabajando antes de publicarla.",
+      example:
+        "Una suite «Inicio de sesión» puede comprobar: acceso con credenciales correctas, rechazo de contraseña incorrecta, recuperación de contraseña y bloqueo tras varios intentos.",
     },
     {
       id: "list",
       target: "qa-suites-table",
       title: "Tus suites registradas",
       content:
-        "Esta lista muestra las suites guardadas en el backend, con su módulo, tipo y si son seguras para producción. Cada código enlaza al detalle de la suite.",
+        "Esta lista muestra las suites guardadas en el backend, con su módulo, tipo y si son seguras para producción. El código (en verde) abre el detalle de la suite.",
       example:
         "La columna «Prod safe» en verde significa que puedes correrla en producción (sólo lectura) sin riesgo de tocar datos reales.",
       position: "top",
@@ -41,11 +47,14 @@ const suitesList: TutorialDefinition = {
       target: "qa-suites-new",
       title: "Crea una suite nueva",
       content:
-        "Pulsa «Nueva suite» para abrir el formulario. Necesitas: un nombre claro, el módulo al que pertenece y el tipo de prueba (funcional, regresión, humo…).",
+        "El botón «Nueva suite» abre el formulario. Necesitas: un nombre claro, el módulo al que pertenece y el tipo de prueba (funcional, regresión, humo…).",
       example:
         "Nombre «Inicio de sesión», módulo «internal-auth», tipo «SMOKE»: una suite corta que valida que el login básico responde.",
       position: "bottom",
       requiredAction: { type: "element-appears", targetId: "qa-suite-form" },
+      validation: {
+        hint: "pulsa el botón «Nueva suite» resaltado (o «Omitir paso» si no quieres crear una ahora).",
+      },
       optional: true,
     },
     {
@@ -53,17 +62,18 @@ const suitesList: TutorialDefinition = {
       target: "qa-suite-form",
       title: "Rellena los datos",
       content:
-        "El tipo de suite, el módulo y los ambientes salen de catálogos del backend (no texto libre), para que no haya valores inventados. Marca «segura para producción» sólo si la suite no altera datos reales.",
+        "El tipo de suite, el módulo y los ambientes salen de catálogos del backend (no texto libre). Marca «segura para producción» sólo si la suite no altera datos reales.",
       example:
         "Si la suite sólo hace GET (lectura), márcala «segura para producción». Si crea o borra, déjala desmarcada.",
       position: "left",
       waitForElement: true,
+      optional: true,
     },
     {
       id: "next",
       title: "¿Y después?",
       content:
-        "Al guardar entras al detalle de la suite, donde añades los pasos (casos) y la ejecutas. Continúa con el tutorial «Detalle de suite».",
+        "Al guardar entras al detalle de la suite, donde añades los pasos (casos) y la ejecutas. Continúa con el tutorial «Añadir casos y ejecutar la suite».",
       example:
         "Recién creada, una suite tiene 0 pasos: el siguiente movimiento es ir a la pestaña «Pasos» y añadir el primer caso.",
     },
@@ -79,11 +89,23 @@ const suiteDetail: TutorialDefinition = {
   description:
     "Define los pasos de la suite, revisa su configuración y ejecútala contra un ambiente.",
   level: "intermediate",
-  version: 1,
+  version: 2,
   route: "/internal/qa/suites",
   estimatedMinutes: 6,
   goal: "Ejecutar una suite y sus casos",
   steps: [
+    {
+      id: "open",
+      target: "qa-suites-table",
+      title: "Abre una suite",
+      content:
+        "Todo lo que sigue pasa dentro del detalle de una suite. Ábrelo desde la lista: el código en verde de cada fila es un enlace.",
+      position: "top",
+      requiredAction: { type: "route-change", route: "/internal/qa/suites/" },
+      validation: {
+        hint: "haz clic en el código (en verde) de cualquier suite de la tabla.",
+      },
+    },
     {
       id: "tabs",
       target: "qa-suite-tabs",
@@ -107,7 +129,7 @@ const suiteDetail: TutorialDefinition = {
       id: "config",
       title: "Config: ambiente y variables",
       content:
-        "Elige el ambiente destino (dónde se ejecuta) y define variables compartidas (por ejemplo, un id o un token) que todos los pasos pueden reutilizar. El ambiente sale de catálogo: nunca escribes una URL a mano.",
+        "Elige el ambiente destino (dónde se ejecuta) y define variables compartidas que todos los pasos pueden reutilizar. El ambiente sale de catálogo: nunca escribes una URL a mano.",
       example:
         "Defines una variable `baseCustomerId` una vez y los 5 pasos la reutilizan como `{{baseCustomerId}}`; cambiarla en un sitio actualiza todos.",
     },
@@ -115,7 +137,7 @@ const suiteDetail: TutorialDefinition = {
       id: "run",
       title: "Ejecutar y leer estados",
       content:
-        "Al ejecutar, cada paso termina en un estado. Aprende a leerlos en el tutorial «Interpretar una ejecución»: Aprobado, Fallido, Bloqueado, Omitido y Error de infraestructura no significan lo mismo ni piden la misma acción.",
+        "Al ejecutar, cada paso termina en un estado. Aprende a leerlos en el tutorial «Interpretar una ejecución»: Aprobado, Fallido, Bloqueado, Omitido y Error de infraestructura no piden la misma acción.",
       example:
         "Empieza siempre en dry-run: valida la configuración sin llamar al host real. Cuando esté verde, desmarca dry-run y ejecuta de verdad.",
     },
@@ -131,26 +153,53 @@ const runsInterpret: TutorialDefinition = {
   description:
     "Qué significa cada estado de una ejecución y qué acción tomar en cada caso.",
   level: "basic",
-  version: 1,
+  version: 2,
   route: "/internal/qa/runs",
   estimatedMinutes: 5,
   goal: "Analizar una prueba fallida",
   steps: [
     {
       id: "what",
-      title: "¿Qué estás viendo?",
+      title: "¿Qué es un run?",
       content:
-        "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.\n\nAbre cualquier run de la lista para ver su resumen y los estados de cada paso.",
+        "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.",
       example:
         "Un run con «Duración: 4200 ms» y 5 pasos te dice de un vistazo cuánto tardó todo el flujo y dónde se fue el tiempo.",
     },
     {
+      id: "open",
+      target: "qa-runs-table",
+      title: "Abre una ejecución",
+      content:
+        "En esta lista está cada ejecución con su suite, su estado y su fecha. El identificador de cada fila abre el detalle.",
+      position: "top",
+      requiredAction: { type: "route-change", route: "/internal/qa/runs/" },
+      validation: {
+        hint: "haz clic en el identificador de cualquier ejecución de la lista (o «Omitir paso» si la lista está vacía).",
+      },
+      optional: true,
+    },
+    {
+      id: "summary",
+      target: "qa-run-summary",
+      title: "El resumen del run",
+      content:
+        "Arriba tienes de qué suite viene, contra qué ambiente corrió, cuánto tardó y su estado global.",
+      position: "bottom",
+      waitForElement: true,
+      optional: true,
+    },
+    {
       id: "states",
+      target: "qa-run-steps",
       title: "Los estados y su acción recomendada",
       content:
-        "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → no falló la prueba, falló el entorno (DB caída, timeout de red); reintenta antes de reportar un bug.",
+        "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → falló el entorno (DB caída, timeout de red); reintenta antes de reportar un bug.",
       example:
         "3 Aprobados, 1 Fallido y 1 Bloqueado: el Bloqueado es consecuencia del Fallido. Arreglas el Fallido y normalmente el Bloqueado se resuelve solo.",
+      position: "top",
+      waitForElement: true,
+      optional: true,
       relatedErrorCodes: ["STEP_FAILED", "STEP_BLOCKED", "INFRA_ERROR"],
     },
     {
