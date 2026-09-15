@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { IDENTITY_DECISIONS } from "./decision-options";
 import {
   EmptyState,
   ErrorState,
@@ -112,19 +113,22 @@ export function IdentityEvidencePanel({
         }}
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Decisión sobre la identidad">
+          <Field
+            label="Decisión sobre la identidad"
+            tooltip="Si la persona de la selfie es la del carnet y el documento es válido. Queda auditado."
+          >
             <Select
+              name="identity-decision"
+              testId="identity-decision"
+              options={IDENTITY_DECISIONS}
               value={decision}
-              onChange={(event) =>
-                setDecision(event.target.value as "approve" | "reject")
-              }
-              data-testid="identity-decision"
-            >
-              <option value="approve">Aprobar identidad</option>
-              <option value="reject">Rechazar identidad</option>
-            </Select>
+              onChange={(valor) => setDecision(valor as "approve" | "reject")}
+            />
           </Field>
-          <Field label="Código de motivo">
+          <Field
+            label="Código de motivo"
+            tooltip="Código corto que resume la decisión para los informes. Ej.: face_mismatch"
+          >
             <Input
               value={reasonCode}
               onChange={(event) => setReasonCode(event.target.value)}
@@ -134,6 +138,7 @@ export function IdentityEvidencePanel({
         </div>
         <Field
           label="Notas"
+          tooltip="Qué viste en la evidencia para decidir así. No copies números de documento."
           hint={
             decision === "reject"
               ? "Obligatorias al rechazar: el backend exige justificarlo."

@@ -106,9 +106,8 @@ describe("IdentityEvidencePanel", () => {
 
   it("rechazar exige notas: el botón no se ofrece sin ellas", async () => {
     render(<IdentityEvidencePanel customerId="900" />, { wrapper });
-    fireEvent.change(screen.getByTestId("identity-decision"), {
-      target: { value: "reject" },
-    });
+    fireEvent.click(screen.getByTestId("identity-decision"));
+    fireEvent.click(screen.getByTestId("identity-decision-option-reject"));
     expect(
       screen.getByRole("button", { name: /registrar decisión de identidad/i }),
     ).toBeDisabled();
