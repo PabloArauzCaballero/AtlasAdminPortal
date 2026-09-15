@@ -57,7 +57,7 @@ function AuthorizedGovernancePolicyDetailPage({
               <Link
                 href={`/internal/governance/policies/${policyId}/configure`}
               >
-                <Button>Configurar política</Button>
+                <Button>Ver configuración</Button>
               </Link>
               <StatusBadge value={data.status} />
             </>

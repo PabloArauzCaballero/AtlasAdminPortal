@@ -1,19 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  useGovernancePolicy,
-  useUpdateGovernancePolicyMutation,
-} from "./hooks";
+import { useGovernancePolicy } from "./hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { PolicyConfigurationForm } from "./forms/policy-configuration-form";
+import { PolicyConfigSummary } from "./policy-config-summary";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 
+/**
+ * La configuración de una política, de sólo lectura.
+ *
+ * Aquí había un formulario que «guardaba» con `PATCH /internal/governance/policies/:id` y
+ * redirigía al detalle como si hubiera persistido. AtlasBackend retiró esa ruta porque devolvía
+ * 200 sin escribir nada; el formulario sobrevivió y pasó a fallar con 404 después de rellenarlo
+ * entero. Lo honesto es enseñar lo que rige y decir dónde se cambia.
+ */
 export function GovernancePolicyConfigPage(
   props: Readonly<{ policyId: string }>,
 ) {
@@ -30,17 +34,15 @@ export function GovernancePolicyConfigPage(
 function AuthorizedGovernancePolicyConfigPage({
   policyId,
 }: Readonly<{ policyId: string }>) {
-  const router = useRouter();
   const policy = useGovernancePolicy(policyId);
-  const mutation = useUpdateGovernancePolicyMutation(policyId);
 
   return (
     <>
       <PageHeader
         icon={SlidersHorizontal}
-        eyebrow="Formulario de gobierno"
-        title="Configurar política"
-        description="Define acciones operativas como append only, delete, retención, masking, auditoría y aprobaciones."
+        eyebrow="Gobierno"
+        title="Configuración de la política"
+        description="Lo que rige hoy: append only, borrado, retención, masking, auditoría y aprobaciones."
         actions={
           <Link href={`/internal/governance/policies/${policyId}`}>
             <Button>
@@ -50,6 +52,14 @@ function AuthorizedGovernancePolicyConfigPage({
           </Link>
         }
       />
+      <p
+        className="mb-4 max-w-2xl text-sm text-atlas-muted"
+        data-testid="policy-config-readonly-note"
+      >
+        Esta configuración no se edita desde el portal: AtlasBackend no publica
+        una escritura de políticas por fila. Los cambios entran por el paquete
+        de gobierno versionado y se ven aquí cuando se despliegan.
+      </p>
       {policy.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {policy.error ? (
         <ErrorState
@@ -64,32 +74,7 @@ function AuthorizedGovernancePolicyConfigPage({
           onRetry={() => void policy.refetch()}
         />
       ) : null}
-      {mutation.error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(mutation.error)
-              ? mutation.error.message
-              : "No se pudo guardar la política."
-          }
-          requestId={
-            isAtlasApiError(mutation.error)
-              ? mutation.error.requestId
-              : undefined
-          }
-        />
-      ) : null}
-      {policy.data ? (
-        <PolicyConfigurationForm
-          policy={policy.data}
-          isSaving={mutation.isPending}
-          onSubmit={(values) =>
-            mutation.mutate(values, {
-              onSuccess: () =>
-                router.push(`/internal/governance/policies/${policyId}`),
-            })
-          }
-        />
-      ) : null}
+      {policy.data ? <PolicyConfigSummary policy={policy.data} /> : null}
     </>
   );
 }

@@ -1,67 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
-import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/layout/page-header";
-import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { isAtlasApiError } from "@/shared/api/errors";
-import { useRunDataQualityRuleMutation } from "./hooks";
 
+/**
+ * Antes: «Ejecutar regla», con confirmación y «la acción quedará auditada». Llamaba a
+ * `POST /internal/data-quality/rules/:id/run`, que AtlasBackend retiró por devolver 200 sin
+ * ejecutar nada; el botón siguió aquí y pasó a dar 404. No hay ejecución por regla: lo que existe
+ * es el job de mantenimiento que recalcula todas, y se dispara desde Operaciones.
+ */
 export function RuleRunCard({ ruleId }: Readonly<{ ruleId: string }>) {
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const runMutation = useRunDataQualityRuleMutation(ruleId);
   return (
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Ejecución controlada"
-          description="Dispara `/internal/data-quality/rules/:id/run` con auditoría y permisos."
+          title="Ejecución"
+          description="Las reglas no se ejecutan de una en una."
           className="mb-0"
         />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <PermissionGate permissions={["dataQuality.rules.manage"]}>
-          <Button
-            variant="primary"
-            disabled={runMutation.isPending}
-            onClick={() => setConfirmOpen(true)}
-          >
-            {runMutation.isPending ? "Ejecutando…" : "Ejecutar regla"}
-          </Button>
-        </PermissionGate>
-        <ConfirmDialog
-          open={confirmOpen}
-          title="Confirmar ejecución"
-          description="La regla puede revisar datos operativos y crear evidencia de calidad. La acción quedará auditada."
-          confirmText="Ejecutar"
-          isLoading={runMutation.isPending}
-          onCancel={() => setConfirmOpen(false)}
-          onConfirm={() => {
-            setConfirmOpen(false);
-            runMutation.mutate();
-          }}
-        />
-        {runMutation.error ? (
-          <ErrorState
-            description={
-              isAtlasApiError(runMutation.error)
-                ? runMutation.error.message
-                : "No se pudo ejecutar la regla."
-            }
-            requestId={
-              isAtlasApiError(runMutation.error)
-                ? runMutation.error.requestId
-                : undefined
-            }
-          />
-        ) : null}
-        {runMutation.data ? (
-          <JsonViewer title="Resultado" value={runMutation.data} />
-        ) : null}
+      <CardContent>
+        <p
+          className="text-sm text-atlas-muted"
+          data-testid="rule-run-note"
+          data-rule-id={ruleId}
+        >
+          El recálculo de calidad de datos corre para todas las reglas a la vez
+          con el job de mantenimiento «Recalcular calidad de datos» de
+          Operaciones (primero en simulación, después de verdad). Esta ficha
+          muestra la definición y el estado de la regla; no la dispara.
+        </p>
       </CardContent>
     </Card>
   );

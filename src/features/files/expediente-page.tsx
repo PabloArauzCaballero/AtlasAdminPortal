@@ -38,12 +38,13 @@ function ExpedienteAutorizado({
   const [subiendo, setSubiendo] = useState(false);
   const [porBorrar, setPorBorrar] = useState<Nodo | null>(null);
   const [verPapelera, setVerPapelera] = useState(false);
+  const [motivoDePurga, setMotivoDePurga] = useState<string | null>(null);
 
   const nodos = useNodos(expedienteId, carpeta?.nodoId ?? null, {
     q: q.trim() || undefined,
     incluirPapelera: verPapelera,
   });
-  const { crearCarpeta, renombrar, borrar, restaurar } =
+  const { crearCarpeta, renombrar, borrar, restaurar, purgar } =
     useMutacionesDelArbol(expedienteId);
 
   const columns = useMemo(
@@ -145,13 +146,30 @@ function ExpedienteAutorizado({
                 ? "Resultados de la búsqueda en todo el expediente."
                 : `Estás en ${carpeta ? carpeta.ruta : "la raíz del expediente"}.`}
             </p>
-            <Button
-              variant="ghost"
-              onClick={() => setVerPapelera((valor) => !valor)}
-            >
-              <Trash2 className="mr-1.5 h-4 w-4" aria-hidden />
-              {verPapelera ? "Ocultar la papelera" : "Ver la papelera"}
-            </Button>
+            <span className="flex flex-wrap gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => setVerPapelera((valor) => !valor)}
+              >
+                <Trash2 className="mr-1.5 h-4 w-4" aria-hidden />
+                {verPapelera ? "Ocultar la papelera" : "Ver la papelera"}
+              </Button>
+              {verPapelera && puedeEscribir ? (
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    // El motivo va en el cuerpo de la purga y queda en la actividad: sin él no se
+                    // abre la confirmación, porque un borrado definitivo sin porqué no se audita.
+                    const motivo = window.prompt(
+                      "¿Por qué se vacía la papelera? (queda registrado)",
+                    );
+                    if (motivo?.trim()) setMotivoDePurga(motivo.trim());
+                  }}
+                >
+                  Vaciar la papelera
+                </Button>
+              ) : null}
+            </span>
           </div>
           {nodos.isLoading ? (
             <LoadingSkeleton rows={6} />
@@ -191,6 +209,21 @@ function ExpedienteAutorizado({
         parentId={carpeta?.nodoId ?? null}
         abierto={subiendo}
         onCerrar={() => setSubiendo(false)}
+      />
+      <ConfirmDialog
+        open={motivoDePurga !== null}
+        title="Vaciar la papelera"
+        description="Borra DEFINITIVAMENTE del almacén los archivos de la papelera que nada más referencia. Los que otro expediente o el Motor siguen usando se conservan. No se puede deshacer."
+        confirmText="Vaciar"
+        typedConfirmationPhrase="VACIAR"
+        isLoading={purgar.isPending}
+        onConfirm={() => {
+          if (motivoDePurga)
+            purgar.mutate(motivoDePurga, {
+              onSettled: () => setMotivoDePurga(null),
+            });
+        }}
+        onCancel={() => setMotivoDePurga(null)}
       />
       <ConfirmDialog
         open={Boolean(porBorrar)}

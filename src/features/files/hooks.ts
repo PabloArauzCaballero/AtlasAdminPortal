@@ -215,7 +215,14 @@ export function useMutacionesDelArbol(expedienteId: string) {
     onSuccess: refrescar,
   });
 
-  return { crearCarpeta, renombrar, mover, borrar, restaurar };
+  // Vaciar la papelera es el único borrado DEFINITIVO del expediente: existía en el backend y no
+  // había forma de llegar a él desde la pantalla.
+  const purgar = useMutation({
+    mutationFn: (motivo: string) => api.purgarPapelera(expedienteId, motivo),
+    onSuccess: refrescar,
+  });
+
+  return { crearCarpeta, renombrar, mover, borrar, restaurar, purgar };
 }
 
 export function useCompartir(expedienteId: string, nodoId: string | null) {

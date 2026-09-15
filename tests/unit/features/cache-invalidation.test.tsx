@@ -13,14 +13,7 @@ vi.mock("@/features/schema-management/services", () => ({
   listSchemaVersions: vi.fn(),
 }));
 
-vi.mock("@/features/data-quality-rules/services", () => ({
-  runDataQualityRule: vi.fn(async () => ({ ok: true })),
-  getDataQualityRule: vi.fn(),
-  listDataQualityRules: vi.fn(),
-}));
-
 import { useApproveSchemaChangeMutation } from "@/features/schema-management/hooks";
-import { useRunDataQualityRuleMutation } from "@/features/data-quality-rules/hooks";
 
 let queryClient: QueryClient;
 
@@ -65,45 +58,5 @@ describe("R6 · aprobar cambio de schema invalida todo el dominio", () => {
     expect(isStale(versions)).toBe(true);
     expect(isStale(tables)).toBe(true);
     expect(isStale(table)).toBe(true);
-  });
-});
-
-describe("R6 · ejecutar regla de calidad invalida los issues", () => {
-  it("invalida reglas e issues, que cuelgan de raíces distintas", async () => {
-    const rules = ["internal", "data-quality", "rules", { page: 1 }] as const;
-    const rule = ["internal", "data-quality", "rule", "r1"] as const;
-    const issues = [
-      "operations",
-      "data-quality",
-      "issues",
-      { page: 1 },
-    ] as const;
-    [rules, rule, issues].forEach(seed);
-
-    const { result } = renderHook(() => useRunDataQualityRuleMutation("r1"), {
-      wrapper,
-    });
-    result.current.mutate();
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(isStale(rules)).toBe(true);
-    expect(isStale(rule)).toBe(true);
-    // La raíz `operations` es la que el bug no tocaba.
-    expect(isStale(issues)).toBe(true);
-  });
-
-  it("no invalida dominios ajenos", async () => {
-    const unrelated = ["systems", "endpoints", { page: 1 }] as const;
-    seed(unrelated);
-
-    const { result } = renderHook(() => useRunDataQualityRuleMutation("r1"), {
-      wrapper,
-    });
-    result.current.mutate();
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(isStale(unrelated)).toBe(false);
   });
 });

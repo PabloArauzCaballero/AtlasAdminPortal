@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ExpedientePage } from "@/features/files/expediente-page";
@@ -43,7 +44,7 @@ vi.mock("@/shared/auth/permission-gate", () => ({
   ),
 }));
 
-const { obtenerExpediente, listarNodos } =
+const { obtenerExpediente, listarNodos, purgarPapelera } =
   await import("@/features/files/services");
 
 const EXPEDIENTE: Expediente = {
@@ -156,5 +157,44 @@ describe("ExpedientePage", () => {
     expect(
       await screen.findByLabelText("El archivo ya no está en el almacén"),
     ).toBeInTheDocument();
+  });
+
+  it("con la papelera a la vista ofrece vaciarla, y la purga viaja con el motivo", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue(EXPEDIENTE);
+    vi.mocked(purgarPapelera).mockResolvedValue({
+      nodos: 2,
+      objetosBorrados: 2,
+      objetosConservados: 0,
+    });
+    const prompt = vi
+      .spyOn(window, "prompt")
+      .mockReturnValue("Cierre del expediente");
+    pintar();
+    await screen.findByText("Manifiesto firmado");
+
+    // Sin la papelera a la vista no hay purga que ofrecer: vaciar lo que no se ve es un accidente.
+    expect(screen.queryByText("Vaciar la papelera")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText("Ver la papelera"));
+    await userEvent.click(screen.getByText("Vaciar la papelera"));
+    expect(prompt).toHaveBeenCalledTimes(1);
+
+    // Dos cajas de texto: el buscador del expediente y la frase de confirmación del diálogo.
+    const dialogo = screen.getByRole("dialog");
+    await userEvent.type(within(dialogo).getByRole("textbox"), "VACIAR");
+    await userEvent.click(screen.getByRole("button", { name: "Vaciar" }));
+
+    expect(purgarPapelera).toHaveBeenCalledWith("42", "Cierre del expediente");
+    prompt.mockRestore();
+  });
+
+  it("sin nivel de escritura la papelera se ve pero no se vacía", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue({
+      ...EXPEDIENTE,
+      nivelEfectivo: "leer",
+    });
+    pintar();
+    await screen.findByText("Manifiesto firmado");
+    await userEvent.click(screen.getByText("Ver la papelera"));
+    expect(screen.queryByText("Vaciar la papelera")).not.toBeInTheDocument();
   });
 });
