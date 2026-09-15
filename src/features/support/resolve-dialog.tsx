@@ -1,5 +1,6 @@
 "use client";
 
+import { codeOptions } from "./support-options";
 import { useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
@@ -77,45 +78,40 @@ export function ResolveDialog({
         >
           <Field
             label="Cómo se resolvió"
+            tooltip="Qué se hizo para solucionarlo; alimenta los informes de resolución de la mesa."
             hint={
               descripcion(codigos.data.resolutionCodes, resolutionCode) ??
               undefined
             }
           >
             <Select
+              name="resolucion"
+              placeholder="Elegir…"
+              options={codeOptions(codigos.data.resolutionCodes)}
               value={resolutionCode}
-              onChange={(event) => setResolutionCode(event.target.value)}
-            >
-              <option value="">Elegir…</option>
-              {codigos.data.resolutionCodes.map((opcion) => (
-                <option key={opcion.code} value={opcion.code}>
-                  {opcion.code}
-                </option>
-              ))}
-            </Select>
+              onChange={setResolutionCode}
+            />
           </Field>
 
           <Field
             label="Por qué pasó (causa raíz)"
+            tooltip="Origen del problema; separa defectos propios de fallos de terceros o malentendidos."
             hint={
               descripcion(codigos.data.rootCauseCodes, rootCauseCode) ??
               undefined
             }
           >
             <Select
+              name="causa-raiz"
+              options={codeOptions(codigos.data.rootCauseCodes)}
               value={rootCauseCode}
-              onChange={(event) => setRootCauseCode(event.target.value)}
-            >
-              {codigos.data.rootCauseCodes.map((opcion) => (
-                <option key={opcion.code} value={opcion.code}>
-                  {opcion.code}
-                </option>
-              ))}
-            </Select>
+              onChange={setRootCauseCode}
+            />
           </Field>
 
           <Field
             label="Lo que leerá el cliente"
+            tooltip="Explicación en lenguaje llano de qué pasó y qué se hizo; sin jerga interna."
             hint="Va al expediente del cliente. Mínimo 10 caracteres."
           >
             <Textarea
@@ -127,6 +123,7 @@ export function ResolveDialog({
 
           <Field
             label="Lo que queda para el equipo"
+            tooltip="Detalle técnico o de proceso para quien vuelva a ver un caso parecido."
             hint="No lo ve el cliente. Mínimo 10 caracteres."
           >
             <Textarea

@@ -1,5 +1,7 @@
 "use client";
 
+import { PRESENCIA_OPTIONS } from "./support-options";
+import { FieldTooltip } from "@/shared/components/ui/field-tooltip";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
@@ -13,15 +15,6 @@ import {
   useSetPresenceMutation,
 } from "./hooks";
 import { MessagesSquare } from "lucide-react";
-
-const PRESENCIAS = [
-  "AVAILABLE",
-  "BUSY",
-  "AWAY",
-  "WRAP_UP",
-  "TRAINING",
-  "OFFLINE",
-];
 
 /**
  * Las conversaciones que esperan a alguien.
@@ -61,21 +54,23 @@ export function ChatsEnEspera() {
             {canales.length}
           </Badge>
         </div>
-        <label className="flex items-center gap-2 text-xs text-atlas-muted">
+        <span className="flex items-center gap-2 text-xs text-atlas-muted">
           Mi presencia
           <Select
+            name="presencia"
+            ariaLabel="Mi presencia"
+            compact
             className="w-40"
+            options={PRESENCIA_OPTIONS}
             defaultValue="AVAILABLE"
             disabled={presencia.isPending}
-            onChange={(event) => presencia.mutate(event.target.value)}
-          >
-            {PRESENCIAS.map((estado) => (
-              <option key={estado} value={estado}>
-                {estado}
-              </option>
-            ))}
-          </Select>
-        </label>
+            onChange={(valor) => presencia.mutate(valor)}
+          />
+          <FieldTooltip
+            label="Mi presencia"
+            text="Decide si el reparto te manda conversaciones nuevas; ponte «Ausente» al salir del puesto."
+          />
+        </span>
       </div>
 
       {presencia.error && isAtlasApiError(presencia.error) ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { codeOptions, queueOptions, SIN_CAMBIAR } from "./support-options";
 import { useMemo, useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
@@ -90,6 +91,7 @@ export function TriageDialog({
         >
           <Field
             label="Motivo"
+            tooltip="De qué trata el caso; el motivo trae su cola, sensibilidad e impacto por defecto."
             hint={
               elegida
                 ? `Sensibilidad ${elegida.sensitivity} · impacto ${elegida.defaultImpact} · urgencia ${elegida.defaultUrgency}`
@@ -97,52 +99,53 @@ export function TriageDialog({
             }
           >
             <Select
+              name="motivo"
+              options={[
+                SIN_CAMBIAR,
+                ...planas.map((categoria) => ({
+                  value: categoria.categoryCode,
+                  label: `${categoria.sangria}${categoria.label}`,
+                  description: `${categoria.categoryCode} · sensibilidad ${categoria.sensitivity} · impacto ${categoria.defaultImpact} · urgencia ${categoria.defaultUrgency}`,
+                })),
+              ]}
               value={categoryCode}
-              onChange={(event) => setCategoryCode(event.target.value)}
-            >
-              <option value="">Sin cambiar</option>
-              {planas.map((categoria) => (
-                <option
-                  key={categoria.categoryCode}
-                  value={categoria.categoryCode}
-                >
-                  {categoria.sangria}
-                  {categoria.label}
-                </option>
-              ))}
-            </Select>
+              onChange={setCategoryCode}
+            />
           </Field>
 
-          <Field label="Prioridad">
+          <Field
+            label="Prioridad"
+            tooltip="Urgencia con la que se atiende; cambia el orden en la bandeja y el plazo de respuesta."
+          >
             <Select
+              name="prioridad"
+              options={[
+                SIN_CAMBIAR,
+                ...codeOptions(codigos.data?.priorities ?? []),
+              ]}
               value={priority}
-              onChange={(event) => setPriority(event.target.value)}
-            >
-              <option value="">Sin cambiar</option>
-              {(codigos.data?.priorities ?? []).map((opcion) => (
-                <option key={opcion.code} value={opcion.code}>
-                  {opcion.code} — {opcion.label}
-                </option>
-              ))}
-            </Select>
+              onChange={setPriority}
+            />
           </Field>
 
-          <Field label="Cola">
+          <Field
+            label="Cola"
+            tooltip="Equipo que atenderá el caso; sólo cámbialo si el motivo lo mandó a la cola equivocada."
+          >
             <Select
+              name="cola"
+              options={[
+                SIN_CAMBIAR,
+                ...queueOptions(colas.data?.queues ?? [], "queueCode"),
+              ]}
               value={queueCode}
-              onChange={(event) => setQueueCode(event.target.value)}
-            >
-              <option value="">Sin cambiar</option>
-              {(colas.data?.queues ?? []).map((cola) => (
-                <option key={cola.queueCode} value={cola.queueCode}>
-                  {cola.name}
-                </option>
-              ))}
-            </Select>
+              onChange={setQueueCode}
+            />
           </Field>
 
           <Field
             label="Razón del cambio"
+            tooltip="Por qué reclasificas; así quien vea la historia entiende el cambio de cola o prioridad."
             hint="Queda en la historia del expediente. Obligatoria, mínimo 4 caracteres."
           >
             <Textarea

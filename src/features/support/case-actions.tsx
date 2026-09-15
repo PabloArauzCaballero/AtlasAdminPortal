@@ -1,5 +1,6 @@
 "use client";
 
+import { queueOptions, TIPO_ESCALADO_OPTIONS } from "./support-options";
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Select, Textarea } from "@/shared/components/ui/input";
@@ -25,14 +26,6 @@ import type { SupportCase } from "./types";
  */
 const RAZON_RECLAMO = "El agente toma el caso desde la bandeja";
 
-const TIPOS_ESCALADO = [
-  { value: "FUNCTIONAL", label: "Funcional (hace falta otro equipo)" },
-  { value: "HIERARCHICAL", label: "Jerárquico (hace falta un supervisor)" },
-  { value: "SECURITY", label: "Seguridad" },
-  { value: "FRAUD", label: "Fraude" },
-  { value: "PRIVACY", label: "Privacidad" },
-];
-
 /**
  * El panel de acciones del expediente.
  *
@@ -52,7 +45,9 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
 
   const [colaDestino, setColaDestino] = useState("");
   const [razonTransferencia, setRazonTransferencia] = useState("");
-  const [tipoEscalado, setTipoEscalado] = useState(TIPOS_ESCALADO[0].value);
+  const [tipoEscalado, setTipoEscalado] = useState(
+    TIPO_ESCALADO_OPTIONS[0].value,
+  );
   const [razonEscalado, setRazonEscalado] = useState("");
   const [textoNota, setTextoNota] = useState("");
   const [razonCierre, setRazonCierre] = useState("");
@@ -100,20 +95,23 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
           })
         }
       >
-        <Field label="Cola destino">
+        <Field
+          label="Cola destino"
+          tooltip="Equipo que pasará a atender el caso; el agente actual deja de tenerlo."
+        >
           <Select
+            name="cola-destino"
+            placeholder="Elegir…"
+            options={queueOptions(colas.data?.queues ?? [], "queueCode")}
             value={colaDestino}
-            onChange={(event) => setColaDestino(event.target.value)}
-          >
-            <option value="">Elegir…</option>
-            {(colas.data?.queues ?? []).map((cola) => (
-              <option key={cola.queueCode} value={cola.queueCode}>
-                {cola.name}
-              </option>
-            ))}
-          </Select>
+            onChange={setColaDestino}
+          />
         </Field>
-        <Field label="Razón" hint="Mínimo 4 caracteres.">
+        <Field
+          label="Razón"
+          tooltip="Por qué lo pasas a otra cola; lo leerá quien lo reciba antes de abrirlo."
+          hint="Mínimo 4 caracteres."
+        >
           <Textarea
             className="min-h-16"
             value={razonTransferencia}
@@ -136,20 +134,20 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
           })
         }
       >
-        <Field label="Tipo">
+        <Field
+          label="Tipo"
+          tooltip="A quién hace falta: otro equipo, un supervisor, o seguridad, fraude o privacidad."
+        >
           <Select
+            name="tipo-escalado"
+            options={TIPO_ESCALADO_OPTIONS}
             value={tipoEscalado}
-            onChange={(event) => setTipoEscalado(event.target.value)}
-          >
-            {TIPOS_ESCALADO.map((tipo) => (
-              <option key={tipo.value} value={tipo.value}>
-                {tipo.label}
-              </option>
-            ))}
-          </Select>
+            onChange={setTipoEscalado}
+          />
         </Field>
         <Field
           label="Razón"
+          tooltip="Qué necesitas de quien recibe el escalado y qué ya intentaste."
           hint="Mínimo 10 caracteres: el escalado avisa al cliente."
         >
           <Textarea
@@ -173,6 +171,7 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       >
         <Field
           label="Texto"
+          tooltip="Lo que el siguiente agente debe saber del caso; queda con tu nombre y hora."
           hint="No lo ve el cliente. Queda en la transcripción como nota interna."
         >
           <Textarea
@@ -194,6 +193,7 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       >
         <Field
           label="Razón del cierre"
+          tooltip="Por qué se cierra sin resolver, p. ej. el cliente dejó de responder."
           hint="Cerrar no sustituye a resolver: un caso cerrado sin resolución queda sin causa ni respuesta comunicada."
         >
           <Textarea

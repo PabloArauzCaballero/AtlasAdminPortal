@@ -1,5 +1,12 @@
 "use client";
 
+import type { Option } from "@/shared/lib/options";
+import {
+  ASIGNACION_OPTIONS,
+  CAUSA_RAIZ_FILTRO_OPTIONS,
+  PRIORIDAD_FILTRO_OPTIONS,
+  queueOptions,
+} from "./support-options";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
@@ -19,19 +26,39 @@ import { LifeBuoy } from "lucide-react";
 const ESTADOS_ABIERTOS =
   "NEW,TRIAGED,ASSIGNED,IN_PROGRESS,WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER,ESCALATED";
 
-const VISTAS = [
-  { label: "Abiertos (todos)", value: ESTADOS_ABIERTOS },
-  { label: "Sin clasificar", value: "NEW" },
-  { label: "En curso", value: "ASSIGNED,IN_PROGRESS" },
+const VISTAS: Option[] = [
+  {
+    label: "Abiertos (todos)",
+    value: ESTADOS_ABIERTOS,
+    description: "Todo lo que aún no está resuelto, en cualquier etapa.",
+  },
+  {
+    label: "Sin clasificar",
+    value: "NEW",
+    description: "Recién llegados: nadie les puso motivo ni prioridad todavía.",
+  },
+  {
+    label: "En curso",
+    value: "ASSIGNED,IN_PROGRESS",
+    description: "Ya tienen agente y alguien está trabajando en ellos.",
+  },
   {
     label: "Esperando a alguien",
     value: "WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER",
+    description:
+      "Parados hasta que responda el cliente, otro equipo o un socio.",
   },
-  { label: "Escalados", value: "ESCALATED" },
-  { label: "Resueltos y cerrados", value: "RESOLVED,CLOSED" },
+  {
+    label: "Escalados",
+    value: "ESCALATED",
+    description: "Pasados a otro equipo o a un supervisor para decidir.",
+  },
+  {
+    label: "Resueltos y cerrados",
+    value: "RESOLVED,CLOSED",
+    description: "Terminados; aquí sirve el filtro de causa raíz.",
+  },
 ];
-
-const PRIORIDADES = ["P1", "P2", "P3", "P4"];
 
 export function SupportQueuePage() {
   const [status, setStatus] = useState(ESTADOS_ABIERTOS);
@@ -83,84 +110,83 @@ export function SupportQueuePage() {
       </BusinessContextNote>
 
       <section className="mb-4 grid gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle sm:grid-cols-2 xl:grid-cols-5">
-        <Field label="Vista">
+        <Field
+          label="Vista"
+          tooltip="En qué etapa están los casos que quieres ver; por defecto, todo lo abierto."
+        >
           <Select
+            name="vista"
+            options={VISTAS}
             value={status}
-            onChange={(event) => {
-              setStatus(event.target.value);
+            onChange={(valor) => {
+              setStatus(valor);
               reiniciarPaginacion();
             }}
-          >
-            {VISTAS.map((vista) => (
-              <option key={vista.value} value={vista.value}>
-                {vista.label}
-              </option>
-            ))}
-          </Select>
+          />
         </Field>
-        <Field label="Prioridad">
+        <Field
+          label="Prioridad"
+          tooltip="Acota a una urgencia; P1 es lo que impide operar al cliente."
+        >
           <Select
+            name="prioridad"
+            options={PRIORIDAD_FILTRO_OPTIONS}
             value={priority}
-            onChange={(event) => {
-              setPriority(event.target.value);
+            onChange={(valor) => {
+              setPriority(valor);
               reiniciarPaginacion();
             }}
-          >
-            <option value="">Todas</option>
-            {PRIORIDADES.map((valor) => (
-              <option key={valor} value={valor}>
-                {valor}
-              </option>
-            ))}
-          </Select>
+          />
         </Field>
-        <Field label="Cola">
+        <Field
+          label="Cola"
+          tooltip="Equipo al que pertenecen los casos; sólo ves las colas que tu perfil alcanza."
+        >
           <Select
+            name="cola"
+            options={[
+              {
+                value: "",
+                label: "Todas",
+                description: "Casos de todas las colas que puedes ver.",
+              },
+              ...queueOptions(colas.data?.queues ?? [], "queueId"),
+            ]}
             value={queueId}
-            onChange={(event) => {
-              setQueueId(event.target.value);
+            onChange={(valor) => {
+              setQueueId(valor);
               reiniciarPaginacion();
             }}
-          >
-            <option value="">Todas</option>
-            {(colas.data?.queues ?? []).map((cola) => (
-              <option key={cola.queueId} value={cola.queueId}>
-                {cola.name}
-              </option>
-            ))}
-          </Select>
+          />
         </Field>
         <Field
           label="Causa raíz"
+          tooltip="Por qué pasó el problema; sirve para ver cuánto viene de defectos propios."
           hint="Sólo aplica a casos ya resueltos: elige la vista «Resueltos y cerrados»."
         >
           <Select
+            name="causa-raiz"
+            options={CAUSA_RAIZ_FILTRO_OPTIONS}
             value={rootCauseCode}
-            onChange={(event) => {
-              setRootCauseCode(event.target.value);
+            onChange={(valor) => {
+              setRootCauseCode(valor);
               reiniciarPaginacion();
             }}
-          >
-            <option value="">Cualquiera</option>
-            <option value="UNKNOWN">Sin determinar (UNKNOWN)</option>
-            <option value="APPLICATION_DEFECT">Defecto de la aplicación</option>
-            <option value="THIRD_PARTY">Proveedor externo</option>
-            <option value="USER_MISUNDERSTANDING">
-              Malentendido del usuario
-            </option>
-          </Select>
+          />
         </Field>
-        <Field label="Asignación">
+        <Field
+          label="Asignación"
+          tooltip="Si ves toda la cola o sólo lo que tienes asignado tú."
+        >
           <Select
+            name="asignacion"
+            options={ASIGNACION_OPTIONS}
             value={assignedToMe ? "mios" : "todos"}
-            onChange={(event) => {
-              setAssignedToMe(event.target.value === "mios");
+            onChange={(valor) => {
+              setAssignedToMe(valor === "mios");
               reiniciarPaginacion();
             }}
-          >
-            <option value="todos">Toda la cola</option>
-            <option value="mios">Sólo los míos</option>
-          </Select>
+          />
         </Field>
       </section>
 

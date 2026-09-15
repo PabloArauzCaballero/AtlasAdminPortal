@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  CAPACIDAD_OPTIONS,
+  CUALQUIER_COLA,
+  NIVEL_OPTIONS,
+  queueOptions,
+} from "./support-options";
 import { useState } from "react";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -16,8 +22,6 @@ import {
 } from "./hooks";
 import { AccesoASoporte } from "./support-access-state";
 import { UserPlus } from "lucide-react";
-
-const NIVELES = ["L1", "L2", "SPECIALIST", "SUPERVISOR", "MANAGER"];
 
 /**
  * La pantalla que faltaba en todo el circuito.
@@ -83,6 +87,7 @@ export function SupportAgentsPage() {
         >
           <Field
             label="ID de usuario interno"
+            tooltip="Número del usuario interno que va a atender; sin perfil de agente la bandeja le responde 403."
             hint="El identificador de iam.internal_users, no el correo."
           >
             <Input
@@ -92,45 +97,42 @@ export function SupportAgentsPage() {
               onChange={(event) => setInternalUserId(event.target.value)}
             />
           </Field>
-          <Field label="Nivel">
+          <Field
+            label="Nivel"
+            tooltip="Qué casos puede ver y a quién le llegan sus escalados; decide su alcance en la mesa."
+          >
             <Select
+              name="nivel"
+              options={NIVEL_OPTIONS}
               value={supportLevel}
-              onChange={(event) => setSupportLevel(event.target.value)}
-            >
-              {NIVELES.map((nivel) => (
-                <option key={nivel} value={nivel}>
-                  {nivel}
-                </option>
-              ))}
-            </Select>
+              onChange={setSupportLevel}
+            />
           </Field>
-          <Field label="Cola por defecto">
+          <Field
+            label="Cola por defecto"
+            tooltip="Cola de la que le llega trabajo primero; «Cualquiera» lo deja en el reparto general."
+          >
             <Select
+              name="cola-defecto"
+              options={[
+                CUALQUIER_COLA,
+                ...queueOptions(colas.data?.queues ?? [], "queueCode"),
+              ]}
               value={queueCode}
-              onChange={(event) => setQueueCode(event.target.value)}
-            >
-              <option value="">Cualquiera</option>
-              {(colas.data?.queues ?? []).map((cola) => (
-                <option key={cola.queueCode} value={cola.queueCode}>
-                  {cola.name}
-                </option>
-              ))}
-            </Select>
+              onChange={setQueueCode}
+            />
           </Field>
           <Field
             label="Chats simultáneos"
+            tooltip="Cuántas conversaciones puede llevar a la vez antes de que el reparto lo salte."
             hint="Capacidad real: de esto depende el reparto."
           >
             <Select
+              name="chats-simultaneos"
+              options={CAPACIDAD_OPTIONS}
               value={maxConcurrentChannels}
-              onChange={(event) => setMaxConcurrentChannels(event.target.value)}
-            >
-              {[1, 2, 3, 4, 5, 6, 8, 10].map((valor) => (
-                <option key={valor} value={String(valor)}>
-                  {valor}
-                </option>
-              ))}
-            </Select>
+              onChange={setMaxConcurrentChannels}
+            />
           </Field>
           <div className="flex items-end">
             <Button
