@@ -73,7 +73,7 @@ export function PendingContactsPage() {
   const columns = useMemo(
     () => buildPendingContactsColumns(onResend, sendingId),
     [sendingId],
-  );  
+  );
 
   return (
     <>
