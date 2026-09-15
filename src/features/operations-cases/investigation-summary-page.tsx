@@ -13,6 +13,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
+import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import { ListCard } from "./list-card";
 import { useInvestigationSummary } from "./hooks";
 import { Search } from "lucide-react";
@@ -113,6 +114,8 @@ export function InvestigationSummaryPage({
             De la agenda se enseña su FORMA y nunca su contenido: ni un nombre, ni un teléfono. Lo
             que el teléfono manda son cuentas, y lo que el servidor cruza son hashes que descarta.
           */}
+          <IdentityEvidencePanel customerId={customerId} />
+
           <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <KeyValueSection
               title="Verificación de identidad"

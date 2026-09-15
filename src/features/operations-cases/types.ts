@@ -163,3 +163,32 @@ export type InvestigationSummary = {
     riskMatches: number;
   };
 };
+
+export type EvidenceDocument = {
+  documentId: string;
+  documentType: string;
+  mimeType: string | null;
+  sizeBytes: number | string | null;
+  sha256: string | null;
+  uploadedAt: string | null;
+};
+
+export type EvidenceDocumentList = {
+  customerId: string;
+  documents: EvidenceDocument[];
+};
+
+export type IdentityDecisionInput = {
+  decision: "approve" | "reject";
+  reasonCode: string;
+  notes?: string;
+};
+
+export type IdentityDecisionResult = {
+  customerId: string;
+  decision: "approve" | "reject";
+  identityVerificationResult: string;
+  resolvedEvidenceReviews: number;
+  lifecycleStatus: string | null;
+  eligible: boolean;
+};
