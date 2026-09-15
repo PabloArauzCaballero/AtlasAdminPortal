@@ -1,5 +1,6 @@
 "use client";
 
+import { CHANNEL_OPTIONS } from "./notification-options";
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -15,8 +16,6 @@ import type {
   CreateNotificationTemplateInput,
   NotificationTemplate,
 } from "./types";
-
-const CHANNELS = ["in_app", "push", "email", "sms", "whatsapp", "phone"];
 
 export function TemplateForm({
   template,
@@ -91,6 +90,7 @@ export function TemplateForm({
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           <Field
             label="Código"
+            tooltip="Clave con la que el backend elige esta plantilla; no se puede cambiar después."
             hint="Identificador único, ej: onboarding_welcome."
           >
             <Input
@@ -100,24 +100,25 @@ export function TemplateForm({
               className="font-mono"
             />
           </Field>
-          <Field label="Canal">
+          <Field
+            label="Canal"
+            tooltip="Vía para la que se redacta; cada canal tiene su propia plantilla y límites."
+          >
             <Select
+              name="canal"
+              options={CHANNEL_OPTIONS}
               value={form.channel}
-              onChange={(event) =>
+              onChange={(valor) =>
                 patch({
-                  channel: event.target
-                    .value as CreateNotificationTemplateInput["channel"],
+                  channel: valor as CreateNotificationTemplateInput["channel"],
                 })
               }
-            >
-              {CHANNELS.map((channel) => (
-                <option key={channel} value={channel}>
-                  {channel}
-                </option>
-              ))}
-            </Select>
+            />
           </Field>
-          <Field label="Locale">
+          <Field
+            label="Locale"
+            tooltip="Idioma y país del texto; decide qué versión recibe cada usuario. Ej.: es-BO"
+          >
             <Input
               value={form.locale}
               onChange={(event) => patch({ locale: event.target.value })}
@@ -125,13 +126,21 @@ export function TemplateForm({
           </Field>
         </div>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Field label="Título" hint="Usado en push/in-app.">
+          <Field
+            label="Título"
+            tooltip="Primera línea que se ve en la notificación; admite {{variables}} del evento."
+            hint="Usado en push/in-app."
+          >
             <Input
               value={form.titleTemplate ?? ""}
               onChange={(event) => patch({ titleTemplate: event.target.value })}
             />
           </Field>
-          <Field label="Asunto" hint="Usado en email.">
+          <Field
+            label="Asunto"
+            tooltip="Línea de asunto del correo; lo que decide si se abre o no."
+            hint="Usado en email."
+          >
             <Input
               value={form.subjectTemplate ?? ""}
               onChange={(event) =>
@@ -143,6 +152,7 @@ export function TemplateForm({
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
             label="Categoría"
+            tooltip="Grupo del aviso para filtrar y silenciar en bloque en la app."
             hint="Agrupa notificaciones para un futuro frontend (ej: system_alert, billing, kyc)."
           >
             <Input
@@ -152,6 +162,7 @@ export function TemplateForm({
           </Field>
           <Field
             label="Ícono"
+            tooltip="Nombre del icono que pinta la app junto al aviso."
             hint="Identificador libre, ej: bell, alert-triangle."
           >
             <Input
@@ -162,6 +173,7 @@ export function TemplateForm({
         </div>
         <Field
           label="Cuerpo del mensaje"
+          tooltip="El texto que recibe el destinatario; las {{variables}} se rellenan con el payload."
           hint="Texto renderizado al destinatario. Usa {{variable}} para interpolar el payload del evento."
         >
           <Textarea
@@ -172,6 +184,7 @@ export function TemplateForm({
         </Field>
         <Field
           label="Esquema de payload (JSON, opcional)"
+          tooltip="Qué variables necesita la plantilla, para detectar eventos que no las traen."
           hint='Documenta qué variables espera el template, ej: { "customerId": "number|optional" }'
         >
           <Textarea

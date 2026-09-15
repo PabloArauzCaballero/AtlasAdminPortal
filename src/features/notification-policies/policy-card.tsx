@@ -120,7 +120,10 @@ export function PolicyCard({
           </>
         ) : (
           <div className="mt-4 flex flex-col gap-3">
-            <Field label="Nombre en la app">
+            <Field
+              label="Nombre en la app"
+              tooltip="Cómo se llama este aviso en los ajustes de la app del cliente."
+            >
               <Input
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
@@ -128,7 +131,10 @@ export function PolicyCard({
               />
             </Field>
 
-            <Field label="Explicación">
+            <Field
+              label="Explicación"
+              tooltip="Una frase para el cliente sobre qué le avisa y cuándo le llega."
+            >
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
@@ -151,6 +157,7 @@ export function PolicyCard({
             {isMandatory ? (
               <Field
                 label="Motivo que verá el cliente junto al candado"
+                tooltip="Por qué no se puede apagar, p. ej. obligación regulatoria de avisar cobros."
                 hint="La app lo enseña bajo el interruptor bloqueado: sin él, «no puedes apagarlo» se lee como abuso."
                 error={
                   missingReason
