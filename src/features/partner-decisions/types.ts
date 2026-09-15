@@ -43,3 +43,32 @@ export type PartnerQueueItem = {
 };
 
 export type PartnerQueueResponse = PaginatedResponse<PartnerQueueItem>;
+
+/** Un QR de cobro esperando revisión, tal y como lo publica `GET /operations/partners/qr-codes/pending`. */
+export type PartnerQrPending = {
+  qrId: string;
+  partnerId: string;
+  qrKind: "bank" | "business" | string;
+  branchId: string | null;
+  fingerprint: string;
+  contentType: string;
+  sizeBytes: number;
+  bankInstitutionCode: string | null;
+  accountNumberMasked: string | null;
+  status: string;
+  createdAt: string;
+  partner: {
+    legalName: string | null;
+    tradeName: string | null;
+    onboardingStatus: string;
+  } | null;
+};
+
+export type PartnerQrPendingResponse = { items: PartnerQrPending[] };
+
+export type PartnerQrReviewed = {
+  qrId: string;
+  status: string;
+  verifiedAt: string | null;
+  reviewNote: string | null;
+};

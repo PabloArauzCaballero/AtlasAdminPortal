@@ -1,5 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
+import { apiDownload } from "@/shared/api/download";
 import type { JsonRecord, QueryParams } from "@/shared/api/types";
+import type { PartnerQrPendingResponse, PartnerQrReviewed } from "./types";
 import type { PartnerQueueResponse } from "./types";
 
 /**
@@ -60,5 +62,41 @@ export function decidePartner(
   return apiRequest<JsonRecord>(
     `/operations/partners/${encodeURIComponent(partnerId)}/decision`,
     { method: "POST", body },
+  );
+}
+
+/**
+ * La cola de QR de cobro esperando revisión.
+ *
+ * Es una cola aparte de la de expedientes: un comercio ya aprobado sube o cambia su QR cuando
+ * quiere, y hasta que una persona lo aprueba la app del cliente NO lo enseña. Hasta el 2026-09-14
+ * ningún QR salía de `pending_review` porque no existía esta pantalla ni su ruta.
+ */
+export function listQrPendingReview() {
+  return apiRequest<PartnerQrPendingResponse>(
+    "/operations/partners/qr-codes/pending",
+  );
+}
+
+/** Aprobar activa el QR (y archiva el activo anterior); rechazar exige `note`. */
+export function reviewPartnerQr(
+  partnerId: string,
+  qrId: string,
+  body: { approved: boolean; note?: string },
+) {
+  return apiRequest<PartnerQrReviewed>(
+    `/operations/partners/${encodeURIComponent(partnerId)}/qr-codes/${encodeURIComponent(qrId)}/review`,
+    { method: "POST", body },
+  );
+}
+
+/**
+ * La imagen del QR, como blob: un `<img src>` no manda `Authorization` y el backend respondería
+ * 401. Mismo patrón que el visor del expediente.
+ */
+export function downloadPartnerQrImage(partnerId: string, qrId: string) {
+  return apiDownload(
+    `/partner-onboarding/${encodeURIComponent(partnerId)}/qr-codes/${encodeURIComponent(qrId)}/content`,
+    `qr-${qrId}.png`,
   );
 }

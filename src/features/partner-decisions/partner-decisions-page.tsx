@@ -15,6 +15,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { usePartnerQueue } from "./hooks";
 import { buildPartnerQueueColumns } from "./partner-queue-columns";
 import { PartnerFileDrawer } from "./partner-file-drawer";
+import { PartnerQrReviewQueue } from "./partner-qr-review";
 import type { PartnerQueueItem } from "./types";
 
 /**
@@ -148,6 +149,10 @@ function AuthorizedPartnerDecisionsPage() {
           />
         ) : null}
       </Card>
+
+      <div className="mt-6">
+        <PartnerQrReviewQueue />
+      </div>
 
       {abierto ? (
         <PartnerFileDrawer
