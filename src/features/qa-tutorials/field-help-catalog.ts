@@ -68,7 +68,7 @@ const catalog: Record<string, FieldHelp> = {
     example: "30s para una prueba rápida; 5m para sostenida.",
   },
   "stress.p95Threshold": {
-    key: "stress.p95Threshold",
+    key: "stress.p95Threshold", // gitleaks:allow (valor de prueba, no es un secreto)
     label: "Umbral p95 (ms)",
     tooltip: "Tiempo máximo aceptable para el 95% de las respuestas.",
     help: "El p95 ignora los picos raros y mide la experiencia típica del peor 5%. Si se supera, el endpoint es demasiado lento bajo esa carga.",

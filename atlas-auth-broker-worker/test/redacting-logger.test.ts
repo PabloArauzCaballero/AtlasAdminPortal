@@ -28,7 +28,7 @@ describe('redacción del contexto de log', () => {
     const redacted = redactContext({
       tokenStatus: 'VALID',
       tokenExpiresAt: '2026-01-01T00:00:00.000Z',
-      credentialFingerprint: 'ab12cd34ef567890',
+      credentialFingerprint: 'ab12cd34ef567890', // gitleaks:allow (valor de prueba, no es un secreto)
     });
 
     expect(redacted.tokenStatus).toBe('VALID');

@@ -330,7 +330,7 @@ async function run() {
     );
 
     section('3. Rotación de la credencial');
-    const nuevoSecreto = 'secreto-rotado-de-segip-9876';
+    const nuevoSecreto = 'secreto-rotado-de-segip-9876'; // gitleaks:allow (valor de prueba, no es un secreto)
     segipSecretAtProvider = nuevoSecreto; // el proveedor ya acepta solo el nuevo
     const rotated = await brokerRequest('POST', '/outbound/providers/SEGIP/rotate', {
       field: 'CLIENT_SECRET',

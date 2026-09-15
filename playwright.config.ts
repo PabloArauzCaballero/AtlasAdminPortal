@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import { loadEnvConfig } from "@next/env";
 
@@ -90,11 +92,26 @@ export default defineConfig({
      *
      * Se corren solas:  npx playwright test --project=evidencia
      */
-    {
-      name: "evidencia",
-      testMatch: /\.evidencia\.spec\.ts$/,
-      use: { ...devices["Desktop Chrome"] },
-    },
+    /*
+     * Sólo si existe su material. Las especificaciones leen el expediente real de
+     * `_evidencia-expedientes-2026-09-04/`, que vive FUERA del repositorio: en CI no está, el
+     * import del arnés lanzaba ENOENT y tumbaba la suite entera, incluidas las pruebas que no
+     * tienen nada que ver con la evidencia.
+     */
+    ...(fs.existsSync(
+      path.join(
+        __dirname,
+        "../_evidencia-expedientes-2026-09-04/expediente-vps.json",
+      ),
+    )
+      ? [
+          {
+            name: "evidencia",
+            testMatch: /\.evidencia\.spec\.ts$/,
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : []),
   ],
   webServer: {
     // Con `PW_PORT` se asume que el servidor lo levanta quien corre la suite (típicamente un

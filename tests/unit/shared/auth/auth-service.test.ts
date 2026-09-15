@@ -101,7 +101,7 @@ describe("loginInternal", () => {
     // autenticado, así que los gates decidían con cero permisos en vez de pedir el PIN.
     mockedApiRequest.mockResolvedValue({
       pinChallengeRequired: true,
-      challengeToken: "desafio-opaco-1234567890",
+      challengeToken: "desafio-opaco-1234567890", // gitleaks:allow (valor de prueba, no es un secreto)
       expiresInMinutes: 10,
     });
 
@@ -234,7 +234,7 @@ describe("segundo factor y cambio de contraseña", () => {
     const { path, options } = lastCall();
     expect(path).toBe("/internal/auth/login/pin");
     expect(options.body).toEqual({
-      challengeToken: "desafio-opaco-1234567890",
+      challengeToken: "desafio-opaco-1234567890", // gitleaks:allow (valor de prueba, no es un secreto)
       pin: "123456",
     });
     // Sin token de una sesión previa: todavía no hay ninguna.
@@ -245,7 +245,7 @@ describe("segundo factor y cambio de contraseña", () => {
   it("pide el código de cambio de contraseña mandando sólo la contraseña actual", async () => {
     mockedApiRequest.mockResolvedValue({
       pinChallengeRequired: true,
-      challengeToken: "desafio-opaco-1234567890",
+      challengeToken: "desafio-opaco-1234567890", // gitleaks:allow (valor de prueba, no es un secreto)
       expiresInMinutes: 10,
     });
 
@@ -261,7 +261,7 @@ describe("segundo factor y cambio de contraseña", () => {
   it("confirma el cambio con el desafío, el código y la contraseña nueva", async () => {
     mockedApiRequest.mockResolvedValue({ passwordChanged: true });
     const input = {
-      challengeToken: "desafio-opaco-1234567890",
+      challengeToken: "desafio-opaco-1234567890", // gitleaks:allow (valor de prueba, no es un secreto)
       code: "123456",
       newPassword: "NuevaClave#2026",
     };
