@@ -29,17 +29,22 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
 
     // El desplegable de bloque enumera los tres SIEMPRE, con su contador: es lo que delata que un
     // bloque no está aportando nada, que es exactamente lo que antes no se podía ver.
-    const blockFilter = page.locator("select").first();
-    await expect(blockFilter).toContainText("ATLAS Backend");
-    await expect(blockFilter).toContainText("Decision Engine");
-    await expect(blockFilter).toContainText("ERP Backend");
+    // El filtro es un OptionSelect: las opciones sólo existen con la lista abierta.
+    const blockFilter = page.getByTestId("select-block");
+    await blockFilter.click();
+    const blockList = page.getByRole("listbox");
+    await expect(blockList).toContainText("ATLAS Backend");
+    await expect(blockList).toContainText("Decision Engine");
+    await expect(blockList).toContainText("ERP Backend");
+    await page.keyboard.press("Escape");
 
     // Sin filtro hay tablas de más de un bloque en el catálogo.
     await expect(page.getByRole("table")).toBeVisible();
 
     // Filtrar por el ERP debe dejar SÓLO filas del ERP. Se comprueba la insignia de bloque de cada
     // fila y no un conteo: un filtro que devuelve menos filas puede seguir estando mal.
-    await blockFilter.selectOption("ERP_BACKEND");
+    await blockFilter.click();
+    await page.getByTestId("select-block-option-ERP_BACKEND").click();
     await expect(page.getByRole("table")).toBeVisible();
     const badges = page.getByRole("row").getByText("ERP Backend", {
       exact: true,
@@ -50,7 +55,8 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     ).toHaveCount(0);
 
     // Y el motor de decisión, que guarda todo en `public`, también aparece con lo suyo.
-    await blockFilter.selectOption("DECISION_ENGINE");
+    await blockFilter.click();
+    await page.getByTestId("select-block-option-DECISION_ENGINE").click();
     await expect(
       page
         .getByRole("row")
@@ -67,12 +73,17 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
       page.getByRole("heading", { name: "Catálogo de endpoints" }),
     ).toBeVisible();
 
-    const blockFilter = page.locator("select").first();
-    await expect(blockFilter).toContainText("ATLAS Backend");
-    await expect(blockFilter).toContainText("Decision Engine");
-    await expect(blockFilter).toContainText("ERP Backend");
+    // El filtro es un OptionSelect: las opciones sólo existen con la lista abierta.
+    const blockFilter = page.getByTestId("select-block");
+    await blockFilter.click();
+    const blockList = page.getByRole("listbox");
+    await expect(blockList).toContainText("ATLAS Backend");
+    await expect(blockList).toContainText("Decision Engine");
+    await expect(blockList).toContainText("ERP Backend");
+    await page.keyboard.press("Escape");
 
-    await blockFilter.selectOption("DECISION_ENGINE");
+    await blockFilter.click();
+    await page.getByTestId("select-block-option-DECISION_ENGINE").click();
     await expect(page.getByRole("table")).toBeVisible();
     await expect(
       page

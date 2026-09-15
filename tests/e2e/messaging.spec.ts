@@ -40,7 +40,8 @@ test.describe("mensajería interna entre usuarios", () => {
 
     await page.getByLabel("Correo institucional").fill(NEW_USER_EMAIL);
     await page.getByLabel("Nombre completo").fill(NEW_USER_NAME);
-    await page.getByLabel("Departamento").selectOption("SYSTEMS");
+    await page.getByTestId("select-department").click();
+    await page.getByTestId("select-department-option-SYSTEMS").click();
     await page
       .getByLabel(/^Motivo/i)
       .fill("Alta de cuenta para la prueba E2E de mensajería interna.");
@@ -82,7 +83,8 @@ test.describe("mensajería interna entre usuarios", () => {
     await settled(page);
     await page.getByRole("button", { name: /enviar notificaci[óo]n/i }).click();
 
-    await page.getByLabel(/audiencia/i).selectOption("internal_users");
+    await page.getByTestId("select-audience").click();
+    await page.getByTestId("select-audience-option-internal_users").click();
     await page.getByLabel(/t[íi]tulo|asunto/i).fill(subject);
     await page
       .getByLabel(/mensaje|cuerpo/i)
