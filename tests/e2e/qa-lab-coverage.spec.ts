@@ -42,7 +42,8 @@ test.describe("cobertura del generador de datos de prueba", () => {
     await expect(payload).not.toHaveValue("{}");
     await expect(payload).not.toContainText("string|optional");
 
-    await page.getByLabel("Clase de caso").selectOption("invalid");
+    await page.getByLabel("Clase de caso").click();
+    await page.getByTestId("select-clase-caso-option-invalid").click();
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
     await expect(
       page.getByRole("group", { name: /casos generados/i }),

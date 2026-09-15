@@ -2,6 +2,8 @@ import { Field, Textarea } from "@/shared/components/ui/input";
 
 export type QaJsonField = {
   label: string;
+  /** Qué poner y por qué importa. */
+  tooltip: string;
   value: string;
   onChange: (value: string) => void;
 };
@@ -10,7 +12,7 @@ export function QaJsonFields({ fields }: Readonly<{ fields: QaJsonField[] }>) {
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
       {fields.map((field) => (
-        <Field key={field.label} label={field.label}>
+        <Field key={field.label} label={field.label} tooltip={field.tooltip}>
           <Textarea
             spellCheck={false}
             value={field.value}

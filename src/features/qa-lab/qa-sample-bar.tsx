@@ -118,19 +118,25 @@ export function QaSampleBar({
       </header>
 
       <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
-        <Field label="Clase de caso">
+        <Field
+          label="Clase de caso"
+          tooltip="Qué clase de datos genera: aceptables, al borde del contrato o que deben rechazarse."
+        >
           <Select
+            name="clase-caso"
             value={kind}
-            onChange={(event) => setKind(event.target.value as QaCaseKind)}
-          >
-            {CASE_KINDS.map((option) => (
-              <option key={option} value={option}>
-                {KIND_LABELS[option]}
-              </option>
-            ))}
-          </Select>
+            onChange={(valor) => setKind(valor as QaCaseKind)}
+            options={CASE_KINDS.map((option) => ({
+              value: option,
+              label: KIND_LABELS[option],
+              description: KIND_INTENT[option],
+            }))}
+          />
         </Field>
-        <Field label="Casos">
+        <Field
+          label="Casos"
+          tooltip="Cuántos casos distintos generar de golpe, entre 1 y 20."
+        >
           <Input
             type="number"
             min={1}
@@ -143,17 +149,20 @@ export function QaSampleBar({
             }
           />
         </Field>
-        <Field label="Semilla">
+        <Field
+          label="Semilla"
+          tooltip="Fija el lote: la misma semilla genera siempre los mismos casos para comparar."
+        >
           <Select
+            name="semilla"
             value={seed}
-            onChange={(event) => setSeed(event.target.value)}
-          >
-            {QA_SEED_CATALOG.map((entry) => (
-              <option key={entry.seed} value={entry.seed}>
-                {entry.label}
-              </option>
-            ))}
-          </Select>
+            onChange={setSeed}
+            options={QA_SEED_CATALOG.map((entry) => ({
+              value: entry.seed,
+              label: entry.label,
+              description: entry.hint,
+            }))}
+          />
         </Field>
         <div className="flex items-end">
           <Button

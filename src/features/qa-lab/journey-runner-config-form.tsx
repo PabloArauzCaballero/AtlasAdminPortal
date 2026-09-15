@@ -1,5 +1,6 @@
 "use client";
 
+import { AUTH_MODE_OPTIONS, ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import { BaseRouteSelect } from "./base-route-select";
 import { CheckBox, NumberField } from "./qa-controls";
 import { DeviceProfileField } from "./qa-device-field";
@@ -29,35 +30,35 @@ export function JourneyRunnerConfigFields({
   return (
     <>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <Field label="Ambiente">
+        <Field
+          label="Ambiente"
+          tooltip="Contra qué entorno corre el recorrido completo; decide el host base."
+        >
           <Select
+            name="ambiente"
+            options={ENVIRONMENT_OPTIONS}
             value={config.environment}
-            onChange={(event) => onChange({ environment: event.target.value })}
-          >
-            <option value="LOCAL">LOCAL</option>
-            <option value="STAGING">STAGING</option>
-            <option value="PRODUCTION_READONLY">PRODUCTION_READONLY</option>
-          </Select>
+            onChange={(valor) => onChange({ environment: valor })}
+          />
         </Field>
         <NumberField
           label="Timeout ms por paso"
+          tooltip="Milisegundos que espera cada paso antes de darlo por fallido."
           value={config.timeoutMs}
           min={1000}
           max={120000}
           onChange={(value) => onChange({ timeoutMs: value })}
         />
-        <Field label="Auth mode">
+        <Field
+          label="Auth mode"
+          tooltip="Qué credencial llevan todos los pasos del recorrido."
+        >
           <Select
+            name="auth-mode"
+            options={AUTH_MODE_OPTIONS}
             value={config.authMode}
-            onChange={(event) =>
-              onChange({ authMode: event.target.value as QaAuthMode })
-            }
-          >
-            <option value="session">Sesión actual</option>
-            <option value="none">Sin autenticación</option>
-            <option value="invalid">Token inválido</option>
-            <option value="custom">Token manual</option>
-          </Select>
+            onChange={(valor) => onChange({ authMode: valor as QaAuthMode })}
+          />
         </Field>
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -65,7 +66,10 @@ export function JourneyRunnerConfigFields({
           value={config.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
-        <Field label="Host URL manual">
+        <Field
+          label="Host URL manual"
+          tooltip="Host completo cuando la ruta base es «Host URL manual». Ej.: https://staging-api.atlas.local"
+        >
           <Input
             value={config.customHostUrl}
             onChange={(event) =>
@@ -76,7 +80,10 @@ export function JourneyRunnerConfigFields({
         </Field>
       </div>
       {config.authMode === "custom" ? (
-        <Field label="Token manual (Bearer)">
+        <Field
+          label="Token manual (Bearer)"
+          tooltip="Token JWT de otro actor, sin el prefijo Bearer, para probar sus permisos."
+        >
           <Input
             value={config.customAuthToken}
             onChange={(event) =>

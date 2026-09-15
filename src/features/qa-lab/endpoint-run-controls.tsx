@@ -1,5 +1,6 @@
 "use client";
 
+import { ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import type { EndpointItem } from "@/features/systems/types";
 import { Badge } from "@/shared/components/ui/badges";
 import { Field, Input, Select } from "@/shared/components/ui/input";
@@ -55,26 +56,30 @@ export function RunControls({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="Ambiente"
+          tooltip="Entorno contra el que corre la prueba; en producción sólo lectura."
           hint="Determina el host base contra el que corre la prueba."
         >
           <Select
+            name="ambiente"
+            options={ENVIRONMENT_OPTIONS}
             value={form.environment}
-            onChange={(event) => onChange({ environment: event.target.value })}
-          >
-            <option value="LOCAL">LOCAL</option>
-            <option value="STAGING">STAGING</option>
-            <option value="PRODUCTION_READONLY">PRODUCTION_READONLY</option>
-          </Select>
+            onChange={(valor) => onChange({ environment: valor })}
+          />
         </Field>
         <NumberField
           label="Timeout ms"
+          tooltip="Milisegundos que espera la petición antes de marcarla como error."
           value={form.timeoutMs}
           min={1000}
           max={120000}
           hint="Tiempo máximo de espera antes de marcar la request como error."
           onChange={(value) => onChange({ timeoutMs: value })}
         />
-        <Field label="Metodo" hint="Determinado por el endpoint seleccionado.">
+        <Field
+          label="Metodo"
+          tooltip="Verbo HTTP del endpoint elegido; no se cambia aquí sino eligiendo otro endpoint."
+          hint="Determinado por el endpoint seleccionado."
+        >
           <Input value={method} readOnly className="font-mono" />
         </Field>
       </div>

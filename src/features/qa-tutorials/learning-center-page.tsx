@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/shared/components/ui/input";
+import { FieldTooltip } from "@/shared/components/ui/field-tooltip";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { GraduationCap, Search } from "lucide-react";
@@ -119,18 +121,20 @@ function AuthorizedLearningCenter() {
                   className="h-9 w-56 rounded-lg border border-atlas-border bg-white pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
                 />
               </label>
-              <select
+              {/* Los módulos son nombres propios de las pantallas del portal: van sin descripción. */}
+              <Select
+                name="modulo"
+                compact
+                ariaLabel="Filtrar por módulo"
+                className="w-48"
                 value={module}
-                onChange={(event) => setModule(event.target.value)}
-                aria-label="Filtrar por módulo"
-                className="h-9 rounded-lg border border-atlas-border bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
-              >
-                {modules.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
+                onChange={setModule}
+                options={modules.map((name) => ({ value: name, label: name }))}
+              />
+              <FieldTooltip
+                label="Filtrar por módulo"
+                text="Deja sólo los tutoriales de una pantalla del portal."
+              />
             </div>
           </div>
 

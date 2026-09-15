@@ -32,12 +32,12 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   {
     key: "LOCAL_API_V1",
     label: "Local backend /api/v1",
-    hint: "http://localhost:3005/api/v1",
+    hint: "Backend levantado en tu máquina, con prefijo: http://localhost:3005/api/v1",
   },
   {
     key: "LOCAL_ROOT",
     label: "Local backend raiz",
-    hint: "http://localhost:3005",
+    hint: "Backend levantado en tu máquina, sin prefijo: http://localhost:3005",
   },
   {
     key: "CONFIGURED_API",

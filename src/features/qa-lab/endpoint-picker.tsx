@@ -51,6 +51,7 @@ export function EndpointPicker({
           <FilterBar
             search={q}
             searchPlaceholder="Buscar ruta, módulo o acción..."
+            searchTooltip="Busca por ruta, módulo o acción de negocio del endpoint a probar."
             onSearchChange={setQ}
             onClear={() => setQ("")}
           />

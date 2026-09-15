@@ -131,31 +131,41 @@ export function EndpointTestCard({
           fields={[
             {
               label: "Payload de entrada",
+              tooltip: "Cuerpo JSON que envía la petición de prueba.",
               value: form.payload,
               onChange: (value) => patchForm({ payload: value }),
             },
             {
               label: "Headers request",
+              tooltip:
+                "Cabeceras JSON añadidas a la petición; no pongas secretos.",
               value: form.headers,
               onChange: (value) => patchForm({ headers: value }),
             },
             {
               label: "Query params",
+              tooltip: "Parámetros de consulta en JSON que se añaden a la URL.",
               value: form.queryParams,
               onChange: (value) => patchForm({ queryParams: value }),
             },
             {
               label: "Path params",
+              tooltip:
+                "Valores en JSON para los :parámetros de la ruta, p. ej. el id.",
               value: form.pathParams,
               onChange: (value) => patchForm({ pathParams: value }),
             },
             {
               label: "JSON esperado en respuesta",
+              tooltip:
+                "Fragmento JSON que la respuesta debe contener para aprobar.",
               value: form.expectedJsonSubset,
               onChange: (value) => patchForm({ expectedJsonSubset: value }),
             },
             {
               label: "Headers esperados respuesta",
+              tooltip:
+                "Cabeceras JSON que la respuesta debe traer, p. ej. content-type.",
               value: form.expectedHeaders,
               onChange: (value) => patchForm({ expectedHeaders: value }),
             },

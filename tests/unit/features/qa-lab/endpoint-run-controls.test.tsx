@@ -1,3 +1,4 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -189,7 +190,7 @@ describe("RunControls · destino", () => {
     const onChange = vi.fn();
     render(<RunControls form={runForm()} onChange={onChange} />);
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: /Ambiente/ }),
       "PRODUCTION_READONLY",
     );

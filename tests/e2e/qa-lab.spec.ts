@@ -46,7 +46,8 @@ test.describe("laboratorio de QA", () => {
 
     // Clase inválida: debe faltar un campo obligatorio, que es lo que el endpoint tiene que
     // rechazar y lo que casi nadie probaba porque había que escribirlo a mano.
-    await page.getByLabel("Clase de caso").selectOption("invalid");
+    await page.getByLabel("Clase de caso").click();
+    await page.getByTestId("select-clase-caso-option-invalid").click();
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
     const primerCaso = page.getByRole("button", { name: /^Sin /i }).first();
     await expect(primerCaso).toBeVisible();
@@ -65,7 +66,8 @@ test.describe("laboratorio de QA", () => {
     await expect(payload).not.toContainText(`"${faltante}"`);
 
     // Vuelta a válidos y previsualización (dry-run, no ejecuta nada real).
-    await page.getByLabel("Clase de caso").selectOption("valid");
+    await page.getByLabel("Clase de caso").click();
+    await page.getByTestId("select-clase-caso-option-valid").click();
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
     await expect(payload).toContainText('"identifier"');
 

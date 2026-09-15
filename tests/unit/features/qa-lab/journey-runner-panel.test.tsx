@@ -1,3 +1,4 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -184,7 +185,7 @@ describe("JourneyRunnerPanel · ejecución", () => {
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
     );
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: "Ambiente" }),
       "STAGING",
     );

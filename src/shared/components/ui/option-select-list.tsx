@@ -187,6 +187,7 @@ function OptionRow({
       aria-disabled={option.disabled}
       data-index={index}
       data-testid={testId}
+      data-value={option.value}
       title={option.description}
       tabIndex={-1}
       className={cn(

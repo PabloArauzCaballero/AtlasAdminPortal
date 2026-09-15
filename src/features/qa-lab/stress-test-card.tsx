@@ -128,21 +128,27 @@ export function StressTestCard({
           fields={[
             {
               label: "Payload base de entrada",
+              tooltip: "Cuerpo JSON que envía cada petición de la carga.",
               value: form.payload,
               onChange: (value) => patchForm({ payload: value }),
             },
             {
               label: "Headers extra",
+              tooltip:
+                "Cabeceras JSON añadidas a cada petición; no pongas secretos.",
               value: form.headers,
               onChange: (value) => patchForm({ headers: value }),
             },
             {
               label: "Query params",
+              tooltip: "Parámetros de consulta en JSON que se añaden a la URL.",
               value: form.queryParams,
               onChange: (value) => patchForm({ queryParams: value }),
             },
             {
               label: "Path params",
+              tooltip:
+                "Valores en JSON para los :parámetros de la ruta, p. ej. el id.",
               value: form.pathParams,
               onChange: (value) => patchForm({ pathParams: value }),
             },

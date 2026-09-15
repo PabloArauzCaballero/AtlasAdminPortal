@@ -1,3 +1,7 @@
+import {
+  elegirOpcion,
+  valoresDeOpciones,
+} from "../../shared/option-select-helpers";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -31,7 +35,7 @@ describe("JourneyRunnerConfigFields · ambiente y timeout", () => {
     const onChange = vi.fn();
     render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: "Ambiente" }),
       "STAGING",
     );
@@ -78,7 +82,7 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
     );
     expect(screen.queryByRole("textbox", { name: /Token manual/ })).toBeNull();
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: "Auth mode" }),
       "custom",
     );
@@ -112,13 +116,16 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
     expect(onChange).toHaveBeenCalledWith({ customAuthToken: "e" });
   });
 
-  it("ofrece correr sin autenticación o con token inválido (matriz de permisos)", () => {
+  it("ofrece correr sin autenticación o con token inválido (matriz de permisos)", async () => {
     render(<JourneyRunnerConfigFields config={config()} onChange={vi.fn()} />);
     const select = screen.getByRole("combobox", { name: "Auth mode" });
 
-    expect(
-      Array.from(select.querySelectorAll("option")).map((o) => o.value),
-    ).toEqual(["session", "none", "invalid", "custom"]);
+    expect(await valoresDeOpciones(select)).toEqual([
+      "session",
+      "none",
+      "invalid",
+      "custom",
+    ]);
   });
 });
 
@@ -154,12 +161,12 @@ describe("JourneyRunnerConfigFields · guardas", () => {
     const select = screen.getByRole("combobox", {
       name: /Simulador de dispositivo/,
     });
-    const otro = Array.from(select.querySelectorAll("option")).find(
-      (option) => option.value !== "none",
+    const otro = (await valoresDeOpciones(select)).find(
+      (valor) => valor !== "none",
     );
 
-    await userEvent.selectOptions(select, otro!.value);
+    await elegirOpcion(select, otro!);
 
-    expect(onChange).toHaveBeenCalledWith({ deviceProfile: otro!.value });
+    expect(onChange).toHaveBeenCalledWith({ deviceProfile: otro });
   });
 });
