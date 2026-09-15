@@ -110,7 +110,10 @@ export function PackageEditor<T>({
           />
         </CardHeader>
         <CardContent className="space-y-4">
-          <Field label="Contenido del paquete (JSON)">
+          <Field
+            label="Contenido del paquete (JSON)"
+            tooltip="El paquete completo en JSON; se valida antes de guardar y nada cambia si falla."
+          >
             <Textarea
               value={text}
               onChange={(event) => edit(event.target.value)}

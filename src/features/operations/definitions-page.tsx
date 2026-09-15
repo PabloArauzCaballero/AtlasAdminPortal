@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  DEFINITION_STATUS_OPTIONS,
+  DEFINITION_TYPE_OPTIONS,
+} from "./operations-filter-options";
+
 import { FileText } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -127,27 +132,22 @@ function AuthorizedDefinitionsPage() {
       <FilterBar
         search={domain}
         searchPlaceholder="Filtrar por dominio…"
+        searchTooltip="Escribe el dominio de la definición, p. ej. riesgo, para acotar la lista."
         filters={[
           {
             name: "type",
             label: "Tipo",
+            tooltip:
+              "Qué clase de dato define: evento, observación, atributo o variable del modelo.",
             value: type,
-            options: [
-              "all",
-              "event",
-              "observation",
-              "attribute",
-              "feature",
-            ].map((value) => ({ value, label: value })),
+            options: DEFINITION_TYPE_OPTIONS,
           },
           {
             name: "status",
             label: "Estado",
+            tooltip: "Si la definición está en uso por el motor o retirada.",
             value: status,
-            options: ["all", "active", "inactive"].map((value) => ({
-              value,
-              label: value,
-            })),
+            options: DEFINITION_STATUS_OPTIONS,
           },
         ]}
         onSearchChange={setDomain}

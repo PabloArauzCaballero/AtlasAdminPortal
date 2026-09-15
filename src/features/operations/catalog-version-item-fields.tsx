@@ -35,6 +35,7 @@ export function CatalogVersionItemFields({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Código"
+          tooltip="Clave estable del item; el motor la cruza con los datos, no la cambies entre versiones."
           hint="Solo letras, números y _ . : - (2 a 140)."
           error={errors?.itemCode?.message}
         >
@@ -44,7 +45,11 @@ export function CatalogVersionItemFields({
             {...register(`items.${index}.itemCode`)}
           />
         </Field>
-        <Field label="Nombre" error={errors?.itemName?.message}>
+        <Field
+          label="Nombre"
+          tooltip="Nombre legible del item tal como se enseña en pantallas e informes."
+          error={errors?.itemName?.message}
+        >
           <Input
             placeholder="Banco Nacional de Bolivia"
             {...register(`items.${index}.itemName`)}
@@ -52,6 +57,7 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Tipo"
+          tooltip="Categoría del item dentro del catálogo; decide cómo lo usará el motor."
           hint="Categoría del item dentro del catálogo."
           error={errors?.itemType?.message}
         >
@@ -59,6 +65,7 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Código de fuente (opcional)"
+          tooltip="Fuente registrada de la que sale el item, para rastrear su origen."
           hint="Fuente registrada de la que sale el item. Si no existe, el backend lo guarda sin fuente."
           error={errors?.sourceCode?.message}
         >
@@ -72,6 +79,7 @@ export function CatalogVersionItemFields({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Confianza (opcional)"
+          tooltip="Cuánto te fías del item, de 0 a 100; baja confianza pesa menos en la decisión."
           hint="Hasta 3 enteros y 2 decimales (ej: 85.5)."
           error={errors?.confidenceScore?.message}
         >
@@ -83,6 +91,7 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Atributos (JSON)"
+          tooltip="Datos extra del item que no tienen campo propio, en un objeto JSON."
           hint="Objeto JSON libre. Vacío o {} si no aplica."
           error={errors?.attributesText?.message}
         >

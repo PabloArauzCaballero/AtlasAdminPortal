@@ -103,6 +103,7 @@ export function CatalogVersionDecisionDialog({
 
           <Field
             label="Justificación de la decisión"
+            tooltip="Por qué apruebas o rechazas la versión; lo leerá auditoría y quien la envió."
             hint="Mín. 5 caracteres. Queda en el registro de aprobación y en la auditoría."
             error={errors.decisionReason?.message}
           >
@@ -112,6 +113,7 @@ export function CatalogVersionDecisionDialog({
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <Field
               label="Vigente desde (opcional)"
+              tooltip="Sólo si quieres corregir la fecha de inicio que propuso quien la envió."
               hint="YYYY-MM-DD. Vacío mantiene la fecha de la versión."
               error={errors.validFrom?.message}
             >
@@ -123,6 +125,7 @@ export function CatalogVersionDecisionDialog({
             </Field>
             <Field
               label="Vigente hasta (opcional)"
+              tooltip="Sólo si quieres corregir la fecha de fin que propuso quien la envió."
               hint="YYYY-MM-DD. Vacío mantiene la fecha de la versión."
               error={errors.validUntil?.message}
             >

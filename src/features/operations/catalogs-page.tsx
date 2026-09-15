@@ -1,4 +1,9 @@
 "use client";
+
+import {
+  CATALOG_ACTIVE_OPTIONS,
+  CATALOG_VERSION_STATUS_OPTIONS,
+} from "./operations-filter-options";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -147,29 +152,23 @@ function AuthorizedOperationCatalogsPage() {
       <FilterBar
         search={domain}
         searchPlaceholder="Filtrar por dominio…"
+        searchTooltip="Escribe el dominio del catálogo, p. ej. bancos, para acotar la lista."
         filters={[
           {
             name: "status",
             label: "Estado versión",
+            tooltip:
+              "Momento del ciclo de aprobación de la versión vigente de cada catálogo.",
             value: status,
-            options: [
-              "draft",
-              "pending_approval",
-              "approved",
-              "published",
-              "retired",
-              "all",
-            ].map((value) => ({ value, label: value })),
+            options: CATALOG_VERSION_STATUS_OPTIONS,
           },
           {
             name: "active",
             label: "Activo",
+            tooltip:
+              "Si el catálogo está encendido para el motor o apagado sin borrarse.",
             value: active,
-            options: [
-              { value: "all", label: "Todos" },
-              { value: "true", label: "Activos" },
-              { value: "false", label: "Inactivos" },
-            ],
+            options: CATALOG_ACTIVE_OPTIONS,
           },
         ]}
         onSearchChange={setDomain}

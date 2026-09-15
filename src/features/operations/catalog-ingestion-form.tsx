@@ -63,17 +63,26 @@ export function CatalogIngestionForm({
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <Field label="Código de catálogo" error={errors.catalogCode?.message}>
+          <Field
+            label="Código de catálogo"
+            tooltip="Código del catálogo que recibe el lote; debe existir ya. Ej.: bancos_bolivia"
+            error={errors.catalogCode?.message}
+          >
             <Input className="font-mono text-sm" {...register("catalogCode")} />
           </Field>
           <Field
             label="Tipo de fuente"
+            tooltip="Clase de origen del lote, para saber cuánto fiarse de él. Ej.: provider_file"
             hint="De dónde viene el lote. Ej: provider_file."
             error={errors.sourceType?.message}
           >
             <Input placeholder="provider_file" {...register("sourceType")} />
           </Field>
-          <Field label="Nombre de fuente" error={errors.sourceName?.message}>
+          <Field
+            label="Nombre de fuente"
+            tooltip="Nombre legible del lote tal como lo reconocerá quien lo revise después."
+            error={errors.sourceName?.message}
+          >
             <Input
               placeholder="Padrón ASFI julio 2026"
               {...register("sourceName")}
@@ -81,6 +90,7 @@ export function CatalogIngestionForm({
           </Field>
           <Field
             label="Código de fuente (opcional)"
+            tooltip="Código de una fuente ya registrada; enlaza el lote con su proveedor."
             error={errors.sourceCode?.message}
           >
             <Input className="font-mono text-sm" {...register("sourceCode")} />
@@ -119,12 +129,14 @@ export function CatalogIngestionForm({
                 <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                   <Field
                     label="Valor crudo"
+                    tooltip="El valor tal como vino en el archivo, sin corregir, para poder rastrearlo."
                     error={errors.items?.[index]?.rawValue?.message}
                   >
                     <Input {...register(`items.${index}.rawValue`)} />
                   </Field>
                   <Field
                     label="Valor normalizado (opcional)"
+                    tooltip="El valor ya limpio (mayúsculas, sin tildes sobrantes); vacío si no aplica."
                     error={errors.items?.[index]?.normalizedValue?.message}
                   >
                     <Input
@@ -134,6 +146,7 @@ export function CatalogIngestionForm({
                   </Field>
                   <Field
                     label="Tipo"
+                    tooltip="Categoría del item dentro del catálogo; decide cómo lo usará el motor."
                     error={errors.items?.[index]?.itemType?.message}
                   >
                     <Input {...register(`items.${index}.itemType`)} />
@@ -142,6 +155,7 @@ export function CatalogIngestionForm({
                 <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                   <Field
                     label="Confianza (opcional)"
+                    tooltip="Cuánto te fías del valor, de 0 a 100. Ej.: 85.5"
                     error={errors.items?.[index]?.confidenceScore?.message}
                   >
                     <Input
@@ -152,6 +166,7 @@ export function CatalogIngestionForm({
                   </Field>
                   <Field
                     label="Payload crudo (JSON)"
+                    tooltip="La fila original completa en JSON, tal como llegó, para poder auditarla después."
                     error={errors.items?.[index]?.rawPayloadText?.message}
                   >
                     <Textarea

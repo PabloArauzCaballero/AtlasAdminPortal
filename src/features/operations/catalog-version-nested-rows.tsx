@@ -45,13 +45,21 @@ export function AliasRows({ itemIndex }: Readonly<{ itemIndex: number }>) {
             key={field.id}
             className="grid gap-3 rounded-lg border border-atlas-border p-3 grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto]"
           >
-            <Field label="Valor" error={errors?.[index]?.aliasValue?.message}>
+            <Field
+              label="Valor"
+              tooltip="Otra forma en que aparece el item en los datos, para reconocerlo igual."
+              error={errors?.[index]?.aliasValue?.message}
+            >
               <Input
                 placeholder="Banco Nacional de Bolivia"
                 {...register(`items.${itemIndex}.aliases.${index}.aliasValue`)}
               />
             </Field>
-            <Field label="Tipo" error={errors?.[index]?.aliasType?.message}>
+            <Field
+              label="Tipo"
+              tooltip="Clase de alias: sigla, nombre comercial o error de escritura frecuente."
+              error={errors?.[index]?.aliasType?.message}
+            >
               <Input
                 className="font-mono text-xs"
                 {...register(`items.${itemIndex}.aliases.${index}.aliasType`)}
@@ -59,6 +67,7 @@ export function AliasRows({ itemIndex }: Readonly<{ itemIndex: number }>) {
             </Field>
             <Field
               label="Confianza"
+              tooltip="Cuánto se parece el alias al item, de 0 a 100; baja confianza pide revisión."
               error={errors?.[index]?.confidenceScore?.message}
             >
               <Input
@@ -120,6 +129,7 @@ export function RiskMappingRows({
             <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
               <Field
                 label="Dimensión"
+                tooltip="Eje de riesgo que mueve este item. Ej.: income_stability"
                 error={errors?.[index]?.riskDimension?.message}
               >
                 <Input
@@ -129,7 +139,11 @@ export function RiskMappingRows({
                   )}
                 />
               </Field>
-              <Field label="Banda" error={errors?.[index]?.riskBand?.message}>
+              <Field
+                label="Banda"
+                tooltip="Nivel de riesgo que asigna el item en esa dimensión. Ej.: high"
+                error={errors?.[index]?.riskBand?.message}
+              >
                 <Input
                   placeholder="high"
                   {...register(
@@ -139,6 +153,7 @@ export function RiskMappingRows({
               </Field>
               <Field
                 label="Puntos"
+                tooltip="Puntos que suma o resta al puntaje sugerido; negativo baja el riesgo."
                 hint="Admite negativos."
                 error={errors?.[index]?.scorePointsSuggested?.message}
               >
@@ -152,6 +167,7 @@ export function RiskMappingRows({
               </Field>
               <Field
                 label="Motivo"
+                tooltip="Código de motivo que se enseña al explicar la decisión al analista."
                 error={errors?.[index]?.reasonCode?.message}
               >
                 <Input
@@ -166,6 +182,7 @@ export function RiskMappingRows({
             <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
               <Field
                 label="Uso en modelo"
+                tooltip="Cómo lo consume el modelo: regla dura, variable o sólo informativo."
                 error={errors?.[index]?.modelUsage?.message}
               >
                 <Input
@@ -177,6 +194,7 @@ export function RiskMappingRows({
               </Field>
               <Field
                 label="Vigente desde"
+                tooltip="Desde qué fecha aplica este mapeo de riesgo; vacío es desde la versión."
                 error={errors?.[index]?.validFrom?.message}
               >
                 <Input
@@ -189,6 +207,7 @@ export function RiskMappingRows({
               </Field>
               <Field
                 label="Vigente hasta"
+                tooltip="Hasta qué fecha aplica este mapeo; vacío es mientras la versión viva."
                 error={errors?.[index]?.validUntil?.message}
               >
                 <Input
@@ -202,6 +221,7 @@ export function RiskMappingRows({
             </div>
             <Field
               label="Explicación"
+              tooltip="Frase para el analista que explica por qué este item cambia el riesgo."
               hint="Por qué este item mueve el riesgo. Se usa en la explicabilidad de la decisión."
               error={errors?.[index]?.explanation?.message}
             >
