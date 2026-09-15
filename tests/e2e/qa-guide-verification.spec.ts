@@ -49,6 +49,11 @@ const SECTIONS = [
 test.describe.configure({ mode: "serial" });
 
 test.describe("Guía QA Lab — verificación real en navegador", () => {
+  test.skip(
+    !PASSWORD,
+    "Define E2E_PASSWORD (y E2E_BASE_URL) para verificar contra el backend real.",
+  );
+
   test("carga autenticada y muestra las 8 secciones (screenshot)", async ({
     page,
   }) => {

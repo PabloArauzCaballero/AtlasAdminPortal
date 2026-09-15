@@ -64,6 +64,11 @@ async function login(page: Page): Promise<void> {
 test.describe.configure({ mode: "serial" });
 
 test.describe("Producción — verificación real con backend", () => {
+  test.skip(
+    !PASSWORD,
+    "Define E2E_PASSWORD (y E2E_BASE_URL) para verificar contra el backend real.",
+  );
+
   test("login exitoso y redirección fuera de /login", async ({ page }) => {
     const diag = attachDiagnostics(page);
     await login(page);

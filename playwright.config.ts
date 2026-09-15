@@ -23,6 +23,17 @@ loadEnvConfig(process.cwd(), true, { info: () => {}, error: console.error });
  * contenedor de nadie. Es la misma salida que `AtlasDecisionEngineFrontend` ya tenía con
  * `PW_BASE_URL`.
  */
+/*
+ * Sin credenciales el `setup` se salta y NO escribe el estado de sesión. Si el proyecto `chromium`
+ * lo declara igual, Playwright revienta al abrir el contexto («Error reading storage state … ENOENT»)
+ * en TODAS sus pruebas, incluidas las que se iban a saltar solas: en CI eso tumbaba el job entero.
+ * Se evalúa aquí, después de `loadEnvConfig`, para que `.env.local` cuente en local.
+ */
+const HAS_INTERNAL_CREDENTIALS = Boolean(
+  process.env.TEST_EMAIL && process.env.TEST_PASSWORD,
+);
+const INTERNAL_STORAGE_STATE = "tests/e2e/.auth/internal.json";
+
 const PORT = Number(process.env.PW_PORT ?? 5273);
 /**
  * `PW_BASE_URL` apunta la suite a un portal YA desplegado, con su URL completa.
@@ -78,7 +89,9 @@ export default defineConfig({
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
-        storageState: "tests/e2e/.auth/internal.json",
+        ...(HAS_INTERNAL_CREDENTIALS
+          ? { storageState: INTERNAL_STORAGE_STATE }
+          : {}),
       },
     },
     /*

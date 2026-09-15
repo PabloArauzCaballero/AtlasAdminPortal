@@ -61,6 +61,11 @@ async function login(
 test.describe.configure({ mode: "serial" });
 
 test.describe("Checklist funcional con backend real", () => {
+  test.skip(
+    !ADMIN_PASSWORD,
+    "Define E2E_PASSWORD (y E2E_BASE_URL) para el checklist contra el backend real.",
+  );
+
   test("login inválido muestra un error humano (y request ID si el backend lo da)", async ({
     page,
   }) => {

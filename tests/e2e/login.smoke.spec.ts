@@ -28,9 +28,17 @@ test.describe("Login — smoke E2E", () => {
     // el título— daba «contraste insuficiente» y el gate fallaba con una lista de violaciones que
     // desaparecían solas un segundo después. No es un `waitForTimeout` disfrazado: se consulta a la
     // propia API de animaciones del documento, así que espera lo que dure y ni un milisegundo más.
+    //
+    // Sólo las FINITAS: el fondo del login (`login-hero`) y los cargadores usan animaciones
+    // decorativas infinitas (`blob`, `float`, `shimmer`) que nunca llegan a «finished», y esperar a
+    // todas agotaba los 30 s del test sin medir nada.
     await page.waitForFunction(() =>
       document
         .getAnimations()
+        .filter(
+          (animation) =>
+            animation.effect?.getComputedTiming().iterations !== Infinity,
+        )
         .every((animation) => animation.playState === "finished"),
     );
     const { violations } = await new AxeBuilder({ page }).analyze();
