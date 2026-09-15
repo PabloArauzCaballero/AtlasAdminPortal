@@ -5,18 +5,18 @@ import { useState } from "react";
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import {
-  Badge,
-  SeverityBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
+import { Badge, StatusBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import { formatDateTime, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
+import {
+  CasosAbiertosSection,
+  IdentidadYAgendaSection,
+} from "./investigation-summary-sections";
 import { ListCard } from "./list-card";
 import {
   useInvestigationSummary,
@@ -124,110 +124,7 @@ export function InvestigationSummaryPage({
           */}
           <IdentityEvidencePanel customerId={customerId} />
 
-          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <KeyValueSection
-              title="Verificación de identidad"
-              items={
-                summary.data.latestIdentityVerification
-                  ? [
-                      {
-                        label: "Resultado",
-                        value: safeText(
-                          summary.data.latestIdentityVerification.result,
-                        ),
-                      },
-                      {
-                        label: "Canal",
-                        value: safeText(
-                          summary.data.latestIdentityVerification.channel,
-                        ),
-                      },
-                      {
-                        label: "Parecido biométrico",
-                        value: formatNumber(
-                          summary.data.latestIdentityVerification.similarity,
-                        ),
-                      },
-                      {
-                        // Riesgo de FALSIFICACIÓN del documento, no confianza en la lectura. Se
-                        // nombra entero porque los dos números viven al lado y se confunden.
-                        label: "Riesgo de fraude documental",
-                        value: formatNumber(
-                          summary.data.latestIdentityVerification.fraudRisk,
-                        ),
-                      },
-                      {
-                        label: "Solicitada",
-                        value: formatDateTime(
-                          summary.data.latestIdentityVerification.requestedAt,
-                        ),
-                      },
-                      {
-                        label: "Resuelta",
-                        value: formatDateTime(
-                          summary.data.latestIdentityVerification.completedAt,
-                        ),
-                      },
-                    ]
-                  : [
-                      {
-                        label: "Resultado",
-                        value: "Sin verificaciones de identidad registradas",
-                      },
-                    ]
-              }
-            />
-            <KeyValueSection
-              title="Agenda del dispositivo"
-              items={
-                summary.data.addressBook.available
-                  ? [
-                      {
-                        label: "Contactos",
-                        value: formatNumber(
-                          summary.data.addressBook.totalContacts,
-                        ),
-                      },
-                      {
-                        label: "Números distintos",
-                        value: formatNumber(
-                          summary.data.addressBook.uniqueRatio,
-                        ),
-                      },
-                      {
-                        label: "Números bolivianos",
-                        value: formatNumber(
-                          summary.data.addressBook.bolivianRatio,
-                        ),
-                      },
-                      {
-                        label: "Referencias dentro de la agenda",
-                        value: formatNumber(
-                          summary.data.addressBook.referencesFoundInAddressBook,
-                        ),
-                      },
-                      {
-                        label: "Coincidencias con teléfonos ya marcados",
-                        value: formatNumber(
-                          summary.data.addressBook.riskMatches,
-                        ),
-                      },
-                    ]
-                  : [
-                      {
-                        /*
-                          «No compartida» y no «vacía», y la diferencia importa: negarse a dar el
-                          permiso es un derecho, no una señal de fraude. Enseñarlo como una agenda
-                          de cero contactos invitaría a leer una decisión legítima como sospechosa.
-                        */
-                        label: "Estado",
-                        value:
-                          "No compartida — la persona no dio el permiso, o el alta es anterior a esta señal",
-                      },
-                    ]
-              }
-            />
-          </section>
+          <IdentidadYAgendaSection data={summary.data} />
 
           <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <ListCard title="Contactos" empty="Sin contactos registrados.">
@@ -304,41 +201,7 @@ export function InvestigationSummaryPage({
             </ListCard>
           </section>
 
-          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <ListCard
-              title={`Casos de revisión manual (${summary.data.manualReviewCases.length})`}
-              empty="Sin casos de revisión manual abiertos."
-            >
-              {summary.data.manualReviewCases.map((item) => (
-                <li
-                  key={item.caseId}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span className="font-mono text-xs">
-                    #{item.caseId} · {safeText(item.caseType)}
-                  </span>
-                  <StatusBadge value={item.status} />
-                </li>
-              ))}
-            </ListCard>
-            <ListCard
-              title={`Casos de fraude (${summary.data.fraudCases.length})`}
-              empty="Sin casos de fraude abiertos."
-            >
-              {summary.data.fraudCases.map((item) => (
-                <li
-                  key={item.caseId}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span className="font-mono text-xs">#{item.caseId}</span>
-                  <span className="flex items-center gap-2">
-                    <SeverityBadge value={item.severity} />
-                    <StatusBadge value={item.caseStatus} />
-                  </span>
-                </li>
-              ))}
-            </ListCard>
-          </section>
+          <CasosAbiertosSection data={summary.data} />
         </div>
       ) : null}
     </>
