@@ -35,7 +35,9 @@ test.describe("auditoría y RBAC", () => {
     // La cabecera vive de `logs.data[0]`: con la respuesta mal leída no aparecía ninguna.
     await expect(page.getByText("Correlation ID")).toBeVisible();
     // Y la tabla debe traer al menos el evento del propio request.
-    expect(await page.locator("table tbody tr").count()).toBeGreaterThan(0);
+    // `getByRole('row')` en vez de `table tbody tr`: es el rol que ve un lector de pantalla, y no
+    // se rompe si la tabla deja de usar `<tbody>`.
+    expect(await page.getByRole("row").count()).toBeGreaterThan(1);
     await capture(page, testInfo, "2 ficha del request");
 
     await health.expectHealthy();

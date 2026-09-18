@@ -20,13 +20,13 @@ const SHOTS = "test-results/qa-guia";
 async function login(page: Page): Promise<void> {
   await page.goto(url("/internal/login"));
   await page.waitForLoadState("networkidle").catch(() => undefined);
-  const tenant = page.locator('input[autocomplete="organization"]');
+  const tenant = page.getByLabel("Tenant");
   await tenant.waitFor({ state: "visible" });
   await tenant.fill(TENANT);
   if ((await tenant.inputValue()) !== TENANT) await tenant.fill(TENANT);
   await expect(tenant).toHaveValue(TENANT);
-  await page.locator('input[type="email"]').fill(EMAIL);
-  await page.locator('input[type="password"]').fill(PASSWORD);
+  await page.getByLabel("Correo interno").fill(EMAIL);
+  await page.getByLabel("Contraseña").fill(PASSWORD);
   await page.getByRole("button", { name: /entrar al portal interno/i }).click();
   await page.waitForFunction(
     () => !window.location.pathname.endsWith("/internal/login"),

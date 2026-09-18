@@ -11,7 +11,7 @@ test.describe("Login — smoke E2E", () => {
     expect(response?.ok()).toBeTruthy();
 
     // El formulario de login debe estar presente sin depender del backend.
-    await expect(page.locator('input[type="password"]')).toBeVisible();
+    await expect(page.getByLabel("Contraseña")).toBeVisible();
     await expect(
       page.getByRole("button", { name: /entrar al portal interno/i }),
     ).toBeVisible();

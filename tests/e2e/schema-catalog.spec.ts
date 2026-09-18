@@ -58,7 +58,7 @@ test.describe("catálogo de esquema", () => {
       page.getByRole("heading", { level: 2, name: /columnas/i }),
     ).toBeVisible();
     // Una tabla real tiene columnas. Cero aquí significa que el detalle volvió a mentir.
-    const columnRows = page.locator("table tbody tr");
+    const columnRows = page.getByRole("row");
     expect(await columnRows.count()).toBeGreaterThan(0);
     await capture(page, testInfo, "4 tabla con columnas y relaciones");
 

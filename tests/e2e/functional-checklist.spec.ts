@@ -32,14 +32,16 @@ async function fillLogin(
   // responde error interno. Por eso: esperar hidratación, re-llenar si hiciera
   // falta y afirmar el valor exacto antes de enviar.
   await page.waitForLoadState("networkidle").catch(() => undefined);
-  const tenant = page.locator('input[autocomplete="organization"]');
+  // Por etiqueta y no por atributo: `getByLabel` es lo que ve quien usa la pantalla y sobrevive a
+  // un cambio de `autocomplete` o de `type`, que son detalles de implementación.
+  const tenant = page.getByLabel("Tenant");
   await tenant.waitFor({ state: "visible" });
   await tenant.fill(TENANT);
   if ((await tenant.inputValue()) !== TENANT) await tenant.fill(TENANT);
   await expect(tenant).toHaveValue(TENANT);
 
-  await page.locator('input[type="email"]').fill(email);
-  await page.locator('input[type="password"]').fill(password);
+  await page.getByLabel("Correo interno").fill(email);
+  await page.getByLabel("Contraseña").fill(password);
   await page.getByRole("button", { name: /entrar al portal interno/i }).click();
 }
 
@@ -135,7 +137,7 @@ test.describe("Checklist funcional con backend real", () => {
       "la sesión caducada rebotó otra vez: hay bucle de redirecciones",
     );
     expect(page.url(), "no entra en loop de redirección").toBe(first);
-    await expect(page.locator('input[type="password"]')).toBeVisible();
+    await expect(page.getByLabel("Contraseña")).toBeVisible();
   });
 
   test("usuario sin permiso no ve la acción restringida en la UI", async ({
