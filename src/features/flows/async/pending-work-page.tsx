@@ -167,7 +167,14 @@ function AuthorizedPendingWorkPage() {
               </h2>
             </CardHeader>
             <CardContent>
-              <DomainEventsTable domainEvents={data.domainEvents} />
+              {data.domainEvents ? (
+                <DomainEventsTable domainEvents={data.domainEvents} />
+              ) : (
+                <p className="text-xs text-atlas-muted">
+                  Esta versión del servicio no informa quién consume cada evento
+                  de dominio. La pantalla sigue siendo útil sin ese bloque.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>

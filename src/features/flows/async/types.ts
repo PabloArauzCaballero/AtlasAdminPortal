@@ -50,7 +50,13 @@ export type PendingWorkResponse = {
   skipped: string[];
   failing: string[];
   flows: PendingWorkFlow[];
-  domainEvents: {
+  /**
+   * Opcional a propósito: un backend una versión por detrás no manda este bloque, y la pantalla lo
+   * declaraba obligatorio. El resultado era una pantalla EN BLANCO —«Cannot read properties of
+   * undefined (reading 'windowDays')»— en vez de una pantalla sin ese apartado. Medido el
+   * 2026-09-17 contra un backend anterior; durante un despliegue ocurre lo mismo unos segundos.
+   */
+  domainEvents?: {
     windowDays: number;
     clampedByRetention: boolean;
     truncated: boolean;
