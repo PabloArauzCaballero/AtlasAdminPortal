@@ -11,10 +11,7 @@ import { motivoParaSaltar } from "./internal-session";
  * de abrir con el contrato (`{"email":"string|required"}`) metido en la caja del payload.
  */
 test.describe("laboratorio de QA", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   test("elegir endpoint, generar casos y previsualizar el request", async ({
     page,

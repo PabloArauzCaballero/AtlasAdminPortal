@@ -14,10 +14,7 @@ import { motivoParaSaltar } from "./internal-session";
  * las 18 semillas manuales y el escaneo de código nunca lo alcanzó dentro de un contenedor.
  */
 test.describe("cobertura del generador de datos de prueba", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   test("genera casos sobre un endpoint catalogado desde el contrato", async ({
     page,

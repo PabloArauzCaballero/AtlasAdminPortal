@@ -66,10 +66,7 @@ const ROUTES = [
 const MAX_CONTROLS = 30;
 
 test.describe("recorrido de controles", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   // Pulsar de uno en uno con su espera es lento por naturaleza; el timeout por defecto de 30 s
   // hacía fallar por reloj a las vistas con más controles, que son justo las que más cubren.

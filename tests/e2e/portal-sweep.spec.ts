@@ -89,10 +89,7 @@ const STATIC_ROUTES: Route[] = [
 ];
 
 test.describe("barrido de vistas del portal", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   for (const route of STATIC_ROUTES) {
     test(`vista ${route.path}`, async ({ page }, testInfo) => {

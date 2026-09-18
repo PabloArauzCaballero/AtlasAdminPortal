@@ -12,10 +12,7 @@ import { motivoParaSaltar } from "./internal-session";
  * Esta prueba falla si cualquiera de las dos cosas vuelve.
  */
 test.describe("catálogo de esquema", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   test("de la versión al esquema y de ahí a una tabla", async ({
     page,

@@ -247,7 +247,9 @@ test.describe("Flujos (stack real)", () => {
       // Buscar un nodo lo centra y resalta su camino.
       await page.getByLabel("Buscar nodo").fill("test-suites/:p/run");
       // La búsqueda centra y resalta: se espera al resaltado, que es lo que se va a capturar.
-      await expect(page.locator("[data-node-highlighted='true']").first()).toBeVisible();
+      await expect(
+        page.locator("[data-node-highlighted='true']").first(),
+      ).toBeVisible();
       await capture(
         page,
         testInfo,

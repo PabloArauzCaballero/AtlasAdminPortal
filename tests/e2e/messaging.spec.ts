@@ -32,10 +32,7 @@ const TENANT = process.env.TEST_TENANT_ID ?? "1";
 test.describe.configure({ mode: "serial" });
 
 test.describe("mensajería interna entre usuarios", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   // La genera la prueba, no la lee de ninguna pantalla.
   const temporaryPassword = generateTemporaryPassword();

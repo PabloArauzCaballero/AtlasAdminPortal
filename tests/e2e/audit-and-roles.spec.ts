@@ -3,10 +3,7 @@ import { capture, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 test.describe("auditoría y RBAC", () => {
-  test.skip(
-    Boolean(motivoParaSaltar()),
-    motivoParaSaltar(),
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   /**
    * `/internal/audit/request/:id` salía en blanco: el servicio declaraba devolver `ActionLog[]`

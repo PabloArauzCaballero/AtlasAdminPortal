@@ -227,7 +227,12 @@ test.describe("Producción — verificación real con backend", () => {
       // Enter abre el detalle (activación nativa del botón).
       await first.press("Enter");
       // Enter abre el detalle: se espera al detalle, no a un reloj.
-      await expect(page.getByRole("dialog").or(page.getByRole("heading", { level: 2 })).first()).toBeVisible();
+      await expect(
+        page
+          .getByRole("dialog")
+          .or(page.getByRole("heading", { level: 2 }))
+          .first(),
+      ).toBeVisible();
     }
 
     const { violations } = await new AxeBuilder({ page }).analyze();

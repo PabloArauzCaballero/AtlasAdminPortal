@@ -13,7 +13,9 @@ import type { PendingWorkResponse, DomainEventRow } from "./types";
  */
 export function DomainEventsTable({
   domainEvents,
-}: Readonly<{ domainEvents: NonNullable<PendingWorkResponse["domainEvents"]> }>) {
+}: Readonly<{
+  domainEvents: NonNullable<PendingWorkResponse["domainEvents"]>;
+}>) {
   const columns = useMemo<ColumnDef<DomainEventRow>[]>(
     () => [
       {
