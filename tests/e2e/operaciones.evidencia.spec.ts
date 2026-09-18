@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { quietaParaCapturar } from "./estabilizar";
 
 /** Fuera de `test-results/`: Playwright la vacía en cada corrida. */
 const SALIDA = process.env.OPS_SHOTS ?? "test-results/operaciones";
@@ -582,7 +583,7 @@ for (const vista of VISTAS) {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible({
       timeout: 20_000,
     });
-    await page.waitForTimeout(1200);
+    await quietaParaCapturar(page);
     await ocultarIndicadorDeDev(page);
     await page.screenshot({
       path: `${SALIDA}/${vista.nombre.replace(/\s+/g, "-").toLowerCase()}-desktop.png`,
@@ -624,7 +625,7 @@ for (const vista of VISTAS) {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible({
       timeout: 20_000,
     });
-    await page.waitForTimeout(1200);
+    await quietaParaCapturar(page);
     await ocultarIndicadorDeDev(page);
     await page.screenshot({
       path: `${SALIDA}/${vista.nombre.replace(/\s+/g, "-").toLowerCase()}-movil.png`,

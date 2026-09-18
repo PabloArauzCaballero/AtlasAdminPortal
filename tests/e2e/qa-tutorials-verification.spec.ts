@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { tutorialCatalog } from "../../src/features/qa-tutorials/catalog";
 import type { TutorialDefinition } from "../../src/features/qa-tutorials/types";
+import { quietaParaCapturar } from "./estabilizar";
 
 /**
  * Verificación E2E real de los tutoriales interactivos de QA LAB contra el
@@ -125,8 +126,9 @@ test("el velo bloquea los clics detrás del tutorial", async () => {
   const box = await link.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
-  await page.waitForTimeout(700);
-  expect(new URL(page.url()).pathname).toBe("/internal/qa/lab");
+  // Esperar la URL en vez de un reloj: `toHaveURL` reintenta sola hasta que la navegación ocurre,
+  // y si no ocurre el fallo dice exactamente qué URL había en lugar de «700 ms no bastaron».
+  await expect(page).toHaveURL(/\/internal\/qa\/lab$/);
   await expect(dialog(page)).toBeVisible();
   await page.getByRole("button", { name: "Cerrar tutorial" }).click();
 });
@@ -234,9 +236,9 @@ async function walkTutorial(p: Page, tutorial: TutorialDefinition) {
   await expect(p.getByTestId("tutorial-overlay")).toBeHidden();
 }
 
-/** Captura tras dejar asentar el scroll suave y la medición de la tarjeta. */
+/** Captura con el scroll suave y las transiciones ya apagados, no «tras dejarlos asentar». */
 async function captura(p: Page, path: string) {
-  await p.waitForTimeout(700);
+  await quietaParaCapturar(p);
   await p.screenshot({ path });
 }
 

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { expect, test, type Page } from "@playwright/test";
 import { capture, PageHealth } from "./evidence";
+import { quietaParaCapturar } from "./estabilizar";
 
 /**
  * Flujos contra el stack REAL: API en `NEXT_PUBLIC_API_BASE_URL`, portal en `PW_PORT`, y el
@@ -238,14 +239,15 @@ test.describe("Flujos (stack real)", () => {
         medida.layoutMs,
         "el grafo dejó de ser usable: más de 3 s de layout",
       ).toBeLessThan(3_000);
-      await page.waitForTimeout(800);
+      await quietaParaCapturar(page);
       await capture(page, testInfo, "grafo del modulo systems-ops", {
         fullPage: false,
       });
 
       // Buscar un nodo lo centra y resalta su camino.
       await page.getByLabel("Buscar nodo").fill("test-suites/:p/run");
-      await page.waitForTimeout(600);
+      // La búsqueda centra y resalta: se espera al resaltado, que es lo que se va a capturar.
+      await expect(page.locator("[data-node-highlighted='true']").first()).toBeVisible();
       await capture(
         page,
         testInfo,
@@ -268,7 +270,7 @@ test.describe("Flujos (stack real)", () => {
       expect(
         await page.locator("[data-node-type='UNKNOWN']").count(),
       ).toBeLessThanOrEqual(1);
-      await page.waitForTimeout(800);
+      await quietaParaCapturar(page);
       await capture(page, testInfo, "grafo de un flujo con services y tablas", {
         fullPage: false,
       });

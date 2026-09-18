@@ -1,6 +1,5 @@
-import { expect, test } from "@playwright/test";
-
-import { hasInternalCredentials } from "./internal-session";
+import { expect, test } from "./fixtures";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * E2E del ECOSISTEMA: que el portal deje de enseñar un solo bloque.
@@ -14,86 +13,73 @@ import { hasInternalCredentials } from "./internal-session";
  * autenticado.
  */
 test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
-  test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   test("el catálogo de datos contiene los tres bloques y filtra por bloque", async ({
-    page,
+    catalogoDeDatos,
   }) => {
-    await page.goto("/internal/data-catalog/tables");
-    await expect(
-      page.getByRole("heading", { name: "Catálogo de datos" }),
-    ).toBeVisible();
+    await catalogoDeDatos.ir();
+    await expect(catalogoDeDatos.titulo).toBeVisible();
 
-    // El desplegable de bloque enumera los tres SIEMPRE, con su contador: es lo que delata que un
-    // bloque no está aportando nada, que es exactamente lo que antes no se podía ver.
-    // El filtro es un OptionSelect: las opciones sólo existen con la lista abierta.
-    const blockFilter = page.getByTestId("select-block");
-    await blockFilter.click();
-    const blockList = page.getByRole("listbox");
-    await expect(blockList).toContainText("ATLAS Backend");
-    await expect(blockList).toContainText("Decision Engine");
-    await expect(blockList).toContainText("ERP Backend");
-    await page.keyboard.press("Escape");
+    // El desplegable de bloque enumera los tres SIEMPRE: es lo que delata que un bloque no está
+    // aportando nada, que es exactamente lo que antes no se podía ver.
+    await catalogoDeDatos.filtroDeBloque.abrir();
+    await expect(catalogoDeDatos.filtroDeBloque.opciones).toContainText(
+      "ATLAS Backend",
+    );
+    await expect(catalogoDeDatos.filtroDeBloque.opciones).toContainText(
+      "Decision Engine",
+    );
+    await expect(catalogoDeDatos.filtroDeBloque.opciones).toContainText(
+      "ERP Backend",
+    );
+    await catalogoDeDatos.filtroDeBloque.cerrarSinElegir();
 
     // Sin filtro hay tablas de más de un bloque en el catálogo.
-    await expect(page.getByRole("table")).toBeVisible();
+    await expect(catalogoDeDatos.tabla.elemento).toBeVisible();
 
     // Filtrar por el ERP debe dejar SÓLO filas del ERP. Se comprueba la insignia de bloque de cada
     // fila y no un conteo: un filtro que devuelve menos filas puede seguir estando mal.
-    await blockFilter.click();
-    await page.getByTestId("select-block-option-ERP_BACKEND").click();
-    await expect(page.getByRole("table")).toBeVisible();
-    const badges = page.getByRole("row").getByText("ERP Backend", {
-      exact: true,
-    });
-    await expect(badges.first()).toBeVisible();
+    await catalogoDeDatos.filtroDeBloque.elegir("ERP_BACKEND");
+    await expect(catalogoDeDatos.tabla.elemento).toBeVisible();
     await expect(
-      page.getByRole("row").getByText("Atlas Backend", { exact: true }),
-    ).toHaveCount(0);
+      catalogoDeDatos.tabla.celdasCon("ERP Backend").first(),
+    ).toBeVisible();
+    await expect(catalogoDeDatos.tabla.celdasCon("Atlas Backend")).toHaveCount(
+      0,
+    );
 
     // Y el motor de decisión, que guarda todo en `public`, también aparece con lo suyo.
-    await blockFilter.click();
-    await page.getByTestId("select-block-option-DECISION_ENGINE").click();
+    await catalogoDeDatos.filtroDeBloque.elegir("DECISION_ENGINE");
     await expect(
-      page
-        .getByRole("row")
-        .getByText("Decision Engine", { exact: true })
-        .first(),
+      catalogoDeDatos.tabla.celdasCon("Decision Engine").first(),
     ).toBeVisible();
   });
 
   test("el inventario de endpoints contiene los tres bloques y filtra por bloque", async ({
-    page,
+    endpoints,
   }) => {
-    await page.goto("/internal/systems/endpoints");
-    await expect(
-      page.getByRole("heading", { name: "Catálogo de endpoints" }),
-    ).toBeVisible();
+    await endpoints.ir();
+    await expect(endpoints.titulo).toBeVisible();
 
-    // El filtro es un OptionSelect: las opciones sólo existen con la lista abierta.
-    const blockFilter = page.getByTestId("select-block");
-    await blockFilter.click();
-    const blockList = page.getByRole("listbox");
-    await expect(blockList).toContainText("ATLAS Backend");
-    await expect(blockList).toContainText("Decision Engine");
-    await expect(blockList).toContainText("ERP Backend");
-    await page.keyboard.press("Escape");
+    await endpoints.filtroDeBloque.abrir();
+    await expect(endpoints.filtroDeBloque.opciones).toContainText(
+      "ATLAS Backend",
+    );
+    await expect(endpoints.filtroDeBloque.opciones).toContainText(
+      "Decision Engine",
+    );
+    await expect(endpoints.filtroDeBloque.opciones).toContainText(
+      "ERP Backend",
+    );
+    await endpoints.filtroDeBloque.cerrarSinElegir();
 
-    await blockFilter.click();
-    await page.getByTestId("select-block-option-DECISION_ENGINE").click();
-    await expect(page.getByRole("table")).toBeVisible();
+    await endpoints.filtroDeBloque.elegir("DECISION_ENGINE");
+    await expect(endpoints.tabla.elemento).toBeVisible();
     await expect(
-      page
-        .getByRole("row")
-        .getByText("Decision Engine", { exact: true })
-        .first(),
+      endpoints.tabla.celdasCon("Decision Engine").first(),
     ).toBeVisible();
-    await expect(
-      page.getByRole("row").getByText("ERP Backend", { exact: true }),
-    ).toHaveCount(0);
+    await expect(endpoints.tabla.celdasCon("ERP Backend")).toHaveCount(0);
   });
 
   test("la pestaña Salud de la red reporta los tres bloques", async ({

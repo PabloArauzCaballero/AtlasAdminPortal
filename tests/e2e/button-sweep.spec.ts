@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * Pulsa TODOS los controles no destructivos de cada vista y comprueba que ninguno rompe la página.
@@ -67,8 +67,8 @@ const MAX_CONTROLS = 30;
 
 test.describe("recorrido de controles", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   // Pulsar de uno en uno con su espera es lento por naturaleza; el timeout por defecto de 30 s
@@ -100,7 +100,11 @@ test.describe("recorrido de controles", () => {
           continue;
 
         await button.click({ timeout: 3_000 }).catch(() => undefined);
-        await page.waitForTimeout(200);
+        // Tras pulsar, esperar a que la página deje de pedir en vez de contar 200 ms: un botón que
+        // dispara una consulta lenta se medía antes de que respondiera.
+        await page
+          .waitForLoadState("networkidle", { timeout: 5_000 })
+          .catch(() => undefined);
         pressed.push(label.slice(0, 40));
 
         // Un diálogo abierto tapa el resto de la pantalla: se cierra antes de seguir.

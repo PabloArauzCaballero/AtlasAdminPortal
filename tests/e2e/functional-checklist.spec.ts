@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { seMantiene } from "./estabilizar";
 
 /**
  * Cubre la sección "Validación funcional con backend real" de
@@ -126,7 +127,13 @@ test.describe("Checklist funcional con backend real", () => {
 
     // Y se queda ahí: sin bucle de redirecciones.
     const first = page.url();
-    await page.waitForTimeout(2500);
+    // Demostrar que NO hay bucle de redirecciones exige mirar durante un rato: es el único caso
+    // donde el tiempo es la condición. Se dice así, con su motivo, en vez de dejar un reloj suelto.
+    await seMantiene(
+      () => page.url(),
+      first,
+      "la sesión caducada rebotó otra vez: hay bucle de redirecciones",
+    );
     expect(page.url(), "no entra en loop de redirección").toBe(first);
     await expect(page.locator('input[type="password"]')).toBeVisible();
   });

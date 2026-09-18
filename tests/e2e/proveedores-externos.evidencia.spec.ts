@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { quietaParaCapturar } from "./estabilizar";
 
 /** Fuera de `test-results/`: Playwright la vacía en cada corrida. */
 const SALIDA =
@@ -354,7 +355,7 @@ async function preparar(page: Page, rutas: readonly Ruta[]): Promise<void> {
 }
 
 async function capturar(page: Page, nombre: string): Promise<void> {
-  await page.waitForTimeout(1200);
+  await quietaParaCapturar(page);
   await page
     .addStyleTag({ content: "nextjs-portal{display:none!important}" })
     .catch(() => undefined);

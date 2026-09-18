@@ -174,7 +174,9 @@ test.describe("Producción — verificación real con backend", () => {
           "*,*::before,*::after{animation:none!important;transition:none!important;}",
       });
       await page.evaluate(() => document.fonts.ready).catch(() => {});
-      await page.waitForTimeout(300);
+      // Sin peticiones en vuelo: axe mide sobre el DOM final, no sobre uno a medio pintar. Antes
+      // eran 300 ms a ojo, que en una máquina cargada no alcanzaban.
+      await page.waitForLoadState("networkidle");
       const { violations } = await new AxeBuilder({ page }).analyze();
       const graves = violations.filter(
         (v) => v.impact === "serious" || v.impact === "critical",
@@ -224,7 +226,8 @@ test.describe("Producción — verificación real con backend", () => {
       expect(isFocused, "el nodo recibe foco por teclado").toBe(true);
       // Enter abre el detalle (activación nativa del botón).
       await first.press("Enter");
-      await page.waitForTimeout(300);
+      // Enter abre el detalle: se espera al detalle, no a un reloj.
+      await expect(page.getByRole("dialog").or(page.getByRole("heading", { level: 2 })).first()).toBeVisible();
     }
 
     const { violations } = await new AxeBuilder({ page }).analyze();
