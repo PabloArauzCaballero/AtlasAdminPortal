@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 test.describe("auditoría y RBAC", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   /**

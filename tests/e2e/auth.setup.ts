@@ -1,8 +1,8 @@
 import { expect, test as setup } from "@playwright/test";
 import {
   INTERNAL_STORAGE_STATE,
-  hasInternalCredentials,
   loginAsInternalUser,
+  motivoParaSaltar,
 } from "./internal-session";
 
 /**
@@ -15,10 +15,8 @@ import {
  * hace que cada prueba mida lo suyo y no el formulario de login.
  */
 setup("autenticar en el portal interno", async ({ page }) => {
-  setup.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
-  );
+  const motivo = motivoParaSaltar();
+  setup.skip(Boolean(motivo), motivo);
 
   await loginAsInternalUser(page);
   await expect(page).toHaveURL(/\/internal/);

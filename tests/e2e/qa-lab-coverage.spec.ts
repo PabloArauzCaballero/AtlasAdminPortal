@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * El generador de datos de prueba sobre un endpoint que ANTES no tenía contrato.
@@ -15,8 +15,8 @@ import { hasInternalCredentials } from "./internal-session";
  */
 test.describe("cobertura del generador de datos de prueba", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   test("genera casos sobre un endpoint catalogado desde el contrato", async ({

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * Barrido de TODAS las vistas del portal, con captura de cada una.
@@ -90,8 +90,8 @@ const STATIC_ROUTES: Route[] = [
 
 test.describe("barrido de vistas del portal", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   for (const route of STATIC_ROUTES) {

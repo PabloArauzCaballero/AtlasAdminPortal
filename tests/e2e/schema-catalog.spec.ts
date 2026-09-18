@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * La navegación del catálogo de esquema, de punta a punta: versión → esquema de datos → tabla.
@@ -13,8 +13,8 @@ import { hasInternalCredentials } from "./internal-session";
  */
 test.describe("catálogo de esquema", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   test("de la versión al esquema y de ahí a una tabla", async ({

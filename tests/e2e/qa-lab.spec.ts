@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * El laboratorio de QA con un endpoint real, incluida la generación de datos de prueba.
@@ -12,8 +12,8 @@ import { hasInternalCredentials } from "./internal-session";
  */
 test.describe("laboratorio de QA", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   test("elegir endpoint, generar casos y previsualizar el request", async ({

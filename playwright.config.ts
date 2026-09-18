@@ -66,7 +66,18 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  /*
+   * `workers` al 50 % en CI: el runner tiene 2 vCPU y dejarlo sin tope hacía que Chromium compitiera
+   * consigo mismo y los tiempos de espera saltaran por carga, no por el portal.
+   *
+   * El reporte `blob` es lo que permite FRAGMENTAR la suite entre varios trabajos y luego unir los
+   * informes (`playwright merge-reports`). Con `--shard` a secas cada fragmento produce su propio
+   * HTML y no hay forma de leer la corrida completa.
+   */
+  workers: process.env.CI ? "50%" : undefined,
+  reporter: process.env.CI
+    ? [["list"], ["blob"], ["github"]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",

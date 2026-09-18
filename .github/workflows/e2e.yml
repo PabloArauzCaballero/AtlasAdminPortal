@@ -16,8 +16,14 @@ permissions:
 
 jobs:
   e2e:
-    name: Playwright E2E (chromium)
+    name: Playwright E2E (chromium) · fragmento ${{ matrix.shard }}/2
     runs-on: ubuntu-latest
+    # `fail-fast: false`: si un fragmento cae, el otro sigue. Con `true` un fallo temprano deja la
+    # mitad de la suite sin ejecutar y el informe unido queda incompleto sin decirlo.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v7
 
@@ -38,11 +44,51 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
 
       - name: Correr E2E
-        run: yarn playwright test
+        run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=blob,json
+        env:
+          # Sin estos secretos la suite se salta entera y el paso de verificación la pone en rojo,
+          # que es exactamente lo que debe pasar. Ver scripts/verificar-e2e.mjs.
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+          PW_PIN_INBOX_PORT: ${{ secrets.PW_PIN_INBOX_PORT }}
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
 
-      - name: Subir el reporte de Playwright
+      # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
+      - name: Comprobar que la suite corrió de verdad
+        if: ${{ !cancelled() }}
+        run: node scripts/verificar-e2e.mjs test-results/results.json
+
+      - name: Subir el informe parcial del fragmento
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 7
+
+  # Los fragmentos producen informes PARCIALES: sin este trabajo no hay forma de leer la corrida
+  # completa, sólo mitades sueltas.
+  informe:
+    name: Unir los informes de los fragmentos
+    if: ${{ !cancelled() }}
+    needs: [e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - uses: actions/download-artifact@v7
+        with:
+          path: todos-los-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+      - name: Unir
+        run: yarn playwright merge-reports --reporter=html ./todos-los-blob-reports
+      - uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/

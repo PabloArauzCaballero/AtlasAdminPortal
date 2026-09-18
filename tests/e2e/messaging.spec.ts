@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
-import { hasInternalCredentials } from "./internal-session";
+import { motivoParaSaltar } from "./internal-session";
 import { normalizeRolesPayload } from "../../src/features/internal-users/normalize";
 import { generateTemporaryPassword } from "../../src/features/internal-users/temporary-password";
 
@@ -33,8 +33,8 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("mensajería interna entre usuarios", () => {
   test.skip(
-    !hasInternalCredentials(),
-    "Define TEST_EMAIL y TEST_PASSWORD para correr el E2E contra el stack real.",
+    Boolean(motivoParaSaltar()),
+    motivoParaSaltar(),
   );
 
   // La genera la prueba, no la lee de ninguna pantalla.
