@@ -33,6 +33,31 @@ const ESTADOS = [
   { label: "Purgado", value: "purgado" },
 ];
 
+/*
+ * Cliente y comercio conviven en la misma lista: el expediente de un negocio (sus QR de cobro, el
+ * poder de su representante, lo que el ERP guarda de su cuenta) se abre por el mismo módulo que el
+ * de una persona. La etiqueta existe porque «Andina» al lado de «CLI-900» no dice cuál es cuál, y
+ * quien busca el QR de un comercio no debería abrir la carpeta de un cliente por descarte.
+ */
+const TIPOS_DE_SUJETO = [
+  { label: "Cliente", value: "customer" },
+  { label: "Comercio", value: "partner" },
+];
+
+const ETIQUETA_DE_SUJETO: Record<string, string> = {
+  customer: "Cliente",
+  partner: "Comercio",
+  claim: "Reclamo",
+};
+
+function EtiquetaDeSujeto({ subjectType }: Readonly<{ subjectType: string }>) {
+  return (
+    <Badge tone={subjectType === "partner" ? "info" : "muted"}>
+      {ETIQUETA_DE_SUJETO[subjectType] ?? subjectType}
+    </Badge>
+  );
+}
+
 export function ExploradorDeExpedientesPage() {
   // El gate envuelve a un componente aparte para que las consultas no salgan antes de que decida:
   // pedir la lista de expedientes de todos los clientes y descartarla después no es inofensivo.
@@ -47,7 +72,14 @@ function ExploradorAutorizado() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [estado, setEstado] = useState("");
-  const expedientes = useExpedientes({ page, pageSize: 25, q, estado });
+  const [subjectType, setSubjectType] = useState("");
+  const expedientes = useExpedientes({
+    page,
+    pageSize: 25,
+    q,
+    estado,
+    subjectType,
+  });
 
   const columns = useMemo<ColumnDef<Expediente>[]>(
     () => [
@@ -55,12 +87,16 @@ function ExploradorAutorizado() {
         header: "Expediente",
         accessorKey: "customerCode",
         cell: ({ row }) => (
-          <Link
-            href={`/internal/files/${row.original.expedienteId}`}
-            className="font-medium text-atlas-accent underline"
-          >
-            {row.original.customerCode ?? `Cliente ${row.original.subjectId}`}
-          </Link>
+          <span className="flex items-center gap-2">
+            <Link
+              href={`/internal/files/${row.original.expedienteId}`}
+              className="font-medium text-atlas-accent underline"
+            >
+              {row.original.customerCode ??
+                `${ETIQUETA_DE_SUJETO[row.original.subjectType] ?? "Expediente"} ${row.original.subjectId}`}
+            </Link>
+            <EtiquetaDeSujeto subjectType={row.original.subjectType} />
+          </span>
         ),
       },
       {
@@ -138,11 +174,13 @@ function ExploradorAutorizado() {
         icon={FolderTree}
         eyebrow="Operaciones"
         title="Archivos"
-        description="Un expediente por cliente, con todo lo que se subió, se generó o se revisó sobre él."
+        description="Un expediente por cliente y por comercio, con todo lo que se subió, se generó o se revisó sobre él."
       />
       <BusinessContextNote>
-        Cada fila es la carpeta de una persona: su carnet, su selfie, sus
-        extractos y lo que el Motor dejó al evaluarla. El acceso NO es el mismo
+        Cada fila es la carpeta de una persona —su carnet, su selfie, sus
+        extractos y lo que el Motor dejó al evaluarla— o de un comercio: sus QR
+        de cobro, el poder de su representante y los documentos de su cuenta en
+        el ERP. El acceso NO es el mismo
         para todos —se hereda por carpeta y se puede ampliar caso por caso— y
         cada apertura de un archivo queda registrada con quién lo abrió. Es el
         mismo material que se ve al revisar un caso en revisión humana; aquí se
@@ -150,21 +188,29 @@ function ExploradorAutorizado() {
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por código de cliente…"
+        searchPlaceholder="Buscar por código de cliente o nombre del comercio…"
         onSearchChange={(valor) => {
           setQ(valor);
           setPage(1);
         }}
         onFilterChange={(nombre, valor) => {
           if (nombre === "estado") setEstado(valor);
+          if (nombre === "subjectType") setSubjectType(valor);
           setPage(1);
         }}
         onClear={() => {
           setQ("");
           setEstado("");
+          setSubjectType("");
           setPage(1);
         }}
         filters={[
+          {
+            name: "subjectType",
+            label: "Tipo",
+            value: subjectType,
+            options: TIPOS_DE_SUJETO,
+          },
           { name: "estado", label: "Estado", value: estado, options: ESTADOS },
         ]}
       />
@@ -174,7 +220,7 @@ function ExploradorAutorizado() {
         meta={expedientes.data?.meta}
         onPageChange={setPage}
         emptyTitle="Ningún expediente coincide."
-        emptyDescription="Los expedientes se abren solos al empezar un onboarding. Los clientes anteriores necesitan el relleno histórico."
+        emptyDescription="Los expedientes se abren solos al empezar un onboarding de cliente o al crearse un comercio. Los clientes anteriores necesitan el relleno histórico."
       />
     </>
   );

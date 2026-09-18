@@ -20,6 +20,8 @@ export function useExpedientes(params: {
   pageSize: number;
   q?: string;
   estado?: string;
+  /** `customer` o `partner`; vacío trae a todos. Lo filtra el backend, no la tabla. */
+  subjectType?: string;
 }) {
   return useQuery({
     queryKey: queryKeys.expedientes(params),
