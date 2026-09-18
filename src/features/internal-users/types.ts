@@ -62,6 +62,11 @@ export type CreateInternalUserInput = {
   reason: string;
 };
 
+/**
+ * `temporaryPassword` es la que este navegador generó y mandó al alta. Se conserva en el
+ * resultado porque la prueba unitaria del servicio la compara con lo enviado, pero NINGUNA
+ * pantalla la pinta ni la copia: la persona la recibe por correo (la manda AtlasBackend).
+ */
 export type CreateInternalUserResult = {
   user: InternalUserListItem;
   temporaryPassword: string;

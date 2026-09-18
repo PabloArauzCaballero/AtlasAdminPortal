@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -53,8 +54,9 @@ export function UserCreateForm() {
 
   if (created) {
     return (
-      <TemporaryPasswordReveal
-        temporaryPassword={created.temporaryPassword}
+      <UsuarioCreadoAviso
+        email={created.user.email}
+        userId={created.user.id}
         onContinue={() =>
           router.push(`/internal/settings/users/${created.user.id}`)
         }
@@ -67,7 +69,7 @@ export function UserCreateForm() {
       <CardHeader>
         <SectionHeader
           title="Crear usuario interno"
-          description="El admin no elige la contraseña: se genera una temporal al azar que se muestra una sola vez al confirmar el alta. La cuenta queda forzada a cambiarla en el primer login."
+          description="El administrador no elige la contraseña: se genera una provisional al azar y se envía al correo de la persona. En su primer acceso deberá cambiarla y confirmar con un código de un solo uso que también le llega por correo."
           className="mb-0"
         />
       </CardHeader>
@@ -194,45 +196,58 @@ export function UserCreateForm() {
   );
 }
 
-function TemporaryPasswordReveal({
-  temporaryPassword,
+/**
+ * Aviso tras el alta. NO enseña la contraseña provisional, y no es una omisión.
+ *
+ * Hasta el 2026-09-17 esta pantalla la mostraba una vez, con botón de copiar, para que el
+ * administrador la pasara «por otro canal». Eso dejaba la contraseña en la pantalla, en el
+ * portapapeles y en la captura que alguien hiciera para no perderla. Atlas ya se la manda a la
+ * persona por correo, así que aquí sólo se explica qué le va a llegar y qué hacer si no llega.
+ *
+ * `data-testid="temporary-password"` desapareció con ella: el E2E de mensajería genera ahora su
+ * propia contraseña y da de alta al usuario por la misma llamada que hace este formulario.
+ */
+export function UsuarioCreadoAviso({
+  email,
+  userId,
   onContinue,
 }: Readonly<{
-  temporaryPassword: string;
+  email: string;
+  userId: string;
   onContinue: () => void;
 }>) {
-  const [copied, setCopied] = useState(false);
   return (
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Usuario creado — contraseña temporal (solo se muestra una vez)"
-          description="Compártela con la persona por un canal distinto a este portal (llamada, mensaje directo). Al iniciar sesión se le forzará cambiarla de inmediato; esta pantalla no vuelve a mostrarla."
+          title="Usuario creado"
+          description={`La contraseña provisional se envió a ${email}. Este portal no la muestra: la persona la recibe por correo.`}
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-2 rounded-lg border border-atlas-border bg-atlas-soft p-3 font-mono text-sm">
-          {/* Identificador estable para el E2E: la prueba de mensajería necesita leer la clave
-              temporal para abrir la sesión del usuario recién creado, y hacerlo por el texto la
-              ataría al formato exacto de la contraseña. */}
-          <span
-            data-testid="temporary-password"
-            className="flex-1 select-all break-all"
-          >
-            {temporaryPassword}
-          </span>
-          <Button
-            onClick={() => {
-              void navigator.clipboard.writeText(temporaryPassword);
-              setCopied(true);
-            }}
-          >
-            {copied ? "Copiada" : "Copiar"}
-          </Button>
-        </div>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-atlas-text">
+          <li>
+            En su primer acceso deberá cambiarla por una contraseña propia.
+          </li>
+          <li>
+            Al entrar recibirá un código de un solo uso por correo y tendrá que
+            escribirlo: es el segundo factor de acceso, no un error.
+          </li>
+          <li>
+            Si el correo no llega, revisa la dirección en{" "}
+            <Link
+              href={`/internal/settings/users/${userId}`}
+              className="font-medium text-atlas-accent underline"
+            >
+              la ficha del usuario
+            </Link>
+            ; desde ahí se corrige la cuenta y se le exige un cambio de
+            contraseña.
+          </li>
+        </ul>
         <Button variant="primary" onClick={onContinue}>
-          Listo, ir al detalle del usuario
+          Ir a la ficha del usuario
         </Button>
       </CardContent>
     </Card>

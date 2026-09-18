@@ -57,7 +57,7 @@ export function ProvisioningDecisionDialog({
       </h2>
       <p className="mb-4 text-sm text-atlas-muted">
         {aprobar
-          ? "Se creará la identidad con los datos que mandó el ERP y nacerá en «invited». La contraseña provisional se enseña una sola vez, al terminar."
+          ? "Se creará la identidad con los datos que mandó el ERP y nacerá en «invited». La contraseña provisional se envía por correo a la persona; este portal no la muestra."
           : "El motivo viaja al ERP: es lo que le dice al ejecutivo comercial qué corregir antes de volver a pedirlo."}
       </p>
 
@@ -131,17 +131,20 @@ export function ProvisioningDecisionDialog({
 }
 
 /**
- * La contraseña provisional, enseñada una sola vez.
+ * Aviso de acceso concedido. NO enseña la contraseña provisional, y no es una omisión.
  *
- * No se guarda en claro en ninguna parte, así que ninguna pantalla la puede volver a mostrar. El
- * diálogo lo dice antes de que se cierre, porque descubrirlo después obliga a un restablecimiento
- * que el usuario del comercio no ha pedido.
+ * Hasta el 2026-09-17 este diálogo la pintaba una vez para que el operador se la «entregara» al
+ * comercio. Eso la dejaba en pantalla, en el portapapeles y en cualquier captura. Atlas ya se la
+ * manda por correo a la persona, así que aquí sólo se explica qué le va a llegar y qué hacer si
+ * no llega. El resultado sigue trayendo `temporaryPassword` porque el contrato no cambió; ninguna
+ * pantalla la lee.
  */
 export function CredencialEntregadaDialog({
   resultado,
   onClose,
 }: Readonly<{ resultado: MerchantProvisioningResult; onClose: () => void }>) {
   const tituloId = useId();
+  const { fullName, email } = resultado.merchantUser;
   return (
     <DialogShell
       open
@@ -156,15 +159,23 @@ export function CredencialEntregadaDialog({
       >
         Acceso concedido
       </h2>
-      <p className="mb-4 text-sm text-atlas-muted">
-        {`${resultado.merchantUser.fullName} ya tiene identidad en Atlas. Entrégale esta contraseña provisional: la deberá cambiar en su primer acceso y no se puede volver a consultar.`}
+      <p className="mb-3 text-sm text-atlas-muted">
+        {`${fullName} ya tiene identidad en Atlas. La contraseña provisional se envió a ${email}; este portal no la muestra.`}
       </p>
-      <p className="select-all rounded-lg border border-atlas-border bg-atlas-soft px-3 py-2 font-mono text-base text-atlas-text">
-        {resultado.temporaryPassword}
-      </p>
+      <ul className="list-disc space-y-1 pl-5 text-sm text-atlas-text">
+        <li>En su primer acceso deberá cambiarla por una contraseña propia.</li>
+        <li>
+          Al entrar recibirá un código de un solo uso por correo y tendrá que
+          escribirlo: es el segundo factor de acceso, no un error.
+        </li>
+        <li>
+          Si el correo no llega, el ERP debe corregir la dirección y volver a
+          pedir el acceso: aquí no se edita.
+        </li>
+      </ul>
       <div className="mt-4 flex justify-end">
         <Button variant="primary" onClick={onClose}>
-          Ya la copié
+          Entendido
         </Button>
       </div>
     </DialogShell>

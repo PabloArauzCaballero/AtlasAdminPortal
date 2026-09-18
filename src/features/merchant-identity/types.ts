@@ -75,8 +75,8 @@ export type MerchantProvisioningList = {
 /**
  * Lo que devuelve conceder un acceso.
  *
- * `temporaryPassword` llega UNA vez y no hay ninguna lectura posterior que la devuelva: si se
- * cierra el diálogo sin copiarla, el camino es restablecerla, no volver a consultarla.
+ * `temporaryPassword` viene en la respuesta porque el contrato lo trae, pero el portal NO la
+ * muestra ni la copia: Atlas se la envía por correo a la persona del comercio.
  */
 export type MerchantProvisioningResult = {
   request: MerchantProvisioningRequest;

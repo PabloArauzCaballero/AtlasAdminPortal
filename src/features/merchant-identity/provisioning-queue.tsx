@@ -111,8 +111,8 @@ export function ProvisioningQueue({
               ...(userCode ? { userCode } : {}),
             });
             setDecision(null);
-            // La contraseña se enseña en un segundo diálogo y no en un aviso que se desvanece:
-            // sólo viaja una vez, y un mensaje que se va solo la pierde sin remedio.
+            // Un segundo diálogo, y no un aviso que se desvanece: explica que la contraseña
+            // viajó por correo y qué verá la persona al entrar (cambio obligatorio y código).
             setEntregada(resultado);
           }}
           onRechazar={async (motivo) => {
