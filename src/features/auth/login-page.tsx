@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AmbientBackground } from "@/shared/ambient/AmbientBackground";
 import { Check, LockKeyhole } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -218,6 +219,19 @@ export function LoginPage() {
                 >
                   {isSubmitting ? "Validando…" : "Entrar al portal interno"}
                 </Button>
+                {/*
+                 * Quien olvidó la contraseña no puede pedirla desde dentro: `password/change`
+                 * exige la actual. Este enlace es la única puerta que le queda sin molestar a
+                 * Sistemas, y recuperar la contraseña no salta el segundo factor.
+                 */}
+                <p className="text-center text-xs text-atlas-muted">
+                  <Link
+                    href="/internal/recuperar-acceso"
+                    className="font-semibold text-atlas-accent transition hover:underline"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </p>
               </form>
             </>
           )}

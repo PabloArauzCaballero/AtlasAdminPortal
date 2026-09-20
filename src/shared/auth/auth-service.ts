@@ -45,6 +45,53 @@ export async function verifyLoginPinInternal(
 }
 
 /**
+ * «Olvidé mi contraseña»: recuperación SIN sesión, en dos pasos.
+ *
+ * Distinta de `requestPasswordChange`, que exige estar dentro y saber la contraseña actual —justo
+ * lo que no tiene quien la olvidó—. Va al plano genérico de AtlasBackend con
+ * `actorType: internal_user`; el tenant viaja como en el login, porque sin sesión no hay de dónde
+ * deducirlo.
+ *
+ * La respuesta es idéntica exista o no la cuenta: la pantalla no puede afirmar que un correo esté
+ * registrado sin convertirse en un comprobador de quién trabaja aquí.
+ *
+ * No sustituye al segundo factor: entrar después sigue pidiendo el PIN del correo.
+ */
+export function requestPasswordReset(input: {
+  tenantId: string;
+  email: string;
+}): Promise<{ requested: boolean }> {
+  return apiRequest<{ requested: boolean }>("/auth/password-reset/request", {
+    method: "POST",
+    body: { actorType: "internal_user", identifier: input.email },
+    tenantId: input.tenantId,
+    skipAuth: true,
+  });
+}
+
+export function confirmPasswordReset(input: {
+  tenantId: string;
+  email: string;
+  code: string;
+  newPassword: string;
+}): Promise<{ passwordChanged: boolean }> {
+  return apiRequest<{ passwordChanged: boolean }>(
+    "/auth/password-reset/confirm",
+    {
+      method: "POST",
+      body: {
+        actorType: "internal_user",
+        identifier: input.email,
+        code: input.code,
+        newPassword: input.newPassword,
+      },
+      tenantId: input.tenantId,
+      skipAuth: true,
+    },
+  );
+}
+
+/**
  * Cambio de contraseña de la cuenta con sesión abierta, en los mismos dos pasos que el login: se
  * valida la contraseña actual y llega un código al correo registrado.
  */
