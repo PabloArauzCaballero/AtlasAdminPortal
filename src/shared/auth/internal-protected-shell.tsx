@@ -8,6 +8,11 @@ import { sanitizeInternalReturnTo } from "./return-to";
 import { SessionUnavailable } from "./session-unavailable";
 import { FullPageLoader } from "@/shared/components/ui/states";
 
+const PUBLIC_INTERNAL_ROUTES = new Set([
+  "/internal/login",
+  "/internal/recuperar-acceso",
+]);
+
 export function InternalProtectedShell({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -24,7 +29,12 @@ export function InternalProtectedShell({
    * recargar a mano. Ahora se cuenta lo que pasó y se ofrece reintentar.
    */
   const [unavailable, setUnavailable] = useState<unknown>(null);
-  const isLogin = pathname === "/internal/login";
+  /**
+   * Las pantallas de `/internal/*` que NO pueden exigir sesión: el acceso y la recuperación de
+   * contraseña. Era sólo el login, y por eso `/internal/recuperar-acceso` rebotaba al login: quien
+   * había olvidado su contraseña no podía llegar a la única pantalla que se la devolvía.
+   */
+  const isPublicInternal = PUBLIC_INTERNAL_ROUTES.has(pathname);
 
   const retry = useCallback(() => {
     setUnavailable(null);
@@ -33,7 +43,7 @@ export function InternalProtectedShell({
   }, []);
 
   useEffect(() => {
-    if (!isHydrated || isLogin || unavailable) return;
+    if (!isHydrated || isPublicInternal || unavailable) return;
 
     if (!session && !restoredRef.current) {
       restoredRef.current = true;
@@ -62,7 +72,7 @@ export function InternalProtectedShell({
     }
   }, [
     isHydrated,
-    isLogin,
+    isPublicInternal,
     pathname,
     refreshProfile,
     restoreSessionFromServer,
@@ -71,7 +81,7 @@ export function InternalProtectedShell({
     unavailable,
   ]);
 
-  if (isLogin) return <>{children}</>;
+  if (isPublicInternal) return <>{children}</>;
   if (unavailable && !session) {
     return <SessionUnavailable error={unavailable} onRetry={retry} />;
   }
