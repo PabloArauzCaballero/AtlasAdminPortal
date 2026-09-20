@@ -97,7 +97,10 @@ describe("ExploradorDeExpedientesPage", () => {
       expect.objectContaining({ subjectType: "" }),
     );
 
-    await elegirOpcion(screen.getByRole("combobox", { name: "Tipo" }), "partner");
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: "Tipo" }),
+      "partner",
+    );
 
     await waitFor(() =>
       expect(vi.mocked(listarExpedientes)).toHaveBeenLastCalledWith(

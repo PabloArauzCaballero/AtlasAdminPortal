@@ -180,11 +180,10 @@ function ExploradorAutorizado() {
         Cada fila es la carpeta de una persona —su carnet, su selfie, sus
         extractos y lo que el Motor dejó al evaluarla— o de un comercio: sus QR
         de cobro, el poder de su representante y los documentos de su cuenta en
-        el ERP. El acceso NO es el mismo
-        para todos —se hereda por carpeta y se puede ampliar caso por caso— y
-        cada apertura de un archivo queda registrada con quién lo abrió. Es el
-        mismo material que se ve al revisar un caso en revisión humana; aquí se
-        ve completo y ordenado.
+        el ERP. El acceso NO es el mismo para todos —se hereda por carpeta y se
+        puede ampliar caso por caso— y cada apertura de un archivo queda
+        registrada con quién lo abrió. Es el mismo material que se ve al revisar
+        un caso en revisión humana; aquí se ve completo y ordenado.
       </BusinessContextNote>
       <FilterBar
         search={q}
