@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useEndpointsByIds } from "@/features/systems/hooks";
+import { useLabEndpointsByIds as useEndpointsByIds } from "./endpoint-lookup";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
@@ -15,8 +15,8 @@ import {
 } from "./journey-runner-config-form";
 import { JourneyStepsEditor } from "./journey-steps-editor";
 import { parseSteps } from "./journey-form";
-import { runJourney } from "./journey-runner";
-import { JourneyStepResults } from "./journey-step-results";
+import { runJourneyBatch } from "./journey-runner";
+import { JourneyBatchResults } from "./journey-batch-results";
 import { JOURNEY_EXAMPLE_SPEC } from "./journey-types";
 
 const DEFAULT_STEPS_TEXT = JSON.stringify(JOURNEY_EXAMPLE_SPEC, null, 2);
@@ -32,6 +32,11 @@ const DEFAULT_CONFIG: JourneyRunnerConfig = {
   deviceProfile: "none",
   includeTenantHeader: true,
   includeIdempotencyKey: true,
+  mockScenario: "",
+  mockLatencyMs: 0,
+  iterations: 1,
+  concurrency: 1,
+  seed: "qa-base",
 };
 
 export function JourneyRunnerPanel() {
@@ -55,7 +60,7 @@ export function JourneyRunnerPanel() {
   const runMutation = useMutation({
     mutationFn: async () => {
       if (!parsedSteps.ok) throw new Error(parsedSteps.error);
-      return runJourney(parsedSteps.value, config, endpoints.byId);
+      return runJourneyBatch(parsedSteps.value, config, endpoints.byId);
     },
     onSuccess: () => setConfirmOpen(false),
   });
@@ -98,23 +103,54 @@ export function JourneyRunnerPanel() {
             }
           />
         ) : null}
-        <Button
-          variant="primary"
-          isLoading={runMutation.isPending || endpoints.isLoading}
-          loadingText="Ejecutando journey…"
-          disabled={!parsedSteps.ok}
-          onClick={tryExecute}
-        >
-          {config.dryRun ? "Previsualizar journey" : "Ejecutar journey real"}
-        </Button>
+        {/*
+          Dos botones, no un checkbox que cambia el texto de uno solo: el reporte que motivó este
+          cambio era justamente "el journey en ningún momento deja ejecutar, muestra el preview
+          pero no deja ejecutar" — con un solo botón cuyo rótulo depende de un checkbox lejano, es
+          fácil pulsar "Ejecutar journey real" sin haber notado que Dry-run seguía marcado.
+        */}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            isLoading={
+              config.dryRun && (runMutation.isPending || endpoints.isLoading)
+            }
+            loadingText="Previsualizando…"
+            disabled={!parsedSteps.ok}
+            onClick={() => {
+              patchConfig({ dryRun: true });
+              tryExecute();
+            }}
+          >
+            Previsualizar (dry-run)
+          </Button>
+          <Button
+            variant="primary"
+            isLoading={
+              !config.dryRun && (runMutation.isPending || endpoints.isLoading)
+            }
+            loadingText="Ejecutando journey real…"
+            disabled={!parsedSteps.ok}
+            onClick={() => {
+              patchConfig({ dryRun: false });
+              tryExecute();
+            }}
+          >
+            Ejecutar journey real
+            {config.iterations > 1 ? ` (×${config.iterations})` : ""}
+          </Button>
+        </div>
         {runMutation.data ? (
-          <JourneyStepResults result={runMutation.data} />
+          <JourneyBatchResults batch={runMutation.data} />
         ) : null}
       </CardContent>
       <ConfirmDialog
         open={confirmOpen}
         title={config.dryRun ? "Confirmar dry-run" : "Confirmar journey real"}
-        description={`Se ${config.dryRun ? "previsualizarán" : "ejecutarán"} ${parsedSteps.ok ? parsedSteps.value.length : 0} pasos encadenados en ${config.environment}.`}
+        description={
+          config.dryRun
+            ? `Se previsualizarán ${parsedSteps.ok ? parsedSteps.value.length : 0} pasos encadenados en ${config.environment}. No se manda tráfico real.`
+            : `Se ejecutarán de verdad ${parsedSteps.ok ? parsedSteps.value.length : 0} pasos encadenados en ${config.environment}, ${config.iterations} vez${config.iterations === 1 ? "" : "es"} (${config.iterations} persona${config.iterations === 1 ? "" : "s"} simulada${config.iterations === 1 ? "" : "s"}, semilla «${config.seed}»).`
+        }
         confirmText={config.dryRun ? "Previsualizar" : "Ejecutar"}
         isLoading={runMutation.isPending}
         typedConfirmationPhrase={

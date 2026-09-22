@@ -2,6 +2,7 @@ import type { EndpointItem } from "@/features/systems/types";
 import { AUTH_MODE_OPTIONS } from "./qa-lab-options";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { BaseRouteSelect } from "./base-route-select";
+import { MockScenarioFields } from "./mock-scenario-fields";
 import { getQaScenario, QA_SCENARIOS } from "./qa-scenarios";
 import type { QaAuthMode } from "./types";
 
@@ -11,6 +12,7 @@ export function QaTargetControls({
   onChange,
 }: Readonly<QaTargetControlsProps>) {
   const defaultPath = endpoint?.fullPath || endpoint?.routePath || "";
+  const targetsMock = form.baseRouteKey === "MOCK_PROVIDERS";
   return (
     <>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -44,6 +46,13 @@ export function QaTargetControls({
           className="font-mono"
         />
       </Field>
+      {targetsMock ? (
+        <MockScenarioFields
+          mockScenario={form.mockScenario}
+          mockLatencyMs={form.mockLatencyMs}
+          onChange={onChange}
+        />
+      ) : null}
     </>
   );
 }
@@ -245,6 +254,10 @@ export type CommonLabFormState = {
   includeTenantHeader: boolean;
   includeIdempotencyKey: boolean;
   deviceProfile: string;
+  /** Escenario a forzar en el mock de proveedores externos (x-mock-scenario). "" = sin forzar. */
+  mockScenario?: string;
+  /** Latencia exacta a forzar en el mock (x-mock-latency-ms), en ms. 0 = sin forzar. */
+  mockLatencyMs?: number;
 };
 
 type QaTargetControlsProps = {

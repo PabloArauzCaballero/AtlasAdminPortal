@@ -5,7 +5,7 @@ vi.mock("@/shared/auth/session-storage", () => ({
 }));
 
 import type { EndpointItem } from "@/features/systems/types";
-import { runJourney } from "@/features/qa-lab/journey-runner";
+import { runJourney, runJourneyBatch } from "@/features/qa-lab/journey-runner";
 import type {
   QaJourneyConfig,
   QaJourneyStepSpec,
@@ -271,5 +271,91 @@ describe("runJourney · encadenado de pasos", () => {
       Date.parse(result.startedAt),
     );
     expect(result.totalSteps).toBe(1);
+  });
+});
+
+describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
+  it("con iterations=1 corre el journey una sola vez, igual que runJourney a secas", async () => {
+    const batch = await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 1, concurrency: 1, seed: "qa-base" }),
+      catalog(endpointFixture()),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(batch.iterations).toBe(1);
+    expect(batch.runs).toHaveLength(1);
+    expect(batch.passedIterations).toBe(1);
+  });
+
+  it("con iterations=5 corre el journey cinco veces, cada una con su propia persona", async () => {
+    const batch = await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 5, concurrency: 2, seed: "qa-base" }),
+      catalog(endpointFixture()),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(batch.runs).toHaveLength(5);
+    expect(batch.runs.map((run) => run.index)).toEqual([0, 1, 2, 3, 4]);
+    // Personas DISTINTAS: si el generador repitiera la misma persona para las 5, el lote no
+    // estaría simulando nada, sólo repitiendo una llamada cinco veces.
+    const documentNumbers = new Set(
+      batch.runs.map((run) => run.persona.documentNumber),
+    );
+    expect(documentNumbers.size).toBe(5);
+  });
+
+  it("la misma semilla reproduce las mismas personas entre dos corridas", async () => {
+    const first = await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 3, concurrency: 3, seed: "qa-regresion" }),
+      catalog(endpointFixture()),
+    );
+    const second = await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 3, concurrency: 3, seed: "qa-regresion" }),
+      catalog(endpointFixture()),
+    );
+
+    expect(second.runs.map((run) => run.persona.documentNumber)).toEqual(
+      first.runs.map((run) => run.persona.documentNumber),
+    );
+  });
+
+  it("cada corrida manda su propia x-mock-persona-key para que el mock aísle el estado por persona", async () => {
+    await runJourneyBatch(
+      [stepFixture({ endpointId: "ep-1", queryParams: {} })],
+      configFixture({ iterations: 3, concurrency: 1, seed: "qa-base" }),
+      catalog(endpointFixture({ method: "GET" })),
+    );
+
+    const personaKeys = fetchMock.mock.calls
+      .map(
+        ([, init]) => (init as RequestInit).headers as Record<string, string>,
+      )
+      .map((headers) => headers["x-mock-persona-key"])
+      .sort();
+    expect(personaKeys).toEqual(["journey-0", "journey-1", "journey-2"]);
+  });
+
+  it("una persona falla y el resto del lote sigue: el lote no aborta al primer error", async () => {
+    let call = 0;
+    fetchMock.mockImplementation(() => {
+      call += 1;
+      return call === 2
+        ? jsonResponder({}, { status: 500 })()
+        : jsonResponder({ id: "u-9" })();
+    });
+
+    const batch = await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 3, concurrency: 1, seed: "qa-base" }),
+      catalog(endpointFixture()),
+    );
+
+    expect(batch.passedIterations).toBe(2);
+    expect(batch.failedIterations).toBe(1);
+    expect(batch.runs).toHaveLength(3);
   });
 });

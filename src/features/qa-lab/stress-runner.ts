@@ -4,6 +4,7 @@ import { resolveExpectedStatuses } from "./assertions";
 import {
   buildQaRequest,
   effectiveTimeoutMs,
+  generateIdempotencyKey,
   getBodyForMethod,
 } from "./request-builder";
 import {
@@ -88,12 +89,21 @@ function assertStressAllowed(
     dryRun: input.dryRun,
     allowMutations: input.allowMutations,
   });
-  if (!input.dryRun && !hasApprovalTicket(input.approvalTicket)) {
+  // Sólo fuera de LOCAL: es lo que dice el hint del propio formulario
+  // ("Obligatorio para stress real fuera de LOCAL"), y LOCAL es justo el
+  // ambiente donde se cablea contra el mock de proveedores externos para
+  // ensayar un flujo — exigir un ticket de cambio ahí bloqueaba la prueba que
+  // el laboratorio existe para permitir.
+  if (
+    !input.dryRun &&
+    input.environment.toUpperCase() !== "LOCAL" &&
+    !hasApprovalTicket(input.approvalTicket)
+  ) {
     logger
       .child("safety")
       .error("stress.blocked", "Falta ticket de aprobación");
     throw new Error(
-      "El stress real requiere ticket de aprobación para auditoría operativa.",
+      "El stress real fuera de LOCAL requiere ticket de aprobación para auditoría operativa.",
     );
   }
   logger.child("safety").info("stress.allowed", "Stress permitido");
@@ -117,7 +127,10 @@ async function executeStressPlan(
     headers: redactedHeaders(built.headers),
     timeoutMs,
   });
+  let sampleIndex = 0;
   await runPacedRequests(plan, async () => {
+    const index = sampleIndex;
+    sampleIndex += 1;
     samples.push(
       await executeStressRequest(
         built,
@@ -126,6 +139,7 @@ async function executeStressPlan(
         startedAt,
         expectedStatuses,
         logger,
+        index,
       ),
     );
   });
@@ -149,12 +163,13 @@ async function executeStressRequest(
   runStartedAt: number,
   expectedStatuses: number[],
   logger: QaPinoLogger,
+  index: number,
 ): Promise<StressRequestSample> {
   const started = performance.now();
   try {
     const response = await rawFetch(
       built.url,
-      buildInit(built, body),
+      buildInit(built, body, index),
       timeoutMs,
     );
     await response.arrayBuffer().catch(() => undefined);
@@ -185,10 +200,32 @@ async function executeStressRequest(
   }
 }
 
-function buildInit(built: BuiltRequest, body: string | undefined): RequestInit {
+/**
+ * Cabeceras de ESTA muestra, no las del plan entero.
+ *
+ * `built.headers` se arma una sola vez para las miles de peticiones del burst. Reenviarlas tal
+ * cual significa que las 10 000 peticiones de un stress comparten la MISMA
+ * `x-idempotency-key`: contra un backend real es aceptable (la primera manda, el resto se
+ * deduplica), pero contra el mock de proveedores externos (`AtlasExternalProvidersMock`, que
+ * reproduce el resultado ante misma clave + mismo cuerpo) convierte el stress en "una petición
+ * real y 9999 cachés" — mide la caché de idempotencia, no al proveedor. Por eso cada muestra
+ * recibe su propia `x-idempotency-key` y su propia `x-mock-persona-key`: la segunda no afecta a un
+ * backend que no la conoce (el mock la usa para aislar estado por persona simulada dentro de la
+ * misma corrida; ver el README de `AtlasExternalProvidersMock`).
+ */
+function buildInit(
+  built: BuiltRequest,
+  body: string | undefined,
+  index: number,
+): RequestInit {
+  const headers = { ...built.headers };
+  if (headers["x-idempotency-key"]) {
+    headers["x-idempotency-key"] = generateIdempotencyKey();
+  }
+  headers["x-mock-persona-key"] = `stress-${index}`;
   return {
     method: built.method,
-    headers: built.headers,
+    headers,
     body,
     credentials: "include",
   };

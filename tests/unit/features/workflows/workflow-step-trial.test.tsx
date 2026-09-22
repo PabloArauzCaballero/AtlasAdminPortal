@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
@@ -153,5 +153,122 @@ describe("WorkflowStepTrial · enviar un payload de prueba", () => {
     renderWithProviders(<WorkflowStepTrial step={stepFixture()} />);
 
     expect(screen.getByText(/Sin valor para :customerId/)).toBeInTheDocument();
+  });
+});
+
+describe("WorkflowStepTrial · cantidad (simular el paso con volumen)", () => {
+  it("con cantidad 1 se ve exactamente como antes: una sola llamada, sin agregado", async () => {
+    renderWithProviders(
+      <WorkflowStepTrial
+        step={stepFixture({
+          httpMethod: "GET",
+          routePath: "/auth/me",
+          inputContract: {},
+        })}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Enviar GET/ }));
+
+    expect(runWorkflowStepTrial).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("HTTP 200")).toBeInTheDocument();
+    expect(screen.queryByText(/\d+\/\d+ OK/)).not.toBeInTheDocument();
+  });
+
+  it("con cantidad > 1 manda la misma llamada esa cantidad de veces", async () => {
+    renderWithProviders(
+      <WorkflowStepTrial
+        step={stepFixture({
+          httpMethod: "GET",
+          routePath: "/auth/me",
+          inputContract: {},
+        })}
+      />,
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Cantidad de veces a enviar" }),
+      { target: { value: "10" } },
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Enviar GET/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    expect(await screen.findByText("10/10 OK")).toBeInTheDocument();
+    expect(runWorkflowStepTrial).toHaveBeenCalledTimes(10);
+  });
+
+  it("un GET repetido SÍ pide confirmación, aunque un GET de un solo tiro no la pida", async () => {
+    renderWithProviders(
+      <WorkflowStepTrial
+        step={stepFixture({
+          httpMethod: "GET",
+          routePath: "/auth/me",
+          inputContract: {},
+        })}
+      />,
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Cantidad de veces a enviar" }),
+      { target: { value: "3" } },
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Enviar GET/ }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(runWorkflowStepTrial).not.toHaveBeenCalled();
+  });
+
+  it("una respuesta fallida en el lote se cuenta como tal, no se pierde en el agregado", async () => {
+    runWorkflowStepTrial
+      .mockResolvedValueOnce({
+        method: "GET",
+        path: "/auth/me",
+        status: 200,
+        ok: true,
+        latencyMs: 10,
+        body: {},
+      })
+      .mockResolvedValueOnce({
+        method: "GET",
+        path: "/auth/me",
+        status: 500,
+        ok: false,
+        latencyMs: 30,
+        body: {},
+      });
+    renderWithProviders(
+      <WorkflowStepTrial
+        step={stepFixture({
+          httpMethod: "GET",
+          routePath: "/auth/me",
+          inputContract: {},
+        })}
+      />,
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", { name: "Cantidad de veces a enviar" }),
+      { target: { value: "2" } },
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Enviar GET/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    expect(await screen.findByText("1/2 OK")).toBeInTheDocument();
+  });
+
+  it("respeta el techo duro de repeticiones aunque se pida más", () => {
+    renderWithProviders(
+      <WorkflowStepTrial
+        step={stepFixture({
+          httpMethod: "GET",
+          routePath: "/auth/me",
+          inputContract: {},
+        })}
+      />,
+    );
+
+    expect(
+      screen.getByRole("spinbutton", { name: "Cantidad de veces a enviar" }),
+    ).toHaveAttribute("max", "50");
   });
 });

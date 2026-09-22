@@ -11,6 +11,7 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { jsonText } from "./json-utils";
+import { isMockEndpointId } from "./mock-provider-endpoints";
 import { findPayloadPreset } from "./payload-presets";
 import { expectedStatusesText, parseEndpointStressForm } from "./qa-form";
 import { StressLatencyChart } from "./latency-chart";
@@ -40,8 +41,14 @@ export function StressTestCard({
     canExecute && Boolean(endpointId) && !isProd && !mutation.isPending;
 
   useEffect(() => {
+    const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
     setForm({
       ...DEFAULT_STRESS_FORM,
+      // Ver el mismo comentario en `endpoint-test-card.tsx`: revela los controles de
+      // escenario/latencia del mock; la URL ya es absoluta y no depende de esto para resolver.
+      baseRouteKey: isMock
+        ? "MOCK_PROVIDERS"
+        : DEFAULT_STRESS_FORM.baseRouteKey,
       payload: jsonText(endpoint?.minPayloadSchema),
       headers: jsonText(endpoint?.headersSchema),
       queryParams: jsonText(endpoint?.queryParamsSchema),

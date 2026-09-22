@@ -8,7 +8,8 @@ export type QaBaseRouteKey =
   | "LOCAL_ROOT"
   | "CONFIGURED_API"
   | "STAGING_CONFIGURED"
-  | "PRODUCTION_READONLY_CONFIGURED";
+  | "PRODUCTION_READONLY_CONFIGURED"
+  | "MOCK_PROVIDERS";
 
 export type QaBaseRouteOption = {
   key: QaBaseRouteKey;
@@ -54,6 +55,11 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
     label: "Produccion readonly configurada",
     hint: "NEXT_PUBLIC_PROD_READONLY_API_BASE_URL con fallback al ambiente.",
   },
+  {
+    key: "MOCK_PROVIDERS",
+    label: "Mock de proveedores externos",
+    hint: "NEXT_PUBLIC_QA_MOCK_BASE_URL (default http://localhost:4010/mock). Simula SEGIP, INFOCENTER, QR, banca, telco, Facebook, WhatsApp y digital trust.",
+  },
 ];
 
 export function normalizeQaBaseRouteKey(value?: string): QaBaseRouteKey {
@@ -95,7 +101,22 @@ function resolveConfiguredRoute(
       getQaEnvironmentBaseUrl("PRODUCTION_READONLY")
     );
   }
+  if (key === "MOCK_PROVIDERS") return getQaMockProvidersBaseUrl();
   return getQaEnvironmentBaseUrl(environment);
+}
+
+/**
+ * Base del servidor de mocks de proveedores externos (`AtlasExternalProvidersMock`). Es una base
+ * FIJA del portal, no un host escrito a mano por el operador: por eso entra en
+ * `getPortalBaseHosts()` de `qa-safety.ts` igual que las demás claves configuradas, en vez de pasar
+ * por la allowlist de `CUSTOM_HOST`. El default de desarrollo coincide con el puerto real del
+ * repo hermano (`AtlasExternalProvidersMock`, ver su README): `http://localhost:4010/mock`.
+ */
+export function getQaMockProvidersBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_QA_MOCK_BASE_URL?.trim() ||
+    "http://localhost:4010/mock"
+  );
 }
 
 function normalizeBaseUrl(value: string): string {

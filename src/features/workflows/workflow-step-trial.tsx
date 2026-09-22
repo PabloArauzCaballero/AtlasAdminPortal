@@ -8,10 +8,16 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { FieldLabel } from "@/shared/components/ui/field-label";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { pathParamNames, runWorkflowStepTrial } from "./services";
+import {
+  pathParamNames,
+  runWorkflowStepTrial,
+  type WorkflowStepTrial as WorkflowStepTrialResult,
+} from "./services";
 import type { WorkflowStep } from "./types";
 
 const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+/** Techo duro de repeticiones: este panel prueba un paso, no reemplaza el stress del QA Lab. */
+const MAX_REPEAT = 50;
 
 /**
  * Prueba del paso desde el propio lienzo: rellenar los parámetros de ruta, ver
@@ -21,6 +27,11 @@ const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  * que el endpoint espera—, así que la prueba parte del contrato publicado y no
  * de lo que uno recuerde. Un método que escribe pide confirmación: va contra el
  * backend configurado, no contra un simulador.
+ *
+ * `repeat` manda la MISMA llamada varias veces seguidas: es lo que permite ver este paso del
+ * flujo bajo una cantidad real de tráfico sin salir del lienzo. Sigue yendo por
+ * `runWorkflowStepTrial` — mismo canal, misma sesión, mismo host propio del portal — así que
+ * repetir no abre ninguna puerta que la prueba de un solo tiro no tuviera ya.
  */
 export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
   const params = useMemo(
@@ -29,6 +40,7 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
   );
   const [values, setValues] = useState<Record<string, string>>({});
   const [payload, setPayload] = useState(() => draftPayload(step));
+  const [repeat, setRepeat] = useState(1);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
   const writes = !READ_METHODS.has(step.httpMethod.toUpperCase());
@@ -36,12 +48,19 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
   const trial = useMutation({
     mutationFn: async () => {
       const body = writes ? parsePayload(payload) : undefined;
-      return runWorkflowStepTrial({
-        method: step.httpMethod,
-        routePath: step.routePath,
-        pathParams: values,
-        payload: body,
-      });
+      const count = clampRepeat(repeat);
+      const results: WorkflowStepTrialResult[] = [];
+      for (let index = 0; index < count; index += 1) {
+        results.push(
+          await runWorkflowStepTrial({
+            method: step.httpMethod,
+            routePath: step.routePath,
+            pathParams: values,
+            payload: body,
+          }),
+        );
+      }
+      return results;
     },
     onSettled: () => setConfirmOpen(false),
   });
@@ -54,11 +73,15 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
         setJsonError(error instanceof Error ? error.message : "JSON inválido");
         return;
       }
-      setJsonError(null);
+    }
+    setJsonError(null);
+    // Un método de lectura de un solo tiro no pide confirmación (ya era así); repetirlo sí:
+    // mandar la misma llamada varias veces es una acción de volumen, no una lectura suelta, y
+    // vale la pena que el operador vea cuánto va a salir antes de que salga.
+    if (writes || clampRepeat(repeat) > 1) {
       setConfirmOpen(true);
       return;
     }
-    setJsonError(null);
     trial.mutate();
   }
 
@@ -114,6 +137,23 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
         </div>
       ) : null}
 
+      <div className="block max-w-[10rem]">
+        <FieldLabel
+          className="text-[0.6875rem] text-atlas-muted"
+          label="Cantidad"
+          tooltip={`Cuántas veces se manda esta misma llamada seguida — simula este paso con volumen sin salir del lienzo. Hasta ${MAX_REPEAT}.`}
+        />
+        <input
+          type="number"
+          min={1}
+          max={MAX_REPEAT}
+          aria-label="Cantidad de veces a enviar"
+          value={repeat}
+          onChange={(event) => setRepeat(Number(event.target.value) || 1)}
+          className="mt-0.5 h-8 w-full rounded-md border border-atlas-border bg-white px-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
+        />
+      </div>
+
       {jsonError ? (
         <p className="text-[0.6875rem] text-red-700">
           JSON inválido: {jsonError}
@@ -136,33 +176,103 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
         Enviar {step.httpMethod}
       </Button>
 
-      {trial.data ? (
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Badge tone={trial.data.ok ? "success" : "critical"}>
-              HTTP {trial.data.status || "sin respuesta"}
-            </Badge>
-            <Badge>{trial.data.latencyMs} ms</Badge>
-            {trial.data.requestId ? (
-              <Badge tone="muted">req {trial.data.requestId.slice(0, 8)}</Badge>
-            ) : null}
-          </div>
-          <p className="break-all font-mono text-[0.6875rem] text-atlas-muted">
-            {trial.data.method} {trial.data.path}
-          </p>
-          <JsonViewer title="Respuesta" value={trial.data.body} />
-        </div>
-      ) : null}
+      {trial.data ? <TrialResults results={trial.data} /> : null}
 
       <ConfirmDialog
         open={confirmOpen}
-        title={`Enviar ${step.httpMethod} de verdad`}
-        description={`Esta llamada va contra el backend configurado en el portal y ${step.httpMethod} escribe. Se ejecutará ${step.routePath} con el payload indicado.`}
+        title={
+          clampRepeat(repeat) > 1
+            ? `Enviar ${step.httpMethod} ${clampRepeat(repeat)} veces`
+            : `Enviar ${step.httpMethod} de verdad`
+        }
+        description={
+          clampRepeat(repeat) > 1
+            ? `Esta llamada va contra el backend configurado en el portal. Se ejecutará ${step.routePath} ${clampRepeat(repeat)} veces seguidas, ${writes ? "con el payload indicado" : "sin cuerpo"}.`
+            : `Esta llamada va contra el backend configurado en el portal y ${step.httpMethod} escribe. Se ejecutará ${step.routePath} con el payload indicado.`
+        }
         confirmText="Enviar"
         isLoading={trial.isPending}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => trial.mutate()}
       />
+    </div>
+  );
+}
+
+function clampRepeat(value: number): number {
+  return Math.min(
+    Math.max(Number.isFinite(value) ? Math.round(value) : 1, 1),
+    MAX_REPEAT,
+  );
+}
+
+/**
+ * Con una sola llamada se ve exactamente igual que antes de admitir `repeat`: el volumen no
+ * cambia la lectura de una prueba suelta. Con más de una, se agrega éxito/latencia y cada
+ * respuesta queda disponible para inspección individual.
+ */
+function TrialResults({
+  results,
+}: Readonly<{ results: WorkflowStepTrialResult[] }>) {
+  if (results.length === 1) return <SingleTrialResult result={results[0]} />;
+  const okCount = results.filter((result) => result.ok).length;
+  const latencies = results
+    .map((result) => result.latencyMs)
+    .sort((a, b) => a - b);
+  const avg = Math.round(
+    latencies.reduce((sum, ms) => sum + ms, 0) / latencies.length,
+  );
+  return (
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Badge tone={okCount === results.length ? "success" : "critical"}>
+          {okCount}/{results.length} OK
+        </Badge>
+        <Badge>prom. {avg} ms</Badge>
+        <Badge tone="muted">
+          p95{" "}
+          {latencies[Math.floor(latencies.length * 0.95)] ?? latencies.at(-1)}{" "}
+          ms
+        </Badge>
+      </div>
+      <ol className="space-y-1">
+        {results.map((result, index) => (
+          <li
+            key={index}
+            className="flex flex-wrap items-center gap-1.5 rounded-md border border-atlas-border bg-white px-2 py-1"
+          >
+            <span className="text-[0.6875rem] text-atlas-muted">
+              #{index + 1}
+            </span>
+            <Badge tone={result.ok ? "success" : "critical"}>
+              HTTP {result.status || "sin respuesta"}
+            </Badge>
+            <Badge>{result.latencyMs} ms</Badge>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function SingleTrialResult({
+  result,
+}: Readonly<{ result: WorkflowStepTrialResult }>) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Badge tone={result.ok ? "success" : "critical"}>
+          HTTP {result.status || "sin respuesta"}
+        </Badge>
+        <Badge>{result.latencyMs} ms</Badge>
+        {result.requestId ? (
+          <Badge tone="muted">req {result.requestId.slice(0, 8)}</Badge>
+        ) : null}
+      </div>
+      <p className="break-all font-mono text-[0.6875rem] text-atlas-muted">
+        {result.method} {result.path}
+      </p>
+      <JsonViewer title="Respuesta" value={result.body} />
     </div>
   );
 }

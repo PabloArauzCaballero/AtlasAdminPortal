@@ -26,6 +26,11 @@ function config(
     deviceProfile: "none",
     includeTenantHeader: true,
     includeIdempotencyKey: true,
+    mockScenario: "",
+    mockLatencyMs: 0,
+    iterations: 1,
+    concurrency: 1,
+    seed: "qa-base",
     ...overrides,
   };
 }
@@ -130,17 +135,15 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
 });
 
 describe("JourneyRunnerConfigFields · guardas", () => {
-  it("refleja el dry-run y permite apagarlo", async () => {
-    const onChange = vi.fn();
-    render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
-    const dryRun = screen.getByRole("checkbox", {
-      name: "Dry-run / modo seguro",
-    });
+  // El dry-run ya no vive como checkbox de este formulario: lo deciden los dos botones del panel
+  // ("Previsualizar" / "Ejecutar journey real"), justamente porque un checkbox aparte podía quedar
+  // marcado sin que el operador lo notara — ver journey-runner-panel.tsx.
+  it("no ofrece un checkbox de dry-run: eso lo deciden los botones del panel", () => {
+    render(<JourneyRunnerConfigFields config={config()} onChange={vi.fn()} />);
 
-    expect(dryRun).toBeChecked();
-    await userEvent.click(dryRun);
-
-    expect(onChange).toHaveBeenCalledWith({ dryRun: false });
+    expect(
+      screen.queryByRole("checkbox", { name: /dry-run/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("los headers de tenant e idempotencia se pueden quitar por separado", async () => {
@@ -168,5 +171,74 @@ describe("JourneyRunnerConfigFields · guardas", () => {
     await elegirOpcion(select, otro!);
 
     expect(onChange).toHaveBeenCalledWith({ deviceProfile: otro });
+  });
+});
+
+describe("JourneyRunnerConfigFields · volumen (personas simuladas)", () => {
+  it("la cantidad de personas se propaga", async () => {
+    const onChange = vi.fn();
+    render(
+      <JourneyRunnerConfigFields
+        config={config({ iterations: 1 })}
+        onChange={onChange}
+      />,
+    );
+
+    await userEvent.type(
+      screen.getByRole("spinbutton", { name: "Cantidad de personas" }),
+      "0",
+    );
+
+    expect(onChange).toHaveBeenCalledWith({ iterations: 10 });
+  });
+
+  it("la concurrencia se propaga", async () => {
+    const onChange = vi.fn();
+    render(
+      <JourneyRunnerConfigFields
+        config={config({ concurrency: 1 })}
+        onChange={onChange}
+      />,
+    );
+
+    await userEvent.type(
+      screen.getByRole("spinbutton", { name: "Concurrencia" }),
+      "5",
+    );
+
+    expect(onChange).toHaveBeenCalledWith({ concurrency: 15 });
+  });
+
+  it("la semilla del lote se propaga", async () => {
+    const onChange = vi.fn();
+    render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
+
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: "Semilla del lote" }),
+      "qa-frontera",
+    );
+
+    expect(onChange).toHaveBeenCalledWith({ seed: "qa-frontera" });
+  });
+
+  it("los controles del mock sólo aparecen cuando la ruta base es el mock de proveedores", () => {
+    const { rerender } = render(
+      <JourneyRunnerConfigFields config={config()} onChange={vi.fn()} />,
+    );
+
+    expect(
+      screen.queryByRole("combobox", { name: "Escenario del mock" }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <JourneyRunnerConfigFields
+        config={config({ baseRouteKey: "MOCK_PROVIDERS" })}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("combobox", { name: "Escenario del mock" }),
+    ).toBeInTheDocument();
   });
 });

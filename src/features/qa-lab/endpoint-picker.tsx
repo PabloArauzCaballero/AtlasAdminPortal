@@ -19,6 +19,10 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
 import { useLabEndpoints } from "./hooks";
+import {
+  isMockEndpointId,
+  searchMockProviderEndpoints,
+} from "./mock-provider-endpoints";
 
 export function EndpointPicker({
   selectedId,
@@ -28,6 +32,7 @@ export function EndpointPicker({
   const [manualId, setManualId] = useState(selectedId);
   const endpoints = useLabEndpoints({ page: 1, limit: 10, q });
   const columns = useMemo(() => buildColumns(onSelect), [onSelect]);
+  const mockMatches = useMemo(() => searchMockProviderEndpoints(q), [q]);
 
   function loadManual() {
     const value = manualId.trim();
@@ -76,13 +81,30 @@ export function EndpointPicker({
           <EndpointPickerError error={endpoints.error} />
         ) : null}
         {endpoints.data ? (
-          <DataTable
-            data={endpoints.data.items}
-            columns={columns}
-            meta={endpoints.data.meta}
-            emptyTitle="No se encontraron endpoints."
-            emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
-          />
+          <div data-tutorial-id="qa-lab-catalog-results">
+            <DataTable
+              data={endpoints.data.items}
+              columns={columns}
+              meta={endpoints.data.meta}
+              emptyTitle="No se encontraron endpoints."
+              emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
+            />
+          </div>
+        ) : null}
+        {mockMatches.length > 0 ? (
+          <div className="space-y-2" data-tutorial-id="qa-lab-mock-providers">
+            <SectionHeader
+              title="Proveedores externos (mock)"
+              description="Los 9 endpoints de negocio de AtlasExternalProvidersMock — para probar stress y journeys sin depender del proveedor real. Al elegir uno, la ruta base pasa sola a «Mock de proveedores externos»."
+              className="mb-0"
+            />
+            <DataTable
+              data={mockMatches}
+              columns={columns}
+              emptyTitle="Sin coincidencias en el mock."
+              emptyDescription="Ajusta la búsqueda."
+            />
+          </div>
         ) : null}
       </CardContent>
     </Card>
@@ -99,14 +121,21 @@ function buildColumns(
     },
     {
       header: "Ruta",
-      cell: ({ row }) => (
-        <Link
-          className="font-mono text-xs text-atlas-accent underline"
-          href={`/internal/systems/endpoints/${row.original.endpointId}`}
-        >
-          {safeText(row.original.fullPath ?? row.original.routePath)}
-        </Link>
-      ),
+      // Un endpoint del mock no tiene ficha en `/internal/systems/endpoints`: no es
+      // parte del catálogo de AtlasBackend, así que ese link sería un 404.
+      cell: ({ row }) =>
+        isMockEndpointId(row.original.endpointId) ? (
+          <span className="font-mono text-xs text-atlas-text">
+            {safeText(row.original.fullPath ?? row.original.routePath)}
+          </span>
+        ) : (
+          <Link
+            className="font-mono text-xs text-atlas-accent underline"
+            href={`/internal/systems/endpoints/${row.original.endpointId}`}
+          >
+            {safeText(row.original.fullPath ?? row.original.routePath)}
+          </Link>
+        ),
     },
     {
       header: "Módulo",

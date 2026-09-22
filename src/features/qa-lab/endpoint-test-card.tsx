@@ -17,6 +17,10 @@ import {
   requiresDoubleConfirmation,
 } from "./endpoint-run-controls";
 import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
+import {
+  getMockExamplePayload,
+  isMockEndpointId,
+} from "./mock-provider-endpoints";
 import { expectedStatusesText, parseEndpointRunForm } from "./qa-form";
 import { jsonText } from "./json-utils";
 import { findPayloadPreset } from "./payload-presets";
@@ -217,15 +221,24 @@ export function EndpointTestCard({
 }
 
 function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
+  const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
+  const mockPayload = endpoint
+    ? getMockExamplePayload(endpoint.endpointId)
+    : undefined;
   return {
     environment: "LOCAL",
-    baseRouteKey: DEFAULT_QA_BASE_ROUTE,
+    // Un endpoint del mock ya trae `fullPath` absoluto (bypassa la ruta base al construir la
+    // URL), pero fijar acá "Mock de proveedores externos" es lo que revela en el formulario los
+    // controles de escenario/latencia del mock (gateados por `baseRouteKey`).
+    baseRouteKey: isMock ? "MOCK_PROVIDERS" : DEFAULT_QA_BASE_ROUTE,
     customHostUrl: "",
     routeOverride: endpoint?.fullPath || endpoint?.routePath || "",
     dryRun: true,
     timeoutMs: 20000,
     allowMutations: false,
-    payload: jsonText(sampleFrom(endpoint?.minPayloadSchema)),
+    payload: mockPayload
+      ? jsonText(mockPayload)
+      : jsonText(sampleFrom(endpoint?.minPayloadSchema)),
     queryParams: jsonText(sampleFrom(endpoint?.queryParamsSchema)),
     pathParams: jsonText(
       sampleFromFields(
@@ -245,6 +258,8 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     includeTenantHeader: true,
     includeIdempotencyKey: true,
     deviceProfile: "none",
+    mockScenario: "",
+    mockLatencyMs: 0,
   };
 }
 

@@ -50,10 +50,16 @@ describe("EndpointPicker · estados de la consulta", () => {
       error: null,
       data: undefined,
     });
-    render(<EndpointPicker selectedId="" onSelect={vi.fn()} />);
+    const { container } = render(
+      <EndpointPicker selectedId="" onSelect={vi.fn()} />,
+    );
 
     expect(screen.getByLabelText("Cargando")).toBeInTheDocument();
-    expect(screen.queryByRole("table")).toBeNull();
+    // Se acota a los resultados del catálogo real: la tabla de proveedores mock es estática (no
+    // depende de esta carga) y por diseño se ve incluso mientras el catálogo todavía resuelve.
+    expect(
+      container.querySelector('[data-tutorial-id="qa-lab-catalog-results"]'),
+    ).toBeNull();
   });
 
   it("un fallo del catálogo se ve, con su mensaje y su requestId", () => {
@@ -121,11 +127,41 @@ describe("EndpointPicker · búsqueda", () => {
 describe("EndpointPicker · elegir endpoint", () => {
   it("cada fila ofrece probar su endpoint y entrega su id", async () => {
     const onSelect = vi.fn();
-    render(<EndpointPicker selectedId="" onSelect={onSelect} />);
+    const { container } = render(
+      <EndpointPicker selectedId="" onSelect={onSelect} />,
+    );
+    // Acotado a la tabla del catálogo real: la de proveedores mock (siempre presente) también
+    // ofrece un botón "Probar" por fila, y el id de la fixture (`ep-1`) sólo vive en la primera.
+    const catalogResults = container.querySelector(
+      '[data-tutorial-id="qa-lab-catalog-results"]',
+    ) as HTMLElement;
 
-    await userEvent.click(screen.getByRole("button", { name: "Probar" }));
+    await userEvent.click(
+      within(catalogResults).getByRole("button", { name: "Probar" }),
+    );
 
     expect(onSelect).toHaveBeenCalledWith("ep-1");
+  });
+
+  it("ofrece los 9 endpoints del mock de proveedores externos, sin link a la ficha del catálogo", async () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <EndpointPicker selectedId="" onSelect={onSelect} />,
+    );
+    const mockSection = container.querySelector(
+      '[data-tutorial-id="qa-lab-mock-providers"]',
+    ) as HTMLElement;
+
+    expect(
+      within(mockSection).getAllByRole("button", { name: "Probar" }),
+    ).toHaveLength(9);
+    expect(within(mockSection).queryByRole("link")).toBeNull();
+
+    await userEvent.click(
+      within(mockSection).getAllByRole("button", { name: "Probar" })[0],
+    );
+
+    expect(onSelect).toHaveBeenCalledWith(expect.stringMatching(/^mock:/));
   });
 
   it("la fila enlaza a la ficha del endpoint y muestra su método", () => {

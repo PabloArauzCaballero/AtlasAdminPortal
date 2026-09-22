@@ -257,6 +257,8 @@ export const DEFAULT_STRESS_FORM: StressFormState = {
   includeTenantHeader: true,
   includeIdempotencyKey: true,
   deviceProfile: "none",
+  mockScenario: "",
+  mockLatencyMs: 0,
 };
 
 type StressControlsProps = {

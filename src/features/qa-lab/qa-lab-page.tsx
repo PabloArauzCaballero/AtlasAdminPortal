@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Gauge, History, TestTube, Waves } from "lucide-react";
-import { useEndpoint } from "@/features/systems/hooks";
+import { useLabEndpoint as useEndpoint } from "./endpoint-lookup";
 import { Button } from "@/shared/components/ui/button";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PermissionGate } from "@/shared/auth/permission-gate";
