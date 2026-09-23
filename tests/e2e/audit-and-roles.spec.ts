@@ -41,7 +41,7 @@ test.describe("auditoría y RBAC", () => {
     await capture(page, testInfo, "2 ficha del request");
 
     // El visor Mongo es opcional en este stack; la ficha SQL se comprobó arriba.
-    await health.expectHealthy(/logs\/mongo/, /503/);
+    await health.expectHealthy(/logs\/mongo/);
   });
 
   /**

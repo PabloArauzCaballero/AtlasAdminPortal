@@ -190,6 +190,16 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
 
+      - name: Diagnosticar fallo de catálogo QA
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rg -n -C 2 'duplicate key|violates unique|SequelizeUniqueConstraintError|Validation error|Federación de' "$RUNNER_TEMP/atlas-backend.log" | tail -n 80 || true
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
+            -c "SELECT system_code, last_status, endpoints_imported, data_entities_imported
+                  FROM platform_ops.system_block_federation_state ORDER BY system_code" || true
+
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad
         if: ${{ !cancelled() }}
