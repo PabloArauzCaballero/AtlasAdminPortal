@@ -42,9 +42,12 @@ setup("autenticar en el portal interno", async ({ page }) => {
         timeout: 180_000,
       },
     );
+    const outcome = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
     expect(
       response.ok(),
-      `seed de catálogo: HTTP ${response.status()}`,
+      `seed de catálogo: HTTP ${response.status()} ${outcome.message ?? "sin detalle"}`,
     ).toBeTruthy();
   }
   await page.context().storageState({ path: INTERNAL_STORAGE_STATE });
