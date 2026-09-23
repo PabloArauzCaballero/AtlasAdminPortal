@@ -107,6 +107,10 @@ jobs:
       - name: Migrar y sembrar datos sintéticos de QA
         run: |
           yarn db:migration:up
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "INSERT INTO iam.tenants (_id, tenant_code, legal_name, country_code, status, _created_at, _deleted)
+                VALUES (1, 'atlas-qa-e2e', 'Atlas QA E2E', 'BOL', 'active', now(), false)
+                ON CONFLICT (_id) DO NOTHING"
           yarn db:seed:demo
           yarn db:seed:admin-e2e
         working-directory: qa-backend
