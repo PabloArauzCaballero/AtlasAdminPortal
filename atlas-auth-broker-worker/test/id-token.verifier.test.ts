@@ -86,6 +86,24 @@ describe('IdTokenVerifier — token legítimo', () => {
 
     expect(jwksCalls()).toBe(1);
   });
+
+  it('recarga el JWKS una vez cuando aparece un kid nuevo', async () => {
+    const clock = new FakeClock();
+    let calls = 0;
+    const fetchImpl: HttpFetch = () => {
+      calls += 1;
+      return Promise.resolve(
+        jsonResponse(200, { keys: calls === 1 ? [jwk] : [{ ...jwk, kid: 'kid-2' }] }),
+      );
+    };
+    const verifier = new IdTokenVerifier({ fetchImpl, clock });
+
+    await verifier.verify(signToken(baseClaims(clock)), expectations);
+    const rotated = signToken(baseClaims(clock), { alg: 'RS256', kid: 'kid-2' });
+
+    await expect(verifier.verify(rotated, expectations)).resolves.toMatchObject({ sub: 'user-42' });
+    expect(calls).toBe(2);
+  });
 });
 
 describe('IdTokenVerifier — falsificación de firma', () => {
@@ -164,6 +182,20 @@ describe('IdTokenVerifier — reclamaciones', () => {
     clock.advance(400 * 1_000);
 
     await expect(verifier.verify(token, expectations)).rejects.toThrow(/expirado/u);
+  });
+
+  it('rechaza nbf futuro fuera de la tolerancia de reloj', async () => {
+    const { verifier, clock } = setup();
+    const token = signToken({ ...baseClaims(clock), nbf: Math.floor(clock.now() / 1_000) + 120 });
+
+    await expect(verifier.verify(token, expectations)).rejects.toThrow(/todavía no es válido/u);
+  });
+
+  it('acepta nbf dentro de la tolerancia de reloj', async () => {
+    const { verifier, clock } = setup();
+    const token = signToken({ ...baseClaims(clock), nbf: Math.floor(clock.now() / 1_000) + 30 });
+
+    await expect(verifier.verify(token, expectations)).resolves.toMatchObject({ sub: 'user-42' });
   });
 
   it('rechaza un token multi-audiencia sin azp para este cliente', async () => {
