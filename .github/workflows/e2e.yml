@@ -43,6 +43,12 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: "1"
 
+      - name: Preparar assets de standalone
+        run: |
+          mkdir -p .next/standalone/.next
+          cp -R .next/static .next/standalone/.next/static
+          if [ -d public ]; then cp -R public .next/standalone/public; fi
+
       - name: Correr E2E
         run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=blob,json
         env:

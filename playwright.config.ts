@@ -56,9 +56,8 @@ const EXTERNAL_BASE_URL = process.env.PW_BASE_URL;
 const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
 
 /**
- * E2E con Playwright. El webServer levanta la app real (`next start`, que exige
- * un `next build` previo hecho en el job de CI) y espera a que /internal/login
- * responda antes de correr los tests.
+ * E2E con Playwright. El webServer levanta la salida standalone del build y
+ * espera a que /internal/login responda antes de correr los tests.
  */
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -146,7 +145,7 @@ export default defineConfig({
     command:
       process.env.PW_PORT || EXTERNAL_BASE_URL
         ? "true"
-        : `npx next start -p ${PORT}`,
+        : `PORT=${PORT} HOSTNAME=127.0.0.1 node .next/standalone/server.js`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
