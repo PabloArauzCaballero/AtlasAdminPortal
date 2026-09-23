@@ -12,14 +12,68 @@ jobs:
   e2e:
     name: Playwright E2E (chromium) · fragmento ${{ matrix.shard }}/2
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     # `fail-fast: false`: si un fragmento cae, el otro sigue. Con `true` un fallo temprano deja la
     # mitad de la suite sin ejecutar y el informe unido queda incompleto sin decirlo.
     strategy:
       fail-fast: false
       matrix:
         shard: [1, 2]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: atlas
+          POSTGRES_PASSWORD: atlas
+          POSTGRES_DB: atlas_e2e_admin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U atlas -d atlas_e2e_admin"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: atlas
+      DB_PASSWORD: atlas
+      DB_NAME: atlas_e2e_admin
+      DB_SSL: 'false'
+      REDIS_URL: redis://localhost:6379
+      APP_PORT: 3005
+      API_PREFIX: api/v1
+      CORS_ORIGINS: http://localhost:5273
+      INTERNAL_FRONTEND_ORIGIN: http://localhost:5273
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3005/api/v1
+      NOTIFICATION_EMAIL_PROVIDER: webhook
+      NOTIFICATION_EMAIL_WEBHOOK_URL: http://localhost:8790/correo
+      NOTIFICATIONS_DELIVERY_MODE: inline
+      AUTH_LOGIN_PIN_ENABLED: 'true'
+      RUNTIME_JOBS_SCHEDULER_ENABLED: 'false'
+      TEST_EMAIL: qa-admin-e2e@atlas-qa.example.com
+      TEST_TENANT_ID: '1'
+      PW_PIN_INBOX_PORT: '8790'
     steps:
       - uses: actions/checkout@v7
+
+      # SHA fijo: el E2E mide siempre el mismo código backend que pasó revisión.
+      - name: Obtener AtlasBackend para el stack QA
+        uses: actions/checkout@v7
+        with:
+          repository: PabloArauzCaballero/AtlasBackend
+          ref: d3970c825ca170d60578a56edbdccb3e240d9958
+          path: qa-backend
+          persist-credentials: false
 
       - uses: actions/setup-node@v7
         with:
@@ -28,6 +82,54 @@ jobs:
 
       - name: Instalar dependencias
         run: yarn install --frozen-lockfile
+
+      - name: Instalar dependencias del backend
+        run: yarn install --frozen-lockfile
+        working-directory: qa-backend
+
+      - name: Crear claves efímeras del runner
+        shell: bash
+        run: |
+          password="Qa9!$(openssl rand -hex 32)"
+          jwt="$(openssl rand -hex 48)"
+          notification="$(openssl rand -hex 48)"
+          echo "::add-mask::$password"
+          echo "::add-mask::$jwt"
+          echo "::add-mask::$notification"
+          echo "TEST_PASSWORD=$password" >> "$GITHUB_ENV"
+          echo "JWT_ACCESS_TOKEN_SECRET=$jwt" >> "$GITHUB_ENV"
+          echo "NOTIFICATION_TOKEN_ENCRYPTION_KEY=$notification" >> "$GITHUB_ENV"
+
+      - name: Compilar backend real
+        run: yarn build
+        working-directory: qa-backend
+
+      - name: Migrar y sembrar datos sintéticos de QA
+        run: |
+          yarn db:migration:up
+          yarn db:seed:demo
+          yarn db:seed:admin-e2e
+        working-directory: qa-backend
+        env:
+          NODE_ENV: development
+          ALLOW_E2E_SEED: 'true'
+
+      - name: Arrancar API y esperar readiness
+        shell: bash
+        run: |
+          nohup node dist/src/main.js > "$RUNNER_TEMP/atlas-backend.log" 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent --show-error http://localhost:3005/api/v1/health/readiness > /dev/null 2>&1; then
+              echo 'API QA lista.'
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -n 100 "$RUNNER_TEMP/atlas-backend.log"
+          exit 1
+        working-directory: qa-backend
+        env:
+          NODE_ENV: development
 
       - name: Instalar navegador (chromium) con sus libs de sistema
         run: yarn playwright install --with-deps chromium
@@ -46,12 +148,6 @@ jobs:
       - name: Correr E2E
         run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=blob,json
         env:
-          # Sin estos secretos la suite se salta entera y el paso de verificación la pone en rojo,
-          # que es exactamente lo que debe pasar. Ver scripts/verificar-e2e.mjs.
-          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-          TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
-          PW_PIN_INBOX_PORT: ${{ secrets.PW_PIN_INBOX_PORT }}
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
 
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
