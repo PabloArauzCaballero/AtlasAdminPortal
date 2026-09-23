@@ -78,7 +78,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: PabloArauzCaballero/AtlasBackend
-          ref: e29ce699d9ad17b3e6438f60151b2e0f717295d6
+          ref: 5d66dd1b47dadf7f8d0c729f20a3af9d4679d01e
           path: qa-backend
           persist-credentials: false
 
@@ -195,7 +195,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rg -n -C 2 'duplicate key|violates unique|SequelizeUniqueConstraintError|Validation error|Federación de' "$RUNNER_TEMP/atlas-backend.log" | tail -n 80 || true
+          grep -n -E -C 2 'duplicate key|violates unique|SequelizeUniqueConstraintError|Validation error|Federación de' "$RUNNER_TEMP/atlas-backend.log" | tail -n 80 || true
           PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
             -c "SELECT system_code, last_status, endpoints_imported, data_entities_imported
                   FROM platform_ops.system_block_federation_state ORDER BY system_code" || true

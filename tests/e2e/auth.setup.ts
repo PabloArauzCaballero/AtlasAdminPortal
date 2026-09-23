@@ -6,6 +6,7 @@ import {
 } from "./internal-session";
 
 setup.setTimeout(240_000);
+setup.describe.configure({ retries: 0 });
 
 /**
  * Un ÚNICO login para toda la suite, guardado como estado de sesión.
@@ -83,16 +84,17 @@ setup("autenticar en el portal interno", async ({ page }) => {
         timeout: 60_000,
       },
     );
+    const federationBody = (await federation.json().catch(() => ({}))) as {
+      data?: Array<{ systemCode: string; status: string }>;
+      error?: { code?: string; message?: string };
+    };
     expect(
       federation.ok(),
-      `federación QA: HTTP ${federation.status()}`,
+      `federación QA: HTTP ${federation.status()} ${federationBody.error?.code ?? "sin código"}: ${federationBody.error?.message ?? "sin detalle"}`,
     ).toBeTruthy();
-    const federationResult = (await federation.json()) as {
-      data?: Array<{ systemCode: string; status: string }>;
-    };
     for (const code of ["DECISION_ENGINE", "ERP_BACKEND"]) {
       expect(
-        federationResult.data?.find((item) => item.systemCode === code)?.status,
+        federationBody.data?.find((item) => item.systemCode === code)?.status,
         `federación de ${code}`,
       ).toBe("OK");
     }
