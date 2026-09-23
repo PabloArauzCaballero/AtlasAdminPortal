@@ -43,11 +43,11 @@ setup("autenticar en el portal interno", async ({ page }) => {
       },
     );
     const outcome = (await response.json().catch(() => ({}))) as {
-      message?: string;
+      error?: { code?: string; message?: string };
     };
     expect(
       response.ok(),
-      `seed de catálogo: HTTP ${response.status()} ${outcome.message ?? "sin detalle"}`,
+      `seed de catálogo: HTTP ${response.status()} ${outcome.error?.code ?? "sin código"}: ${outcome.error?.message ?? "sin detalle"}`,
     ).toBeTruthy();
   }
   await page.context().storageState({ path: INTERNAL_STORAGE_STATE });
