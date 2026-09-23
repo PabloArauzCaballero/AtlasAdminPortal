@@ -35,6 +35,9 @@ jobs:
       - name: Instalar dependencias
         run: yarn install --frozen-lockfile
 
+      - name: Contrato del smoke público
+        run: node --test .github/tests/post-deploy-smoke.test.mjs
+
       - name: Máximo 300 líneas por archivo
         run: yarn max-lines
 
