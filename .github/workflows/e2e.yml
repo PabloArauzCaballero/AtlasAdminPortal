@@ -173,6 +173,15 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
 
+      - name: Diagnosticar refresco del catálogo QA
+        if: failure()
+        run: |
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
+            -c "SELECT status, result_json, left(error_message, 240)
+                  FROM platform_ops.system_job_runs
+                 WHERE job_code = 'systems_catalog_refresh'
+                 ORDER BY _id DESC LIMIT 1"
+
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad
         if: ${{ !cancelled() }}
