@@ -51,7 +51,9 @@ jobs:
       DB_SSL: 'false'
       REDIS_URL: redis://localhost:6379
       APP_PORT: 3005
+      APP_ROLE: api
       API_PREFIX: api/v1
+      DATABASE_SEED_ON_STARTUP: 'false'
       CORS_ORIGINS: http://localhost:5273
       INTERNAL_FRONTEND_ORIGIN: http://localhost:5273
       NEXT_PUBLIC_API_BASE_URL: http://localhost:3005/api/v1
@@ -121,11 +123,18 @@ jobs:
       - name: Arrancar API y esperar readiness
         shell: bash
         run: |
+          set -euo pipefail
           nohup node dist/src/main.js > "$RUNNER_TEMP/atlas-backend.log" 2>&1 &
+          backend_pid=$!
           for attempt in $(seq 1 90); do
             if curl --fail --silent --show-error http://localhost:3005/api/v1/health/readiness > /dev/null 2>&1; then
               echo 'API QA lista.'
               exit 0
+            fi
+            if ! kill -0 "$backend_pid" 2>/dev/null; then
+              echo 'El API terminó antes de readiness:'
+              tail -n 100 "$RUNNER_TEMP/atlas-backend.log"
+              exit 1
             fi
             sleep 2
           done
@@ -134,6 +143,8 @@ jobs:
         working-directory: qa-backend
         env:
           NODE_ENV: development
+          FILE_STORAGE_ADAPTER: local
+          FILE_STORAGE_LOCAL_ROOT: ${{ runner.temp }}/atlas-files
 
       - name: Instalar navegador (chromium) con sus libs de sistema
         run: yarn playwright install --with-deps chromium
