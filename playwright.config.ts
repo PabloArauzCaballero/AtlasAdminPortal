@@ -66,14 +66,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   /*
-   * `workers` al 50 % en CI: el runner tiene 2 vCPU y dejarlo sin tope hacía que Chromium compitiera
-   * consigo mismo y los tiempos de espera saltaran por carga, no por el portal.
+   * Un worker por fragmento en CI: varios casos ejercitan el login con PIN y el buzón webhook
+   * escucha en un puerto del runner. Serializarlos evita que dos procesos intenten tomar ese
+   * puerto a la vez; los dos fragmentos siguen ejecutándose en paralelo en runners distintos.
    *
    * El reporte `blob` es lo que permite FRAGMENTAR la suite entre varios trabajos y luego unir los
    * informes (`playwright merge-reports`). Con `--shard` a secas cada fragmento produce su propio
    * HTML y no hay forma de leer la corrida completa.
    */
-  workers: process.env.CI ? "50%" : undefined,
+  workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI
     ? [["list"], ["blob"], ["github"]]
     : [["list"], ["html", { open: "never" }]],
