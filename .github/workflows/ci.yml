@@ -27,6 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Validar referencias a submódulos
+        run: git submodule status
+
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
