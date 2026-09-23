@@ -114,6 +114,7 @@ test("el velo bloquea los clics detrás del tutorial", async () => {
   await expect(dialog(page)).toContainText("¿Qué es una prueba funcional?");
   // El primer paso abre su pestaña por URL; se espera a que asiente.
   await expect(page).toHaveURL(/tab=unitaria/);
+  const tutorialUrl = page.url();
   // Un clic donde está el enlace «Suites QA» del menú lateral, detrás del velo.
   const link = page.getByRole("link", { name: "Suites QA" });
   const box = await link.boundingBox();
@@ -121,7 +122,7 @@ test("el velo bloquea los clics detrás del tutorial", async () => {
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
   // Esperar la URL en vez de un reloj: `toHaveURL` reintenta sola hasta que la navegación ocurre,
   // y si no ocurre el fallo dice exactamente qué URL había en lugar de «700 ms no bastaron».
-  await expect(page).toHaveURL(/\/internal\/qa\/lab$/);
+  await expect(page).toHaveURL(tutorialUrl);
   await expect(dialog(page)).toBeVisible();
   await page.getByRole("button", { name: "Cerrar tutorial" }).click();
 });

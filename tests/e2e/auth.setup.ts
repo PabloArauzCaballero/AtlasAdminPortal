@@ -49,6 +49,53 @@ setup("autenticar en el portal interno", async ({ page }) => {
       response.ok(),
       `seed de catálogo: HTTP ${response.status()} ${outcome.error?.code ?? "sin código"}: ${outcome.error?.message ?? "sin detalle"}`,
     ).toBeTruthy();
+
+    // El escaneo de fuentes sólo infiere rutas. OpenAPI añade los campos de entrada que
+    // necesita el generador de QA LAB para construir casos válidos e inválidos.
+    const discovery = await page.request.post(
+      "http://localhost:3005/api/v1/systems/endpoints/discover",
+      {
+        headers: {
+          "x-tenant-id": process.env.TEST_TENANT_ID ?? "1",
+          "x-atlas-product": "admin-portal",
+          origin: new URL(page.url()).origin,
+        },
+        data: { mode: "OPENAPI_CONTRACT", persist: true },
+        timeout: 180_000,
+      },
+    );
+    expect(
+      discovery.ok(),
+      `contratos OpenAPI: HTTP ${discovery.status()}`,
+    ).toBeTruthy();
+
+    // La federación sigue siendo la real del backend: sólo los dos productores remotos son
+    // manifiestos de contrato versionados y servidos en este runner aislado.
+    const federation = await page.request.post(
+      "http://localhost:3005/api/v1/systems/blocks/federate",
+      {
+        headers: {
+          "x-tenant-id": process.env.TEST_TENANT_ID ?? "1",
+          "x-atlas-product": "admin-portal",
+          origin: new URL(page.url()).origin,
+        },
+        data: {},
+        timeout: 60_000,
+      },
+    );
+    expect(
+      federation.ok(),
+      `federación QA: HTTP ${federation.status()}`,
+    ).toBeTruthy();
+    const federationResult = (await federation.json()) as {
+      data?: Array<{ systemCode: string; status: string }>;
+    };
+    for (const code of ["DECISION_ENGINE", "ERP_BACKEND"]) {
+      expect(
+        federationResult.data?.find((item) => item.systemCode === code)?.status,
+        `federación de ${code}`,
+      ).toBe("OK");
+    }
   }
   await page.context().storageState({ path: INTERNAL_STORAGE_STATE });
 });

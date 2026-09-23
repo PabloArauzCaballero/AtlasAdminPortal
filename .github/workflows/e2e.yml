@@ -58,6 +58,8 @@ jobs:
       CORS_ORIGINS: http://localhost:5273
       INTERNAL_FRONTEND_ORIGIN: http://localhost:5273
       NEXT_PUBLIC_API_BASE_URL: http://localhost:3005/api/v1
+      DECISION_ENGINE_BASE_URL: http://localhost:8791
+      ERP_BACKEND_BASE_URL: http://localhost:8791
       NOTIFICATION_EMAIL_PROVIDER: webhook
       NOTIFICATION_EMAIL_WEBHOOK_URL: http://localhost:8790/correo
       NOTIFICATIONS_DELIVERY_MODE: inline
@@ -103,12 +105,27 @@ jobs:
           password="Qa9!$(openssl rand -hex 32)"
           jwt="$(openssl rand -hex 48)"
           notification="$(openssl rand -hex 48)"
+          catalog="$(openssl rand -hex 48)"
           echo "::add-mask::$password"
           echo "::add-mask::$jwt"
           echo "::add-mask::$notification"
+          echo "::add-mask::$catalog"
           echo "TEST_PASSWORD=$password" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_SECRET=$jwt" >> "$GITHUB_ENV"
           echo "NOTIFICATION_TOKEN_ENCRYPTION_KEY=$notification" >> "$GITHUB_ENV"
+          echo "ERP_BACKEND_CATALOG_API_KEY=$catalog" >> "$GITHUB_ENV"
+
+      - name: Servir manifiestos de contrato de bloques externos
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup python3 scripts/qa-catalog-manifest-server.py > "$RUNNER_TEMP/qa-catalog.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8791/health > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/qa-catalog.log"
+          exit 1
 
       - name: Compilar backend real
         run: yarn build
@@ -172,15 +189,6 @@ jobs:
         run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=blob,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
-
-      - name: Diagnosticar refresco del catálogo QA
-        if: failure()
-        run: |
-          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
-            -c "SELECT status, result_json, left(error_message, 240)
-                  FROM platform_ops.system_job_runs
-                 WHERE job_code = 'systems_catalog_refresh'
-                 ORDER BY _id DESC LIMIT 1"
 
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad
