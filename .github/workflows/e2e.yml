@@ -1,15 +1,9 @@
 name: E2E
 
-# Workflow separado del CI principal a propósito: los E2E con navegador son más
-# lentos y frágiles, así que NO bloquean los checks requeridos de ci.yml mientras
-# se estabilizan. Cuando esté probado en verde, se puede promover a requerido.
-# También en `dev`: es la rama que se despliega, y un E2E que sólo mira `main` no cubre nada de lo
-# que corre en el entorno de desarrollo compartido.
+# CI lo invoca como gate obligatorio antes de desplegar dev. El verificador falla si
+# Playwright termina en verde sin ejecutar casos reales.
 on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+  workflow_call:
 
 permissions:
   contents: read
