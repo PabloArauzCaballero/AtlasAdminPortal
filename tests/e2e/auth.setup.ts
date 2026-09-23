@@ -5,6 +5,8 @@ import {
   motivoParaSaltar,
 } from "./internal-session";
 
+setup.setTimeout(240_000);
+
 /**
  * Un ÚNICO login para toda la suite, guardado como estado de sesión.
  *
@@ -20,5 +22,30 @@ setup("autenticar en el portal interno", async ({ page }) => {
 
   await loginAsInternalUser(page);
   await expect(page).toHaveURL(/\/internal/);
+
+  // El catálogo técnico nace vacío en una base recién migrada. Poblarlo por la ruta real
+  // de gobierno permite probar endpoints, herramientas, datos y QA LAB contra el API.
+  if (process.env.ALLOW_E2E_CATALOG_REFRESH === "true") {
+    const response = await page.request.post(
+      "http://localhost:3005/api/v1/systems/endpoints/catalog-seed/refresh",
+      {
+        headers: {
+          "x-tenant-id": process.env.TEST_TENANT_ID ?? "1",
+          "x-atlas-product": "admin-portal",
+          origin: new URL(page.url()).origin,
+        },
+        data: {
+          includeTools: true,
+          includeDataEntities: true,
+          includeEndpointSeeds: true,
+        },
+        timeout: 180_000,
+      },
+    );
+    expect(
+      response.ok(),
+      `seed de catálogo: HTTP ${response.status()}`,
+    ).toBeTruthy();
+  }
   await page.context().storageState({ path: INTERNAL_STORAGE_STATE });
 });

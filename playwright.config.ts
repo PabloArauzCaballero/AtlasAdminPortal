@@ -80,8 +80,8 @@ export default defineConfig({
     : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: BASE_URL,
-    trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    trace: process.env.CI ? "off" : "on-first-retry",
+    screenshot: process.env.CI ? "off" : "only-on-failure",
   },
   projects: [
     // Un proyecto de SETUP que autentica una vez y guarda el estado de sesión. Los demás dependen

@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { seMantiene } from "./estabilizar";
-import { loginAsInternalUser } from "./internal-session";
+import {
+  INTERNAL_STORAGE_STATE,
+  loginAsInternalUser,
+} from "./internal-session";
 
 /**
  * Cubre la sección "Validación funcional con backend real" de
@@ -297,6 +300,12 @@ test.describe("Checklist funcional con backend real", () => {
     expect(res2.status(), "reusar el refresh viejo no puede dar 200").not.toBe(
       200,
     );
+    // La detección de reuso incrementa tokenVersion de todo el actor. La suite comparte
+    // una sesión de setup: reautenticarla evita que pruebas posteriores usen un JWT revocado.
+    if (HAS_QA_LOGIN) {
+      await loginAsInternalUser(page);
+      await context.storageState({ path: INTERNAL_STORAGE_STATE });
+    }
   });
 
   test("logout revoca la sesión en el servidor (el refresh viejo deja de servir)", async ({

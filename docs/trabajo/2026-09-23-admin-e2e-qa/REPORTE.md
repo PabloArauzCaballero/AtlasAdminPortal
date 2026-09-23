@@ -6,6 +6,10 @@ El workflow E2E crea por fragmento PostgreSQL y Redis efímeros, descarga un com
 
 La primera ejecución completa llegó a Playwright y confirmó que el login con PIN funciona. La identidad QA requiere permisos administrativos para recorrer todas las vistas; el backend los concede sólo en la base efímera. Las suites heredadas de producción y checklist usan ahora el mismo login de dos pasos con las credenciales generadas por el runner; dos pruebas de rol acotado siguen requiriendo una segunda identidad y se saltan explícitamente cuando no existe.
 
+El setup refresca el catálogo técnico por el endpoint de gobierno del API después de entrar con PIN. El backend refleja por separado las tablas y columnas del esquema físico. La prueba de reuso de refresh token invalida correctamente las sesiones del actor; tras verificarlo, renueva el estado de sesión compartido para que las pruebas siguientes ejerciten sus propias vistas. Los tutoriales comparten la sesión del setup.
+
+Los fallos de login pueden dejar el valor de contraseña en el contexto de error de Playwright. CI desactiva trazas y capturas, sólo publica blobs cuando E2E y el verificador pasan, y antes de subirlos busca la clave en cada ZIP, incluidos ZIPs anidados. Los artefactos de diagnóstico de las primeras corridas se eliminaron.
+
 ## Límites
 
 El entorno dura sólo lo que la corrida en GitHub Actions. No usa cuentas humanas, servicios compartidos ni credenciales persistentes. La validación final requiere que la ejecución remota de ambos fragmentos y del informe termine en verde.

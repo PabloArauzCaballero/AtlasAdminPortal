@@ -1,9 +1,9 @@
-import { readFileSync } from "node:fs";
 import { mkdirSync } from "node:fs";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { tutorialCatalog } from "../../src/features/qa-tutorials/catalog";
 import type { TutorialDefinition } from "../../src/features/qa-tutorials/types";
 import { quietaParaCapturar } from "./estabilizar";
+import { INTERNAL_STORAGE_STATE, motivoParaSaltar } from "./internal-session";
 
 /**
  * Verificación E2E real de los tutoriales interactivos de QA LAB contra el
@@ -25,16 +25,9 @@ import { quietaParaCapturar } from "./estabilizar";
  *
  * ## El segundo factor
  *
- * El administrador entra con PIN por correo. La prueba lo lee del archivo que
- * escribe el recolector local (`E2E_PIN_INBOX_FILE`, ver
- * `AtlasBackend/docker-compose.pin-inbox.yml`). Sin ese archivo, si aparece la
- * pantalla del PIN la prueba falla diciendo exactamente qué falta: nunca se
- * apaga el control para que pase.
+ * El proyecto setup ya entró con el PIN recibido por el buzón webhook. Esta suite
+ * reutiliza ese estado de sesión para no repetir la autenticación en cada tutorial.
  */
-const EMAIL = process.env.TEST_EMAIL ?? "";
-const PASSWORD = process.env.TEST_PASSWORD ?? "";
-const TENANT = process.env.TEST_TENANT_ID ?? "1";
-const PIN_FILE = process.env.E2E_PIN_INBOX_FILE ?? "";
 const USER_ID = process.env.E2E_USER_ID ?? "1";
 const EVIDENCIA =
   process.env.E2E_EVIDENCIA_DIR ?? "../_evidencia-tutoriales-2026-09-15";
@@ -45,7 +38,7 @@ test.setTimeout(240_000);
 let page: Page;
 
 test.beforeAll(async ({ browser }) => {
-  test.skip(!EMAIL || !PASSWORD, "Define TEST_EMAIL y TEST_PASSWORD.");
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
   page = await openLoggedIn(browser);
 });
 
@@ -344,56 +337,10 @@ async function resetProgress(p: Page, tutorial: TutorialDefinition) {
 async function openLoggedIn(browser: Browser): Promise<Page> {
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
+    storageState: INTERNAL_STORAGE_STATE,
   });
   const p = await context.newPage();
-  await p.goto("/internal/login");
-  const tenant = p.getByLabel("Tenant");
-  await tenant.clear();
-  await tenant.fill(TENANT);
-  await p.getByLabel("Correo interno").fill(EMAIL);
-  await p.getByLabel("Contraseña").fill(PASSWORD);
-  const sentAt = Date.now();
-  await p.getByRole("button", { name: /entrar al portal interno/i }).click();
-
-  const pinField = p.getByLabel("Código de verificación");
-  const landed = () => !p.url().includes("/internal/login");
-  await expect
-    .poll(
-      async () => landed() || (await pinField.isVisible().catch(() => false)),
-      {
-        timeout: 20_000,
-      },
-    )
-    .toBeTruthy();
-  if (!landed()) {
-    if (!PIN_FILE) {
-      throw new Error(
-        "El login pide PIN por correo y no hay E2E_PIN_INBOX_FILE: levanta el api con docker-compose.pin-inbox.yml y el recolector local.",
-      );
-    }
-    const pin = await readPin(sentAt);
-    await pinField.fill(pin);
-    await p.getByRole("button", { name: "Confirmar y entrar" }).click();
-    await p.waitForURL((url) => !url.pathname.startsWith("/internal/login"), {
-      timeout: 20_000,
-    });
-  }
+  await p.goto("/internal/qa/aprender");
+  await expect(p).toHaveURL(/\/internal\/qa\/aprender/);
   return p;
-}
-
-/** Último PIN de 6 dígitos que el recolector escribió DESPUÉS de pedirlo. */
-async function readPin(sinceMs: number): Promise<string> {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    const lines = readFileSync(PIN_FILE, "utf8")
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-    for (const line of lines.reverse()) {
-      const stamp = Date.parse(line.slice(0, 24));
-      const pin = line.slice(24).match(/\b(\d{6})\b/)?.[1];
-      if (pin && stamp >= sinceMs - 2_000) return pin;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  throw new Error("No llegó ningún PIN al recolector en 20 s.");
 }
