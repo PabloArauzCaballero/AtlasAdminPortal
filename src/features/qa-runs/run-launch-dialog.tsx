@@ -53,7 +53,7 @@ export function RunLaunchDialog({
       labelledBy={titleId}
       onClose={onClose}
       overlayClassName="flex items-center justify-center p-4"
-      panelClassName="atlas-scrollbar max-h-[92vh] w-full max-w-2xl animate-scale-in overflow-auto rounded-xl border border-atlas-border bg-white p-5 shadow-card"
+      panelClassName="atlas-scrollbar max-h-[92vh] w-full max-w-2xl animate-scale-in overflow-y-auto overflow-x-hidden rounded-xl border border-atlas-border bg-white p-5 shadow-card"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
