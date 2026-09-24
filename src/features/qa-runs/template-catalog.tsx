@@ -9,7 +9,7 @@ import {
 import { RunLaunchDialog } from "./run-launch-dialog";
 import { useQaCapabilities, useQaTemplates } from "./run-hooks";
 import { templateKeyOf } from "./run-launch-form";
-import { errorProps } from "./run-status";
+import { disabledMessage, errorProps } from "./run-status";
 import { TemplateCard, type TemplateAction } from "./template-card";
 import { TemplateDrawer } from "./template-drawers";
 import type { QaTemplateSummary } from "./types";
@@ -58,9 +58,8 @@ export function TemplateCatalog({
           role="status"
           className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
         >
-          Las corridas de QA están desactivadas en este entorno (
-          {capabilities.data.deploymentEnvironment}): puedes revisar las
-          plantillas, pero no ejecutarlas.
+          {disabledMessage(capabilities.data)} Puedes revisar las plantillas,
+          pero no ejecutarlas.
         </p>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

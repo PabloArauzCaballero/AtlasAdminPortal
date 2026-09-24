@@ -10,7 +10,7 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import type { Option } from "@/shared/lib/options";
 import { useQaPersonaSteps, useQaRunPersonas } from "./run-hooks";
-import { errorProps } from "./run-status";
+import { errorProps, PERSONA_STATUS_LABEL } from "./run-status";
 import type { QaPersonaStep } from "./types";
 
 const PAGE_SIZE = 25;
@@ -36,6 +36,16 @@ const STATUS_FILTER: Option[] = [
     value: "INDETERMINATE",
     label: "Sin conclusión",
     description: "Personas cuyo resultado no se pudo determinar con certeza.",
+  },
+  {
+    value: "RUNNING",
+    label: "En curso",
+    description: "Personas que están recorriendo el flujo en este momento.",
+  },
+  {
+    value: "PENDING",
+    label: "Pendientes",
+    description: "Personas en espera de turno que todavía no empezaron.",
   },
   {
     value: "PASSED",
@@ -121,7 +131,7 @@ export function PersonaStepResults({
                         #{persona.ordinal}
                       </span>
                       <Badge tone={statusTone(persona.status)}>
-                        {persona.status}
+                        {PERSONA_STATUS_LABEL[persona.status] ?? persona.status}
                       </Badge>
                       <span className="text-xs text-atlas-muted">
                         {persona.archetype} · {persona.caseCategory}

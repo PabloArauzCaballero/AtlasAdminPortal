@@ -163,3 +163,88 @@ export function errorProps(error: unknown): {
   const { message, requestId } = describeError(error);
   return { description: message, requestId };
 }
+
+/** «Recorre 9 pasos de este flujo»: sólo cuando el listado se pidió filtrado por flujo. */
+export function matchedStepsLabel(template: {
+  matchedStepCodes?: string[];
+}): string | null {
+  const count = template.matchedStepCodes?.length;
+  if (count === undefined) return null;
+  return `Recorre ${count} paso${count === 1 ? "" : "s"} de este flujo`;
+}
+
+/** Por qué no se ofrece ejecutar: el motivo del servidor si lo da, y el entorno. */
+export function disabledMessage(capabilities: {
+  deploymentEnvironment: string;
+  disabledReason: string | null;
+}): string {
+  const reason = capabilities.disabledReason?.trim();
+  return reason
+    ? `Las corridas de QA están desactivadas en este entorno (${capabilities.deploymentEnvironment}): ${reason}`
+    : `Las corridas de QA están desactivadas en este entorno (${capabilities.deploymentEnvironment}).`;
+}
+
+/**
+ * Qué decirle al operador cuando falla el lanzamiento. Los códigos llegan en `error.code` del
+ * sobre de Atlas; `revalidate` indica que la preparación ya no sirve y hay que volver a validarla.
+ */
+export function launchErrorView(error: unknown): {
+  title: string;
+  description: string;
+  requestId?: string;
+  revalidate: boolean;
+} {
+  const { message, requestId, code = "" } = describeError(error);
+  const view = (title: string, description: string, revalidate = false) => ({
+    title,
+    description,
+    requestId,
+    revalidate,
+  });
+  if (code === "PLAN_EXPIRED")
+    return view(
+      "La preparación venció",
+      "Pasaron más de 15 minutos desde que se validó. Vuelve a validar la preparación.",
+      true,
+    );
+  if (code === "PLAN_CHANGED")
+    return view(
+      "La preparación cambió",
+      "La plantilla o el entorno cambiaron desde que se validó. Vuelve a validar la preparación.",
+      true,
+    );
+  if (code === "IDEMPOTENCY_KEY_REUSED")
+    return view(
+      "Este lanzamiento ya se usó con otro plan",
+      "Vuelve a validar la preparación para lanzar una corrida nueva.",
+      true,
+    );
+  if (code === "QA_RUN_ALREADY_ACTIVE")
+    return view(
+      "Ya hay una corrida en curso",
+      "Espera a que termine o cancélala antes de lanzar otra.",
+    );
+  if (code === "WORKER_UNAVAILABLE")
+    return view(
+      "El ejecutor de corridas no está disponible",
+      "No hay un ejecutor activo que tome la corrida. Espera unos minutos o avisa a operaciones.",
+    );
+  if (code.startsWith("QA_DISABLED")) {
+    const reason = code.slice("QA_DISABLED".length).replace(/^:/, "").trim();
+    return view(
+      "Las corridas de QA están desactivadas",
+      reason ? `Motivo: ${reason}.` : message,
+    );
+  }
+  return view("No se pudo lanzar la corrida", message);
+}
+
+export const PERSONA_STATUS_LABEL: Record<string, string> = {
+  PENDING: "Pendiente",
+  RUNNING: "En curso",
+  PASSED: "Pasó",
+  FAILED: "Falló",
+  BLOCKED: "Bloqueada",
+  INDETERMINATE: "Sin conclusión",
+  CANCELLED: "Cancelada",
+};

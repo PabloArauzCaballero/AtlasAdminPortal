@@ -119,6 +119,7 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
           {
             stepKey: "signup",
             workflowStepCode: "signup",
+            endpoint: "POST /customers",
             passed: 1,
             failed: 3,
             skipped: 0,
@@ -129,6 +130,7 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
           {
             stepKey: "login",
             workflowStepCode: "login",
+            endpoint: "POST /auth/login",
             passed: 1,
             failed: 0,
             skipped: 3,
@@ -176,5 +178,47 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
     expect(
       screen.queryByRole("button", { name: /Cancelar corrida/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it("las personas se rotulan con los estados oficiales en lenguaje de usuario", async () => {
+    api.getQaRun.mockResolvedValue(runFixture());
+    api.listQaRunPersonas.mockResolvedValue({
+      items: [
+        {
+          ordinal: 1,
+          personaKey: "p-1",
+          status: "RUNNING",
+          caseCategory: "normal",
+          archetype: "asalariado",
+          resources: {},
+          failedStepKey: null,
+          reason: null,
+          startedAt: null,
+          finishedAt: null,
+        },
+        {
+          ordinal: 2,
+          personaKey: "p-2",
+          status: "PENDING",
+          caseCategory: "normal",
+          archetype: "asalariado",
+          resources: {},
+          failedStepKey: null,
+          reason: null,
+          startedAt: null,
+          finishedAt: null,
+        },
+      ],
+      total: 2,
+      page: 1,
+      limit: 25,
+    });
+    renderWithProviders(<RunProgress runId="run-1" />);
+
+    const list = await screen.findByRole("region", {
+      name: "Personas de la corrida",
+    });
+    expect(await within(list).findByText("En curso")).toBeInTheDocument();
+    expect(within(list).getByText("Pendiente")).toBeInTheDocument();
   });
 });

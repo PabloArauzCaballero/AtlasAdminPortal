@@ -2,7 +2,7 @@
 
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import type { Option } from "@/shared/lib/options";
-import { DATASET_OPTIONS } from "./run-status";
+import { DATASET_OPTIONS, matchedStepsLabel } from "./run-status";
 import {
   findEnvironment,
   findTemplate,
@@ -34,7 +34,7 @@ export function RunLaunchFields({
     label: `${item.name} · v${item.version}`,
     description:
       item.status === "READY"
-        ? `${item.stepCount} pasos; termina en «${item.expectedTerminal}».`
+        ? `${matchedStepsLabel(item) ?? `${item.stepCount} pasos`}; termina en «${item.expectedTerminal}».`
         : `No se puede ejecutar: ${item.blockedReasons.join("; ") || "plantilla en borrador"}.`,
     disabled: item.status !== "READY",
   }));

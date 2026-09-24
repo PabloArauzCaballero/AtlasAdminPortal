@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
+import { AtlasApiError } from "@/shared/api/errors";
 import {
   blockedPreflight,
   capabilitiesFixture,
@@ -113,6 +114,8 @@ describe("RunLaunchDialog · UI/contrato con respuestas simuladas del contrato Q
       datasetMode: "NORMAL_SYNTHETIC",
       scenarioCode: "happy_path",
       seed: "atlas-qa-regression-v1",
+      // Abierto desde el árbol: el flujo viaja y queda guardado en la corrida.
+      workflowCode: "customer_full_lifecycle",
     });
   });
 
@@ -192,21 +195,81 @@ describe("RunLaunchDialog · UI/contrato con respuestas simuladas del contrato Q
     expect(first).not.toEqual(second);
   });
 
-  it("con las corridas desactivadas enseña el motivo y no ofrece ejecutar", async () => {
+  it("con las corridas desactivadas enseña el motivo del servidor y no ofrece ejecutar", async () => {
     api.getQaCapabilities.mockResolvedValue(
-      capabilitiesFixture({ enabled: false, deploymentEnvironment: "PROD" }),
+      capabilitiesFixture({
+        enabled: false,
+        deploymentEnvironment: "PROD",
+        disabledReason: "QA_EXECUTION_ENABLED está apagado",
+      }),
     );
     render_();
 
     expect(
       await screen.findByText(
-        /Las corridas de QA están desactivadas en este entorno \(PROD\)/,
+        /desactivadas en este entorno \(PROD\): QA_EXECUTION_ENABLED está apagado/,
       ),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /^Ejecutar \d+ personas/ }),
     ).not.toBeInTheDocument();
   });
+
+  it("dice cuántos pasos de este flujo recorre la plantilla", async () => {
+    api.listQaTemplates.mockResolvedValue([
+      templateFixture({
+        matchedStepCodes: ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
+      }),
+    ]);
+    render_();
+
+    expect(
+      (await screen.findAllByText(/Recorre 9 pasos de este flujo/)).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ["PLAN_EXPIRED", 409, "La preparación venció", true],
+    ["PLAN_CHANGED", 409, "La preparación cambió", true],
+    [
+      "IDEMPOTENCY_KEY_REUSED",
+      409,
+      "Este lanzamiento ya se usó con otro plan",
+      true,
+    ],
+    ["QA_RUN_ALREADY_ACTIVE", 409, "Ya hay una corrida en curso", false],
+    [
+      "WORKER_UNAVAILABLE",
+      503,
+      "El ejecutor de corridas no está disponible",
+      false,
+    ],
+    [
+      "QA_DISABLED:mantenimiento",
+      503,
+      "Las corridas de QA están desactivadas",
+      false,
+    ],
+  ] as const)(
+    "un %s (%i) se explica y, si la preparación ya no sirve, obliga a revalidar",
+    async (code, status, title, revalidate) => {
+      api.launchQaRun.mockRejectedValue(
+        new AtlasApiError({ status, code, message: "x", requestId: "req-42" }),
+      );
+      render_();
+      await screen.findByRole("spinbutton", { name: /^Personas/ });
+      await validate();
+      await screen.findByText("Preparación lista");
+      await userEvent.click(executeButton());
+
+      expect(await screen.findByText(title)).toBeInTheDocument();
+      expect(screen.getByText(/req-42/)).toBeInTheDocument();
+      if (code.startsWith("QA_DISABLED"))
+        expect(screen.getByText("Motivo: mantenimiento.")).toBeInTheDocument();
+      if (revalidate) expect(executeButton()).toBeDisabled();
+      else expect(executeButton()).toBeEnabled();
+    },
+  );
 
   it("no pide URL, token, IDs de endpoint ni JSON", async () => {
     render_();

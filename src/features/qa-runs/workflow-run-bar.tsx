@@ -30,7 +30,7 @@ export function WorkflowRunBar({
   onRunIdChange: (runId: string | null) => void;
 }>) {
   const [open, setOpen] = useState(false);
-  const runs = useQaRuns({ limit: 20 });
+  const runs = useQaRuns({ limit: 20, workflowCode });
   const run = useQaRun(runId);
   const latest = runs.data?.find((item) => item.workflowCode === workflowCode);
   const current =

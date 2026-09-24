@@ -136,7 +136,7 @@ export function useQaRun(runId?: string | null) {
 }
 
 export function useQaRuns(
-  query: { limit?: number; templateCode?: string } = {},
+  query: { limit?: number; templateCode?: string; workflowCode?: string } = {},
 ) {
   return useQuery({
     queryKey: [...ROOT, "runs", query],

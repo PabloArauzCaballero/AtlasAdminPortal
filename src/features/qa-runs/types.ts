@@ -27,6 +27,8 @@ export type QaEnvironment = {
 
 export type QaCapabilities = {
   enabled: boolean;
+  /** Por qué no se puede ejecutar cuando `enabled` es false (PROD, variable apagada…). */
+  disabledReason: string | null;
   deploymentEnvironment: string;
   generatorVersion: string;
   environments: QaEnvironment[];
@@ -56,6 +58,11 @@ export type QaTemplateSummary = {
   stepCount: number;
   providers: string[];
   coveredStepCodes: string[];
+  /**
+   * Sólo con `?workflowCode=`: códigos de paso de ESE flujo que la plantilla recorre. El servidor
+   * casa por endpoint, así que una receta cubre el nodo de cualquier flujo que llame a su ruta.
+   */
+  matchedStepCodes?: string[];
 };
 
 export type QaTemplateStep = {
@@ -63,6 +70,8 @@ export type QaTemplateStep = {
   workflowStepCode?: string;
   method: string;
   path: string;
+  /** `POST /customers/:param/credit-applications`: método + ruta con cada parámetro como `:param`. */
+  endpoint: string | null;
   actor: QaActor;
   dependsOn: string[];
   expectStatus: number[];
@@ -117,6 +126,8 @@ export type QaRunRequest = {
   seed: string;
   datasetMode: QaDatasetMode;
   scenarioCode: string;
+  /** El flujo del árbol desde el que se lanza; queda guardado en la corrida. */
+  workflowCode?: string;
   limits?: { maxRequests?: number };
 };
 
@@ -172,6 +183,8 @@ export type QaVerdict = "PASSED" | "FAILED" | "INCONCLUSIVE" | null;
 export type QaRunStepCounts = {
   stepKey: string;
   workflowStepCode: string | null;
+  /** Misma forma que `endpointKey()`: es la clave con la que se casa el nodo del árbol. */
+  endpoint: string | null;
   passed: number;
   failed: number;
   skipped: number;
@@ -227,10 +240,19 @@ export type QaRunSummary = {
   errorMessage: string | null;
 };
 
+export type QaPersonaStatus =
+  | "PENDING"
+  | "RUNNING"
+  | "PASSED"
+  | "FAILED"
+  | "BLOCKED"
+  | "INDETERMINATE"
+  | "CANCELLED";
+
 export type QaRunPersona = {
   ordinal: number;
   personaKey: string;
-  status: string;
+  status: QaPersonaStatus;
   caseCategory: string;
   archetype: string;
   resources: Record<string, string>;

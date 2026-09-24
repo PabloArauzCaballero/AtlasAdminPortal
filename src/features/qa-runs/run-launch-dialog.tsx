@@ -21,7 +21,7 @@ import {
   type LaunchForm,
 } from "./run-launch-form";
 import { PreflightResult, TemplateRouteSummary } from "./run-preflight-result";
-import { describeError, errorProps } from "./run-status";
+import { disabledMessage, errorProps, launchErrorView } from "./run-status";
 import type { QaCapabilities, QaTemplateSummary } from "./types";
 
 /**
@@ -91,15 +91,15 @@ export function RunLaunchDialog({
             role="alert"
             className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
           >
-            Las corridas de QA están desactivadas en este entorno (
-            {capabilities.data.deploymentEnvironment}). Sólo se ejecutan en
-            entornos aislados de prueba.
+            {disabledMessage(capabilities.data)} Sólo se ejecutan en entornos
+            aislados de prueba.
           </p>
         ) : capabilities.data && templates.data ? (
           <LaunchBody
             capabilities={capabilities.data}
             templates={templates.data}
             preferredKey={templateKey}
+            workflowCode={workflowCode}
             onCancel={onClose}
             onLaunched={onLaunched}
           />
@@ -113,12 +113,14 @@ function LaunchBody({
   capabilities,
   templates,
   preferredKey,
+  workflowCode,
   onCancel,
   onLaunched,
 }: Readonly<{
   capabilities: QaCapabilities;
   templates: QaTemplateSummary[];
   preferredKey?: string;
+  workflowCode?: string;
   onCancel: () => void;
   onLaunched: (runId: string) => void;
 }>) {
@@ -154,10 +156,8 @@ function LaunchBody({
     preflight.data?.status === "READY" &&
     preflight.data.planId &&
     preflight.data.planHash;
-  const launchError = launch.error ? describeError(launch.error) : null;
-  const planGone =
-    launchError?.code === "PLAN_EXPIRED" ||
-    launchError?.code === "PLAN_CHANGED";
+  const launchError = launch.error ? launchErrorView(launch.error) : null;
+  const planGone = Boolean(launchError?.revalidate);
 
   if (templates.length === 0) {
     return (
@@ -202,16 +202,8 @@ function LaunchBody({
       {preflight.data ? <PreflightResult preflight={preflight.data} /> : null}
       {launchError ? (
         <ErrorState
-          title={
-            planGone
-              ? "La preparación ya no vale"
-              : "No se pudo lanzar la corrida"
-          }
-          description={
-            planGone
-              ? "Pasaron más de 15 minutos o cambió la plantilla. Vuelve a validar la preparación."
-              : launchError.message
-          }
+          title={launchError.title}
+          description={launchError.description}
           requestId={launchError.requestId}
         />
       ) : null}
@@ -224,7 +216,8 @@ function LaunchBody({
           isLoading={preflight.isPending}
           loadingText="Validando…"
           onClick={() =>
-            template && preflight.mutate(toRunRequest(form, template))
+            template &&
+            preflight.mutate(toRunRequest(form, template, workflowCode))
           }
         >
           <ShieldCheck className="h-4 w-4" aria-hidden />

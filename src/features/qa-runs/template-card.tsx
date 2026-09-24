@@ -4,7 +4,7 @@ import { Database, Eye, ListOrdered, Play } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { ACTOR_LABEL, DATASET_OPTIONS } from "./run-status";
+import { ACTOR_LABEL, DATASET_OPTIONS, matchedStepsLabel } from "./run-status";
 import type { QaTemplateSummary } from "./types";
 
 export type TemplateAction = "steps" | "data" | "preview" | "run";
@@ -55,6 +55,9 @@ export function TemplateCard({
             <dt className="inline font-medium text-atlas-text">Alcance: </dt>
             <dd className="inline">
               {template.stepCount} pasos del flujo {template.workflowCode}
+              {matchedStepsLabel(template)
+                ? ` · ${matchedStepsLabel(template)}`
+                : ""}
             </dd>
           </div>
           <div>

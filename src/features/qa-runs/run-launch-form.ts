@@ -120,11 +120,14 @@ export function localProblems(
   return problems;
 }
 
+/** `workflowCode` sólo cuando se lanza desde el árbol: queda guardado en la corrida. */
 export function toRunRequest(
   form: LaunchForm,
   template: QaTemplateSummary,
+  workflowCode?: string,
 ): QaRunRequest {
   return {
+    ...(workflowCode ? { workflowCode } : {}),
     templateCode: template.code,
     templateVersion: template.version,
     environmentId: form.environmentId,

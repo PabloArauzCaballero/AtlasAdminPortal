@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
-import { ACTOR_LABEL, BLOCKER_HINT } from "./run-status";
+import { ACTOR_LABEL, BLOCKER_HINT, matchedStepsLabel } from "./run-status";
 import { formatDuration } from "./run-launch-form";
 import type { QaPreflight, QaTemplateSummary } from "./types";
 
@@ -16,7 +16,12 @@ export function TemplateRouteSummary({
       <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs text-atlas-muted sm:grid-cols-2">
         <div>
           <dt className="inline font-medium text-atlas-text">Pasos: </dt>
-          <dd className="inline">{template.stepCount}</dd>
+          <dd className="inline">
+            {template.stepCount}
+            {matchedStepsLabel(template)
+              ? ` · ${matchedStepsLabel(template)}`
+              : ""}
+          </dd>
         </div>
         <div>
           <dt className="inline font-medium text-atlas-text">

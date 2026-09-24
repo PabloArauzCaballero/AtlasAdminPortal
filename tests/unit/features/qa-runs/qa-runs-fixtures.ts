@@ -15,6 +15,7 @@ export function capabilitiesFixture(
 ): QaCapabilities {
   return {
     enabled: true,
+    disabledReason: null,
     deploymentEnvironment: "TEST",
     generatorVersion: "persona-factory@1",
     environments: [

@@ -85,10 +85,14 @@ export function launchQaRun(
 }
 
 export async function listQaRuns(
-  query: { limit?: number; templateCode?: string } = {},
+  query: { limit?: number; templateCode?: string; workflowCode?: string } = {},
 ) {
   const response = await apiRequest<{ items: QaRunSummary[] }>(`${BASE}/runs`, {
-    query: { limit: query.limit ?? 20, templateCode: query.templateCode },
+    query: {
+      limit: query.limit ?? 20,
+      templateCode: query.templateCode,
+      workflowCode: query.workflowCode,
+    },
   });
   return response.items ?? [];
 }
