@@ -31,9 +31,15 @@ export type JourneyRunnerConfig = {
 export function JourneyRunnerConfigFields({
   config,
   onChange,
+  singleRun = false,
 }: Readonly<{
   config: JourneyRunnerConfig;
   onChange: (value: Partial<JourneyRunnerConfig>) => void;
+  /**
+   * Oculta «Cantidad de personas» y «Concurrencia». El editor manual es diagnóstico de UN
+   * recorrido: las N personas se lanzan desde el catálogo, en el servidor.
+   */
+  singleRun?: boolean;
 }>) {
   return (
     <>
@@ -95,23 +101,27 @@ export function JourneyRunnerConfigFields({
         />
       ) : null}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <NumberField
-          label="Cantidad de personas"
-          tooltip="Cuántas veces se recorre la secuencia completa, cada una con su propia persona sintética. Es lo que simula un flujo real con volumen, no una corrida suelta."
-          hint="1 = una sola corrida (el comportamiento de antes). Hasta 200 por lote."
-          value={config.iterations}
-          min={1}
-          max={200}
-          onChange={(value) => onChange({ iterations: value })}
-        />
-        <NumberField
-          label="Concurrencia"
-          tooltip="Cuántas personas atraviesan el journey al mismo tiempo."
-          value={config.concurrency}
-          min={1}
-          max={20}
-          onChange={(value) => onChange({ concurrency: value })}
-        />
+        {singleRun ? null : (
+          <>
+            <NumberField
+              label="Cantidad de personas"
+              tooltip="Cuántas veces se recorre la secuencia completa, cada una con su propia persona sintética. Es lo que simula un flujo real con volumen, no una corrida suelta."
+              hint="1 = una sola corrida (el comportamiento de antes). Hasta 200 por lote."
+              value={config.iterations}
+              min={1}
+              max={200}
+              onChange={(value) => onChange({ iterations: value })}
+            />
+            <NumberField
+              label="Concurrencia"
+              tooltip="Cuántas personas atraviesan el journey al mismo tiempo."
+              value={config.concurrency}
+              min={1}
+              max={20}
+              onChange={(value) => onChange({ concurrency: value })}
+            />
+          </>
+        )}
         <Field
           label="Semilla del lote"
           tooltip="Fija el lote de personas: la misma semilla genera siempre las mismas N personas, para poder comparar dos corridas."
