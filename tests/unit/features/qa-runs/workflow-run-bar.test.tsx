@@ -60,21 +60,44 @@ beforeEach(() => {
   api.listQaRuns.mockResolvedValue([]);
 });
 
+const PARAM_STEP = "ops.credit_product_status";
+
+const counts = (
+  stepKey: string,
+  endpoint: string,
+  passed: number,
+  failed: number,
+) => ({
+  stepKey,
+  // Códigos de paso de la RECETA, distintos de los del flujo: el nodo se casa por endpoint.
+  workflowStepCode: `receta.${stepKey}`,
+  endpoint,
+  passed,
+  failed,
+  skipped: 0,
+  notApplicable: 0,
+  indeterminate: 0,
+  cancelled: 0,
+});
+
 function runOnTree(passed: number, failed: number) {
   return runFixture({
     runId: "run-7",
     workflowCode: REAL_TREE.workflowCode,
     steps: [
-      {
-        stepKey: "list",
-        workflowStepCode: STEP,
-        passed,
-        failed,
-        skipped: 0,
-        notApplicable: 0,
-        indeterminate: 0,
-        cancelled: 0,
-      },
+      counts("list", "GET /operations/credit/products", passed, failed),
+      counts(
+        "status_a",
+        "PATCH /operations/credit/products/:param/status",
+        2,
+        0,
+      ),
+      counts(
+        "status_b",
+        "PATCH /operations/credit/products/:param/status",
+        1,
+        1,
+      ),
     ],
   });
 }
@@ -104,6 +127,10 @@ describe("árbol · ejecutar el flujo con N personas (UI/contrato con respuestas
       }),
     ).toBeInTheDocument();
     expect(api.listQaTemplates).toHaveBeenCalledWith(REAL_TREE.workflowCode);
+    expect(api.listQaRuns).toHaveBeenCalledWith({
+      limit: 20,
+      workflowCode: REAL_TREE.workflowCode,
+    });
   });
 
   it("cada nodo pinta la distribución de todas las personas, no un verde por una", async () => {
@@ -119,6 +146,18 @@ describe("árbol · ejecutar el flujo con N personas (UI/contrato con respuestas
     expect(overlay.querySelector("rect")?.getAttribute("fill")).not.toBe(
       "#dcfce7",
     );
+  });
+
+  it("casa por endpoint normalizando :productId → :param y suma los pasos del mismo nodo", async () => {
+    api.getQaRun.mockResolvedValue(runOnTree(1, 0));
+    renderWithProviders(
+      <WorkflowCanvas
+        runControls={{ runId: "run-7", onRunIdChange: vi.fn() }}
+      />,
+    );
+
+    const overlay = await screen.findByTestId(`run-counts-${PARAM_STEP}`);
+    expect(overlay).toHaveTextContent("✓ 3 · ✗ 1 · otros 0");
   });
 
   it("una corrida de otro flujo no se pinta sobre éste", async () => {

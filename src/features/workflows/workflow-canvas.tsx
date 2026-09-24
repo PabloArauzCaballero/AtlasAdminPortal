@@ -15,7 +15,7 @@ import { WorkflowGraphView } from "./workflow-graph-view";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
 import type { WorkflowStage, WorkflowTreeQuery } from "./types";
 import { useQaRun } from "@/features/qa-runs/run-hooks";
-import { stepCountsByWorkflowCode } from "@/features/qa-runs/run-step-counts";
+import { stepCountsByEndpoint } from "@/features/qa-runs/run-step-counts";
 import { WorkflowRunBar } from "@/features/qa-runs/workflow-run-bar";
 import type { QaRunStepCounts } from "@/features/qa-runs/types";
 
@@ -49,12 +49,13 @@ export function WorkflowCanvas({
   const workflows = useWorkflows();
   const versions = useWorkflowVersions(workflowCode);
   const tree = useWorkflowTree(workflowCode, filters);
-  // Los conteos salen de la corrida del MISMO flujo; los filtros sólo cambian qué nodos se ven.
+  // Los conteos salen de la corrida lanzada desde ESTE flujo y casan con cada nodo por endpoint
+  // (método + ruta), no por código de paso; los filtros sólo cambian qué nodos se ven.
   const run = useQaRun(runControls?.runId);
   const stepRuns = useMemo(
     () =>
       run.data?.workflowCode === workflowCode
-        ? stepCountsByWorkflowCode(run.data)
+        ? stepCountsByEndpoint(run.data)
         : undefined,
     [run.data, workflowCode],
   );

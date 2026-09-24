@@ -1,15 +1,32 @@
 import type { QaRunStepCounts, QaRunSummary } from "./types";
 
-/** Conteos por paso del flujo (`workflowStepCode`). Varios pasos de receta pueden caer en uno. */
-export function stepCountsByWorkflowCode(
+/**
+ * Clave de endpoint, idéntica a `endpointKey()` del backend: método en mayúsculas + ruta con cada
+ * parámetro como `:param` y sin barra final. `{{resources.customerId}}` y `:customerId` quedan
+ * igual, así que el nodo del árbol y el paso de la receta se encuentran aunque sus códigos de paso
+ * difieran entre flujos.
+ */
+export function endpointKey(method: string, path: string): string {
+  const normalized = path
+    .replace(/\{\{\s*[a-zA-Z]+\.([a-zA-Z0-9_]+)\s*\}\}/g, ":$1")
+    .replace(/:[a-zA-Z0-9_]+/g, ":param")
+    .replace(/\/+$/, "");
+  return `${method.toUpperCase()} ${normalized}`;
+}
+
+/**
+ * Conteos por endpoint (`steps[].endpoint`). Si varios pasos de la receta llaman al mismo endpoint
+ * —y por tanto caen en el mismo nodo—, se suman.
+ */
+export function stepCountsByEndpoint(
   run: QaRunSummary | undefined,
 ): Map<string, QaRunStepCounts> {
-  const byCode = new Map<string, QaRunStepCounts>();
+  const byEndpoint = new Map<string, QaRunStepCounts>();
   for (const step of run?.steps ?? []) {
-    if (!step.workflowStepCode) continue;
-    const current = byCode.get(step.workflowStepCode);
+    if (!step.endpoint) continue;
+    const current = byEndpoint.get(step.endpoint);
     if (!current) {
-      byCode.set(step.workflowStepCode, { ...step });
+      byEndpoint.set(step.endpoint, { ...step });
       continue;
     }
     current.passed += step.passed;
@@ -19,7 +36,7 @@ export function stepCountsByWorkflowCode(
     current.indeterminate += step.indeterminate;
     current.cancelled += step.cancelled;
   }
-  return byCode;
+  return byEndpoint;
 }
 
 export function stepTotal(counts: QaRunStepCounts): number {

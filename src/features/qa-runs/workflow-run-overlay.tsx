@@ -1,5 +1,5 @@
 import type { GraphNode } from "@/features/workflows/workflow-graph-layout";
-import { stepTone, stepTotal } from "./run-step-counts";
+import { endpointKey, stepTone, stepTotal } from "./run-step-counts";
 import type { QaRunStepCounts } from "./types";
 
 const TONE_FILL = {
@@ -31,7 +31,9 @@ export function RunCountsLayer({
   return (
     <g aria-hidden pointerEvents="none">
       {nodes.map((node) => {
-        const step = counts.get(node.step.stepCode);
+        const step = counts.get(
+          endpointKey(node.step.httpMethod, node.step.routePath),
+        );
         if (!step) return null;
         const total = stepTotal(step);
         const tone = stepTone(step);

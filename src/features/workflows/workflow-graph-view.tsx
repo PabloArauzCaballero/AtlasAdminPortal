@@ -48,7 +48,7 @@ export function WorkflowGraphView({
   stepRuns,
 }: Readonly<{
   tree: WorkflowTree;
-  /** Conteos de la corrida QA abierta, por `stepCode`. */
+  /** Conteos de la corrida QA abierta, por clave de endpoint (`endpointKey`). */
   stepRuns?: ReadonlyMap<string, QaRunStepCounts>;
   selection: WorkflowSelection;
   showDependencies: boolean;
