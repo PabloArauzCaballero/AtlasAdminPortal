@@ -14,6 +14,10 @@ import { SidePanel } from "./workflow-side-panel";
 import { WorkflowGraphView } from "./workflow-graph-view";
 import type { WorkflowSelection } from "./workflow-graph-helpers";
 import type { WorkflowStage, WorkflowTreeQuery } from "./types";
+import { useQaRun } from "@/features/qa-runs/run-hooks";
+import { stepCountsByWorkflowCode } from "@/features/qa-runs/run-step-counts";
+import { WorkflowRunBar } from "@/features/qa-runs/workflow-run-bar";
+import type { QaRunStepCounts } from "@/features/qa-runs/types";
 
 const STANDARD_WORKFLOW = "customer_credit_journey";
 
@@ -25,7 +29,15 @@ const STANDARD_WORKFLOW = "customer_credit_journey";
  * abre FLOTANDO encima. Cuando la ficha era una columna del grid, el grafo
  * quedaba encajonado y no se veían ni tres etapas seguidas.
  */
-export function WorkflowCanvas() {
+export function WorkflowCanvas({
+  runControls,
+}: Readonly<{
+  /** La corrida QA abierta (`?runId=`). Sin esto no se ofrece ejecutar desde el árbol. */
+  runControls?: {
+    runId: string | null;
+    onRunIdChange: (runId: string | null) => void;
+  };
+}> = {}) {
   const [workflowCode, setWorkflowCode] = useState(STANDARD_WORKFLOW);
   const [filters, setFilters] = useState<WorkflowTreeQuery>({
     version: "latest",
@@ -37,6 +49,15 @@ export function WorkflowCanvas() {
   const workflows = useWorkflows();
   const versions = useWorkflowVersions(workflowCode);
   const tree = useWorkflowTree(workflowCode, filters);
+  // Los conteos salen de la corrida del MISMO flujo; los filtros sólo cambian qué nodos se ven.
+  const run = useQaRun(runControls?.runId);
+  const stepRuns = useMemo(
+    () =>
+      run.data?.workflowCode === workflowCode
+        ? stepCountsByWorkflowCode(run.data)
+        : undefined,
+    [run.data, workflowCode],
+  );
 
   const modules = useMemo(
     () => (tree.data ? collectModules(tree.data.stages) : []),
@@ -74,6 +95,15 @@ export function WorkflowCanvas() {
           setSelection(null);
         }}
       />
+      {runControls ? (
+        <div className="mt-3">
+          <WorkflowRunBar
+            workflowCode={workflowCode}
+            runId={runControls.runId}
+            onRunIdChange={runControls.onRunIdChange}
+          />
+        </div>
+      ) : null}
     </div>
   );
 
@@ -83,6 +113,7 @@ export function WorkflowCanvas() {
       selection={selection}
       showDependencies={showDependencies}
       expanded={expanded}
+      stepRuns={stepRuns}
       onSelect={setSelection}
       onToggleExpanded={() => setExpanded((value) => !value)}
     />
@@ -135,6 +166,7 @@ function WorkflowBody({
   selection,
   showDependencies,
   expanded,
+  stepRuns,
   onSelect,
   onToggleExpanded,
 }: Readonly<{
@@ -142,6 +174,7 @@ function WorkflowBody({
   selection: WorkflowSelection;
   showDependencies: boolean;
   expanded: boolean;
+  stepRuns?: ReadonlyMap<string, QaRunStepCounts>;
   onSelect: (selection: WorkflowSelection) => void;
   onToggleExpanded: () => void;
 }>) {
@@ -181,6 +214,7 @@ function WorkflowBody({
           selection={selection}
           showDependencies={showDependencies}
           expanded={expanded}
+          stepRuns={stepRuns}
           onSelect={(next) =>
             onSelect(
               selection &&
