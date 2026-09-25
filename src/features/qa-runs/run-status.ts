@@ -130,7 +130,8 @@ export const BLOCKER_HINT: Record<string, string> = {
   WORKER_UNAVAILABLE:
     "El ejecutor de corridas no está activo; espera o avisa a operaciones.",
   MOCK_UNAVAILABLE: "El simulador de proveedores externos no responde.",
-  PLATFORM_SERVICE_UNAVAILABLE: "Un servicio interno del que depende el recorrido (el Motor de decisiones) no responde.",
+  PLATFORM_SERVICE_UNAVAILABLE:
+    "Un servicio interno del que depende el recorrido (el Motor de decisiones) no responde.",
   SCENARIO_UNSUPPORTED: "Elige otro escenario: éste no aplica a la plantilla.",
   UNSAFE_ENVIRONMENT: "Este entorno no admite corridas de QA.",
   BUDGET_EXCEEDED: "Baja personas o concurrencia para entrar en los límites.",
