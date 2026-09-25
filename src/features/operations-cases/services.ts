@@ -121,7 +121,7 @@ export function resendContactVerification(
           ? { contactMethodId: body.contactMethodId }
           : {}),
       },
-      headers: { "X-Idempotency-Key": idempotencyKey("resend-contact") },
+      headers: { "x-idempotency-key": idempotencyKey("resend-contact") },
     },
   );
 }

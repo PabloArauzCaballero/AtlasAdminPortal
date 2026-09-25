@@ -12,8 +12,9 @@ import type { InternalSession } from "@/shared/auth/types";
 export async function refreshInternalSession(
   session: InternalSession | null,
 ): Promise<InternalSession | null> {
-  // Un refresco que SÍ llegó no se repite: el backend rota el token y el viejo
-  // ya no vale. Sólo se repite si la pasarela confirma que el API no lo vio.
+  // Un refresco no se repite: si llegó, el backend ya rotó el token y el viejo
+  // no vale. Ni ante la pasarela: el proxy también contesta en texto cuando el
+  // backend cortó la conexión después de recibirlo.
   const { response, payload } = await sendWithGatewayRetry(
     async () => {
       const sent = await fetchWithTimeout(
@@ -31,7 +32,7 @@ export async function refreshInternalSession(
       );
       return { response: sent, payload: await parseJsonSafely(sent) };
     },
-    { mode: "undelivered-only" },
+    { mode: "single" },
   );
 
   if (!response.ok) {
