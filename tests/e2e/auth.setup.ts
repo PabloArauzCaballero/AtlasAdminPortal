@@ -65,9 +65,12 @@ setup("autenticar en el portal interno", async ({ page }) => {
         timeout: 180_000,
       },
     );
+    const discoveryOutcome = (await discovery.json().catch(() => ({}))) as {
+      error?: { code?: string; message?: string };
+    };
     expect(
       discovery.ok(),
-      `contratos OpenAPI: HTTP ${discovery.status()}`,
+      `contratos OpenAPI: HTTP ${discovery.status()} ${discoveryOutcome.error?.code ?? "sin código"}: ${discoveryOutcome.error?.message ?? "sin detalle"}`,
     ).toBeTruthy();
 
     // La federación sigue siendo la real del backend: sólo los dos productores remotos son
