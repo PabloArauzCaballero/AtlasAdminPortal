@@ -51,7 +51,10 @@ export async function loginAsInternalUser(page: Page): Promise<void> {
     // `domcontentloaded`, la hidratación reemplaza los inputs y se lleva por delante lo escrito: el
     // envío salía con «Ingresa un correo válido» y se leía como contraseña incorrecta. La espera no
     // es un reloj: es una aserción sobre un elemento ya interactivo.
-    const tenant = page.getByLabel("Tenant");
+    // Next puede mantener brevemente el formulario SSR y el hidratado a la vez. Se usa el último
+    // formulario para que los campos y el botón pertenezcan siempre a la misma instancia.
+    const form = page.locator("form").last();
+    const tenant = form.getByLabel("Tenant");
     await expect(tenant).toBeEditable();
 
     // `clear()` antes de escribir: el campo llega con el tenant por defecto ya puesto y `fill` sobre
@@ -59,14 +62,14 @@ export async function loginAsInternalUser(page: Page): Promise<void> {
     // enviaba con «11» y el backend contestaba, con razón, que ese tenant no existe.
     await tenant.clear();
     await tenant.fill(TENANT);
-    await page.getByLabel("Correo interno").fill(EMAIL ?? "");
-    await page.getByLabel("Contraseña").fill(PASSWORD ?? "");
+    await form.getByLabel("Correo interno").fill(EMAIL ?? "");
+    await form.getByLabel("Contraseña").fill(PASSWORD ?? "");
 
     // Comprobar lo escrito antes de enviar convierte «la hidratación se comió el formulario» en un
     // error que se lee solo, en vez de un timeout tres pantallas más adelante.
-    await expect(page.getByLabel("Correo interno")).toHaveValue(EMAIL ?? "");
+    await expect(form.getByLabel("Correo interno")).toHaveValue(EMAIL ?? "");
 
-    await page
+    await form
       .getByRole("button", { name: /entrar al portal interno/i })
       .click();
 
