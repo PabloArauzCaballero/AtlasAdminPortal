@@ -131,7 +131,7 @@ export function GlobalSearchBox() {
           aria-activedescendant={
             activeIndex >= 0 ? optionId(activeIndex) : undefined
           }
-          className="rounded-full bg-atlas-soft pl-9 pr-8 focus:bg-white"
+          className="h-9 bg-atlas-soft pl-9 pr-8 shadow-none focus:bg-white"
           placeholder="Buscar en el portal…"
           value={q}
           onFocus={() => setOpen(true)}
@@ -150,11 +150,11 @@ export function GlobalSearchBox() {
           id={listboxId}
           role="listbox"
           aria-label="Resultados de búsqueda"
-          className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-atlas-border bg-white shadow-card"
+          className="absolute z-50 mt-2 w-full origin-top overflow-hidden rounded-xl border border-atlas-border bg-white shadow-card animate-scale-in"
         >
           {showRecents ? (
             <div className="p-2">
-              <p className="px-2 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-atlas-muted">
+              <p className="px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-atlas-muted">
                 Búsquedas recientes
               </p>
               {recents.map((item, index) => (
@@ -175,7 +175,7 @@ export function GlobalSearchBox() {
           ) : null}
           {showSuggestions ? (
             <div className="border-t border-atlas-border p-2">
-              <p className="px-2 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-atlas-muted">
+              <p className="px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-atlas-muted">
                 Coincidencias
               </p>
               {safeSuggestions.length ? (

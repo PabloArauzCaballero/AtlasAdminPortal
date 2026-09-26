@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "./button";
 import { DialogShell } from "./dialog-shell";
+import { FieldLabel } from "./field-label";
 import { Input } from "./input";
 
 export function ConfirmDialog({
@@ -52,11 +53,11 @@ export function ConfirmDialog({
       open={open}
       labelledBy={titleId}
       onClose={onCancel}
-      overlayClassName="z-50 flex items-center justify-center bg-slate-950/40 p-4"
-      panelClassName="w-full max-w-md rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
+      overlayClassName="flex items-center justify-center p-4"
+      panelClassName="w-full max-w-md animate-scale-in rounded-xl border border-atlas-border bg-white p-5 shadow-card"
     >
       <div className="flex items-start gap-3">
-        <div className="rounded-full bg-amber-50 p-2 text-amber-600">
+        <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
           <AlertTriangle className="h-5 w-5" aria-hidden="true" />
         </div>
         <div>
@@ -70,13 +71,11 @@ export function ConfirmDialog({
       </div>
       {requiresTypedConfirmation ? (
         <div className="mt-4">
-          <label
+          <FieldLabel
             htmlFor={inputId}
-            className="text-xs font-medium text-atlas-muted"
-          >
-            Escribe &quot;{typedConfirmationPhrase}&quot; para habilitar la
-            ejecución
-          </label>
+            label={`Escribe "${typedConfirmationPhrase}" para habilitar la ejecución`}
+            tooltip="Frase de seguridad: escribirla confirma que entiendes el efecto de la acción."
+          />
           <Input
             id={inputId}
             value={typedValue}

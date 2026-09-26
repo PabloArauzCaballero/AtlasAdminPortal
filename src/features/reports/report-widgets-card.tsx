@@ -19,7 +19,7 @@ export function ReportWidgetsCard({
       </CardHeader>
       <CardContent>
         {widgets.length ? (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             {widgets.map((widget) => (
               <article
                 key={widget.widgetId}

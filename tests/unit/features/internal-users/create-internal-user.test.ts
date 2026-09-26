@@ -11,14 +11,13 @@ import type { CreateInternalUserInput } from "@/features/internal-users/types";
 const mockedApiRequest = vi.mocked(apiRequest);
 
 const SIGNUP_PATH = "/internal/auth/signup";
-const ROLES_PATH = "/internal/users/u1/roles";
-const USER_PATH = "/internal/users/u1";
 
 function input(): CreateInternalUserInput {
   return {
     email: "nuevo@atlas.internal",
     fullName: "Nuevo Analista",
     department: "RISK",
+    jobTitle: "Analista",
     roles: ["INTERNAL_ANALYST"],
     reason: "Alta solicitada por gerencia de Riesgo",
   };
@@ -26,86 +25,84 @@ function input(): CreateInternalUserInput {
 
 const signupResponse = { id: "u1", email: "nuevo@atlas.internal" };
 
-/** Responde OK al signup y delega el resto a `rest`. */
-function mockFlow(rest: (path: string) => Promise<unknown>) {
-  mockedApiRequest.mockImplementation(((path: string) => {
-    if (path === SIGNUP_PATH) return Promise.resolve(signupResponse);
-    return rest(path);
-  }) as unknown as typeof apiRequest);
-}
-
 beforeEach(() => {
   mockedApiRequest.mockReset();
+  mockedApiRequest.mockResolvedValue(signupResponse as never);
 });
 
-describe("createInternalUser · camino feliz", () => {
-  it("devuelve usuario, contraseña y sin warnings", async () => {
-    mockFlow(() => Promise.resolve({}));
+function signupBody(): Record<string, unknown> {
+  const call = mockedApiRequest.mock.calls.find(
+    (entry) => entry[0] === SIGNUP_PATH,
+  );
+  return (call?.[1] as { body: Record<string, unknown> }).body;
+}
 
+describe("createInternalUser", () => {
+  /**
+   * `createInternalUserSchema` del backend exige `roles` (mínimo uno) y `reason` (mínimo ocho
+   * caracteres). El portal no los mandaba, así que el alta respondía SIEMPRE 400 «Entrada inválida
+   * en body.» — dar de alta a alguien desde el portal no funcionaba en ningún caso, mientras el
+   * formulario pedía los dos campos y los tiraba.
+   */
+  it("manda el contrato COMPLETO que el backend exige", async () => {
+    await createInternalUser(input());
+
+    const body = signupBody();
+    expect(body.roles).toEqual(["INTERNAL_ANALYST"]);
+    expect(String(body.reason).length).toBeGreaterThanOrEqual(8);
+    expect(body.email).toBe("nuevo@atlas.internal");
+    expect(body.fullName).toBe("Nuevo Analista");
+    expect(body.department).toBe("RISK");
+    expect(body.jobTitle).toBe("Analista");
+  });
+
+  it("la contraseña temporal cumple el mínimo de diez caracteres del backend", async () => {
+    const result = await createInternalUser(input());
+
+    expect(result.temporaryPassword.length).toBeGreaterThanOrEqual(10);
+    expect(signupBody().password).toBe(result.temporaryPassword);
+  });
+
+  it("fuerza el cambio de contraseña: la temporal no debe sobrevivir al primer login", async () => {
+    await createInternalUser(input());
+
+    expect(signupBody().mustChangePassword).toBe(true);
+  });
+
+  /**
+   * Un alta atómica es la diferencia entre una cuenta que existe entera y una cuenta sin permisos,
+   * con una contraseña que sólo vivía en la memoria de una pestaña y el correo ya tomado para
+   * volver a intentarlo.
+   */
+  it("es UNA sola llamada: sin pasos posteriores que puedan dejar el alta a medias", async () => {
+    await createInternalUser(input());
+
+    expect(mockedApiRequest).toHaveBeenCalledTimes(1);
+    expect(mockedApiRequest.mock.calls[0][0]).toBe(SIGNUP_PATH);
+  });
+
+  it("un cargo vacío no se envía en vez de mandarse como cadena vacía", async () => {
+    await createInternalUser({ ...input(), jobTitle: "" });
+
+    expect(signupBody()).not.toHaveProperty("jobTitle");
+  });
+
+  it("devuelve el usuario creado y su contraseña", async () => {
     const result = await createInternalUser(input());
 
     expect(result.user.id).toBe("u1");
     expect(result.temporaryPassword).toBeTruthy();
-    expect(result.warnings).toEqual([]);
   });
-});
 
-describe("createInternalUser · fallo parcial", () => {
-  it("si falla la asignación de roles, resuelve igual con la contraseña", async () => {
-    mockFlow((path) =>
-      path === ROLES_PATH
-        ? Promise.reject(new Error("500"))
-        : Promise.resolve({}),
-    );
+  it("acepta la respuesta envuelta en `user`", async () => {
+    mockedApiRequest.mockResolvedValue({ user: signupResponse } as never);
 
     const result = await createInternalUser(input());
 
-    // Lo crítico: la contraseña temporal llega al admin igual.
-    expect(result.temporaryPassword).toBeTruthy();
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]).toMatch(/roles/i);
+    expect(result.user.id).toBe("u1");
   });
 
-  it("si falla forzar el cambio de contraseña, resuelve igual y avisa", async () => {
-    mockFlow((path) =>
-      path === USER_PATH
-        ? Promise.reject(new Error("500"))
-        : Promise.resolve({}),
-    );
-
-    const result = await createInternalUser(input());
-
-    expect(result.temporaryPassword).toBeTruthy();
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]).toMatch(/contraseña/i);
-  });
-
-  it("si fallan ambos pasos, acumula los dos warnings", async () => {
-    mockFlow((path) =>
-      path === SIGNUP_PATH
-        ? Promise.resolve(signupResponse)
-        : Promise.reject(new Error("500")),
-    );
-
-    const result = await createInternalUser(input());
-
-    expect(result.temporaryPassword).toBeTruthy();
-    expect(result.warnings).toHaveLength(2);
-  });
-
-  it("el paso de roles no se intenta si no se seleccionó ninguno", async () => {
-    mockFlow(() => Promise.resolve({}));
-
-    const result = await createInternalUser({ ...input(), roles: [] });
-
-    const calledPaths = mockedApiRequest.mock.calls.map((call) => call[0]);
-    expect(calledPaths).not.toContain(ROLES_PATH);
-    expect(result.warnings).toEqual([]);
-  });
-});
-
-describe("createInternalUser · fallo del signup", () => {
-  it("propaga el error: no se creó ninguna cuenta que reportar", async () => {
+  it("propaga el error del signup: no se creó ninguna cuenta que reportar", async () => {
     mockedApiRequest.mockRejectedValue(new Error("email duplicado"));
 
     await expect(createInternalUser(input())).rejects.toThrow(

@@ -1,4 +1,5 @@
 import type { EndpointItem } from "@/features/systems/types";
+import { ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import { Badge } from "@/shared/components/ui/badges";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { formatNumber } from "@/shared/lib/format";
@@ -23,22 +24,22 @@ export function StressControls({
   );
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="Ambiente"
+          tooltip="Entorno contra el que se lanza la carga; producción está bloqueada."
           hint="LOCAL/STAGING permiten stress; producción queda bloqueada."
         >
           <Select
+            name="ambiente"
+            options={ENVIRONMENT_OPTIONS}
             value={form.environment}
-            onChange={(event) => onChange({ environment: event.target.value })}
-          >
-            <option value="LOCAL">LOCAL</option>
-            <option value="STAGING">STAGING</option>
-            <option value="PRODUCTION_READONLY">PRODUCTION_READONLY</option>
-          </Select>
+            onChange={(valor) => onChange({ environment: valor })}
+          />
         </Field>
         <NumberField
           label="RPS objetivo"
+          tooltip="Peticiones por segundo que la prueba intenta sostener."
           value={form.targetRps}
           min={1}
           max={500}
@@ -47,6 +48,7 @@ export function StressControls({
         />
         <NumberField
           label="Concurrencia"
+          tooltip="Peticiones en vuelo a la vez; simula usuarios simultáneos."
           value={form.concurrency}
           min={1}
           max={200}
@@ -55,6 +57,7 @@ export function StressControls({
         />
         <NumberField
           label="Duracion segundos"
+          tooltip="Cuánto dura la carga; más tiempo destapa fugas y colas."
           value={form.durationSeconds}
           min={1}
           max={3600}
@@ -63,6 +66,7 @@ export function StressControls({
         />
         <NumberField
           label="Ramp-up segundos"
+          tooltip="Segundos para subir la carga poco a poco en vez de golpear de entrada."
           value={form.rampUpSeconds}
           min={0}
           max={3600}
@@ -71,6 +75,7 @@ export function StressControls({
         />
         <NumberField
           label="Max requests"
+          tooltip="Techo de peticiones totales para no disparar más de lo previsto."
           value={form.maxRequests}
           min={1}
           max={HARD_MAX_STRESS_REQUESTS}
@@ -79,6 +84,7 @@ export function StressControls({
         />
         <NumberField
           label="Timeout ms"
+          tooltip="Milisegundos que espera cada petición antes de contarla como error."
           value={form.timeoutMs}
           min={1000}
           max={120000}
@@ -87,6 +93,7 @@ export function StressControls({
         />
         <NumberField
           label="Max error %"
+          tooltip="Porcentaje de errores tolerado antes de reprobar la corrida."
           value={form.maxErrorRatePercent}
           min={0}
           max={100}
@@ -95,6 +102,7 @@ export function StressControls({
         />
         <NumberField
           label="Min throughput RPS"
+          tooltip="Rendimiento real mínimo exigido; 0 desactiva este umbral."
           value={form.minThroughputRps}
           min={0}
           max={500}
@@ -103,6 +111,7 @@ export function StressControls({
         />
         <NumberField
           label="Max avg ms"
+          tooltip="Latencia media máxima para aprobar; 0 desactiva este umbral."
           value={form.maxAvgMs}
           min={0}
           max={120000}
@@ -111,6 +120,7 @@ export function StressControls({
         />
         <NumberField
           label="Max p95 ms"
+          tooltip="Latencia que el 95 % de las peticiones no debe superar."
           value={form.maxP95Ms}
           min={0}
           max={120000}
@@ -119,6 +129,7 @@ export function StressControls({
         />
         <NumberField
           label="Max p99 ms"
+          tooltip="Latencia que el 99 % de las peticiones no debe superar; 0 la ignora."
           value={form.maxP99Ms}
           min={0}
           max={120000}
@@ -127,6 +138,7 @@ export function StressControls({
         />
         <Field
           label="Ticket aprobacion"
+          tooltip="Número del cambio aprobado que autoriza la carga real. Ej.: CHG-123"
           hint="Obligatorio para stress real fuera de LOCAL (bloqueo de seguridad)."
         >
           <Input
@@ -245,6 +257,8 @@ export const DEFAULT_STRESS_FORM: StressFormState = {
   includeTenantHeader: true,
   includeIdempotencyKey: true,
   deviceProfile: "none",
+  mockScenario: "",
+  mockLatencyMs: 0,
 };
 
 type StressControlsProps = {

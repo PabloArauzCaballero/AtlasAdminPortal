@@ -1,0 +1,4 @@
+# Estado de sesión que genera el proyecto `setup` de Playwright: son cookies de una sesión real
+# y no deben versionarse jamás.
+*
+!.gitignore

@@ -14,7 +14,7 @@ export function buildSchemaVersionColumns(): ColumnDef<SchemaVersion>[] {
       cell: ({ row }) => (
         <Link
           href={`/internal/schema/versions/${row.original._id}`}
-          className="font-mono text-xs text-blue-700 underline"
+          className="font-mono text-xs text-atlas-accent underline"
         >
           {row.original.versionCode}
         </Link>

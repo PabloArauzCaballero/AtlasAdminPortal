@@ -12,6 +12,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
+import { ShieldCheck } from "lucide-react";
 
 export function RolesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -67,6 +68,7 @@ function AuthorizedRolesPage() {
   return (
     <>
       <PageHeader
+        icon={ShieldCheck}
         eyebrow="RBAC"
         title="Roles internos"
         description="Catálogo real de roles internos devuelto por el servicio. Ya no se deriva desde usuarios."

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { useLabEndpoints } from "./hooks";
+import { searchMockProviderEndpoints } from "./mock-provider-endpoints";
 import type { EndpointItem } from "@/features/systems/types";
 import { MethodBadge } from "@/shared/components/ui/badges";
 import { safeText } from "@/shared/lib/format";
@@ -11,6 +12,10 @@ import { cn } from "@/shared/lib/cn";
 /**
  * Combobox compacto para elegir el endpoint de un paso desde la tabla de
  * secuencia, sin saltar a la página completa de selección de endpoints.
+ *
+ * Incluye los endpoints del mock de proveedores externos junto a los del catálogo real: un
+ * journey que simula un flujo de negocio completo normalmente encadena un paso propio de Atlas
+ * con una verificación contra un proveedor externo.
  */
 export function JourneyStepEndpointSelect({
   endpointId,
@@ -22,6 +27,7 @@ export function JourneyStepEndpointSelect({
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const endpoints = useLabEndpoints({ page: 1, limit: 8, q });
+  const mockMatches = searchMockProviderEndpoints(q).slice(0, 4);
 
   return (
     <div className="relative">
@@ -53,6 +59,27 @@ export function JourneyStepEndpointSelect({
               type="button"
               // onMouseDown en vez de onClick: dispara antes que el onBlur del
               // input, que si no cerraría la lista antes de registrar el clic.
+              onMouseDown={() => onSelect(item)}
+              className={cn(
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-atlas-soft",
+                item.endpointId === endpointId && "bg-atlas-accentSoft",
+              )}
+            >
+              <MethodBadge method={item.method} />
+              <span className="min-w-0 flex-1 truncate font-mono">
+                {safeText(item.fullPath ?? item.routePath)}
+              </span>
+            </button>
+          ))}
+          {mockMatches.length > 0 ? (
+            <p className="border-t border-atlas-border px-3 py-1.5 text-[10px] uppercase tracking-wide text-atlas-muted">
+              Proveedores externos (mock)
+            </p>
+          ) : null}
+          {mockMatches.map((item) => (
+            <button
+              key={item.endpointId}
+              type="button"
               onMouseDown={() => onSelect(item)}
               className={cn(
                 "flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-atlas-soft",

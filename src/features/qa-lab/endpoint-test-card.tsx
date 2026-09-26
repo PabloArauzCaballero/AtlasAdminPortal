@@ -17,11 +17,18 @@ import {
   requiresDoubleConfirmation,
 } from "./endpoint-run-controls";
 import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
+import {
+  getMockExamplePayload,
+  isMockEndpointId,
+} from "./mock-provider-endpoints";
 import { expectedStatusesText, parseEndpointRunForm } from "./qa-form";
 import { jsonText } from "./json-utils";
 import { findPayloadPreset } from "./payload-presets";
 import { QaJsonFields } from "./qa-json-fields";
 import { QaLogDownload } from "./qa-log-download";
+import { pathParamFields, readContract } from "./contract-fields";
+import { generateCases } from "./qa-case-generator";
+import { QaSampleBar } from "./qa-sample-bar";
 import { RunResultSummary } from "./qa-result-summary";
 import { useEndpointRunMutation } from "./hooks";
 
@@ -92,51 +99,77 @@ export function EndpointTestCard({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="2. Prueba funcional del endpoint"
-          description="Configura host, request, payload de entrada y criterios de salida antes de ejecutar."
+          title="Prueba funcional"
+          description="Genera la entrada desde el contrato, ajusta host y criterios de salida, y ejecuta contra el endpoint real."
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="space-y-4">
         <EndpointSafetyHints endpoint={endpoint} />
+        {/*
+          El generador va ARRIBA del todo, antes de la configuración: llenar la entrada es el primer
+          paso de la prueba, y tenerlo al final —después de treinta campos de host, timeouts y
+          umbrales— era la razón práctica de que casi nadie probara la clase inválida.
+        */}
+        <QaSampleBar
+          endpoint={endpoint}
+          onLoad={(sample) =>
+            patchForm({
+              payload: jsonText(sample.payload),
+              ...(Object.keys(sample.pathParams).length
+                ? { pathParams: jsonText(sample.pathParams) }
+                : {}),
+            })
+          }
+        />
         <RunControls form={form} endpoint={endpoint} onChange={patchForm} />
         {preset ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3">
             <Button variant="secondary" onClick={applyPreset}>
               Usar payload de ejemplo: {preset.label}
             </Button>
-            <p className="text-xs text-blue-900">{preset.notes}</p>
+            <p className="text-xs text-atlas-text">{preset.notes}</p>
           </div>
         ) : null}
         <QaJsonFields
           fields={[
             {
               label: "Payload de entrada",
+              tooltip: "Cuerpo JSON que envía la petición de prueba.",
               value: form.payload,
               onChange: (value) => patchForm({ payload: value }),
             },
             {
               label: "Headers request",
+              tooltip:
+                "Cabeceras JSON añadidas a la petición; no pongas secretos.",
               value: form.headers,
               onChange: (value) => patchForm({ headers: value }),
             },
             {
               label: "Query params",
+              tooltip: "Parámetros de consulta en JSON que se añaden a la URL.",
               value: form.queryParams,
               onChange: (value) => patchForm({ queryParams: value }),
             },
             {
               label: "Path params",
+              tooltip:
+                "Valores en JSON para los :parámetros de la ruta, p. ej. el id.",
               value: form.pathParams,
               onChange: (value) => patchForm({ pathParams: value }),
             },
             {
               label: "JSON esperado en respuesta",
+              tooltip:
+                "Fragmento JSON que la respuesta debe contener para aprobar.",
               value: form.expectedJsonSubset,
               onChange: (value) => patchForm({ expectedJsonSubset: value }),
             },
             {
               label: "Headers esperados respuesta",
+              tooltip:
+                "Cabeceras JSON que la respuesta debe traer, p. ej. content-type.",
               value: form.expectedHeaders,
               onChange: (value) => patchForm({ expectedHeaders: value }),
             },
@@ -148,13 +181,17 @@ export function EndpointTestCard({
         {runMutation.error ? <MutationError error={runMutation.error} /> : null}
         <Button
           variant="primary"
+          data-tutorial-id="qa-lab-run-functional"
           disabled={!endpointId || !canExecute || runMutation.isPending}
           onClick={tryExecute}
         >
           {form.dryRun ? "Previsualizar request" : "Ejecutar request real"}
         </Button>
         {runMutation.data ? (
-          <div className="space-y-3">
+          <div
+            className="space-y-3"
+            data-tutorial-id="qa-lab-functional-result"
+          >
             <RunResultSummary result={runMutation.data} />
             {runMutation.data.pinoLogFileName &&
             runMutation.data.pinoLogLines ? (
@@ -184,17 +221,30 @@ export function EndpointTestCard({
 }
 
 function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
+  const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
+  const mockPayload = endpoint
+    ? getMockExamplePayload(endpoint.endpointId)
+    : undefined;
   return {
     environment: "LOCAL",
-    baseRouteKey: DEFAULT_QA_BASE_ROUTE,
+    // Un endpoint del mock ya trae `fullPath` absoluto (bypassa la ruta base al construir la
+    // URL), pero fijar acá "Mock de proveedores externos" es lo que revela en el formulario los
+    // controles de escenario/latencia del mock (gateados por `baseRouteKey`).
+    baseRouteKey: isMock ? "MOCK_PROVIDERS" : DEFAULT_QA_BASE_ROUTE,
     customHostUrl: "",
     routeOverride: endpoint?.fullPath || endpoint?.routePath || "",
     dryRun: true,
     timeoutMs: 20000,
     allowMutations: false,
-    payload: jsonText(endpoint?.minPayloadSchema),
-    queryParams: jsonText(endpoint?.queryParamsSchema),
-    pathParams: jsonText(endpoint?.pathParamsSchema),
+    payload: mockPayload
+      ? jsonText(mockPayload)
+      : jsonText(sampleFrom(endpoint?.minPayloadSchema)),
+    queryParams: jsonText(sampleFrom(endpoint?.queryParamsSchema)),
+    pathParams: jsonText(
+      sampleFromFields(
+        pathParamFields(endpoint?.fullPath ?? endpoint?.routePath),
+      ) ?? sampleFrom(endpoint?.pathParamsSchema),
+    ),
     headers: jsonText(endpoint?.headersSchema),
     expectedStatusCodes: expectedStatusesText(endpoint?.expectedStatusCodes),
     expectedHeaders: "{}",
@@ -208,5 +258,28 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     includeTenantHeader: true,
     includeIdempotencyKey: true,
     deviceProfile: "none",
+    mockScenario: "",
+    mockLatencyMs: 0,
   };
+}
+
+/**
+ * El formulario abría con el CONTRATO metido en la caja del payload.
+ *
+ * `jsonText(endpoint.minPayloadSchema)` dejaba escrito `{"email":"string|required"}` en «Payload de
+ * entrada», que no es un payload: es la descripción de uno. Pulsar «Ejecutar» sin tocarlo mandaba
+ * literalmente esa cadena al endpoint y devolvía un 400 de validación — un fallo del formulario que
+ * se leía como un fallo del endpoint. Ahora se abre con un caso VÁLIDO derivado de ese mismo
+ * contrato, con la semilla de referencia, así que lo que se ve en la caja es lo que se va a enviar.
+ */
+function sampleFrom(schema: unknown): Record<string, unknown> | undefined {
+  const contract = readContract(schema);
+  return sampleFromFields(contract.fields);
+}
+
+function sampleFromFields(
+  fields: ReturnType<typeof readContract>["fields"],
+): Record<string, unknown> | undefined {
+  if (fields.length === 0) return undefined;
+  return generateCases(fields, "valid", 1, "qa-base")[0]?.payload;
 }

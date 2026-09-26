@@ -42,6 +42,17 @@ function buildContentSecurityPolicy(nonce: string): string {
     // de style-src inline es muy inferior al de script-src.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
+    /*
+     * `blob:` también en los marcos y en los medios.
+     *
+     * La vista previa del expediente descarga el archivo con la credencial puesta y lo pinta desde
+     * un `blob:` local —nunca apuntando el `src` a la API, que respondería 401—. Una imagen ya
+     * estaba cubierta por `img-src`; un PDF va en un `<iframe>`, y sin `frame-src` ese marco caía en
+     * `default-src 'self'`, que NO admite `blob:`. El navegador lo bloqueaba en silencio: el visor
+     * salía en blanco sin un solo error en la pantalla.
+     */
+    "frame-src 'self' blob:",
+    "media-src 'self' blob:",
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     "object-src 'none'",

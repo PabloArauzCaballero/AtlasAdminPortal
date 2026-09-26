@@ -10,24 +10,44 @@ const estadoFilter: FilterOption = {
   name: "estado",
   label: "Estado",
   value: "",
+  tooltip:
+    "Acota la tabla al momento del caso; en «Abierto» está lo que nadie ha tomado.",
   options: [
-    { label: "Abierto", value: "OPEN" },
-    { label: "Cerrado", value: "CLOSED" },
+    {
+      label: "Abierto",
+      value: "OPEN",
+      description: "Nadie lo ha tomado todavía; sigue esperando a un analista.",
+    },
+    {
+      label: "Cerrado",
+      value: "CLOSED",
+      description: "Ya tiene desenlace y no admite más acciones.",
+    },
   ],
+};
+
+/** Abre el desplegable de un filtro por su nombre accesible. */
+const abrir = async (nombre: string) => {
+  await userEvent.click(screen.getByRole("combobox", { name: nombre }));
 };
 
 describe("FilterBar · búsqueda", () => {
   it("el buscador es un campo controlado que refleja el valor recibido", () => {
     render(<FilterBar search="factura" onSearchChange={vi.fn()} />);
 
-    expect(screen.getByRole("textbox")).toHaveValue("factura");
+    expect(screen.getByRole("textbox", { name: "Buscar…" })).toHaveValue(
+      "factura",
+    );
   });
 
   it("emite cada tecla al padre (el debounce vive fuera)", async () => {
     const onSearchChange = vi.fn();
     render(<FilterBar search="" onSearchChange={onSearchChange} />);
 
-    await userEvent.type(screen.getByRole("textbox"), "ab");
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Buscar…" }),
+      "ab",
+    );
 
     expect(onSearchChange).toHaveBeenCalledTimes(2);
     expect(onSearchChange).toHaveBeenLastCalledWith("b");
@@ -58,27 +78,66 @@ describe("FilterBar · filtros", () => {
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
 
-  it("cada filtro ofrece sus opciones más la de 'sin filtrar'", () => {
+  it("cada filtro ofrece sus opciones más la de 'sin filtrar'", async () => {
     render(
       <FilterBar search="" filters={[estadoFilter]} onSearchChange={vi.fn()} />,
     );
 
-    const select = screen.getByRole("combobox");
+    await abrir("Estado");
+
     expect(
-      within(select)
+      within(screen.getByRole("listbox"))
         .getAllByRole("option")
-        .map((option) => option.textContent),
+        .map((option) => option.querySelector("span")?.textContent),
     ).toEqual(["Estado", "Abierto", "Cerrado"]);
   });
 
-  it("la opción 'sin filtrar' tiene value vacío, no la etiqueta", () => {
-    // Si el placeholder llevase value="Estado", el listado filtraría por un
-    // estado inexistente al arrancar.
+  it("cada opción enseña qué significa, no sólo su código", async () => {
     render(
       <FilterBar search="" filters={[estadoFilter]} onSearchChange={vi.fn()} />,
     );
 
-    expect(screen.getByRole("option", { name: "Estado" })).toHaveValue("");
+    await abrir("Estado");
+
+    expect(
+      screen.getByText(
+        "Nadie lo ha tomado todavía; sigue esperando a un analista.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("el filtro lleva su propia ayuda, fuera del nombre accesible del control", async () => {
+    render(
+      <FilterBar search="" filters={[estadoFilter]} onSearchChange={vi.fn()} />,
+    );
+
+    const ayuda = screen.getByRole("button", { name: "Ayuda: Estado" });
+    await userEvent.hover(ayuda);
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Acota la tabla");
+    // El control sigue llamándose «Estado» a secas: los getByLabel existentes no cambian.
+    expect(
+      screen.getByRole("combobox", { name: "Estado" }),
+    ).toBeInTheDocument();
+  });
+
+  it("la opción 'sin filtrar' tiene value vacío, no la etiqueta", async () => {
+    // Si el placeholder llevase value="Estado", el listado filtraría por un
+    // estado inexistente al arrancar.
+    const onFilterChange = vi.fn();
+    render(
+      <FilterBar
+        search=""
+        filters={[{ ...estadoFilter, value: "OPEN" }]}
+        onSearchChange={vi.fn()}
+        onFilterChange={onFilterChange}
+      />,
+    );
+
+    await abrir("Estado");
+    await userEvent.click(screen.getByTestId("select-estado-option-"));
+
+    expect(onFilterChange).toHaveBeenCalledWith("estado", "");
   });
 
   it("emite el nombre del filtro junto al valor elegido", async () => {
@@ -92,25 +151,10 @@ describe("FilterBar · filtros", () => {
       />,
     );
 
-    await userEvent.selectOptions(screen.getByRole("combobox"), "CLOSED");
+    await abrir("Estado");
+    await userEvent.click(screen.getByTestId("select-estado-option-CLOSED"));
 
     expect(onFilterChange).toHaveBeenCalledWith("estado", "CLOSED");
-  });
-
-  it("volver a la opción vacía emite '' (así se quita el filtro)", async () => {
-    const onFilterChange = vi.fn();
-    render(
-      <FilterBar
-        search=""
-        filters={[{ ...estadoFilter, value: "OPEN" }]}
-        onSearchChange={vi.fn()}
-        onFilterChange={onFilterChange}
-      />,
-    );
-
-    await userEvent.selectOptions(screen.getByRole("combobox"), "");
-
-    expect(onFilterChange).toHaveBeenCalledWith("estado", "");
   });
 
   it("renderiza un select por filtro", () => {
@@ -128,14 +172,17 @@ describe("FilterBar · filtros", () => {
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
   });
 
-  it("sin onFilterChange, cambiar el select no revienta", async () => {
+  it("sin onFilterChange, elegir no revienta", async () => {
     render(
       <FilterBar search="" filters={[estadoFilter]} onSearchChange={vi.fn()} />,
     );
 
-    await userEvent.selectOptions(screen.getByRole("combobox"), "OPEN");
+    await abrir("Estado");
+    await userEvent.click(screen.getByTestId("select-estado-option-OPEN"));
 
-    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Estado" }),
+    ).toBeInTheDocument();
   });
 });
 

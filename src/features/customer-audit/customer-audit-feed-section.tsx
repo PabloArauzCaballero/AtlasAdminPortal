@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { MetricCard } from "@/shared/components/layout/metric-card";
@@ -42,7 +43,7 @@ export function CustomerAuditFeedSection({
       ) : null}
       {feed.data ? (
         <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <MetricCard
               label="Eventos cargados"
               value={events.length}
@@ -73,6 +74,7 @@ export function CustomerAuditFeedSection({
                 loadingText="Cargando…"
                 onClick={() => void feed.fetchNextPage()}
               >
+                <ChevronDown className="h-4 w-4" aria-hidden />
                 Cargar más
               </Button>
             </div>

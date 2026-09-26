@@ -8,6 +8,11 @@ import {
 } from "./request-init";
 import { extractData, parseJsonSafely, toAtlasApiError } from "./response";
 import { fetchWithTimeout } from "./transport";
+import {
+  retryModeFor,
+  sendWithGatewayRetry,
+  type SentRequest,
+} from "./gateway-retry";
 import { reportEvent } from "@/shared/observability/reporter";
 import { getStoredInternalSession } from "@/shared/auth/session-storage";
 import { clearStoredInternalSession } from "@/shared/auth/session-storage";
@@ -25,11 +30,7 @@ export async function apiRequest<T>(
   options: RequestOptions<T> = {},
 ): Promise<T> {
   const session = getSessionForBrowser();
-  const response = await fetchWithTimeout(
-    buildUrl(path, options.query),
-    buildRequestInit(options, session),
-  );
-  const payload = await parseJsonSafely(response);
+  const { response, payload } = await send(path, options, session);
 
   if (response.ok) return finalizeResponse<T>(payload, response, path, options);
 
@@ -81,14 +82,39 @@ async function retryRequest<T>(
   options: RequestOptions<T>,
   session: NonNullable<ReturnType<typeof getSessionForBrowser>>,
 ): Promise<T> {
-  const response = await fetchWithTimeout(
-    buildUrl(path, options.query),
-    buildRequestInit({ ...options, skipRefresh: true }, session),
+  const { response, payload } = await send(
+    path,
+    { ...options, skipRefresh: true },
+    session,
   );
-  const payload = await parseJsonSafely(response);
   if (response.ok) return finalizeResponse<T>(payload, response, path, options);
   handleUnauthorized(response.status, options);
   throw toAtlasApiError(response, payload);
+}
+
+/**
+ * Una petición, repetida si el API no estaba. Ver `gateway-retry.ts`: durante un
+ * despliegue del backend contesta la pasarela, y eso no es un error que el
+ * operador tenga que ver ni resolver.
+ */
+function send(
+  path: string,
+  options: ApiRequestOptions,
+  session: ReturnType<typeof getSessionForBrowser>,
+): Promise<SentRequest> {
+  return sendWithGatewayRetry(
+    async () => {
+      const response = await fetchWithTimeout(
+        buildUrl(path, options.query),
+        buildRequestInit(options, session),
+      );
+      return { response, payload: await parseJsonSafely(response) };
+    },
+    {
+      mode: retryModeFor(options.method, options.idempotencyKey),
+      signal: options.signal,
+    },
+  );
 }
 
 /**

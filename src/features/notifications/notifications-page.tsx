@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  CHANNEL_OPTIONS,
+  MESSAGE_STATUS_OPTIONS,
+  RECIPIENT_TYPE_OPTIONS,
+} from "./notification-options";
 import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -16,37 +21,9 @@ import { MessageDetailDrawer } from "./message-detail-drawer";
 import { PreferencesSection } from "./preferences-section";
 import { TemplatesSection } from "./templates-section";
 import type { NotificationMessage } from "./types";
+import { MessageSquare } from "lucide-react";
 
 const tabs = ["Mensajes", "Plantillas", "Preferencias", "Enviar notificación"];
-
-const statusOptions = [
-  "pending",
-  "queued",
-  "sending",
-  "sent",
-  "delivered",
-  "read",
-  "failed",
-  "retrying",
-  "cancelled",
-].map((value) => ({ label: value, value }));
-
-const channelOptions = [
-  "in_app",
-  "push",
-  "email",
-  "sms",
-  "whatsapp",
-  "phone",
-].map((value) => ({ label: value, value }));
-
-const recipientTypeOptions = [
-  "customer",
-  "merchant",
-  "internal_user",
-  "operations",
-  "system",
-].map((value) => ({ label: value, value }));
 
 export function NotificationsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -88,6 +65,7 @@ function AuthorizedNotificationsPage() {
   return (
     <>
       <PageHeader
+        icon={MessageSquare}
         eyebrow="Mensajería interna"
         title="Notificaciones"
         description="Mensajes enviados a clientes, operaciones y usuarios internos a través de in-app, push, email, SMS y WhatsApp, con su historial de entrega."
@@ -106,24 +84,31 @@ function AuthorizedNotificationsPage() {
           <FilterBar
             search={correlationId}
             searchPlaceholder="Buscar por correlation ID…"
+            searchTooltip="Pega el correlation ID de una petición para ver todos los mensajes que generó."
             filters={[
               {
                 name: "status",
                 label: "Estado",
+                tooltip:
+                  "En qué punto del envío está cada mensaje; «failed» es lo que hay que revisar.",
                 value: status,
-                options: statusOptions,
+                options: MESSAGE_STATUS_OPTIONS,
               },
               {
                 name: "channel",
                 label: "Canal",
+                tooltip:
+                  "Por qué vía salió el mensaje: app, push, correo, SMS, WhatsApp o llamada.",
                 value: channel,
-                options: channelOptions,
+                options: CHANNEL_OPTIONS,
               },
               {
                 name: "recipientType",
                 label: "Destinatario",
+                tooltip:
+                  "A qué clase de destinatario iba: cliente, comercio, equipo interno o sistema.",
                 value: recipientType,
-                options: recipientTypeOptions,
+                options: RECIPIENT_TYPE_OPTIONS,
               },
             ]}
             onSearchChange={(value) => {

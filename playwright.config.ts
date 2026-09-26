@@ -1,7 +1,59 @@
+import fs from "node:fs";
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
 
-const PORT = 5273;
-const BASE_URL = `http://127.0.0.1:${PORT}`;
+/**
+ * Las credenciales del E2E viven en `.env.local` (ignorado por git), igual que las de la app.
+ *
+ * Playwright corre en su propio proceso Node y NO carga los `.env*` de Next: `TEST_EMAIL` y
+ * `TEST_PASSWORD` llegaban siempre vacías y la suite entera se SALTABA con el motivo «define
+ * TEST_EMAIL…» aun teniéndolas puestas. Un E2E que se salta en silencio se lee en CI como un E2E
+ * que pasa, que es el peor de los dos fallos posibles.
+ */
+loadEnvConfig(process.cwd(), true, { info: () => {}, error: console.error });
+
+/*
+ * El puerto es configurable, y no por gusto: en esta máquina el 5273 lo sirve un CONTENEDOR con una
+ * imagen ya construida del portal. `reuseExistingServer` lo daba por bueno y la suite medía código
+ * de otra compilación — una pantalla recién cambiada salía como estaba antes, en verde, sin que
+ * nada lo delatara. Es el peor fallo posible de un E2E: no falla, miente.
+ *
+ * Con `PW_PORT` se apunta a un servidor de desarrollo propio (`next dev -p 5274`) sin tocar el
+ * contenedor de nadie. Es la misma salida que `AtlasDecisionEngineFrontend` ya tenía con
+ * `PW_BASE_URL`.
+ */
+/*
+ * Sin credenciales el `setup` se salta y NO escribe el estado de sesión. Si el proyecto `chromium`
+ * lo declara igual, Playwright revienta al abrir el contexto («Error reading storage state … ENOENT»)
+ * en TODAS sus pruebas, incluidas las que se iban a saltar solas: en CI eso tumbaba el job entero.
+ * Se evalúa aquí, después de `loadEnvConfig`, para que `.env.local` cuente en local.
+ */
+const HAS_INTERNAL_CREDENTIALS = Boolean(
+  process.env.TEST_EMAIL && process.env.TEST_PASSWORD,
+);
+const INTERNAL_STORAGE_STATE = "tests/e2e/.auth/internal.json";
+
+const PORT = Number(process.env.PW_PORT ?? 5273);
+/**
+ * `PW_BASE_URL` apunta la suite a un portal YA desplegado, con su URL completa.
+ *
+ * Es lo que permite comprobar la versión que de verdad está publicada —la del túnel del VPS— en
+ * lugar de una compilación local que se le parece. Sin esto sólo se podía medir `localhost`, y un
+ * despliegue roto pasaba desapercibido: el código estaba bien y el entorno no.
+ */
+const EXTERNAL_BASE_URL = process.env.PW_BASE_URL;
+/**
+ * `localhost` y no `127.0.0.1`, a propósito.
+ *
+ * La sesión del portal vive en cookies `HttpOnly` con `SameSite=Lax`, y el navegador decide
+ * «same-site» por dominio registrable: `127.0.0.1` y `localhost` son sitios DISTINTOS. Con la app
+ * servida en `127.0.0.1` y la API en `http://localhost:3005`, el login respondía 200 y ponía las
+ * cookies, pero ninguna petición posterior las llevaba — la sesión moría en el primer 401 y el
+ * portal rebotaba a `?reason=session_expired`, que es exactamente el síntoma de una sesión
+ * caducada y no lo era. Debe coincidir con el host de `NEXT_PUBLIC_API_BASE_URL`.
+ */
+const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
 
 /**
  * E2E con Playwright. El webServer levanta la app real (`next start`, que exige
@@ -14,15 +66,87 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
+  /*
+   * `workers` al 50 % en CI: el runner tiene 2 vCPU y dejarlo sin tope hacía que Chromium compitiera
+   * consigo mismo y los tiempos de espera saltaran por carga, no por el portal.
+   *
+   * El reporte `blob` es lo que permite FRAGMENTAR la suite entre varios trabajos y luego unir los
+   * informes (`playwright merge-reports`). Con `--shard` a secas cada fragmento produce su propio
+   * HTML y no hay forma de leer la corrida completa.
+   */
+  workers: process.env.CI ? "50%" : undefined,
+  reporter: process.env.CI
+    ? [["list"], ["blob"], ["github"]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    // Un proyecto de SETUP que autentica una vez y guarda el estado de sesión. Los demás dependen
+    // de él y arrancan ya dentro del portal: el endpoint de login está limitado a 10 intentos por
+    // minuto, así que una suite que se autentica en cada prueba se estrangula sola.
+    {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "chromium",
+      // Las especificaciones de evidencia NO entran aquí: no usan el estado de sesión y no deben
+      // arrastrar el `setup`, que exige credenciales y backend.
+      testIgnore: /\.evidencia\.spec\.ts$/,
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(HAS_INTERNAL_CREDENTIALS
+          ? { storageState: INTERNAL_STORAGE_STATE }
+          : {}),
+      },
+    },
+    /*
+     * EVIDENCIA: capturas de pantalla con el expediente doblado.
+     *
+     * Proyecto aparte y SIN dependencia del `setup`, que es lo único que las separa del resto. Las
+     * demás pruebas miden el portal contra el stack real y por eso necesitan una sesión de verdad;
+     * éstas miden que una PANTALLA enseñe lo que dice enseñar, y atarlas a un login las pondría
+     * rojas cada vez que el backend no esté — por un motivo que no tiene nada que ver con lo que
+     * comprueban.
+     *
+     * Se corren solas:  npx playwright test --project=evidencia
+     */
+    /*
+     * Sólo si existe su material. Las especificaciones leen el expediente real de
+     * `_evidencia-expedientes-2026-09-04/`, que vive FUERA del repositorio: en CI no está, el
+     * import del arnés lanzaba ENOENT y tumbaba la suite entera, incluidas las pruebas que no
+     * tienen nada que ver con la evidencia.
+     */
+    ...(fs.existsSync(
+      path.join(
+        __dirname,
+        "../_evidencia-expedientes-2026-09-04/expediente-vps.json",
+      ),
+    )
+      ? [
+          {
+            name: "evidencia",
+            testMatch: /\.evidencia\.spec\.ts$/,
+            use: { ...devices["Desktop Chrome"] },
+          },
+        ]
+      : []),
+  ],
   webServer: {
-    command: "yarn start",
+    // Con `PW_PORT` se asume que el servidor lo levanta quien corre la suite (típicamente un
+    // `next dev`), así que no se arranca ninguno: arrancar un `next start` sobre un puerto ya
+    // ocupado sólo produciría un error confuso.
+    // Con `PW_BASE_URL` el portal ya está servido en otra máquina: arrancar uno aquí no sólo
+    // sobra, sino que mediría el equivocado.
+    command:
+      process.env.PW_PORT || EXTERNAL_BASE_URL
+        ? "true"
+        : `npx next start -p ${PORT}`,
     url: `${BASE_URL}/internal/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

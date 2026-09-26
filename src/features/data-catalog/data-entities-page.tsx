@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useDataEntities } from "@/features/systems/hooks";
+import { usePlatformBlocks, useDataEntities } from "@/features/systems/hooks";
 import type { DataEntity } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
+  BlockBadge,
   ModuleBadge,
   PiiBadge,
   ReviewStatusBadge,
@@ -20,6 +21,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Database } from "lucide-react";
 
 const reviewOptions = [
   { label: "Auto detectado", value: "AUTO_DETECTED" },
@@ -45,10 +47,30 @@ function AuthorizedDataEntitiesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState(initialQ);
   const [reviewStatus, setReviewStatus] = useState("");
-  const entities = useDataEntities({ page, limit: 20, q, reviewStatus });
+  // El bloque puede venir en la URL para que un enlace desde «Salud de la red» abra el catálogo ya
+  // acotado al producto que se estaba investigando, sin obligar a repetir el filtro a mano.
+  const [block, setBlock] = useState(searchParams.get("block") ?? "");
+  const blocks = usePlatformBlocks();
+  const entities = useDataEntities({ page, limit: 20, q, reviewStatus, block });
+
+  const blockOptions = useMemo(
+    () =>
+      (blocks.data ?? []).map((item) => ({
+        // El contador va en la etiqueta a propósito: es lo que delata de un vistazo que un bloque
+        // no está aportando nada, que es justo lo que el catálogo no dejaba ver.
+        label: `${item.name} (${item.dataEntities})`,
+        value: item.systemCode,
+      })),
+    [blocks.data],
+  );
 
   const columns = useMemo<ColumnDef<DataEntity>[]>(
     () => [
+      {
+        header: "Bloque",
+        accessorKey: "systemCode",
+        cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
+      },
       {
         header: "Schema",
         accessorKey: "schemaName",
@@ -61,7 +83,7 @@ function AuthorizedDataEntitiesPage() {
         accessorKey: "tableName",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/data-catalog/tables/${row.original.entityId}`}
           >
             {row.original.tableName}
@@ -131,33 +153,44 @@ function AuthorizedDataEntitiesPage() {
   return (
     <>
       <PageHeader
+        icon={Database}
         title="Catálogo de datos"
-        description="Tablas y entidades detectadas desde `/systems/data-entities`."
+        description="Tablas y entidades de LOS TRES bloques del ecosistema, desde `/systems/data-entities`."
       />
       <BusinessContextNote>
         Cada fila es una tabla real de la base de datos. Este catálogo existe
         para que soporte, auditoría y nuevos desarrolladores sepan qué significa
         cada tabla, quién es responsable de ella y si contiene datos sensibles
         (PII, financieros, de riesgo) — sin tener que leer el código fuente para
-        averiguarlo.
+        averiguarlo. El filtro <strong>Bloque</strong> separa las tablas de
+        Atlas Backend, del motor de decisión y del ERP: hasta que existió, esta
+        pantalla sólo mostraba las del primero sin decirlo en ninguna parte.
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar tabla, entidad, módulo u owner…"
+        searchPlaceholder="Buscar tabla, esquema, entidad, módulo u owner…"
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
           if (name === "reviewStatus") setReviewStatus(value);
+          if (name === "block") setBlock(value);
           setPage(1);
         }}
         onClear={() => {
           setQ("");
           setReviewStatus("");
+          setBlock("");
           setPage(1);
         }}
         filters={[
+          {
+            name: "block",
+            label: "Bloque",
+            value: block,
+            options: blockOptions,
+          },
           {
             name: "reviewStatus",
             label: "Revisión",

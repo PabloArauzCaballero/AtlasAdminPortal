@@ -67,9 +67,10 @@ export function CatalogVersionCreateForm({
             publique.
           </p>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
             <Field
               label="Código de versión"
+              tooltip="Identificador único de la versión dentro del catálogo; suele ser año y mes."
               hint="2 a 60 caracteres. Ej: 2026.07."
               error={errors.versionCode?.message}
             >
@@ -81,6 +82,7 @@ export function CatalogVersionCreateForm({
             </Field>
             <Field
               label="Vigente desde (opcional)"
+              tooltip="Primer día en que el motor puede usar esta versión; vacío es desde su publicación."
               error={errors.validFrom?.message}
             >
               <Input
@@ -91,6 +93,7 @@ export function CatalogVersionCreateForm({
             </Field>
             <Field
               label="Vigente hasta (opcional)"
+              tooltip="Último día de uso; vacío deja la versión vigente sin fecha de fin."
               error={errors.validUntil?.message}
             >
               <Input
@@ -103,6 +106,7 @@ export function CatalogVersionCreateForm({
 
           <Field
             label="Notas (opcional)"
+            tooltip="Resumen de lo que cambia respecto a la versión anterior, para quien la apruebe."
             hint="Qué trae esta versión. Se guarda en el evento de creación."
             error={errors.notes?.message}
           >

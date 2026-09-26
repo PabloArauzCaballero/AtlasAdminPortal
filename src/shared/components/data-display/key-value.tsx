@@ -1,9 +1,11 @@
+import { isValidElement } from "react";
 import { cn } from "@/shared/lib/cn";
 import { CopyableCode } from "@/shared/components/ui/copy-button";
 import { formatBoolean, safeText } from "@/shared/lib/format";
 
 type Item = {
   label: string;
+  /** Texto, número, booleano — o un nodo de React ya compuesto (una insignia, un enlace). */
   value: unknown;
   mono?: boolean;
   tone?: "default" | "success" | "warning" | "critical" | "muted";
@@ -27,9 +29,9 @@ export function KeyValueSection({
   items,
 }: Readonly<{ title: string; description?: string; items: Item[] }>) {
   return (
-    <section className="rounded-2xl border border-atlas-border bg-white shadow-subtle">
-      <div className="border-b border-atlas-border bg-slate-50/70 px-5 py-4">
-        <h2 className="text-sm font-semibold text-atlas-text">{title}</h2>
+    <section className="rounded-xl border border-atlas-border bg-white shadow-subtle">
+      <div className="border-b border-atlas-border bg-[#FAFAFB] px-5 py-4">
+        <h2 className="text-sm font-medium text-atlas-text">{title}</h2>
         {description ? (
           <p className="mt-1 text-sm text-atlas-muted">{description}</p>
         ) : null}
@@ -50,7 +52,7 @@ function KeyValueItem({ item }: Readonly<{ item: Item }>) {
         toneClass(item.tone),
       )}
     >
-      <dt className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-atlas-muted">
+      <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-atlas-muted">
         {item.label}
       </dt>
       <dd className="min-h-5 break-words text-sm font-medium leading-6 text-atlas-text">
@@ -64,7 +66,16 @@ function KeyValueItem({ item }: Readonly<{ item: Item }>) {
   );
 }
 
+/*
+ * Un elemento React se devuelve tal cual.
+ *
+ * `safeText` termina en `JSON.stringify`, y serializar un elemento no da su texto: da el objeto
+ * interno de React. Sin esta salida, pasar una insignia como valor pintaba un churro de llaves.
+ * Es lo que permite que el resumen de un proveedor enseñe su estado y su salud con la MISMA
+ * insignia que la tabla de la que se abrió, en vez de repetir el literal en inglés.
+ */
 function resolveValue(value: unknown) {
+  if (isValidElement(value)) return value;
   if (typeof value === "boolean") return formatBoolean(value);
   return safeText(value);
 }

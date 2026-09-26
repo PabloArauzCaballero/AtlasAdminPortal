@@ -1,5 +1,6 @@
 "use client";
 
+import { SUITE_TYPE_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
@@ -13,12 +14,19 @@ import { Button } from "@/shared/components/ui/button";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { SuiteForm } from "./suite-form";
 import { ModuleBadge, StatusBadge } from "@/shared/components/ui/badges";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
+import { useTutorial } from "@/features/qa-tutorials/tutorial-provider";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import { optionsToDescriptions, uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { ClipboardList } from "lucide-react";
 
 export function TestSuitesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -33,6 +41,7 @@ export function TestSuitesPage() {
 
 function AuthorizedTestSuitesPage() {
   const router = useRouter();
+  const { start } = useTutorial();
   const [page, setPage] = useState(1);
   const [module, setModule] = useState("");
   const [suiteType, setSuiteType] = useState("");
@@ -40,7 +49,11 @@ function AuthorizedTestSuitesPage() {
   const suites = useTestSuites({ page, limit: 20, module, suiteType });
   const items = useMemo(() => suites.data?.items ?? [], [suites.data?.items]);
   const suiteTypeOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.suiteType)),
+    () =>
+      uniqueTextOptions(
+        items.map((item) => item.suiteType),
+        optionsToDescriptions(SUITE_TYPE_OPTIONS),
+      ),
     [items],
   );
 
@@ -51,7 +64,7 @@ function AuthorizedTestSuitesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             {row.original.code}
@@ -112,10 +125,12 @@ function AuthorizedTestSuitesPage() {
   return (
     <>
       <PageHeader
+        icon={ClipboardList}
         title="Suites QA registradas en backend"
         description="Suites de prueba registradas en `/systems/test-suites`. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
           <div className="flex gap-2">
+            <TutorialLaunchButton tutorialId="qa-suites-list" />
             {/* El backend restringe la autoría a system_admin/platform_admin/
                 qa_engineer; no existe un permiso "systems.qa.manage" en el
                 catálogo, así que se usa el de ejecución y el backend responde
@@ -124,7 +139,11 @@ function AuthorizedTestSuitesPage() {
               permissions={["systems.qa.execute"]}
               fallback={null}
             >
-              <Button variant="primary" onClick={() => setCreating(true)}>
+              <Button
+                variant="primary"
+                data-tutorial-id="qa-suites-new"
+                onClick={() => setCreating(true)}
+              >
                 Nueva suite
               </Button>
             </PermissionGate>
@@ -139,12 +158,14 @@ function AuthorizedTestSuitesPage() {
         title="Nueva suite de QA"
         onClose={() => setCreating(false)}
       >
-        <SuiteForm
-          onSaved={(saved) => {
-            setCreating(false);
-            router.push(`/internal/qa/suites/${saved.suite.suiteId}`);
-          }}
-        />
+        <div data-tutorial-id="qa-suite-form">
+          <SuiteForm
+            onSaved={(saved) => {
+              setCreating(false);
+              router.push(`/internal/qa/suites/${saved.suite.suiteId}`);
+            }}
+          />
+        </div>
       </DrawerPanel>
       <BusinessContextNote>
         Antes de liberar un cambio, alguien necesita saber si los flujos
@@ -156,6 +177,7 @@ function AuthorizedTestSuitesPage() {
       <FilterBar
         search={module}
         searchPlaceholder="Filtrar por módulo…"
+        searchTooltip="Escribe el módulo del backend, p. ej. internal-auth, para ver sólo sus suites."
         onSearchChange={(value) => {
           setModule(value);
           setPage(1);
@@ -173,6 +195,8 @@ function AuthorizedTestSuitesPage() {
           {
             name: "suiteType",
             label: "Tipo de suite",
+            tooltip:
+              "Qué clase de prueba es: humo, regresión, integración, extremo a extremo o carga.",
             value: suiteType,
             options: suiteTypeOptions,
           },
@@ -192,13 +216,36 @@ function AuthorizedTestSuitesPage() {
           onRetry={() => void suites.refetch()}
         />
       ) : null}
-      {suites.data ? (
-        <DataTable
-          data={items}
-          columns={columns}
-          meta={suites.data.meta}
-          onPageChange={setPage}
+      {suites.data && items.length === 0 ? (
+        <EmptyState
+          title="Todavía no hay suites de prueba"
+          description="Una suite te permite agrupar varios casos y ejecutarlos juntos. Por ejemplo, una suite «Inicio de sesión» con pruebas para acceso correcto, contraseña incorrecta y recuperación de cuenta — así verificas toda una funcionalidad antes de publicarla."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <PermissionGate
+                permissions={["systems.qa.execute"]}
+                fallback={null}
+              >
+                <Button variant="primary" onClick={() => setCreating(true)}>
+                  Crear primera suite
+                </Button>
+              </PermissionGate>
+              <Button onClick={() => start("qa-suites-list")}>
+                Ver tutorial
+              </Button>
+            </div>
+          }
         />
+      ) : null}
+      {suites.data && items.length > 0 ? (
+        <div data-tutorial-id="qa-suites-table">
+          <DataTable
+            data={items}
+            columns={columns}
+            meta={suites.data.meta}
+            onPageChange={setPage}
+          />
+        </div>
       ) : null}
     </>
   );

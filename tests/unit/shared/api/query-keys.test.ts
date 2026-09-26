@@ -286,32 +286,6 @@ describe("queryKeys · invalidación por prefijo", () => {
     expect(queryKeys.dataQualityIssues({ page: 1 })[0]).toBe("operations");
   });
 
-  it("invalidar el detalle de un reporte alcanza a sus snapshots", async () => {
-    // `reportSnapshots` cuelga de la clave del reporte a propósito: tras
-    // regenerar un snapshot basta invalidar el reporte.
-    const snapshots = queryKeys.reportSnapshots("rep_1", { page: 1 });
-    seed(snapshots);
-
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.report("rep_1"),
-    });
-
-    expect(isStale(snapshots)).toBe(true);
-  });
-
-  it("los snapshots de un reporte no se invalidan al tocar otro reporte", async () => {
-    const snapshots = queryKeys.reportSnapshots("rep_1", { page: 1 });
-    seed(snapshots);
-
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.report("rep_2"),
-    });
-
-    expect(isStale(snapshots)).toBe(false);
-  });
-});
-
-describe("queryKeys · externalProvidersReport", () => {
   it("dos reportes distintos no comparten caché", () => {
     expect(queryKeys.externalProvidersReport("usage")).not.toEqual(
       queryKeys.externalProvidersReport("cost"),

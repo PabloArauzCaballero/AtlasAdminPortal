@@ -44,29 +44,3 @@ export type GovernancePolicyDetail = {
   metadata?: JsonRecord | null;
   updatedAt?: string | null;
 };
-
-export type GovernancePolicyConfigInput = {
-  name: string;
-  description: string;
-  owner: string;
-  status: string;
-  policyType: string;
-  version: string;
-  scope: {
-    affectedTables: string;
-    affectedColumns: string;
-  };
-  enforcement: {
-    mutationMode: string;
-    appendOnly: boolean;
-    updateAllowed: boolean;
-    deleteAllowed: boolean;
-    hardDeleteAllowed: boolean;
-    exportAllowed: boolean;
-    approvalRequired: boolean;
-    reasonRequired: boolean;
-    auditRequired: boolean;
-    maskingStrategy: string;
-    retentionDays: string;
-  };
-};

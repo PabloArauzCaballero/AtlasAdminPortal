@@ -25,6 +25,21 @@ export type QaJourneyConfig = {
   deviceProfile?: string;
   includeTenantHeader: boolean;
   includeIdempotencyKey: boolean;
+  /** Escenario a forzar en el mock de proveedores externos, en TODOS los pasos. */
+  mockScenario?: string;
+  /** Latencia exacta a forzar en el mock (x-mock-latency-ms), en TODOS los pasos. */
+  mockLatencyMs?: number;
+  /**
+   * Cuántas veces se recorre la secuencia completa: es lo que convierte "un journey" en "simular
+   * N personas atravesando el mismo flujo". Cada corrida arranca con su propio `{{persona.*}}`
+   * (documentNumber, phone, email, firstName, lastName) determinista por semilla+índice, para
+   * poblar pasos como el alta de un cliente sin que el operador tenga que escribir N payloads.
+   */
+  iterations: number;
+  /** Cuántas corridas del journey van en paralelo. */
+  concurrency: number;
+  /** Semilla del lote de personas — misma semilla, mismas N personas (ver qa-seed-catalog.ts). */
+  seed: string;
 };
 
 export type QaJourneyStepResult = {
@@ -51,6 +66,24 @@ export type QaJourneyRunResult = {
   failedSteps: number;
   context: Record<string, unknown>;
   steps: QaJourneyStepResult[];
+};
+
+/** Una corrida del journey dentro de un lote: su persona y su resultado. */
+export type QaJourneyIterationResult = {
+  index: number;
+  persona: Record<string, unknown>;
+  result: QaJourneyRunResult;
+};
+
+export type QaJourneyBatchResult = {
+  iterations: number;
+  concurrency: number;
+  seed: string;
+  startedAt: string;
+  finishedAt: string;
+  passedIterations: number;
+  failedIterations: number;
+  runs: QaJourneyIterationResult[];
 };
 
 export const JOURNEY_EXAMPLE_SPEC: QaJourneyStepSpec[] = [

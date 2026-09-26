@@ -36,7 +36,7 @@ export function ReportSummaryCard({
             { label: "Referencia", value: report.sourceReference, mono: true },
           ]}
         />
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <JsonViewer
             title="Filtros permitidos"
             value={report.allowedFilters}

@@ -1,5 +1,6 @@
 "use client";
 
+import { CHANNEL_OPTIONS } from "./notification-options";
 import { useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
@@ -14,15 +15,6 @@ import {
 } from "./hooks";
 import { NotificationChannelBadge } from "./notification-columns";
 import type { NotificationChannel, PreferenceInput } from "./types";
-
-const CHANNELS: NotificationChannel[] = [
-  "in_app",
-  "push",
-  "email",
-  "sms",
-  "whatsapp",
-  "phone",
-];
 
 const emptyDraft: PreferenceInput = {
   eventCode: "",
@@ -45,7 +37,10 @@ export function PreferencesSection() {
       </BusinessContextNote>
       <div className="flex flex-wrap items-end gap-3">
         <div className="w-56">
-          <Field label="ID de cliente">
+          <Field
+            label="ID de cliente"
+            tooltip="Número del cliente cuyas preferencias quieres ver; lo sacas de su caso o ticket."
+          >
             <Input
               value={customerIdInput}
               onChange={(event) => setCustomerIdInput(event.target.value)}
@@ -204,7 +199,10 @@ function PreferencesEditor({ customerId }: Readonly<{ customerId: string }>) {
       >
         <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-dashed border-atlas-border p-4">
           <div className="w-52">
-            <Field label="Evento">
+            <Field
+              label="Evento"
+              tooltip="Código del evento de negocio que dispara el aviso. Ej.: risk_assessment_completed"
+            >
               <Input
                 value={draft.eventCode}
                 onChange={(event) =>
@@ -219,22 +217,21 @@ function PreferencesEditor({ customerId }: Readonly<{ customerId: string }>) {
             </Field>
           </div>
           <div className="w-40">
-            <Field label="Canal">
+            <Field
+              label="Canal"
+              tooltip="Vía por la que el cliente quiere o no recibir ese evento."
+            >
               <Select
+                name="canal"
+                options={CHANNEL_OPTIONS}
                 value={draft.channel}
-                onChange={(event) =>
+                onChange={(valor) =>
                   setDraft((current) => ({
                     ...current,
-                    channel: event.target.value as NotificationChannel,
+                    channel: valor as NotificationChannel,
                   }))
                 }
-              >
-                {CHANNELS.map((channel) => (
-                  <option key={channel} value={channel}>
-                    {channel}
-                  </option>
-                ))}
-              </Select>
+              />
             </Field>
           </div>
           <label className="flex items-center gap-2 pb-2.5 text-sm text-atlas-text">

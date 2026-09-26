@@ -1,28 +1,40 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
+
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import {
-  Badge,
-  RiskBadge,
-  SeverityBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
+import { Badge, StatusBadge } from "@/shared/components/ui/badges";
+import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
-import { useInvestigationSummary } from "./hooks";
+import { formatDateTime, safeText } from "@/shared/lib/format";
+import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
+import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
+import { IdentityEvidencePanel } from "./identity-evidence-panel";
+import {
+  CasosAbiertosSection,
+  IdentidadYAgendaSection,
+} from "./investigation-summary-sections";
+import { ListCard } from "./list-card";
+import {
+  useInvestigationSummary,
+  useResendContactVerificationMutation,
+} from "./hooks";
+import { MailCheck, Search } from "lucide-react";
 
 export function InvestigationSummaryPage({
   customerId,
 }: Readonly<{ customerId: string }>) {
   const summary = useInvestigationSummary(customerId);
+  const reenvio = useResendContactVerificationMutation();
+  const [reenvioAviso, setReenvioAviso] = useState<string | null>(null);
 
   return (
     <>
       <PageHeader
+        icon={Search}
         eyebrow="Operaciones"
         title={`Investigación del cliente #${customerId}`}
         description="Perfil, contactos, consentimientos, última evaluación de riesgo y casos abiertos — vista consolidada para revisión manual o de fraude."
@@ -92,49 +104,29 @@ export function InvestigationSummaryPage({
             ]}
           />
 
-          <section className="rounded-2xl border border-atlas-border bg-white shadow-subtle">
-            <div className="border-b border-atlas-border bg-slate-50/70 px-5 py-4">
-              <h2 className="text-sm font-semibold text-atlas-text">
-                Última evaluación de riesgo
-              </h2>
-            </div>
-            <div className="p-5">
-              {summary.data.latestRiskAssessment ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <RiskBadge
-                    value={summary.data.latestRiskAssessment.riskLevel}
-                  />
-                  <span className="text-sm text-atlas-text">
-                    {safeText(
-                      summary.data.latestRiskAssessment.recommendedAction,
-                    )}
-                  </span>
-                  <span className="text-sm text-atlas-muted">
-                    Score:{" "}
-                    {formatNumber(summary.data.latestRiskAssessment.fraudScore)}
-                  </span>
-                  <Link
-                    href={`/internal/operations/risk-assessments/${summary.data.latestRiskAssessment.riskAssessmentRunId}`}
-                    className="ml-auto font-mono text-xs text-blue-700 underline"
-                  >
-                    run #{summary.data.latestRiskAssessment.riskAssessmentRunId}
-                  </Link>
-                  <span className="w-full text-xs text-atlas-muted">
-                    Decidido:{" "}
-                    {formatDateTime(
-                      summary.data.latestRiskAssessment.decidedAt,
-                    )}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-sm text-atlas-muted">
-                  Sin evaluaciones de riesgo registradas.
-                </p>
-              )}
-            </div>
-          </section>
+          <TarjetaDeExpediente customerId={customerId} />
 
-          <section className="grid gap-4 md:grid-cols-2">
+          <UltimaEvaluacionDeRiesgo
+            evaluacion={summary.data.latestRiskAssessment}
+          />
+
+          {/*
+            Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.
+
+            Quien investiga un caso de fraude documental necesita saber, en el mismo sitio, si el
+            carnet se verificó, con qué parecido, con cuánto riesgo de falsificación y si el teléfono
+            desde el que se dio de alta se parece al de alguien que vive con él. Estaba todo
+            registrado y repartido entre tres herramientas, así que la investigación empezaba
+            reuniéndolo a mano — y con prisa se decidía sin ello.
+
+            De la agenda se enseña su FORMA y nunca su contenido: ni un nombre, ni un teléfono. Lo
+            que el teléfono manda son cuentas, y lo que el servidor cruza son hashes que descarta.
+          */}
+          <IdentityEvidencePanel customerId={customerId} />
+
+          <IdentidadYAgendaSection data={summary.data} />
+
+          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <ListCard title="Contactos" empty="Sin contactos registrados.">
               {summary.data.contacts.map((contact, index) => (
                 <li
@@ -150,9 +142,46 @@ export function InvestigationSummaryPage({
                       </Badge>
                     ) : null}
                   </span>
-                  <StatusBadge value={contact.status} />
+                  <span className="flex items-center gap-2">
+                    <StatusBadge value={contact.status} />
+                    {contact.status === "unverified" &&
+                    (contact.contactType === "email" ||
+                      contact.contactType === "phone") ? (
+                      <Button
+                        variant="secondary"
+                        disabled={reenvio.isPending}
+                        onClick={() =>
+                          reenvio.mutate(
+                            {
+                              customerId,
+                              body: {
+                                contactType: contact.contactType as
+                                  "email" | "phone",
+                              },
+                            },
+                            {
+                              onSuccess: () =>
+                                setReenvioAviso("Código reenviado al cliente."),
+                              onError: (error) =>
+                                setReenvioAviso(
+                                  `No se pudo reenviar: ${isAtlasApiError(error) ? error.message : "inténtalo en un minuto."}`,
+                                ),
+                            },
+                          )
+                        }
+                      >
+                        <MailCheck className="h-3.5 w-3.5" />
+                        Reenviar código
+                      </Button>
+                    ) : null}
+                  </span>
                 </li>
               ))}
+              {reenvioAviso ? (
+                <li className="py-1.5 text-xs text-atlas-muted" role="status">
+                  {reenvioAviso}
+                </li>
+              ) : null}
             </ListCard>
             <ListCard
               title="Consentimientos"
@@ -172,67 +201,9 @@ export function InvestigationSummaryPage({
             </ListCard>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2">
-            <ListCard
-              title={`Casos de revisión manual (${summary.data.manualReviewCases.length})`}
-              empty="Sin casos de revisión manual abiertos."
-            >
-              {summary.data.manualReviewCases.map((item) => (
-                <li
-                  key={item.caseId}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span className="font-mono text-xs">
-                    #{item.caseId} · {safeText(item.caseType)}
-                  </span>
-                  <StatusBadge value={item.status} />
-                </li>
-              ))}
-            </ListCard>
-            <ListCard
-              title={`Casos de fraude (${summary.data.fraudCases.length})`}
-              empty="Sin casos de fraude abiertos."
-            >
-              {summary.data.fraudCases.map((item) => (
-                <li
-                  key={item.caseId}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span className="font-mono text-xs">#{item.caseId}</span>
-                  <span className="flex items-center gap-2">
-                    <SeverityBadge value={item.severity} />
-                    <StatusBadge value={item.caseStatus} />
-                  </span>
-                </li>
-              ))}
-            </ListCard>
-          </section>
+          <CasosAbiertosSection data={summary.data} />
         </div>
       ) : null}
     </>
-  );
-}
-
-function ListCard({
-  title,
-  empty,
-  children,
-}: Readonly<{ title: string; empty: string; children: React.ReactNode }>) {
-  const hasChildren = Array.isArray(children)
-    ? children.length > 0
-    : Boolean(children);
-  return (
-    <section className="rounded-2xl border border-atlas-border bg-white shadow-subtle">
-      <div className="border-b border-atlas-border bg-slate-50/70 px-5 py-3">
-        <h2 className="text-sm font-semibold text-atlas-text">{title}</h2>
-      </div>
-      <div className="p-5">
-        {hasChildren ? (
-          <ul className="divide-y divide-slate-100">{children}</ul>
-        ) : (
-          <p className="text-sm text-atlas-muted">{empty}</p>
-        )}
-      </div>
-    </section>
   );
 }

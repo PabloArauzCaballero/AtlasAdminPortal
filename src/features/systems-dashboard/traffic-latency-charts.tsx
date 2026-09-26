@@ -43,7 +43,7 @@ export function TrafficLatencyCharts({
   );
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
       <ChartCard
         title="Hits por endpoint"
         subtitle="Top 10 rutas por cantidad de requests en la ventana."
@@ -92,13 +92,13 @@ export function TrafficLatencyCharts({
                 </div>
                 <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-atlas-soft">
                   <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-blue-300"
+                    className="absolute inset-y-0 left-0 rounded-full bg-atlas-accent/35"
                     style={{
                       width: `${Math.max(2, (p95 / maxLatency) * 100)}%`,
                     }}
                   />
                   <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-blue-600"
+                    className="absolute inset-y-0 left-0 rounded-full bg-atlas-accent"
                     style={{
                       width: `${Math.max(2, (avg / maxLatency) * 100)}%`,
                     }}

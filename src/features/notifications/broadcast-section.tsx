@@ -1,5 +1,7 @@
 "use client";
 
+import { FormSelect } from "@/shared/components/ui/form-select";
+import { AUDIENCE_OPTIONS } from "./notification-options";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,7 +11,7 @@ import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState, ForbiddenState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useSendBroadcastNotificationMutation } from "./hooks";
@@ -19,13 +21,6 @@ import {
   broadcastSchema,
   type BroadcastForm,
 } from "./broadcast-helpers";
-import type { BroadcastAudience } from "./types";
-
-const AUDIENCE_OPTIONS: { value: BroadcastAudience; label: string }[] = [
-  { value: "customers", label: "Todos los customers" },
-  { value: "internal_users", label: "Todos los usuarios internos" },
-  { value: "both", label: "Customers + usuarios internos" },
-];
 
 export function BroadcastSection() {
   return (
@@ -45,6 +40,7 @@ function BroadcastForm() {
   const send = useSendBroadcastNotificationMutation();
   const {
     register,
+    control,
     handleSubmit,
     watch,
     getValues,
@@ -95,12 +91,17 @@ function BroadcastForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={openConfirm} noValidate className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Título" error={errors.title?.message}>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <Field
+                label="Título"
+                tooltip="Encabezado corto del aviso; es lo primero que se lee en la bandeja."
+                error={errors.title?.message}
+              >
                 <Input {...register("title")} />
               </Field>
               <Field
                 label="Prioridad"
+                tooltip="Orden en la bandeja del destinatario: los de mayor número salen arriba."
                 hint="Entero, 0-100. Mayor = más importante."
                 error={errors.priority?.message}
               >
@@ -112,29 +113,41 @@ function BroadcastForm() {
                 />
               </Field>
             </div>
-            <Field label="Mensaje" error={errors.body?.message}>
+            <Field
+              label="Mensaje"
+              tooltip="El texto completo del aviso tal como lo leerá cada destinatario."
+              error={errors.body?.message}
+            >
               <Textarea className="min-h-24" {...register("body")} />
             </Field>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Field label="Audiencia">
-                <Select {...register("audience")}>
-                  {AUDIENCE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+              <Field
+                label="Audiencia"
+                tooltip="A quién se envía; con los IDs vacíos llega a TODOS los activos de ese grupo."
+              >
+                <FormSelect
+                  control={control}
+                  name="audience"
+                  options={AUDIENCE_OPTIONS}
+                />
               </Field>
-              <Field label="Categoría">
+              <Field
+                label="Categoría"
+                tooltip="Grupo del aviso para que la app lo filtre. Ej.: system_alert"
+              >
                 <Input {...register("category")} />
               </Field>
-              <Field label="Ícono (opcional)">
+              <Field
+                label="Ícono (opcional)"
+                tooltip="Nombre del icono que la app pinta junto al aviso. Ej.: bell"
+              >
                 <Input {...register("icon")} />
               </Field>
             </div>
             {audience !== "internal_users" ? (
               <Field
                 label="IDs de customers (opcional)"
+                tooltip="Para enviar sólo a algunos clientes; vacío lo manda a todos los activos."
                 hint="Separados por coma. Vacío = todos los customers activos del tenant."
               >
                 <Input
@@ -146,6 +159,7 @@ function BroadcastForm() {
             {audience !== "customers" ? (
               <Field
                 label="IDs de usuarios internos (opcional)"
+                tooltip="Para enviar sólo a algunas personas del equipo; vacío lo manda a todas."
                 hint="Separados por coma. Vacío = todos los usuarios internos activos del tenant."
               >
                 <Input
@@ -168,7 +182,10 @@ function BroadcastForm() {
             ) : null}
             {send.isSuccess ? (
               <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-                Enviada — {send.data.targeted} destinatario(s) targeteados,{" "}
+                {send.data.status === "queued"
+                  ? "Aceptada — entrega en curso en segundo plano."
+                  : "Enviada."}{" "}
+                {send.data.targeted} destinatario(s) targeteados,{" "}
                 {send.data.created} mensaje(s) creados (referencia{" "}
                 <code className="font-mono">{send.data.broadcastId}</code>).
               </p>

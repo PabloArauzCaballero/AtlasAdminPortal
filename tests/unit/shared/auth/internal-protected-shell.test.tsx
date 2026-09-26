@@ -119,6 +119,21 @@ describe("InternalProtectedShell · sin sesión local", () => {
     await waitFor(() => expect(replace).toHaveBeenCalled());
   });
 
+  /**
+   * La recuperación de contraseña vive dentro de `/internal/*` pero NO puede exigir sesión: quien
+   * la necesita es justamente quien no puede entrar. Estuvo rebotando al login hasta que se añadió
+   * a las rutas públicas del shell, y desde fuera parecía que la pantalla no existía.
+   */
+  it("deja pasar la recuperación de contraseña sin sesión", async () => {
+    conAuth({ session: null });
+
+    montar("/internal/recuperar-acceso");
+
+    expect(screen.getByText(CONTENIDO)).toBeInTheDocument();
+    await waitFor(() => expect(replace).not.toHaveBeenCalled());
+    expect(restoreSessionFromServer).not.toHaveBeenCalled();
+  });
+
   it("no enseña el contenido protegido mientras no hay sesión", () => {
     conAuth({ session: null });
 

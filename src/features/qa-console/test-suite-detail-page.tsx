@@ -13,11 +13,13 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { SuiteExecutionPanel } from "./suite-execution-panel";
 import { SuiteForm } from "./suite-form";
 import { SuiteStepsSection } from "./suite-steps-section";
+import { ClipboardList } from "lucide-react";
 
 const tabs = ["Resumen", "Pasos", "Config", "Ejecución"];
 
@@ -60,6 +62,7 @@ function AuthorizedTestSuiteDetailPage({
       {suite.data ? (
         <>
           <PageHeader
+            icon={ClipboardList}
             eyebrow={`Suite #${suite.data.suite.suiteId}`}
             title={suite.data.suite.name}
             description={
@@ -68,6 +71,7 @@ function AuthorizedTestSuiteDetailPage({
             }
             actions={
               <>
+                <TutorialLaunchButton tutorialId="qa-suite-detail" />
                 <StatusBadge
                   value={suite.data.suite.isEnabled ? "ACTIVE" : "DISABLED"}
                 />
@@ -87,7 +91,13 @@ function AuthorizedTestSuiteDetailPage({
               onSaved={() => setEditing(false)}
             />
           </DrawerPanel>
-          <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+          <div data-tutorial-id="qa-suite-tabs">
+            <DetailTabs
+              tabs={tabs}
+              active={activeTab}
+              onChange={setActiveTab}
+            />
+          </div>
           {activeTab === "Resumen" ? (
             <KeyValueGrid
               items={[
@@ -123,7 +133,7 @@ function AuthorizedTestSuiteDetailPage({
             <SuiteStepsSection suiteId={suiteId} steps={suite.data.steps} />
           ) : null}
           {activeTab === "Config" ? (
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
               {suite.data.steps.map((step) => (
                 <Card key={step.stepId}>
                   <CardContent>

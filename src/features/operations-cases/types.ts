@@ -10,6 +10,14 @@ export type WorkQueueItem = {
   priority: string | null;
   status: string | null;
   reasonCode: string | null;
+  /**
+   * La ejecución del Motor que se lleva la decisión de este caso.
+   *
+   * Con valor, la bandeja buena es la del Motor: allí está el expediente, la petición de
+   * información y la auditoría. Aquí sólo queda el ancla del flujo de alta, y el backend rechaza
+   * cerrarla desde el portal.
+   */
+  decisionExecutionId: string | null;
   openedAt: string | null;
   createdAt: string;
 };
@@ -120,4 +128,90 @@ export type InvestigationSummary = {
     caseStatus: string | null;
     openedAt: string | null;
   }>;
+  /**
+   * El último intento de verificación de identidad, de cualquier canal.
+   *
+   * Faltaba, y era la mitad del expediente: quien investigaba un caso de fraude
+   * documental tenía que abrir otra herramienta para saber si el carnet siquiera
+   * se había verificado. `fraudRisk` es el riesgo de fraude DOCUMENTAL que mide
+   * el worker —plantilla del SEGIP, aritmética interna del documento, física de
+   * la imagen—, no la evidencia de que la foto fuera un carnet.
+   */
+  latestIdentityVerification: {
+    attemptId: string;
+    channel: string | null;
+    result: string | null;
+    similarity: number | null;
+    fraudRisk: number | null;
+    requestedAt: string | null;
+    completedAt: string | null;
+  } | null;
+  /**
+   * La FORMA de la agenda del cliente. Nunca su contenido: ni un nombre, ni un
+   * teléfono, ni un hash — sólo cuentas y proporciones que calculó el teléfono.
+   *
+   * `available: false` es «no hay captura o no dio el permiso», que NO es lo
+   * mismo que una agenda vacía. La pantalla tiene que decir esa diferencia: una
+   * es menos evidencia y la otra sería evidencia en contra.
+   */
+  addressBook: {
+    available: boolean;
+    totalContacts: number;
+    uniqueRatio: number;
+    bolivianRatio: number;
+    referencesFoundInAddressBook: number;
+    riskMatches: number;
+  };
+};
+
+export type EvidenceDocument = {
+  documentId: string;
+  documentType: string;
+  mimeType: string | null;
+  sizeBytes: number | string | null;
+  sha256: string | null;
+  uploadedAt: string | null;
+};
+
+export type EvidenceDocumentList = {
+  customerId: string;
+  documents: EvidenceDocument[];
+};
+
+export type IdentityDecisionInput = {
+  decision: "approve" | "reject";
+  reasonCode: string;
+  notes?: string;
+};
+
+export type IdentityDecisionResult = {
+  customerId: string;
+  decision: "approve" | "reject";
+  identityVerificationResult: string;
+  resolvedEvidenceReviews: number;
+  lifecycleStatus: string | null;
+  eligible: boolean;
+};
+
+/** Una fila de «contactos sin verificar»: el cliente, el contacto declarado y desde cuándo espera. */
+export type PendingContactVerificationItem = {
+  customerId: string;
+  customerCode: string | null;
+  lifecycleStatus: string | null;
+  customerCreatedAt: string | null;
+  contactMethodId: string;
+  contactType: string | null;
+  valueLast4: string | null;
+  emailDomain: string | null;
+  isPrimary: boolean | null;
+  contactCreatedAt: string | null;
+};
+
+export type PendingContactVerificationResponse = {
+  items: PendingContactVerificationItem[];
+};
+
+export type ResendContactVerificationInput = {
+  contactType: "email" | "phone";
+  contactMethodId?: string;
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { STRESS_PROFILE_STATUS_OPTIONS } from "@/features/qa-console/qa-options";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -18,12 +19,12 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Gauge } from "lucide-react";
 
-const statusOptions = ["ACTIVE", "DISABLED", "NEEDS_REVIEW", "DEPRECATED"].map(
-  (value) => ({ label: value, value }),
-);
+const statusOptions = STRESS_PROFILE_STATUS_OPTIONS;
 
 export function StressProfilesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -51,7 +52,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/qa/stress/${row.original.profileId}`}
           >
             {row.original.code}
@@ -64,7 +65,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpointId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpointId}`}
           >
             #{row.original.endpointId}
@@ -107,7 +108,7 @@ function AuthorizedStressProfilesPage() {
         accessorKey: "endpoint.fullPath",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/endpoints/${row.original.endpoint.endpointId}`}
           >
             {row.original.endpoint.fullPath}
@@ -138,11 +139,13 @@ function AuthorizedStressProfilesPage() {
   return (
     <>
       <PageHeader
+        icon={Gauge}
         eyebrow="QA Stress"
         title="Stress backend-driven"
         description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
           <div className="flex gap-2">
+            <TutorialLaunchButton tutorialId="qa-stress-profile" />
             {/* No existe un permiso "systems.stress.manage" en el catálogo de
                 /internal/permissions; el backend restringe el upsert a
                 system_admin/platform_admin/qa_engineer/devops. Se usa el
@@ -152,7 +155,11 @@ function AuthorizedStressProfilesPage() {
               permissions={["systems.stress.execute"]}
               fallback={null}
             >
-              <Button variant="primary" onClick={() => setCreating(true)}>
+              <Button
+                variant="primary"
+                data-tutorial-id="qa-stress-new"
+                onClick={() => setCreating(true)}
+              >
                 Nuevo perfil
               </Button>
             </PermissionGate>
@@ -172,6 +179,7 @@ function AuthorizedStressProfilesPage() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar perfil o endpoint…"
+        searchTooltip="Busca por nombre o código del perfil, o por la ruta del endpoint."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -189,6 +197,8 @@ function AuthorizedStressProfilesPage() {
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Si el perfil se puede encolar o está apagado, en revisión u obsoleto.",
             value: status,
             options: statusOptions,
           },

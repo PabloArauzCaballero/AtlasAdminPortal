@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { ClipboardCheck, RefreshCw } from "lucide-react";
 import {
   useReviewQueue,
   useReviewTargetMutation,
@@ -82,6 +82,7 @@ function AuthorizedReviewQueuePage() {
   return (
     <>
       <PageHeader
+        icon={ClipboardCheck}
         eyebrow="Cola de revisión"
         title="Cola de revisión"
         description="Revisión controlada de endpoints, tablas, impactos y herramientas detectadas por Systems Ops. Cada sección está separada para evitar componentes gigantes."
@@ -147,7 +148,7 @@ function AuthorizedReviewQueuePage() {
       ) : null}
       {queue.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
             <MetricCard label="Endpoints" value={queue.data.endpoints.total} />
             <MetricCard label="Tablas" value={queue.data.dataEntities.total} />
             <MetricCard

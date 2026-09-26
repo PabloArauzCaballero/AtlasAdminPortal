@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   Database,
   FileCheck2,
@@ -46,6 +47,7 @@ function AuthorizedDashboardPage() {
   return (
     <>
       <PageHeader
+        icon={Activity}
         eyebrow="Panel de sistemas"
         title="Centro interno ATLAS"
         description="Estado operativo de Systems Ops, catálogo, QA, gobierno, lineage y auditoría conectado al servicio interno real."
@@ -82,7 +84,7 @@ function AuthorizedDashboardPage() {
 
       {dashboard.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             {objectEntries(dashboard.data.counts).map(([key, value]) => (
               <MetricCard key={key} label={humanizeKey(key)} value={value} />
             ))}
@@ -90,7 +92,7 @@ function AuthorizedDashboardPage() {
 
           <TrafficLatencySection />
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-6 grid-cols-1 xl:grid-cols-[1.2fr_0.8fr]">
             <Card>
               <CardHeader>
                 <SectionHeader
@@ -100,11 +102,11 @@ function AuthorizedDashboardPage() {
                 />
               </CardHeader>
               <CardContent>
-                <dl className="grid gap-3 sm:grid-cols-2">
+                <dl className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                   {objectEntries(dashboard.data.posture).map(([key, value]) => (
                     <div
                       key={key}
-                      className="rounded-md border border-atlas-border p-3"
+                      className="rounded-lg border border-atlas-border bg-[#FAFAFB] p-3"
                     >
                       <dt className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
                         {humanizeKey(key)}
@@ -137,7 +139,7 @@ function AuthorizedDashboardPage() {
                 {(toolsHealth.data ?? []).map((tool, index) => (
                   <div
                     key={`${tool.code ?? tool.name ?? index}`}
-                    className="flex items-center justify-between gap-3 rounded-md border border-atlas-border p-3"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-atlas-border bg-[#FAFAFB] p-3"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-atlas-text">
@@ -162,7 +164,7 @@ function AuthorizedDashboardPage() {
                 className="mb-0"
               />
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               <QuickAccessLink
                 icon={GitBranch}
                 href="/internal/systems/endpoints"
@@ -222,14 +224,14 @@ function QuickAccessLink({
 }>) {
   return (
     <Link
-      className="group flex items-center gap-3 rounded-xl border border-atlas-border p-4 text-sm font-medium text-atlas-text transition-all duration-150 hover:-translate-y-0.5 hover:border-atlas-accent/40 hover:bg-atlas-accentSoft hover:shadow-card"
+      className="group flex items-center gap-3 rounded-lg border border-atlas-border p-3 text-sm font-medium text-atlas-text transition-[background-color,border-color,box-shadow] duration-150 hover:border-slate-300 hover:bg-atlas-soft hover:shadow-subtle"
       href={href}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-atlas-soft text-atlas-accent transition-colors group-hover:bg-white">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-atlas-soft text-atlas-accent transition-colors duration-150 group-hover:bg-white">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <ArrowRight className="h-4 w-4 shrink-0 text-atlas-muted opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+      <ArrowRight className="h-4 w-4 shrink-0 text-atlas-muted/70 transition-transform duration-150 group-hover:translate-x-0.5" />
     </Link>
   );
 }

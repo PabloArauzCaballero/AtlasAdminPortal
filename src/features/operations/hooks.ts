@@ -8,9 +8,7 @@ import {
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
-  activateRiskRulesetVersion,
   createCatalogVersion,
-  createRiskRulesetVersion,
   decideCatalogVersion,
   getCatalogVersion,
   getCurrentRiskPolicy,
@@ -26,9 +24,7 @@ import {
 } from "./services";
 import type { DefinitionsPackageInput } from "./definitions-package-schema";
 import type { DataGovernancePolicyPackageInput } from "./governance-package-schema";
-import type { CreateRiskRulesetVersionInput } from "./risk-ruleset-schema";
 import type {
-  ActivateRulesetInput,
   CatalogDecisionInput,
   CatalogIngestionInput,
   CreateCatalogVersionInput,
@@ -115,28 +111,6 @@ export function useUpsertDefinitionsPackageMutation() {
   return useMutation({
     mutationFn: (body: DefinitionsPackageInput) =>
       upsertDefinitionsPackage(body),
-    onSuccess: async () => {
-      await invalidateOperations(queryClient);
-    },
-  });
-}
-
-export function useCreateRiskRulesetVersionMutation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: CreateRiskRulesetVersionInput) =>
-      createRiskRulesetVersion(body),
-    onSuccess: async () => {
-      await invalidateOperations(queryClient);
-    },
-  });
-}
-
-export function useActivateRulesetVersionMutation(rulesetVersionId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: ActivateRulesetInput) =>
-      activateRiskRulesetVersion(rulesetVersionId, body),
     onSuccess: async () => {
       await invalidateOperations(queryClient);
     },

@@ -20,5 +20,18 @@
     "plugins": [{ "name": "next" }]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // Repos independientes anidados en este directorio: tienen su propio tsconfig, su propio
+    // runtime (Node/CommonJS, no Next) y sus propios gates. Incluirlos aquí hacía que
+    // `yarn type-check` del portal fallara con ~1465 errores ajenos —sus tests usan globales de
+    // Jest que este tsconfig no declara—, dejando el gate inservible para detectar errores reales
+    // del portal.
+    "semantic-analysis-worker",
+    "bolivia-bank-statement-worker",
+    "atlas-auth-broker-worker",
+    // Clon suelto del propio portal dentro de sí mismo, con su propio `.git` y sin rastrear por
+    // este repositorio.
+    "AtlasAdminPortal"
+  ]
 }

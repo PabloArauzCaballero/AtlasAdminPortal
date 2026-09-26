@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { formatDateTime } from "@/shared/lib/format";
 import type { SessionInvestigationSummary } from "./types";
@@ -10,7 +11,7 @@ export function SessionOverviewSection({
 }: Readonly<{ summary: SessionInvestigationSummary }>) {
   const { session, customer, device } = summary;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
       <KeyValueSection
         title="Sesión"
         items={[
@@ -46,9 +47,10 @@ export function SessionOverviewSection({
         {customer ? (
           <Link
             href={`/internal/operations/customers/${customer.customerId}/investigation-summary`}
-            className="inline-flex text-sm font-semibold text-atlas-accent underline"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-atlas-accent underline"
           >
-            Ver la investigación del cliente #{customer.customerId} →
+            Ver la investigación del cliente #{customer.customerId}
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         ) : null}
         <KeyValueSection

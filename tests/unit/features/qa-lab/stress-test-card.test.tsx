@@ -1,3 +1,4 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -46,7 +47,7 @@ function runButton() {
 }
 
 async function selectProduction() {
-  await userEvent.selectOptions(
+  await elegirOpcion(
     screen.getByRole("combobox", { name: /Ambiente/ }),
     "PRODUCTION_READONLY",
   );
@@ -124,7 +125,7 @@ describe("StressTestCard · bloqueo de producción", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
     await selectProduction();
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: /Ambiente/ }),
       "STAGING",
     );

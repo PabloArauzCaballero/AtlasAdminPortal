@@ -1,5 +1,6 @@
 "use client";
 
+import { ENVIRONMENT_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Play, RefreshCw } from "lucide-react";
@@ -102,21 +103,23 @@ export function SuiteExecutionPanel({
   return (
     <Card>
       <CardContent className="space-y-5">
-        <div className="grid gap-4 xl:grid-cols-2">
-          <Field label="Ambiente">
+        <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+          <Field
+            label="Ambiente"
+            tooltip="Contra qué entorno corre la suite; sólo aparecen los que la suite permite."
+          >
             <Select
+              name="ambiente"
+              options={ENVIRONMENT_OPTIONS.filter((option) =>
+                (allowedEnvironments as string[]).includes(option.value),
+              )}
               value={environment}
-              onChange={(event) => setEnvironment(event.target.value)}
-            >
-              {allowedEnvironments.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </Select>
+              onChange={(valor) => setEnvironment(valor)}
+            />
           </Field>
           <Field
             label="Timeout por step"
+            tooltip="Milisegundos que espera cada paso antes de darlo por fallido. Ej.: 10000"
             hint="El backend también aplica sus límites internos."
           >
             <Input
@@ -139,6 +142,7 @@ export function SuiteExecutionPanel({
           </label>
           <Field
             label="Base URL para corrida real"
+            tooltip="Host contra el que se lanzan las peticiones cuando no es dry-run."
             hint="Usa el host raiz; los steps normalmente ya incluyen /api/v1."
           >
             <Input
@@ -150,9 +154,10 @@ export function SuiteExecutionPanel({
           </Field>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
           <Field
             label="Headers JSON"
+            tooltip="Cabeceras extra para todas las peticiones de esta corrida, en JSON."
             hint="No se guardan secretos en el portal."
           >
             <Textarea
@@ -163,6 +168,7 @@ export function SuiteExecutionPanel({
           </Field>
           <Field
             label="Config JSON"
+            tooltip="Valores para los parámetros configurables de los pasos, en JSON."
             hint="Variables consumidas por templates de la suite."
           >
             <Textarea
@@ -241,7 +247,7 @@ function SubmittedRun({
         <StatusBadge value={result.status ?? "SUBMITTED"} />
         {result.runId ? (
           <Link
-            className="text-sm font-medium text-blue-700 underline"
+            className="text-sm font-medium text-atlas-accent underline"
             href={`/internal/qa/runs/${result.runId}`}
           >
             Ver ejecucion #{result.runId}

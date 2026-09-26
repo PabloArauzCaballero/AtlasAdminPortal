@@ -23,6 +23,7 @@ import { buildCatalogVersionItemColumns } from "./catalog-version-items-columns"
 import { STATUS_HELP, STATUS_LABELS } from "./catalog-version-lifecycle";
 import type { ContextItem } from "./catalog-version-types";
 import { useCatalogVersion } from "./hooks";
+import { ArrowLeft, Boxes } from "lucide-react";
 
 /**
  * Ficha de una versión de catálogo y su flujo de aprobación.
@@ -74,12 +75,16 @@ function AuthorizedCatalogVersionDetailPage({
   return (
     <>
       <PageHeader
+        icon={Boxes}
         eyebrow="Catálogos"
         title={`Versión ${safeText(version?.versionCode)}`}
         description={`Ciclo de aprobación de una versión de \`${catalogCode}\`. Conectado a \`/operations/catalogs/:catalogCode/versions/:versionId\`.`}
         actions={
           <Link href="/internal/operations/catalogs">
-            <Button>Volver a catálogos</Button>
+            <Button>
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Volver a catálogos
+            </Button>
           </Link>
         }
       />
@@ -110,7 +115,7 @@ function AuthorizedCatalogVersionDetailPage({
 
       {detail.data && version ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Items" value={formatNumber(items.length)} />
             <MetricCard label="Alias" value={formatNumber(aliasCount)} />
             <MetricCard

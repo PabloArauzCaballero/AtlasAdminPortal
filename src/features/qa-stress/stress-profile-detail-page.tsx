@@ -1,5 +1,6 @@
 "use client";
 
+import { ENVIRONMENT_OPTIONS } from "@/features/qa-console/qa-options";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -13,18 +14,19 @@ import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { StressProfileForm } from "./stress-profile-form";
-import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import {
+  DEFAULT_QUEUE_RUN_ADVANCED,
+  parseQueueRunAdvanced,
+  QueueRunAdvancedFields,
+} from "./queue-run-advanced-fields";
+import { StressProfileSummary } from "./stress-profile-summary";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import {
-  formatBoolean,
-  formatDateTime,
-  formatNumber,
-} from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Gauge } from "lucide-react";
 
 export function StressProfileDetailPage(
   props: Readonly<{ profileId: string }>,
@@ -51,16 +53,43 @@ function AuthorizedStressProfileDetailPage({
     "LOCAL" | "STAGING" | "PRODUCTION_READONLY"
   >("LOCAL");
   const [approvalTicket, setApprovalTicket] = useState("");
+  const [advanced, setAdvanced] = useState(DEFAULT_QUEUE_RUN_ADVANCED);
+  const [advancedError, setAdvancedError] = useState<string | null>(null);
   const canExecute = hasPermission("systems.stress.execute");
 
+  function patchAdvanced(patch: Partial<typeof advanced>) {
+    setAdvanced((current) => ({ ...current, ...patch }));
+  }
+
+  function openConfirm() {
+    const parsed = parseQueueRunAdvanced(advanced);
+    if (!parsed.ok) {
+      setAdvancedError(parsed.error);
+      return;
+    }
+    setAdvancedError(null);
+    setConfirmOpen(true);
+  }
+
   function queueRun() {
+    const parsed = parseQueueRunAdvanced(advanced);
+    if (!parsed.ok) {
+      setAdvancedError(parsed.error);
+      setConfirmOpen(false);
+      return;
+    }
     queueMutation.mutate(
       {
         environment,
-        dryRun: true,
+        dryRun: advanced.dryRun,
+        baseUrl: advanced.baseUrl.trim() || undefined,
         approvalTicket: approvalTicket || undefined,
-        config: {},
-        headers: {},
+        config: {
+          payload: parsed.payload,
+          timeoutMs: advanced.timeoutMs,
+          requestBudget: advanced.requestBudget,
+        },
+        headers: parsed.headers,
       },
       { onSuccess: () => setConfirmOpen(false) },
     );
@@ -91,6 +120,7 @@ function AuthorizedStressProfileDetailPage({
       {profile.data ? (
         <>
           <PageHeader
+            icon={Gauge}
             eyebrow={`Stress profile #${profile.data.profileId}`}
             title={profile.data.name}
             description={
@@ -114,74 +144,32 @@ function AuthorizedStressProfileDetailPage({
                         ? "Necesitas systems.stress.execute."
                         : undefined
                   }
-                  onClick={() => setConfirmOpen(true)}
+                  onClick={openConfirm}
                 >
-                  Encolar dry-run
+                  {advanced.dryRun ? "Encolar dry-run" : "Encolar stress real"}
                 </Button>
               </>
             }
           />
           <div className="space-y-6">
-            <KeyValueGrid
-              items={[
-                { label: "Código", value: profile.data.code, mono: true },
-                {
-                  label: "Endpoint",
-                  value: `#${profile.data.endpointId}`,
-                  mono: true,
-                },
-                {
-                  label: "Target RPS",
-                  value: formatNumber(profile.data.targetRps),
-                },
-                {
-                  label: "Duración",
-                  value: `${formatNumber(profile.data.durationSeconds)} s`,
-                },
-                {
-                  label: "Concurrencia",
-                  value: formatNumber(profile.data.concurrency),
-                },
-                { label: "Max error rate", value: profile.data.maxErrorRate },
-                { label: "Max p95 ms", value: profile.data.maxP95Ms },
-                {
-                  label: "Ambientes",
-                  value: profile.data.environmentScope.join(", "),
-                },
-                {
-                  label: "Habilitado",
-                  value: formatBoolean(profile.data.isEnabled),
-                },
-                {
-                  label: "Requiere aprobación",
-                  value: formatBoolean(profile.data.requiresApproval),
-                },
-                {
-                  label: "Creado",
-                  value: formatDateTime(profile.data.createdAt),
-                },
-                {
-                  label: "Actualizado",
-                  value: formatDateTime(profile.data.updatedAt),
-                },
-              ]}
-            />
+            <StressProfileSummary profile={profile.data} />
             <Card>
               <CardContent className="space-y-4">
                 <p className="text-sm text-atlas-muted">
-                  El portal encola `dryRun=true`. El servicio interno bloquea
-                  `PRODUCTION_READONLY` para stress runs, incluso si aparece en
-                  el perfil.
+                  El servicio interno bloquea `PRODUCTION_READONLY` para stress
+                  runs, incluso si aparece en el perfil. En dry-run sólo se
+                  valida que la URL sea construible: no sale tráfico.
                 </p>
                 <Link
-                  className="text-sm font-medium text-blue-700 underline"
+                  className="text-sm font-medium text-atlas-accent underline"
                   href={`/internal/systems/endpoints/${profile.data.endpointId}`}
                 >
                   Ver endpoint asociado
                 </Link>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <Field
                     label="Ambiente"
+                    tooltip="Entorno contra el que se encola la corrida de este perfil."
                     hint={
                       productionAllowedByProfile
                         ? "Producción aparece como scope pero está bloqueada para stress."
@@ -189,23 +177,22 @@ function AuthorizedStressProfileDetailPage({
                     }
                   >
                     <Select
+                      name="ambiente"
+                      options={ENVIRONMENT_OPTIONS.filter(
+                        (option) =>
+                          productionAllowedByProfile ||
+                          option.value !== "PRODUCTION_READONLY",
+                      )}
                       value={environment}
-                      onChange={(event) =>
-                        setEnvironment(event.target.value as typeof environment)
+                      onChange={(valor) =>
+                        setEnvironment(valor as typeof environment)
                       }
-                    >
-                      <option value="LOCAL">LOCAL</option>
-                      <option value="STAGING">STAGING</option>
-                      {productionAllowedByProfile ? (
-                        <option value="PRODUCTION_READONLY">
-                          PRODUCTION_READONLY
-                        </option>
-                      ) : null}
-                    </Select>
+                    />
                   </Field>
                   <Field
                     label="Ticket de aprobación"
-                    hint="Opcional para dry-run; obligatorio si el servicio interno habilita ejecución real controlada."
+                    tooltip="Número del cambio aprobado que autoriza la corrida. Ej.: CHG-123"
+                    hint="Opcional para dry-run; obligatorio si el perfil exige aprobación y la corrida es real."
                   >
                     <Input
                       value={approvalTicket}
@@ -216,6 +203,17 @@ function AuthorizedStressProfileDetailPage({
                     />
                   </Field>
                 </div>
+                <QueueRunAdvancedFields
+                  value={advanced}
+                  onChange={patchAdvanced}
+                  endpointBaseUrl={null}
+                />
+                {advancedError ? (
+                  <ErrorState
+                    title="Configuración inválida"
+                    description={advancedError}
+                  />
+                ) : null}
               </CardContent>
             </Card>
             <JsonViewer title="Perfil completo" value={profile.data} />
@@ -232,10 +230,23 @@ function AuthorizedStressProfileDetailPage({
           </DrawerPanel>
           <ConfirmDialog
             open={confirmOpen}
-            title="Confirmar stress dry-run"
-            description={`Se encolará un plan de stress en ${environment}. No se ejecuta carga real desde la interfaz.`}
+            title={
+              advanced.dryRun
+                ? "Confirmar stress dry-run"
+                : "Confirmar stress real"
+            }
+            description={
+              advanced.dryRun
+                ? `Se encolará un plan de stress en ${environment}. No se ejecuta carga real desde la interfaz.`
+                : `Se encolará un plan de stress REAL en ${environment}: el worker mandará tráfico de verdad contra ${advanced.baseUrl.trim() || "el host del endpoint del perfil"}.`
+            }
             confirmText="Encolar"
             isLoading={queueMutation.isPending}
+            typedConfirmationPhrase={
+              !advanced.dryRun && environment !== "LOCAL"
+                ? "EJECUTAR"
+                : undefined
+            }
             onCancel={() => setConfirmOpen(false)}
             onConfirm={queueRun}
           />

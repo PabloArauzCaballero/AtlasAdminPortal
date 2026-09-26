@@ -12,6 +12,11 @@ function form(overrides: Partial<RuntimeJobForm> = {}): RuntimeJobForm {
   return { ...emptyRuntimeJobForm, ...overrides };
 }
 
+/** El esquema se construye por job: cada uno impone sus propios rangos. */
+function schemaFor(code: string) {
+  return runtimeJobFormSchema(jobOrThrow(code));
+}
+
 function jobOrThrow(code: string): RuntimeJobDefinition {
   const definition = findRuntimeJob(code);
   if (!definition) throw new Error(`Job inexistente en el catálogo: ${code}`);
@@ -20,60 +25,69 @@ function jobOrThrow(code: string): RuntimeJobDefinition {
 
 describe("runtimeJobFormSchema", () => {
   it("acepta el formulario vacío: todos los campos son opcionales y el backend aplica sus defaults", () => {
-    expect(runtimeJobFormSchema.safeParse(form()).success).toBe(true);
+    expect(schemaFor("process-outbox").safeParse(form()).success).toBe(true);
   });
 
   it("acepta `limit` dentro del rango del backend (1..500)", () => {
     for (const limit of ["1", "50", "500"]) {
-      expect(runtimeJobFormSchema.safeParse(form({ limit })).success).toBe(
-        true,
-      );
+      expect(
+        schemaFor("process-outbox").safeParse(form({ limit })).success,
+      ).toBe(true);
     }
   });
 
   it("rechaza `limit` por encima del tope del backend", () => {
-    expect(runtimeJobFormSchema.safeParse(form({ limit: "501" })).success).toBe(
-      false,
-    );
+    expect(
+      schemaFor("process-outbox").safeParse(form({ limit: "501" })).success,
+    ).toBe(false);
   });
 
   it("rechaza `limit` en cero: el backend exige positivo", () => {
-    expect(runtimeJobFormSchema.safeParse(form({ limit: "0" })).success).toBe(
-      false,
-    );
+    expect(
+      schemaFor("process-outbox").safeParse(form({ limit: "0" })).success,
+    ).toBe(false);
   });
 
   it("rechaza `limit` no numérico en vez de mandar NaN al backend", () => {
     expect(
-      runtimeJobFormSchema.safeParse(form({ limit: "diez" })).success,
+      schemaFor("process-outbox").safeParse(form({ limit: "diez" })).success,
     ).toBe(false);
   });
 
   it("acepta `maxIdleMinutes` hasta 43200 (30 días) y rechaza más", () => {
     expect(
-      runtimeJobFormSchema.safeParse(form({ maxIdleMinutes: "43200" })).success,
+      schemaFor("expire-stale-sessions").safeParse(
+        form({ maxIdleMinutes: "43200" }),
+      ).success,
     ).toBe(true);
     expect(
-      runtimeJobFormSchema.safeParse(form({ maxIdleMinutes: "43201" })).success,
+      schemaFor("expire-stale-sessions").safeParse(
+        form({ maxIdleMinutes: "43201" }),
+      ).success,
     ).toBe(false);
   });
 
   it("rechaza un customerId con ceros a la izquierda (el backend exige /^[1-9][0-9]*$/)", () => {
     expect(
-      runtimeJobFormSchema.safeParse(form({ customerId: "0123" })).success,
+      schemaFor("recalculate-data-quality").safeParse(
+        form({ customerId: "0123" }),
+      ).success,
     ).toBe(false);
   });
 
   it("acepta un customerId válido", () => {
     expect(
-      runtimeJobFormSchema.safeParse(form({ customerId: "1234" })).success,
+      schemaFor("recalculate-data-quality").safeParse(
+        form({ customerId: "1234" }),
+      ).success,
     ).toBe(true);
   });
 
   it("rechaza un policyCode de más de 120 caracteres", () => {
     expect(
-      runtimeJobFormSchema.safeParse(form({ policyCode: "x".repeat(121) }))
-        .success,
+      schemaFor("apply-retention-policies").safeParse(
+        form({ policyCode: "x".repeat(121) }),
+      ).success,
     ).toBe(false);
   });
 });
@@ -141,5 +155,48 @@ describe("catálogo de jobs de runtime", () => {
 
   it("devuelve undefined para un código desconocido", () => {
     expect(findRuntimeJob("no-existe")).toBeUndefined();
+  });
+
+  /**
+   * El tope no es global: el backend admite 500 mensajes de outbox pero 10 000
+   * claves de idempotencia. Con un único esquema, el formulario bloqueaba una
+   * ejecución que el backend acepta.
+   */
+  it("valida cada campo con el rango de SU job", () => {
+    expect(
+      schemaFor("purge-idempotency-keys").safeParse(form({ limit: "5000" }))
+        .success,
+    ).toBe(true);
+    expect(
+      schemaFor("process-outbox").safeParse(form({ limit: "5000" })).success,
+    ).toBe(false);
+    expect(
+      schemaFor("mark-abandoned-onboardings").safeParse(
+        form({ olderThanDays: "366" }),
+      ).success,
+    ).toBe(false);
+  });
+
+  /** Su cuerpo se valida en modo estricto: un `dryRun` de más sería un 400. */
+  it("no manda dryRun al job que no lo admite", () => {
+    expect(
+      buildRuntimeJobBody(
+        jobOrThrow("mark-abandoned-onboardings"),
+        form({ olderThanDays: "45", limit: "100" }),
+      ),
+    ).toEqual({ olderThanDays: 45, limit: 100 });
+  });
+
+  it("los jobs de purga piden doble confirmación", () => {
+    expect(jobOrThrow("purge-idempotency-keys").destructive).toBe(true);
+    expect(jobOrThrow("purge-processed-outbox").destructive).toBe(true);
+    expect(jobOrThrow("retry-stuck-notifications").destructive).toBe(false);
+  });
+
+  /** El único job que no cuelga de `/operations/jobs` lo declara en su ruta. */
+  it("declara la ruta propia del cierre de onboardings abandonados", () => {
+    expect(jobOrThrow("mark-abandoned-onboardings").path).toBe(
+      "/customer-onboarding/jobs/mark-abandoned",
+    );
   });
 });

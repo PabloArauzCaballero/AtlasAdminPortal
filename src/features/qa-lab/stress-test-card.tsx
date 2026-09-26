@@ -11,6 +11,7 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { jsonText } from "./json-utils";
+import { isMockEndpointId } from "./mock-provider-endpoints";
 import { findPayloadPreset } from "./payload-presets";
 import { expectedStatusesText, parseEndpointStressForm } from "./qa-form";
 import { StressLatencyChart } from "./latency-chart";
@@ -40,8 +41,14 @@ export function StressTestCard({
     canExecute && Boolean(endpointId) && !isProd && !mutation.isPending;
 
   useEffect(() => {
+    const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
     setForm({
       ...DEFAULT_STRESS_FORM,
+      // Ver el mismo comentario en `endpoint-test-card.tsx`: revela los controles de
+      // escenario/latencia del mock; la URL ya es absoluta y no depende de esto para resolver.
+      baseRouteKey: isMock
+        ? "MOCK_PROVIDERS"
+        : DEFAULT_STRESS_FORM.baseRouteKey,
       payload: jsonText(endpoint?.minPayloadSchema),
       headers: jsonText(endpoint?.headersSchema),
       queryParams: jsonText(endpoint?.queryParamsSchema),
@@ -108,7 +115,7 @@ export function StressTestCard({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="3. Prueba de stress por endpoint"
+          title="Prueba de carga"
           description="Ejecuta carga sintética con límites duros, pacing por RPS, métricas p50/p95/p99 y umbrales de aprobación. Producción queda bloqueada."
           className="mb-0"
         />
@@ -117,32 +124,38 @@ export function StressTestCard({
         <StressSafetyHints endpoint={endpoint} />
         <StressControls form={form} endpoint={endpoint} onChange={patchForm} />
         {preset ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3">
             <Button variant="secondary" onClick={applyPreset}>
               Usar payload de ejemplo: {preset.label}
             </Button>
-            <p className="text-xs text-blue-900">{preset.notes}</p>
+            <p className="text-xs text-atlas-text">{preset.notes}</p>
           </div>
         ) : null}
         <QaJsonFields
           fields={[
             {
               label: "Payload base de entrada",
+              tooltip: "Cuerpo JSON que envía cada petición de la carga.",
               value: form.payload,
               onChange: (value) => patchForm({ payload: value }),
             },
             {
               label: "Headers extra",
+              tooltip:
+                "Cabeceras JSON añadidas a cada petición; no pongas secretos.",
               value: form.headers,
               onChange: (value) => patchForm({ headers: value }),
             },
             {
               label: "Query params",
+              tooltip: "Parámetros de consulta en JSON que se añaden a la URL.",
               value: form.queryParams,
               onChange: (value) => patchForm({ queryParams: value }),
             },
             {
               label: "Path params",
+              tooltip:
+                "Valores en JSON para los :parámetros de la ruta, p. ej. el id.",
               value: form.pathParams,
               onChange: (value) => patchForm({ pathParams: value }),
             },

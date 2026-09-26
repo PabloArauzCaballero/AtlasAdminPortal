@@ -1,8 +1,6 @@
 import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
-  ActionLog,
-  ActionLogListResponse,
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
   QueueStressRunInput,
@@ -20,12 +18,16 @@ import type {
   DataEntityMetadataInput,
   Domain,
   DomainListResponse,
+  DomainOverview,
   EndpointListResponse,
-  MongoLogListResponse,
   SystemsDashboard,
   ToolHealth,
   TrafficLatencyReport,
   TrafficLatencyTimeseries,
+  ActiveArtifactReport,
+  FederationOutcome,
+  NetworkHealth,
+  PlatformBlock,
 } from "./types";
 import {
   normalizeDataEntity,
@@ -43,6 +45,32 @@ export async function getToolsHealth() {
   const response = await apiRequest<unknown>("/systems/health/tools");
   return normalizePaginatedResponse<ToolHealth>(response, ["tools", "health"])
     .items;
+}
+
+/**
+ * Los bloques del ecosistema, con lo que cada uno aporta al catálogo.
+ *
+ * Alimenta el filtro «bloque» del catálogo de datos y del inventario de endpoints. Devuelve SIEMPRE
+ * los tres, aunque alguno traiga cero filas: un bloque ausente del desplegable es indistinguible de
+ * un bloque que no existe, y era justamente esa ausencia la que hacía parecer completo un catálogo
+ * que sólo contenía Atlas Backend.
+ */
+export function listBlocks() {
+  return apiRequest<PlatformBlock[]>("/systems/blocks");
+}
+
+export function getNetworkHealth() {
+  return apiRequest<NetworkHealth>("/systems/health/network");
+}
+
+export function federateBlocks() {
+  return apiRequest<FederationOutcome[]>("/systems/blocks/federate", {
+    method: "POST",
+  });
+}
+
+export function listActiveDecisionArtifacts() {
+  return apiRequest<ActiveArtifactReport>("/systems/decision-engine/artifacts");
 }
 
 export async function listEndpoints(query: QueryParams) {
@@ -101,24 +129,6 @@ export async function getImpactByTable(schemaName: string, tableName: string) {
   return normalizeTableImpact(response);
 }
 
-export async function listActionLogs(query: QueryParams) {
-  const response = await apiRequest<unknown>("/systems/action-logs", { query });
-  return normalizePaginatedResponse<ActionLogListResponse["items"][number]>(
-    response,
-    ["actionLogs", "logs", "records", "results"],
-  );
-}
-
-export function getActionLogsByRequest(requestId: string) {
-  return apiRequest<ActionLog[]>(
-    `/systems/action-logs/by-request/${encodeURIComponent(requestId)}`,
-  );
-}
-
-export function listMongoLogs(query: QueryParams) {
-  return apiRequest<MongoLogListResponse>("/systems/logs/mongo", { query });
-}
-
 export function getTrafficLatencyReport(windowHours: number) {
   return apiRequest<TrafficLatencyReport>("/systems/reports/traffic-latency", {
     query: { windowHours },
@@ -150,6 +160,11 @@ export async function listDomains(query: QueryParams) {
     response,
     ["domains", "records", "results"],
   );
+}
+
+/** El mapa entero, con las cifras ya cruzadas en el servidor. */
+export function getDomainOverview() {
+  return apiRequest<DomainOverview>("/systems/domains/overview");
 }
 
 export function getDomain(domainCode: string) {

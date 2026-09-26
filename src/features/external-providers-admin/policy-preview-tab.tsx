@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { Eye } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { usePolicyPreviewMutation } from "./hooks";
+import { RequestResultCard } from "./request-result-card";
 
 export function PolicyPreviewTab() {
   const [customerId, setCustomerId] = useState("");
@@ -43,19 +45,25 @@ export function PolicyPreviewTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <Card className="max-w-3xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
         Simula qué pasaría si se ejecutara esta solicitud (¿se bloquea por
         costo? ¿requiere aprobación manual?) sin llamar realmente al proveedor.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Customer ID (opcional)">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <Field
+          tooltip="Cliente para el que se evalúa la política; es opcional."
+          label="Customer ID (opcional)"
+        >
           <Input
             value={customerId}
             onChange={(event) => setCustomerId(event.target.value)}
           />
         </Field>
-        <Field label="Código de proveedor">
+        <Field
+          tooltip="Proveedor cuya política de consulta se previsualiza, p. ej. SEGIP."
+          label="Código de proveedor"
+        >
           <Input
             value={providerCode}
             onChange={(event) => setProviderCode(event.target.value)}
@@ -63,26 +71,38 @@ export function PolicyPreviewTab() {
             className="font-mono text-xs"
           />
         </Field>
-        <Field label="Query type">
+        <Field
+          tooltip="Tipo de consulta a evaluar, p. ej. IDENTITY_VERIFICATION."
+          label="Query type"
+        >
           <Input
             value={queryType}
             onChange={(event) => setQueryType(event.target.value)}
           />
         </Field>
-        <Field label="Propósito">
+        <Field
+          tooltip="Finalidad declarada de la consulta, p. ej. onboarding."
+          label="Propósito"
+        >
           <Input
             value={purpose}
             onChange={(event) => setPurpose(event.target.value)}
           />
         </Field>
       </div>
-      <Field label="Etapa de decisión">
+      <Field
+        tooltip="Etapa del ciclo del cliente, p. ej. ONBOARDING."
+        label="Etapa de decisión"
+      >
         <Input
           value={decisionStage}
           onChange={(event) => setDecisionStage(event.target.value)}
         />
       </Field>
-      <Field label="Input (JSON)">
+      <Field
+        tooltip="Datos de entrada de la consulta en JSON, como los mandaría el backend."
+        label="Input (JSON)"
+      >
         <Textarea
           value={inputJson}
           onChange={(event) => setInputJson(event.target.value)}
@@ -112,11 +132,15 @@ export function PolicyPreviewTab() {
         loadingText="Simulando…"
         onClick={submit}
       >
+        <Eye className="h-4 w-4" aria-hidden />
         Previsualizar política
       </Button>
       {preview.data ? (
-        <JsonViewer title="Resultado" value={preview.data} />
+        <RequestResultCard
+          title="Vista previa de la política"
+          result={preview.data}
+        />
       ) : null}
-    </div>
+    </Card>
   );
 }

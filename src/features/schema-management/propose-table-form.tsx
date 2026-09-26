@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useProposeSchemaTableMutation } from "./hooks";
@@ -45,8 +46,9 @@ export function ProposeTableForm({
   return (
     <DrawerPanel open title="Proponer tabla nueva" onClose={onClose}>
       <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
+            tooltip="Nombre técnico en snake_case, p. ej. customer_watchlist_entries."
             label="Nombre de tabla"
             hint="snake_case, mín. 3 caracteres."
             error={errors.tableName?.message}
@@ -57,13 +59,39 @@ export function ProposeTableForm({
               {...register("tableName")}
             />
           </Field>
-          <Field label="Tipo">
-            <Select {...register("tableType")}>
-              <option value="transactional">Transactional</option>
-              <option value="catalog">Catalog</option>
-              <option value="audit">Audit</option>
-              <option value="operational">Operational</option>
-            </Select>
+          <Field
+            tooltip="Naturaleza de la tabla: transaccional, catálogo, auditoría u operacional."
+            label="Tipo"
+          >
+            <FormSelect
+              control={control}
+              name="tableType"
+              options={[
+                {
+                  value: "transactional",
+                  label: "Transactional",
+                  description:
+                    "Registra operaciones del negocio que se crean continuamente.",
+                },
+                {
+                  value: "catalog",
+                  label: "Catalog",
+                  description:
+                    "Valores de referencia que cambian poco, como listas cerradas.",
+                },
+                {
+                  value: "audit",
+                  label: "Audit",
+                  description:
+                    "Rastro de lo que ocurrió y quién lo hizo, para auditoría.",
+                },
+                {
+                  value: "operational",
+                  label: "Operational",
+                  description: "Estado de trabajo interno de procesos y colas.",
+                },
+              ]}
+            />
           </Field>
         </div>
         <div className="flex gap-4">
@@ -76,7 +104,10 @@ export function ProposeTableForm({
             Multi-tenant
           </label>
         </div>
-        <Field label="Descripción (opcional)">
+        <Field
+          tooltip="Qué guarda la tabla, para quien revise la propuesta."
+          label="Descripción (opcional)"
+        >
           <Textarea className="min-h-16" {...register("description")} />
         </Field>
 
@@ -150,6 +181,7 @@ export function ProposeTableForm({
         </div>
 
         <Field
+          tooltip="Por qué se necesita esta tabla; mínimo 10 caracteres."
           label="Justificación"
           hint="Mín. 10 caracteres: por qué se necesita esta tabla."
           error={errors.justification?.message}

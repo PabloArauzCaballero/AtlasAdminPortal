@@ -1,8 +1,8 @@
-import { CheckCircle2, MinusCircle, XCircle } from "lucide-react";
+import { CheckCircle2, CircleOff, MinusCircle, XCircle } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import type { ToolHealth } from "./types";
 
-export type ToolLiveState = "UP" | "DOWN" | "NO_PROBE";
+export type ToolLiveState = "UP" | "DOWN" | "NO_PROBE" | "NOT_APPLICABLE";
 
 /**
  * Deriva el estado vivo de una herramienta a partir de `isHealthy`, la misma
@@ -10,10 +10,15 @@ export type ToolLiveState = "UP" | "DOWN" | "NO_PROBE";
  * "servicio caído/recuperado". Todas las vistas deben juzgar la salud con esta
  * función — nunca con `tool.status`, que es el estado de catálogo (ACTIVE/…)
  * y no refleja si la herramienta responde.
+ *
+ * `NOT_APPLICABLE` viene del backend para herramientas donde monitorear en
+ * runtime no tiene sentido (tooling de desarrollo, proveedores planificados sin
+ * integración): no es que "falte" un chequeo — no existe nada que probar.
  */
 export function toolLiveState(tool: ToolHealth): ToolLiveState {
   if (tool.isHealthy === true) return "UP";
   if (tool.isHealthy === false) return "DOWN";
+  if (tool.checkType === "NOT_APPLICABLE") return "NOT_APPLICABLE";
   return "NO_PROBE";
 }
 
@@ -32,9 +37,14 @@ const LIVE_STATE_UI: Record<
     icon: XCircle,
   },
   NO_PROBE: {
-    label: "Sin probe activo",
+    label: "Configurada · sin chequeo en vivo",
     className: "border-slate-200 bg-slate-50 text-slate-600",
     icon: MinusCircle,
+  },
+  NOT_APPLICABLE: {
+    label: "No aplica monitoreo",
+    className: "border-slate-200 bg-slate-50 text-slate-500",
+    icon: CircleOff,
   },
 };
 
