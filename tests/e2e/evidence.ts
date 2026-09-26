@@ -59,7 +59,10 @@ export class PageHealth {
   constructor(private readonly page: Page) {
     page.on("console", (message) => {
       if (message.type() === "error") {
-        this.consoleErrors.push(message.text().slice(0, 300));
+        const source = message.location().url;
+        this.consoleErrors.push(
+          `${message.text()}${source ? ` (${source})` : ""}`.slice(0, 300),
+        );
       }
     });
     page.on("pageerror", (error) => {

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
+import { findCatalogEndpointId } from "./catalog-endpoint";
 
 /**
  * El generador de datos de prueba sobre un endpoint que ANTES no tenía contrato.
@@ -24,7 +25,14 @@ test.describe("cobertura del generador de datos de prueba", () => {
     await page.goto("/internal/qa/lab");
     await settled(page);
 
-    await page.getByPlaceholder(/endpointId/i).fill("1357");
+    const endpointId = await findCatalogEndpointId(
+      page,
+      "PATCH",
+      "customer-onboarding",
+      (path) =>
+        path.includes("/customer-onboarding/") && path.endsWith("/profile"),
+    );
+    await page.getByPlaceholder(/endpointId/i).fill(endpointId);
     await page.getByRole("button", { name: /cargar endpoint/i }).click();
     await settled(page);
 
