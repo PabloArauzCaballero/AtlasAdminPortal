@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
+import { findCatalogEndpointId } from "./catalog-endpoint";
 
 /**
  * El laboratorio de QA con un endpoint real, incluida la generación de datos de prueba.
@@ -18,8 +19,13 @@ test.describe("laboratorio de QA", () => {
   }, testInfo) => {
     const health = new PageHealth(page);
 
-    // El endpoint 1 es `POST /auth/login`, uno de los pocos con contrato de campos publicado.
-    await page.goto("/internal/qa/lab?endpointId=1");
+    const endpointId = await findCatalogEndpointId(
+      page,
+      "POST",
+      "/api/v1/auth/login",
+      (path) => path === "/api/v1/auth/login",
+    );
+    await page.goto(`/internal/qa/lab?endpointId=${endpointId}`);
     await settled(page);
     await capture(page, testInfo, "1 endpoint seleccionado");
 

@@ -136,3 +136,21 @@ jobs:
 
       - name: Auditar vulnerabilidades high/critical
         run: npm audit --audit-level=high
+
+  e2e:
+    name: Playwright E2E obligatorio
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+
+  deploy-dev:
+    name: Desplegar DEV sólo después de CI y E2E
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs:
+      - quality
+      - test
+      - build
+      - secrets
+      - audit
+      - e2e
+    uses: ./.github/workflows/deploy-dev.yml
+    secrets: inherit
