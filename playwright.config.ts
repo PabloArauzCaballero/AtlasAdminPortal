@@ -61,26 +61,31 @@ const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: 30_000,
+  timeout: process.env.CI ? 60_000 : 30_000,
+  // 5 s (el valor por defecto de `expect`) no alcanza en un runner de CI frío: la primera visita a
+  // una página que consulta la auditoría SQL o el catálogo tardaba más y el mismo caso salía verde
+  // en un intento y rojo en el siguiente (flaky), sin que el portal estuviera roto.
+  expect: { timeout: process.env.CI ? 15_000 : 5_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   /*
-   * `workers` al 50 % en CI: el runner tiene 2 vCPU y dejarlo sin tope hacía que Chromium compitiera
-   * consigo mismo y los tiempos de espera saltaran por carga, no por el portal.
+   * Un worker por fragmento en CI: varios casos ejercitan el login con PIN y el buzón webhook
+   * escucha en un puerto del runner. Serializarlos evita que dos procesos intenten tomar ese
+   * puerto a la vez; los dos fragmentos siguen ejecutándose en paralelo en runners distintos.
    *
    * El reporte `blob` es lo que permite FRAGMENTAR la suite entre varios trabajos y luego unir los
    * informes (`playwright merge-reports`). Con `--shard` a secas cada fragmento produce su propio
    * HTML y no hay forma de leer la corrida completa.
    */
-  workers: process.env.CI ? "50%" : undefined,
+  workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI
     ? [["list"], ["blob"], ["github"]]
     : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: BASE_URL,
-    trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    trace: process.env.CI ? "off" : "on-first-retry",
+    screenshot: process.env.CI ? "off" : "only-on-failure",
   },
   projects: [
     // Un proyecto de SETUP que autentica una vez y guarda el estado de sesión. Los demás dependen
