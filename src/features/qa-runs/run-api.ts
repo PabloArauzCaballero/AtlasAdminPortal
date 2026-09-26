@@ -9,11 +9,11 @@ import type {
   QaRunRequest,
   QaRunStatus,
   QaRunSummary,
-  QaRunTimeline,
   QaSampleInputs,
   QaTemplateDetail,
   QaTemplateSummary,
 } from "./types";
+import type { QaRunTimeline } from "./timeline-types";
 
 /**
  * Cliente de la API de control QA. Usa el MISMO `apiRequest` que el resto del portal: sesión

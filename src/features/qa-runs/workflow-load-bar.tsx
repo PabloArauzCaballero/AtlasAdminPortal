@@ -29,7 +29,7 @@ import {
   STATUS_LABEL,
   verdictView,
 } from "./run-status";
-import type { QaRunTimeline } from "./types";
+import type { QaRunTimeline } from "./timeline-types";
 
 const DEFAULT_USERS = 10;
 
