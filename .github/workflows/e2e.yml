@@ -199,6 +199,13 @@ jobs:
           PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
             -c "SELECT system_code, last_status, endpoints_imported, data_entities_imported
                   FROM platform_ops.system_block_federation_state ORDER BY system_code" || true
+          # Diagnóstico temporal (#27): "0 campos en el contrato" en qa-lab-coverage.spec.ts para
+          # PATCH .../customer-onboarding/{customerId}/profile — ver qué guardó de verdad el
+          # catálogo tras /systems/endpoints/discover, no lo que se supone que debería guardar.
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -tA \
+            -c "SELECT code, method, full_path, min_payload_schema
+                  FROM platform_ops.system_endpoint_catalog
+                  WHERE method = 'PATCH' AND full_path LIKE '%customer-onboarding%profile%'" || true
 
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad
