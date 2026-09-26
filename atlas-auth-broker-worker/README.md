@@ -50,7 +50,7 @@ implementa contraseña, restablecimiento y segundo factor.
 - **RFC 7636** — PKCE con `S256`; `plain` no se ofrece.
 - **RFC 7523** — aserción de cliente JWT, para no enviar el secreto compartido por la red.
 - **RFC 8705** — autenticación por certificado de cliente (mTLS) como método declarable.
-- **OpenID Connect Core** — validación de `iss`, `aud`, `azp`, `exp`, `iat` y `nonce`.
+- **OpenID Connect Core** — validación de `iss`, `aud`, `azp`, `exp`, `iat`, `nbf` (cuando existe) y `nonce`.
 - **NIST SP 800-57** — vida máxima de la credencial y rotación programada.
 
 ## API
@@ -119,6 +119,10 @@ yarn validate    # todo lo anterior, en orden
 yarn smoke:e2e   # prueba end-to-end contra el proceso real (requiere yarn build antes)
 yarn verify      # build + smoke:e2e
 ```
+
+El CI principal de AdminPortal ejecuta formato, lint, tipos, pruebas, build, smoke HTTP,
+auditoría de dependencias e imagen Docker del broker antes de permitir el despliegue de `dev`.
+El broker no emite cookies de sesión del portal; ese control pertenece al frontend y al backend.
 
 ## Verificación end-to-end
 
