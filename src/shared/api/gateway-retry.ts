@@ -24,10 +24,14 @@ import { AtlasApiError } from "./errors";
  *
  * ## Qué se repite
  *
- *  - GET/HEAD, o una mutación con `idempotencyKey`: ante cualquier fallo transitorio, incluido un corte
- *    de red o un timeout. La llave es la misma en cada intento y el backend deduplica.
- *  - Cualquier otra mutación: sólo si la pasarela contestó 404/500/502/503. Nunca ante un timeout, un
- *    corte o un 504: ahí la petición pudo llegar y ejecutarse sin que volviera la respuesta.
+ *  - GET/HEAD, o una mutación con llave (`idempotencyKey` o una cabecera `x-idempotency-key`): ante
+ *    cualquier fallo transitorio, incluido un corte de red o un timeout. La llave es la misma en cada
+ *    intento y el backend deduplica.
+ *  - Una mutación SIN llave: nunca. Antes se repetía ante un 404/500/502/503 sin sobre dando por hecho
+ *    que «no llegó», pero el proxy de Next también contesta `Internal Server Error` en texto cuando el
+ *    backend cortó la conexión DESPUÉS de recibirla (`next-proxy-reset.cjs`, plan de producción
+ *    2026-09-24): un POST salía hasta 12 veces. Ahora sale una vez y, si no contestó el backend,
+ *    `client.ts` lo convierte en un «resultado desconocido» (`UNKNOWN_OUTCOME`).
  */
 
 export const GATEWAY_RETRY_BUDGET_MS = 45_000;
@@ -39,10 +43,8 @@ const JITTER = 0.25;
 
 const GATEWAY_STATUSES = new Set([404, 500, 502, 503, 504]);
 
-/** Sin el 504: un plazo agotado en la pasarela no dice si el API llegó a recibir la petición. */
-const UNDELIVERED_STATUSES = new Set([404, 500, 502, 503]);
-
-export type RetryMode = "safe" | "undelivered-only";
+/** `safe`: repetir no duplica nada. `single`: mutación sin llave, se manda una vez. */
+export type RetryMode = "safe" | "single";
 
 export type SentRequest = { response: Response; payload: unknown };
 
@@ -52,7 +54,7 @@ export function retryModeFor(
 ): RetryMode {
   const normalized = (method ?? "GET").toUpperCase();
   const readOnly = normalized === "GET" || normalized === "HEAD";
-  return readOnly || Boolean(idempotencyKey) ? "safe" : "undelivered-only";
+  return readOnly || Boolean(idempotencyKey) ? "safe" : "single";
 }
 
 /** La respuesta la produjo lo que está delante del API, no el API. */
@@ -67,7 +69,7 @@ export function isGatewayResponse(
 }
 
 /** `fetchWithTimeout` traduce a status 0 el corte de red y el plazo agotado. */
-function isTransportFailure(error: unknown): error is AtlasApiError {
+export function isTransportFailure(error: unknown): error is AtlasApiError {
   return error instanceof AtlasApiError && error.status === 0;
 }
 
@@ -75,12 +77,11 @@ export function deservesRetry(
   outcome: SentRequest | unknown,
   mode: RetryMode,
 ): boolean {
+  if (mode === "single") return false;
   if (isSentRequest(outcome)) {
-    const { response, payload } = outcome;
-    if (!isGatewayResponse(response, payload)) return false;
-    return mode === "safe" || UNDELIVERED_STATUSES.has(response.status);
+    return isGatewayResponse(outcome.response, outcome.payload);
   }
-  return mode === "safe" && isTransportFailure(outcome);
+  return isTransportFailure(outcome);
 }
 
 export function delayBeforeAttempt(

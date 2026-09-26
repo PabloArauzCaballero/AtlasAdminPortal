@@ -142,11 +142,8 @@ export function cancelDomainEvent(eventId: string) {
 }
 
 /**
- * Publicar exige `x-idempotency-key` y se manda a mano.
- *
- * El cliente del portal sabe mandar `Idempotency-Key`, pero este endpoint lee la cabecera con
- * prefijo `x-`: usar la del cliente daría un 400 pidiendo una cabecera que el navegador sí estaba
- * enviando, con otro nombre.
+ * Publicar exige `x-idempotency-key`. El cliente la reconoce aunque vaya en `headers` y la manda con
+ * ese nombre, el que lee el backend; con llave, un fallo de la pasarela se repite con la misma.
  */
 export function publishDomainEvent(body: unknown, idempotencyKey: string) {
   return apiRequest<EventActionResult>("/operations/events", {

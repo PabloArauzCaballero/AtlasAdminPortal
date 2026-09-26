@@ -70,3 +70,62 @@ function getHeaderRequestId(response: Response): string | undefined {
     undefined
   );
 }
+
+/** Código del error de una mutación cuyo resultado no se pudo confirmar. */
+export const UNKNOWN_OUTCOME_CODE = "UNKNOWN_OUTCOME";
+
+export const UNKNOWN_OUTCOME_MESSAGE =
+  "No pudimos confirmar si la operación se guardó: el sistema no respondió como esperábamos. Antes de volver a hacerla, revise si ya aparece registrada; si no la encuentra o tiene dudas, avise a soporte.";
+
+/**
+ * Una mutación que se mandó y de la que no volvió una respuesta del backend que confirme o niegue el
+ * resultado. «Inténtelo otra vez» sería el consejo equivocado: podría ejecutarla dos veces.
+ */
+export function unknownOutcomeError(
+  status: number,
+  response?: Response,
+): AtlasApiError {
+  return new AtlasApiError({
+    status,
+    code: UNKNOWN_OUTCOME_CODE,
+    message: UNKNOWN_OUTCOME_MESSAGE,
+    requestId: response ? getHeaderRequestId(response) : undefined,
+  });
+}
+
+/**
+ * Un 2xx que no cumple el contrato: cuerpo que no es JSON (una página HTML de un proxy o de un
+ * inicio de sesión, un JSON cortado) o un sobre `{ success: false }`. Devuelve `null` si el 2xx es
+ * válido; un 204 o un cuerpo vacío lo son (`payload === null`).
+ */
+export function invalidSuccessError(
+  response: Response,
+  payload: unknown,
+  mutation: boolean,
+): AtlasApiError | null {
+  if (typeof payload === "string") {
+    if (mutation) return unknownOutcomeError(response.status, response);
+    return new AtlasApiError({
+      status: response.status,
+      code: "INVALID_RESPONSE",
+      message:
+        "La respuesta del sistema no se pudo leer. Inténtelo otra vez; si sigue, avise a soporte.",
+      requestId: getHeaderRequestId(response),
+    });
+  }
+  if (
+    payload &&
+    typeof payload === "object" &&
+    (payload as Record<string, unknown>).success === false
+  ) {
+    if (isApiErrorPayload(payload)) return toAtlasApiError(response, payload);
+    return new AtlasApiError({
+      status: response.status,
+      code: "REJECTED_WITHOUT_REASON",
+      message:
+        "El sistema rechazó la operación sin explicar el motivo. Si sigue, avise a soporte.",
+      requestId: getHeaderRequestId(response),
+    });
+  }
+  return null;
+}
