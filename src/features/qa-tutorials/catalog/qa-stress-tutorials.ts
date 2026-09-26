@@ -9,9 +9,9 @@ const stressProfile: TutorialDefinition = {
   tool: "Perfil de stress",
   title: "Crear un perfil de stress",
   description:
-    "Define un perfil de carga reutilizable y lánzalo en seco (dry-run) antes de correrlo de verdad.",
+    "Define un perfil de carga reutilizable y encólalo en seco; qué hace hoy la cola y qué no.",
   level: "advanced",
-  version: 1,
+  version: 2,
   route: "/internal/qa/stress",
   estimatedMinutes: 6,
   goal: "Uso avanzado de carga",
@@ -20,38 +20,38 @@ const stressProfile: TutorialDefinition = {
       id: "what",
       title: "¿Qué es un perfil de stress?",
       content:
-        "A diferencia del stress rápido del Lab, un perfil es una configuración de carga guardada y ejecutada por el backend: usuarios virtuales, escalado (ramp), duración y umbrales. Sirve para repetir la misma prueba de carga de forma consistente.",
+        "A diferencia de la carga rápida del Lab (que corre en tu navegador), un perfil es una configuración de carga GUARDADA: la operación objetivo, las peticiones por segundo, la duración, cuántas a la vez y los topes (errores tolerados y p95 máximo). Sirve para repetir la misma prueba con los mismos números.",
       example:
-        "Perfil «Login — pico de campaña»: sube de 0 a 500 VUs en 30s, mantiene 2 min, umbral p95 800 ms. Lo corres igual antes de cada release.",
+        "Perfil «Login — pico de campaña»: 50 peticiones por segundo durante 120 s, 20 a la vez, p95 máximo 800 ms.",
     },
     {
       id: "new",
       target: "qa-stress-new",
       title: "Nuevo perfil",
       content:
-        "Crea el perfil con «Nuevo perfil de stress». Todos los valores tienen ayuda contextual: no necesitas saber de antemano qué es un p95 o un ramp-up.",
+        "Crea el perfil con el botón «Nuevo perfil». Cada campo tiene su ayuda (ⓘ): no necesitas saber de antemano qué es un p95.",
       example:
-        "El «ramp-up» es cuánto tardas en llegar a la carga máxima: subir de golpe a 500 VUs no es lo mismo que subir en 30s.",
+        "El p95 es el tiempo por debajo del cual queda el 95 % de las peticiones: con «P95 máximo (ms)» 800, si una de cada veinte tarda más, la corrida no aprueba.",
       position: "bottom",
       waitForElement: true,
       optional: true,
     },
     {
       id: "dryrun",
-      title: "Dry-run primero",
+      title: "Encolar: primero en seco",
       content:
-        "Antes de una corrida real, usa el dry-run: valida la configuración y estima el impacto SIN generar carga real. Es la barrera de seguridad que evita reventar un ambiente por un parámetro mal puesto.",
+        "Desde el detalle de un perfil, «Encolar dry-run» registra el plan SIN generar carga: sirve para validar la configuración.\n\nImportante: encolar deja la corrida «en cola». Hoy ningún proceso del backend la ejecuta, así que no genera carga real ni resultados de p95. Para medir de verdad usa la pestaña «Carga» del Lab.",
       example:
-        "Si el dry-run avisa de 10.000 VUs por un cero de más, lo corriges antes de tumbar el servidor.",
+        "Si al encolar ves que el plan suma 10.000 peticiones por un cero de más, lo corriges antes de que exista un ejecutor que lo lance.",
       relatedErrorCodes: ["STRESS_CONFIG_INVALID"],
     },
     {
       id: "read",
-      title: "Leer el historial",
+      title: "Qué verás en «Stress runs»",
       content:
-        "Cada corrida queda en «Historial de stress runs» con su p95, throughput y errores. Compara corridas entre sí para ver si un cambio mejoró o empeoró el rendimiento.",
+        "La lista de corridas muestra lo encolado con su estado. Las corridas «completadas» con p95 y errores que aparezcan allí vienen de los datos de demostración sembrados, no de una carga que hayas lanzado.",
       example:
-        "Antes del cambio: p95 1200 ms. Después de añadir caché: p95 400 ms con la misma carga. El historial lo prueba con datos.",
+        "Tu corrida recién encolada aparece como «queued» y se queda así: es lo esperado mientras no haya ejecutor.",
     },
   ],
 };

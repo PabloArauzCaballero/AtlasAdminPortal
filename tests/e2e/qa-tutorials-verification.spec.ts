@@ -109,7 +109,7 @@ test("el velo bloquea los clics detrás del tutorial", async () => {
   await resetProgress(page, tutorial);
   await page.goto("/internal/qa/lab", { waitUntil: "domcontentloaded" });
   await page
-    .getByRole("button", { name: /Iniciar tutorial · Probar un endpoint/i })
+    .getByRole("button", { name: /Iniciar tutorial · Probar una operación/i })
     .click();
   await expect(dialog(page)).toContainText("¿Qué es una prueba funcional?");
   // El primer paso abre su pestaña por URL; se espera a que asiente.
@@ -255,7 +255,7 @@ async function performAction(p: Page, tutorialId: string, stepId: string) {
       await p
         .getByRole("dialog")
         .filter({ hasText: "Confirmar" })
-        .getByRole("button", { name: /^(Previsualizar|Ejecutar)$/ })
+        .getByRole("button", { name: /^(Previsualizar|Enviar)$/ })
         .click();
       return;
     }

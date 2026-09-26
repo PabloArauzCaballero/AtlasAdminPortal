@@ -26,7 +26,7 @@ export function LearningCenterPage() {
 }
 
 function AuthorizedLearningCenter() {
-  const { start } = useTutorial();
+  const { startPath } = useTutorial();
   const [query, setQuery] = useState("");
   const [module, setModule] = useState(ALL);
 
@@ -53,7 +53,7 @@ function AuthorizedLearningCenter() {
       <PageHeader
         eyebrow="QA Console"
         title="Centro de aprendizaje"
-        description="Aprende QA LAB paso a paso: elige un objetivo, sigue un recorrido sugerido o retoma donde lo dejaste. Todo interactivo y a tu ritmo."
+        description="Aprende QA LAB paso a paso: elige un objetivo, sigue un recorrido sugerido (al terminar cada tutorial te ofrece el siguiente) o retoma donde lo dejaste. Tu avance se guarda en este navegador."
         actions={
           <Link href="/internal/qa/lab">
             <Button variant="primary">Abrir el lab</Button>
@@ -94,7 +94,7 @@ function AuthorizedLearningCenter() {
                     <Button
                       variant="secondary"
                       className="mt-3"
-                      onClick={() => start(first.id)}
+                      onClick={() => startPath(path.id)}
                     >
                       Empezar recorrido
                     </Button>

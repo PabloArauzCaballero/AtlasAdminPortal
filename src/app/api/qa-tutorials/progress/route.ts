@@ -6,10 +6,13 @@ import {
 import { saveProgressRequestSchema } from "@/features/qa-tutorials/progress-schema";
 
 /**
- * Persistencia del progreso de tutoriales, portal-owned (Next Route Handler).
- * Es la fuente de verdad del backend para el progreso: el cliente mantiene una
- * caché local sólo como aceleración. Cuando AtlasBackend exponga estos
- * endpoints, el cliente se reapunta ahí sin cambiar la UI.
+ * Respaldo del progreso de tutoriales, portal-owned (Next Route Handler).
+ *
+ * NO es la fuente de verdad: guarda en el `/tmp` del contenedor, que se pierde en cada
+ * despliegue, y no comprueba la sesión (no es dato sensible, pero cualquiera puede escribir el
+ * progreso de cualquier `userId`). La fuente es el el almacenamiento local del navegador
+ * (`use-tutorial-progress.ts`). Cuando AtlasBackend exponga estos endpoints, con sesión, el
+ * cliente se reapunta ahí.
  */
 export const dynamic = "force-dynamic";
 
