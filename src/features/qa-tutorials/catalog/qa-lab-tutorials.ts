@@ -255,9 +255,9 @@ const journey: TutorialDefinition = {
     {
       id: "panel",
       target: "qa-lab-journey-panel",
-      title: "El editor de pasos",
+      title: "Recorridos precargados y editor de pasos",
       content:
-        "Esta es la pestaña «Journey». Cada fila es un paso: eliges endpoint, defines el cuerpo y, si hace falta, tomas un valor de un paso anterior (una variable) para inyectarlo en el siguiente.",
+        "Esta es la pestaña «Journey». Arriba están los recorridos listos: «Ejecutar» lanza N personas en el servidor, cada una con su cuenta. Abajo, plegado, el editor de pasos arma a mano UN recorrido para diagnosticarlo: eliges endpoint, defines el cuerpo y tomas valores de un paso anterior para el siguiente.",
       example:
         "El paso 1 crea un cliente y guarda `customerId` de la respuesta; el paso 2 lo reutiliza como `{{customerId}}` en la ruta de la sesión.",
       position: "top",

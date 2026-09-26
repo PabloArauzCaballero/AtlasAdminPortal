@@ -12,6 +12,8 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { WorkflowCanvas } from "@/features/workflows/workflow-canvas";
+import { JourneysTab } from "@/features/qa-runs/journeys-tab";
+import { useRunIdParam } from "@/features/qa-runs/run-url";
 import { EndpointPicker } from "./endpoint-picker";
 import { TABS, UNIT_TABS, useUrlTabs } from "./qa-lab-tabs";
 import { EndpointTestCard } from "./endpoint-test-card";
@@ -42,6 +44,8 @@ function AuthorizedQaLabPage({
   initialEndpointId,
 }: Readonly<{ initialEndpointId: string }>) {
   const { activeTab, unitTab, setActiveTab, setUnitTab } = useUrlTabs();
+  // La corrida que se mira (journeys y árbol) vive en `?runId=`: sobrevive a un F5.
+  const run = useRunIdParam();
   const [endpointId, setEndpointId] = useState(initialEndpointId);
   const [picking, setPicking] = useState(!initialEndpointId);
   const endpoint = useEndpoint(endpointId);
@@ -142,11 +146,19 @@ function AuthorizedQaLabPage({
 
       {activeTab === TABS[1] ? (
         <div data-tutorial-id="qa-lab-journey-panel">
-          <JourneyRunnerPanel />
+          <JourneysTab
+            runId={run.runId}
+            onRunIdChange={run.setRunId}
+            advancedEditor={<JourneyRunnerPanel />}
+          />
         </div>
       ) : null}
 
-      {activeTab === TABS[2] ? <WorkflowCanvas /> : null}
+      {activeTab === TABS[2] ? (
+        <WorkflowCanvas
+          runControls={{ runId: run.runId, onRunIdChange: run.setRunId }}
+        />
+      ) : null}
     </>
   );
 }
