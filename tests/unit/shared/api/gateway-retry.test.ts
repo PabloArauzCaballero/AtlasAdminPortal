@@ -72,10 +72,10 @@ describe("qué responde la pasarela y qué se repite", () => {
     );
   });
 
-  it("GET y mutaciones con llave son seguras; el resto sólo si no llegó", () => {
+  it("GET y mutaciones con llave son seguras; una mutación sin llave sale una vez", () => {
     expect(retryModeFor(undefined, undefined)).toBe("safe");
     expect(retryModeFor("POST", "idk-1")).toBe("safe");
-    expect(retryModeFor("POST", undefined)).toBe("undelivered-only");
+    expect(retryModeFor("POST", undefined)).toBe("single");
   });
 
   it("timeout, corte de red y 504 sólo se repiten en operaciones seguras", () => {
@@ -89,9 +89,9 @@ describe("qué responde la pasarela y qué se repite", () => {
       payload: null,
     };
     expect(deservesRetry(corte, "safe")).toBe(true);
-    expect(deservesRetry(corte, "undelivered-only")).toBe(false);
+    expect(deservesRetry(corte, "single")).toBe(false);
     expect(deservesRetry(gateway504, "safe")).toBe(true);
-    expect(deservesRetry(gateway504, "undelivered-only")).toBe(false);
+    expect(deservesRetry(gateway504, "single")).toBe(false);
   });
 
   it("las esperas crecen, se estancan y se dispersan un 25 %", () => {
@@ -188,7 +188,7 @@ describe("apiRequest durante un despliegue", () => {
       apiRequest("/internal/things", { method: "POST", body: { a: 1 } }),
     );
 
-    expect(error).toMatchObject({ status: 0 });
+    expect(error).toMatchObject({ status: 0, code: "UNKNOWN_OUTCOME" });
     expect(llamadas).toBe(1);
   });
 
@@ -196,7 +196,7 @@ describe("apiRequest durante un despliegue", () => {
     const llaves: (string | null)[] = [];
     server.use(
       http.post(THINGS_URL, ({ request }) => {
-        llaves.push(request.headers.get("Idempotency-Key"));
+        llaves.push(request.headers.get("x-idempotency-key"));
         return llaves.length < 3 ? proxySinApi() : ok({ id: 2 });
       }),
     );
