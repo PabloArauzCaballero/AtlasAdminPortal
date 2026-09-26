@@ -207,17 +207,17 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          find test-results -name error-context.md 2>/dev/null | sort | head -n 6 | while read -r f; do
+          # El snapshot de la página empieza con la navegación lateral (~6 KB, idéntica en todas): se
+          # salta ese bloque y se deja el contenido de la vista, que es lo que explica el fallo.
+          find test-results -name error-context.md 2>/dev/null | sort | head -n 4 | while read -r f; do
             echo "::group::$f"
-            # Principio: prueba y error. Final: el contenido de la página, después de la navegación
-            # lateral, que ocupa casi todo el principio del snapshot.
-            head -c 1500 "$f"
-            echo
-            echo "[...]"
-            tail -c 5000 "$f"
+            awk '/^- complementary/ {skip=1; next} /^- / {skip=0} skip==0 {print}' "$f" | head -c 6000
             echo
             echo "::endgroup::"
           done || true
+          echo "::group::Backend: errores, avisos y peticiones lentas"
+          grep -n -E 'ERROR|WARN|release-readiness|schema|[0-9]{4,} ?ms' "$RUNNER_TEMP/atlas-backend.log" | tail -n 60 | cut -c1-260 || true
+          echo "::endgroup::"
 
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad

@@ -61,11 +61,14 @@ const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: process.env.CI ? 60_000 : 30_000,
-  // 5 s (el valor por defecto de `expect`) no alcanza en un runner de CI frío: la primera visita a
-  // una página que consulta la auditoría SQL o el catálogo tardaba más y el mismo caso salía verde
-  // en un intento y rojo en el siguiente (flaky), sin que el portal estuviera roto.
-  expect: { timeout: process.env.CI ? 15_000 : 5_000 },
+  timeout: process.env.CI ? 120_000 : 30_000,
+  // 5 s (el valor por defecto de `expect`) no alcanza en un runner de CI: Postgres, Redis, el
+  // backend, Next y Chromium comparten 2 vCPU, y las vistas que se renderizan en el servidor con
+  // consultas pesadas (readiness, el detalle de una versión de esquema con ~3.500 columnas, la
+  // ficha de auditoría SQL) tardan más de 15 s en su primera visita. El mismo caso salía verde en
+  // un intento y rojo en el siguiente sin que el portal estuviera roto. 45 s deja margen sin
+  // esconder una vista que de verdad no carga: ésa sigue fallando, sólo que más tarde.
+  expect: { timeout: process.env.CI ? 45_000 : 5_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
