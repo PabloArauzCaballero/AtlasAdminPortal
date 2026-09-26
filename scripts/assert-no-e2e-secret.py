@@ -7,18 +7,23 @@ import zipfile
 from pathlib import Path
 
 
-def contains_secret(archive: zipfile.ZipFile, secrets: tuple[bytes, ...]) -> bool:
+def find_secret(
+    archive: zipfile.ZipFile, secrets: dict[str, bytes], prefix: str = ""
+) -> str | None:
+    """Dónde está la clave: `<nombre de la variable> en <ruta dentro del zip>`. Nunca el valor."""
     for member in archive.infolist():
         if member.is_dir():
             continue
         content = archive.read(member)
-        if any(secret in content for secret in secrets):
-            return True
+        for name, secret in secrets.items():
+            if secret in content:
+                return f"{name} en {prefix}{member.filename}"
         if member.filename.endswith(".zip"):
             with zipfile.ZipFile(io.BytesIO(content)) as nested:
-                if contains_secret(nested, secrets):
-                    return True
-    return False
+                found = find_secret(nested, secrets, f"{prefix}{member.filename}!")
+                if found:
+                    return found
+    return None
 
 
 def main() -> int:
@@ -28,8 +33,8 @@ def main() -> int:
         "NOTIFICATION_TOKEN_ENCRYPTION_KEY",
         "ERP_BACKEND_CATALOG_API_KEY",
     )
-    secrets = tuple(os.environ.get(name, "").encode() for name in names)
-    if not all(secrets):
+    secrets = {name: os.environ.get(name, "").encode() for name in names}
+    if not all(secrets.values()):
         print("Falta alguna clave QA; se rechaza la publicación del reporte.", file=sys.stderr)
         return 1
     report_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "blob-report")
@@ -39,8 +44,12 @@ def main() -> int:
         return 1
     for path in archives:
         with zipfile.ZipFile(path) as archive:
-            if contains_secret(archive, secrets):
-                print(f"El reporte {path.name} contiene una clave QA; publicación bloqueada.", file=sys.stderr)
+            found = find_secret(archive, secrets)
+            if found:
+                print(
+                    f"El reporte {path.name} contiene una clave QA ({found}); publicación bloqueada.",
+                    file=sys.stderr,
+                )
                 return 1
     print("Reporte blob sin clave QA.")
     return 0

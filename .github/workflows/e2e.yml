@@ -200,6 +200,20 @@ jobs:
             -c "SELECT system_code, last_status, endpoints_imported, data_entities_imported
                   FROM platform_ops.system_block_federation_state ORDER BY system_code" || true
 
+      # Los adjuntos de un fallo (error-context.md) no se publican —pueden llevar la clave QA—, así
+      # que sin esto un fallo sólo deja el mensaje del assert y no la página que lo provocó. Al
+      # imprimirlos en el log, GitHub enmascara con *** todo valor registrado como secreto.
+      - name: Mostrar el contexto de las pruebas fallidas
+        if: failure()
+        shell: bash
+        run: |
+          find test-results -name error-context.md 2>/dev/null | sort | head -n 6 | while read -r f; do
+            echo "::group::$f"
+            head -c 7000 "$f"
+            echo
+            echo "::endgroup::"
+          done || true
+
       # Un verde que se saltó las pruebas no es un verde. Este paso lo convierte en rojo.
       - name: Comprobar que la suite corrió de verdad
         if: ${{ !cancelled() }}
