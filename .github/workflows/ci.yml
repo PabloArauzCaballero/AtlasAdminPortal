@@ -135,7 +135,7 @@ jobs:
       # null (reading 'edgesOut')") al resolver el árbol de peers de este devDependencies
       # (vitest/rolldown con sus binarios opcionales por plataforma); npm 12 ya no lo tiene.
       - name: Actualizar npm (bug de arborist en 10.x)
-        run: npm install -g npm@12
+        run: npm install -g npm@11
 
       - name: Generar package-lock desde package.json (sin instalar)
         run: npm install --package-lock-only --ignore-scripts
