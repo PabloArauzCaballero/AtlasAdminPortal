@@ -60,7 +60,13 @@ export function JourneyRunnerPanel() {
   const runMutation = useMutation({
     mutationFn: async () => {
       if (!parsedSteps.ok) throw new Error(parsedSteps.error);
-      return runJourneyBatch(parsedSteps.value, config, endpoints.byId);
+      // Diagnóstico de UN recorrido: el lote de N personas ya no sale del navegador (dependía de
+      // esta pestaña y reutilizaba la sesión del operador para todas). Va por el catálogo.
+      return runJourneyBatch(
+        parsedSteps.value,
+        { ...config, iterations: 1, concurrency: 1 },
+        endpoints.byId,
+      );
     },
     onSuccess: () => setConfirmOpen(false),
   });
@@ -78,13 +84,17 @@ export function JourneyRunnerPanel() {
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Journey Runner (pruebas encadenadas)"
-          description="Ejecuta una secuencia de endpoints en orden, extrayendo valores de una respuesta para usarlos en los siguientes pasos con {{variable}}. No es una prueba unitaria: valida flujos completos de negocio."
+          title="Editor de pasos · diagnóstico de un recorrido"
+          description="Ejecuta desde este navegador UNA secuencia de pasos escrita a mano, extrayendo valores de una respuesta para usarlos en los siguientes con {{variable}}. Sirve para depurar un recorrido; para ejecutar N personas usa los recorridos precargados."
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        <JourneyRunnerConfigFields config={config} onChange={patchConfig} />
+        <JourneyRunnerConfigFields
+          config={config}
+          onChange={patchConfig}
+          singleRun
+        />
         <JourneyStepsEditor
           stepsText={stepsText}
           onStepsTextChange={setStepsText}
@@ -136,7 +146,6 @@ export function JourneyRunnerPanel() {
             }}
           >
             Ejecutar journey real
-            {config.iterations > 1 ? ` (×${config.iterations})` : ""}
           </Button>
         </div>
         {runMutation.data ? (

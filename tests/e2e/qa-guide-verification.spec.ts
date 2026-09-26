@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { motivoParaSaltar } from "./internal-session";
 
 /**
  * Verificación E2E real de la Guía del QA Lab (/internal/qa/guia) contra el
@@ -7,33 +8,13 @@ import { expect, test, type Page } from "@playwright/test";
  * IntersectionObserver, el SVG del gráfico animándose, y el portapapeles real.
  * Deja screenshots como evidencia para la beta.
  *
- * Credenciales por env var. El backend solo habilita CORS para localhost (no
- * 127.0.0.1), así que se navega con URLs absolutas a "localhost".
+ * La sesión llega del proyecto `setup` (storageState compartido). Esta prueba tenía su propio
+ * `login()` de un solo paso y se saltaba sin `E2E_PASSWORD`; pero todo acceso interno exige además
+ * el PIN de segundo factor, así que ese login jamás habría salido de /internal/login y las seis
+ * pruebas llevaban siempre saltadas —contando como «cubiertas» sin correr—.
  */
-const EMAIL = process.env.E2E_EMAIL ?? "pablo@atlas.internal";
-const PASSWORD = process.env.E2E_PASSWORD ?? "";
-const TENANT = process.env.E2E_TENANT ?? "1";
-const APP = process.env.E2E_BASE_URL ?? "http://localhost:5273";
-const url = (path: string): string => `${APP}${path}`;
 const SHOTS = "test-results/qa-guia";
-
-async function login(page: Page): Promise<void> {
-  await page.goto(url("/internal/login"));
-  await page.waitForLoadState("networkidle").catch(() => undefined);
-  const tenant = page.getByLabel("Tenant");
-  await tenant.waitFor({ state: "visible" });
-  await tenant.fill(TENANT);
-  if ((await tenant.inputValue()) !== TENANT) await tenant.fill(TENANT);
-  await expect(tenant).toHaveValue(TENANT);
-  await page.getByLabel("Correo interno").fill(EMAIL);
-  await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: /entrar al portal interno/i }).click();
-  await page.waitForFunction(
-    () => !window.location.pathname.endsWith("/internal/login"),
-    undefined,
-    { timeout: 20_000 },
-  );
-}
+const url = (path: string): string => path;
 
 const SECTIONS = [
   "Un laboratorio, tres formas de probar",
@@ -49,10 +30,7 @@ const SECTIONS = [
 test.describe.configure({ mode: "serial" });
 
 test.describe("Guía QA Lab — verificación real en navegador", () => {
-  test.skip(
-    !PASSWORD,
-    "Define E2E_PASSWORD (y E2E_BASE_URL) para verificar contra el backend real.",
-  );
+  test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
   test("carga autenticada y muestra las 8 secciones (screenshot)", async ({
     page,
@@ -62,8 +40,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
       if (m.type() === "error") consoleErrors.push(m.text());
     });
     page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${e.message}`));
-
-    await login(page);
     const res = await page.goto(url("/internal/qa/guia"), {
       waitUntil: "domcontentloaded",
     });
@@ -94,7 +70,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   });
 
   test("índice lateral navega por anclas (scroll-spy)", async ({ page }) => {
-    await login(page);
     await page.goto(url("/internal/qa/guia"), {
       waitUntil: "domcontentloaded",
     });
@@ -112,7 +87,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   });
 
   test("matriz de escenarios reacciona al click", async ({ page }) => {
-    await login(page);
     await page.goto(url("/internal/qa/guia"), {
       waitUntil: "domcontentloaded",
     });
@@ -127,7 +101,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   test("el gráfico de stress avanza al simular la corrida (screenshot)", async ({
     page,
   }) => {
-    await login(page);
     await page.goto(url("/internal/qa/guia"), {
       waitUntil: "domcontentloaded",
     });
@@ -148,7 +121,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     context,
   }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await login(page);
     await page.goto(url("/internal/qa/guia"), {
       waitUntil: "domcontentloaded",
     });
@@ -161,7 +133,6 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   });
 
   test("el botón Guía del lab lleva a la guía", async ({ page }) => {
-    await login(page);
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: "Guía" }).first().click();
     await expect(page).toHaveURL(/\/internal\/qa\/guia$/);

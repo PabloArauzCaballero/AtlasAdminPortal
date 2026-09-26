@@ -29,6 +29,8 @@ import {
 import { WorkflowMinimap } from "./workflow-minimap";
 import { WorkflowNodeTooltip } from "./workflow-node-tooltip";
 import type { WorkflowTree } from "./types";
+import { RunCountsLayer } from "@/features/qa-runs/workflow-run-overlay";
+import type { QaRunStepCounts } from "@/features/qa-runs/types";
 
 /**
  * Lienzo de nodos del flujo: cada endpoint es un nodo real, colocado en su
@@ -43,8 +45,11 @@ export function WorkflowGraphView({
   expanded,
   onSelect,
   onToggleExpanded,
+  stepRuns,
 }: Readonly<{
   tree: WorkflowTree;
+  /** Conteos de la corrida QA abierta, por clave de endpoint (`endpointKey`). */
+  stepRuns?: ReadonlyMap<string, QaRunStepCounts>;
   selection: WorkflowSelection;
   showDependencies: boolean;
   expanded: boolean;
@@ -249,6 +254,7 @@ export function WorkflowGraphView({
               </g>
             ))}
             <TerminalLayer terminals={layout.terminals} />
+            <RunCountsLayer nodes={layout.nodes} counts={stepRuns} />
           </g>
         </svg>
       </div>
