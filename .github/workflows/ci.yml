@@ -38,6 +38,9 @@ jobs:
       - name: Instalar dependencias
         run: yarn install --frozen-lockfile
 
+      - name: Contrato del smoke público
+        run: node --test .github/tests/post-deploy-smoke.test.mjs
+
       - name: Máximo 300 líneas por archivo
         run: yarn max-lines
 
@@ -140,6 +143,40 @@ jobs:
       - name: Auditar vulnerabilidades high/critical
         run: npm audit --audit-level=high
 
+  # El broker OIDC/PKCE vive en este repositorio con su propio lockfile. Su build y
+  # sus pruebas de seguridad son obligatorios para publicar el portal.
+  auth-worker:
+    name: Broker de identidad (calidad, seguridad, imagen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: atlas-auth-broker-worker/yarn.lock
+
+      - name: Instalar dependencias del broker
+        run: yarn --cwd atlas-auth-broker-worker install --frozen-lockfile
+      - name: Formato del broker
+        run: yarn --cwd atlas-auth-broker-worker format:check
+      - name: ESLint del broker
+        run: yarn --cwd atlas-auth-broker-worker lint
+      - name: Tipos del broker
+        run: yarn --cwd atlas-auth-broker-worker typecheck
+      - name: Pruebas de seguridad del broker
+        run: yarn --cwd atlas-auth-broker-worker test
+      - name: Compilar el broker
+        run: yarn --cwd atlas-auth-broker-worker build
+      - name: Smoke HTTP real del broker con IdP de prueba
+        run: yarn --cwd atlas-auth-broker-worker smoke:e2e
+      - name: Auditar dependencias del broker
+        run: |
+          npm install --package-lock-only --ignore-scripts --prefix atlas-auth-broker-worker
+          npm audit --audit-level=high --prefix atlas-auth-broker-worker
+      - name: Construir imagen del broker
+        run: docker build -f atlas-auth-broker-worker/Dockerfile -t atlas-auth-broker-worker:ci atlas-auth-broker-worker
+
   e2e:
     name: Playwright E2E obligatorio
     uses: ./.github/workflows/e2e.yml
@@ -154,6 +191,7 @@ jobs:
       - build
       - secrets
       - audit
+      - auth-worker
       - e2e
     uses: ./.github/workflows/deploy-dev.yml
     secrets: inherit

@@ -102,6 +102,8 @@ services:
     # `atlas-backend` es el alias del API en la red compartida (ver el bloque `networks`).
     environment:
       INTERNAL_API_ORIGIN: 'http://atlas-backend:3005'
+      APP_COMMIT_SHA: '${SOURCE_COMMIT:-}'
+      APP_VERSION: '0.1.0'
     # ------------------------------------------------------------------------------------------
     # PESO DE CPU, para no perder el turno frente a un build del vecino.
     #

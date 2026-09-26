@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { expect, type Page, type TestInfo } from "@playwright/test";
+import {
+  expect,
+  type Page,
+  type TestInfo,
+  type Request,
+  type Locator,
+} from "@playwright/test";
 
 /**
  * Evidencia física de cada paso del E2E.
@@ -55,8 +61,18 @@ export async function capture(
 export class PageHealth {
   readonly consoleErrors: string[] = [];
   readonly failedRequests: string[] = [];
+  /** Peticiones sin respuesta todavía: una que nunca contesta no aparece en `failedRequests`. */
+  private readonly inFlight = new Map<Request, string>();
 
   constructor(private readonly page: Page) {
+    const label = (request: Request): string =>
+      `${request.method()} ${request.url().split("/api/v1")[1] ?? request.url()}`.slice(
+        0,
+        160,
+      );
+    page.on("request", (request) => this.inFlight.set(request, label(request)));
+    page.on("requestfinished", (request) => this.inFlight.delete(request));
+    page.on("requestfailed", (request) => this.inFlight.delete(request));
     page.on("console", (message) => {
       if (message.type() === "error") {
         const source = message.location().url;
@@ -74,6 +90,25 @@ export class PageHealth {
         this.failedRequests.push(`${response.status()} ${url}`);
       }
     });
+  }
+
+  /** Lo que un timeout esperando un elemento no dice: dónde está la página y qué sigue pendiente. */
+  describe(): string {
+    return [
+      `url: ${this.page.url()}`,
+      `peticiones sin respuesta: ${JSON.stringify([...this.inFlight.values()])}`,
+      `errores de consola: ${JSON.stringify(this.consoleErrors)}`,
+      `respuestas >= 400: ${JSON.stringify(this.failedRequests)}`,
+    ].join("\n");
+  }
+
+  /** `toBeVisible` cuyo fallo trae el estado de la página en vez de sólo «element(s) not found». */
+  async expectVisible(locator: Locator, what: string): Promise<void> {
+    try {
+      await expect(locator).toBeVisible();
+    } catch (error) {
+      throw new Error(`${what}\n${this.describe()}\n\n${String(error)}`);
+    }
   }
 
   /** Ignora fallos esperados (p. ej. un 503 de Mongo cuando el perfil `logs` no está levantado). */

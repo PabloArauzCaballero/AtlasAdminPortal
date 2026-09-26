@@ -40,6 +40,7 @@ const claimsSchema = z.object({
   aud: z.union([z.string(), z.array(z.string())]),
   exp: z.number(),
   iat: z.number(),
+  nbf: z.number().optional(),
   nonce: z.string().optional(),
   azp: z.string().optional(),
   email: z.string().optional(),
@@ -160,6 +161,9 @@ export class IdTokenVerifier {
 
     if (claims.exp + CLOCK_SKEW_SECONDS <= nowSeconds) throw invalid('está expirado');
     if (claims.iat - CLOCK_SKEW_SECONDS > nowSeconds) throw invalid('fue emitido en el futuro');
+    if (claims.nbf !== undefined && claims.nbf - CLOCK_SKEW_SECONDS > nowSeconds) {
+      throw invalid('todavía no es válido');
+    }
 
     if (claims.nonce === undefined) throw invalid('no trae `nonce`');
     if (claims.nonce !== expectations.nonce)
