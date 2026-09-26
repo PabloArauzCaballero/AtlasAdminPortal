@@ -26,11 +26,7 @@ import { useTutorialRuntime } from "./use-tutorial-runtime";
 import { usePathQueue } from "./use-path-queue";
 import { nowIso, resumeStepFor, routeForStep } from "./tutorial-routing";
 import { SpotlightOverlay } from "./spotlight-overlay";
-import type {
-  TutorialDefinition,
-  TutorialStatus,
-  TutorialStep,
-} from "./types";
+import type { TutorialDefinition, TutorialStatus, TutorialStep } from "./types";
 
 type TutorialContextValue = Readonly<{
   activeDefinition: TutorialDefinition | null;
