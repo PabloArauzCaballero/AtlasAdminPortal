@@ -12,12 +12,14 @@ const checks = [
       // Cliente del endpoint portal-owned de progreso de tutoriales (same-origin,
       // Next Route Handler): no pasa por el cliente de AtlasBackend a propósito.
       "src/features/qa-tutorials/progress-remote.ts",
-      // El PUT de una subida al expediente va DIRECTO al almacén de objetos con una URL
-      // prefirmada, no a AtlasBackend. El cliente de la API no sirve aquí y además rompería la
-      // firma: añade `Authorization` y `credentials`, y S3 firma el conjunto de cabeceras. El
-      // backend sigue mandando —firma el permiso y verifica el objeto después—, pero los bytes
-      // no lo atraviesan.
+      // El PUT de una subida al expediente va al almacén de objetos con una URL prefirmada, no a
+      // AtlasBackend. El cliente de la API no sirve aquí y además rompería la firma: añade
+      // `Authorization` y `credentials`, y S3 firma el conjunto de cabeceras. El backend sigue
+      // mandando —firma el permiso y verifica el objeto después—, pero los bytes no lo atraviesan.
+      // El navegador lo manda al reenvío del mismo origen y éste, en el servidor, al almacén
+      // (ver `src/features/files/almacen.ts`).
       "src/features/files/upload.ts",
+      "src/app/almacen/subida/route.ts",
       // El lector de eventos del servidor (SSE). Es transporte, y está aquí por eso: `EventSource`
       // sería lo natural pero no admite cabeceras, así que el token viajaría en la URL y acabaría
       // en los registros de cualquier proxy. Con `fetch` va en `Authorization`, como el resto.
