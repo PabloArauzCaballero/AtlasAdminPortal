@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
+import { CASE_QUEUE_NAV_ITEMS } from "./nav-items-case-queues";
 import {
   INTERNAL_PORTAL_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
@@ -58,11 +59,11 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         href: "/internal/operations/work-queue",
         icon: ShieldAlert,
         // El backend gatea por rol (@Roles internal_operator/risk_analyst/compliance_analyst/
-        // fraud_analyst/admin/platform_admin), no por un permiso granular dedicado — no existe
-        // "operations.workQueue.read" en el catálogo de /internal/permissions. Se deja visible y
-        // el backend responde 403 con mensaje claro si el rol no alcanza.
+        // fraud_analyst/admin/platform_admin), no por permiso granular: no existe "operations.
+        // workQueue.read" en el catálogo. Visible; el backend responde 403 claro si no alcanza.
         permissions: [],
       },
+      ...CASE_QUEUE_NAV_ITEMS,
       {
         label: "Soporte",
         href: "/internal/support",

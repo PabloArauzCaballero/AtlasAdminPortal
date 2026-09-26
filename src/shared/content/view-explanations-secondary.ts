@@ -31,6 +31,18 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
       },
+      "/internal/operations/manual-review-cases": {
+        systems:
+          "Cola de revisión manual sola, paginada por cursor (GET /operations/manual-review-cases). Mismas filas y misma acción de decidir que la cola combinada, sin su coste de paginar por posición.",
+        business:
+          "Las altas que esperan a una persona, sin mezclarlas con fraude, para recorrerlas enteras aunque sean muchas.",
+      },
+      "/internal/operations/fraud-cases": {
+        systems:
+          "Cola de casos de fraude sola, paginada por cursor (GET /operations/fraud-cases). La decisión sigue restringida a analistas de fraude y administración.",
+        business:
+          "Qué patrones de fraude hay abiertos y sobre qué clientes, para que el equipo de fraude los atienda por orden.",
+      },
       "/internal/files": {
         systems:
           "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
@@ -48,9 +60,9 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       // no pueden tener clave propia y caen todas en esta entrada.
       "/internal/operations/customers": {
         systems:
-          "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend. La pestaña de Auditoría lee `/operations/audit/customer/:id/feed` — paginado por cursor real sobre la vista `audit_event_feed`, que unifica las 8 fuentes de auditoría — y ofrece como modo secundario la ruta `/operations/audit/customer/:id`, deprecada en el backend, que aporta un resumen por evento y filtros por tipo y fecha a cambio de un conteo aproximado.",
+          "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend. La pestaña de Auditoría lee `/operations/audit/customer/:id/feed` — paginado por cursor real sobre la vista `audit_event_feed`, que unifica las 8 fuentes de auditoría — y ofrece como modo secundario la ruta `/operations/audit/customer/:id`, deprecada en el backend, que aporta un resumen por evento y filtros por tipo y fecha a cambio de un conteo aproximado. La ficha de investigación además ACTÚA: cribado de listas restrictivas y descarte de coincidencias (`compliance/screening`, `compliance/clear-matches`), decisión de habilitación contra la máquina de estados (`eligibility/decision`), resumen de comportamiento del alta (`behavior-summary`) y recálculo del riesgo (`POST /customers/:id/risk-assessments`).",
         business:
-          "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas, incluida la auditoría completa: qué le pasó al cliente, cuándo y quién lo hizo — la evidencia que respalda una decisión de riesgo, fraude o compliance.",
+          "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas, incluida la auditoría completa: qué le pasó al cliente, cuándo y quién lo hizo — la evidencia que respalda una decisión de riesgo, fraude o compliance. Desde la misma ficha se criba al cliente contra las listas, se decide su habilitación y se recalcula su riesgo.",
       },
       "/internal/operations/risk-assessments": {
         systems:
