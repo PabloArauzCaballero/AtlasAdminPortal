@@ -60,9 +60,14 @@ describe("subida al expediente", () => {
       sha256:
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
     });
-    expect(fetchFalso).toHaveBeenCalledWith(TICKET.uploadUrl, {
+    // Al reenvío del mismo origen, con la URL firmada en su cabecera: el PUT directo al almacén
+    // lo bloqueaban la CSP y el contenido mixto.
+    expect(fetchFalso).toHaveBeenCalledWith("/almacen/subida", {
       method: "PUT",
-      headers: TICKET.requiredHeaders,
+      headers: {
+        ...TICKET.requiredHeaders,
+        "x-almacen-destino": TICKET.uploadUrl,
+      },
       body: archivo,
     });
     expect(confirmarSubida).toHaveBeenCalledWith("42", "t1");
