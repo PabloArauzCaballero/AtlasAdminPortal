@@ -6,7 +6,6 @@ import {
   FolderTree,
   Gauge,
   History,
-  LifeBuoy,
   ListChecks,
   LockKeyhole,
   MessageSquare,
@@ -22,7 +21,6 @@ import {
   Stamp,
   Table2,
   UserCircle,
-  UserCog,
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
@@ -30,8 +28,8 @@ import {
   INTERNAL_PORTAL_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
-  SUPPORT_ADMIN_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
+import { supportNavItems } from "./nav-items-support";
 
 export const navGroupsSecondary: InternalNavGroup[] = [
   {
@@ -63,24 +61,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         // el backend responde 403 con mensaje claro si el rol no alcanza.
         permissions: [],
       },
-      {
-        label: "Soporte",
-        href: "/internal/support",
-        icon: LifeBuoy,
-        // Mismo criterio que "Cola de trabajo": el backend gatea por @Roles y, además, exige un
-        // perfil de agente vivo que no vive en el catálogo de permisos. Se deja visible porque un
-        // ítem oculto no explica nada; la pantalla sí dice qué falta y dónde habilitarlo.
-        permissions: [],
-      },
-      {
-        label: "Agentes de soporte",
-        href: "/internal/support/agents",
-        icon: UserCog,
-        // Habilitar agentes decide quién puede leer expedientes de soporte —con la conversación
-        // completa dentro—, así que el backend lo restringe a admin y platform_admin.
-        permissions: [],
-        roles: SUPPORT_ADMIN_ROLE_LIST,
-      },
+      ...supportNavItems,
       {
         label: "Archivos",
         href: "/internal/files",

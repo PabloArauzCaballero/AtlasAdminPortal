@@ -19,6 +19,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { AccesoASoporte } from "./support-access-state";
 import { buildSupportCaseColumns } from "./case-columns";
 import { ChatsEnEspera } from "./desk-panel";
+import { SlaSweepButton } from "./sla-sweep-button";
 import { useSupportCases, useSupportQueues } from "./hooks";
 import type { SupportCursor } from "./types";
 import { LifeBuoy } from "lucide-react";
@@ -98,6 +99,7 @@ export function SupportQueuePage() {
         eyebrow="Soporte"
         title="Bandeja de casos"
         description="Los expedientes de soporte que abren clientes y comercios: clasificarlos, atenderlos, resolverlos con código y cerrarlos."
+        actions={<SlaSweepButton />}
       />
       <BusinessContextNote>
         Cada fila es un expediente real de <code>support.support_cases</code>.
