@@ -1,6 +1,7 @@
 "use client";
 
 import { pedirTicketDeSubida, confirmarSubida } from "./services";
+import { CABECERA_DESTINO, RUTA_SUBIDA_AL_ALMACEN } from "./almacen";
 import type { Nodo } from "./types";
 
 /**
@@ -8,7 +9,8 @@ import type { Nodo } from "./types";
  *
  *   1. se calcula el SHA-256 del archivo AQUÍ,
  *   2. el backend firma un permiso de subida acotado a ese tipo y ese tamaño,
- *   3. el navegador escribe directo en el almacén y el backend confirma.
+ *   3. el navegador sube al almacén —a través de este mismo origen, ver `almacen.ts`— y el
+ *      backend confirma.
  *
  * ## Por qué el hash se calcula antes de subir
  *
@@ -52,11 +54,15 @@ export async function subirArchivo(input: {
    * Las cabeceras van EXACTAMENTE como las devolvió el ticket.
    *
    * Están firmadas: alterar una sola invalida la URL y el almacén responde 403. Es lo que acota
-   * tipo y tamaño ANTES de que el objeto exista, en vez de descubrirlo después.
+   * tipo y tamaño ANTES de que el objeto exista, en vez de descubrirlo después. La URL firmada
+   * viaja en una cabecera aparte hacia el reenvío del mismo origen (`almacen.ts`).
    */
-  const respuesta = await fetch(ticket.uploadUrl, {
+  const respuesta = await fetch(RUTA_SUBIDA_AL_ALMACEN, {
     method: ticket.method,
-    headers: ticket.requiredHeaders,
+    headers: {
+      ...ticket.requiredHeaders,
+      [CABECERA_DESTINO]: ticket.uploadUrl,
+    },
     body: input.archivo,
   });
   if (!respuesta.ok) {
