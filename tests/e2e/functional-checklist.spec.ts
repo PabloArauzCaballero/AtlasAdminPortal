@@ -1,5 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { seMantiene } from "./estabilizar";
+import {
+  INTERNAL_STORAGE_STATE,
+  loginAsInternalUser,
+} from "./internal-session";
 
 /**
  * Cubre la sección "Validación funcional con backend real" de
@@ -10,11 +14,19 @@ import { seMantiene } from "./estabilizar";
  *  - admin  (SUPER_ADMIN)            -> E2E_EMAIL / E2E_PASSWORD
  *  - acotado (RISK_ANALYST, 3 perms) -> E2E_LOW_EMAIL / E2E_LOW_PASSWORD
  */
-const ADMIN_EMAIL = process.env.E2E_EMAIL ?? "pablo@atlas.internal";
-const ADMIN_PASSWORD = process.env.E2E_PASSWORD ?? "";
+const ADMIN_EMAIL =
+  process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "pablo@atlas.internal";
+const ADMIN_PASSWORD =
+  process.env.E2E_PASSWORD ?? process.env.TEST_PASSWORD ?? "";
 const LOW_EMAIL = process.env.E2E_LOW_EMAIL ?? "risk.ops@atlas.test";
 const LOW_PASSWORD = process.env.E2E_LOW_PASSWORD ?? "";
-const TENANT = process.env.E2E_TENANT ?? "1";
+const TENANT = process.env.E2E_TENANT ?? process.env.TEST_TENANT_ID ?? "1";
+const HAS_QA_LOGIN = Boolean(
+  !process.env.E2E_PASSWORD &&
+  process.env.TEST_EMAIL &&
+  process.env.TEST_PASSWORD &&
+  process.env.PW_PIN_INBOX_PORT,
+);
 // El backend habilita CORS para localhost:5273 (no 127.0.0.1) y el navegador
 // llama al API directo, así que hay que entrar por "localhost".
 const APP = process.env.E2E_BASE_URL ?? "http://localhost:5273";
@@ -50,6 +62,10 @@ async function login(
   email = ADMIN_EMAIL,
   password = ADMIN_PASSWORD,
 ): Promise<void> {
+  if (HAS_QA_LOGIN && email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    await loginAsInternalUser(page);
+    return;
+  }
   await fillLogin(page, email, password);
   // El redirect post-login es client-side (router.replace), así que no emite
   // evento de navegación: se sondea la URL dentro de la página, que funciona
@@ -143,6 +159,10 @@ test.describe("Checklist funcional con backend real", () => {
   test("usuario sin permiso no ve la acción restringida en la UI", async ({
     page,
   }) => {
+    test.skip(
+      !LOW_PASSWORD,
+      "Define E2E_LOW_PASSWORD para comprobar el rol acotado.",
+    );
     await login(page, LOW_EMAIL, LOW_PASSWORD);
 
     // RISK_ANALYST no tiene internal.users.manage: la administración de
@@ -159,6 +179,10 @@ test.describe("Checklist funcional con backend real", () => {
   test("usuario sin permiso recibe 403 controlado al entrar por URL directa", async ({
     page,
   }) => {
+    test.skip(
+      !LOW_PASSWORD,
+      "Define E2E_LOW_PASSWORD para comprobar el rol acotado.",
+    );
     await login(page, LOW_EMAIL, LOW_PASSWORD);
 
     const res = await page.goto(url("/internal/settings/users/new"), {
@@ -276,6 +300,12 @@ test.describe("Checklist funcional con backend real", () => {
     expect(res2.status(), "reusar el refresh viejo no puede dar 200").not.toBe(
       200,
     );
+    // La detección de reuso incrementa tokenVersion de todo el actor. La suite comparte
+    // una sesión de setup: reautenticarla evita que pruebas posteriores usen un JWT revocado.
+    if (HAS_QA_LOGIN) {
+      await loginAsInternalUser(page);
+      await context.storageState({ path: INTERNAL_STORAGE_STATE });
+    }
   });
 
   test("logout revoca la sesión en el servidor (el refresh viejo deja de servir)", async ({
