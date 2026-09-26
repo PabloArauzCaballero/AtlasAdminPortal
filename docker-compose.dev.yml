@@ -38,6 +38,10 @@ services:
         NEXT_PUBLIC_API_BASE_URL: 'http://${ATLAS_PUBLIC_HOST:?define ATLAS_PUBLIC_HOST en el .env de este repositorio}:3005/api/v1'
         NEXT_PUBLIC_ATLAS_ENVIRONMENT: vps-testing
     env_file: ['${ATLAS_ENV_DIR:-/opt/atlas/env}/admin-portal.env']
+    # Generador de datos de prueba del QA Lab (ver `.env.example`, QA_FAKERS_ORIGIN). Se lee al
+    # arrancar, no al construir. Si el mock no está en `atlas_vps` con ese alias, el Lab lo dice.
+    environment:
+      QA_FAKERS_ORIGIN: '${QA_FAKERS_ORIGIN:-http://external-providers-mock:4010}'
     ports:
       - '5273:5273'
     networks:

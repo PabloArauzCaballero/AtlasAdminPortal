@@ -90,7 +90,7 @@ describe("EndpointPicker · estados de la consulta", () => {
     render(<EndpointPicker selectedId="" onSelect={vi.fn()} />);
 
     expect(
-      screen.getByText("No se pudo cargar el catálogo de endpoints."),
+      screen.getByText("No se pudo cargar el catálogo de operaciones."),
     ).toBeInTheDocument();
   });
 
@@ -99,7 +99,7 @@ describe("EndpointPicker · estados de la consulta", () => {
     render(<EndpointPicker selectedId="" onSelect={vi.fn()} />);
 
     expect(
-      screen.getByText("No se encontraron endpoints."),
+      screen.getByText("No se encontraron operaciones."),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Ajusta la búsqueda o pega el endpointId directamente."),
@@ -181,7 +181,7 @@ describe("EndpointPicker · elegir endpoint", () => {
 
     await userEvent.type(screen.getByPlaceholderText("endpointId"), "ep-99");
     await userEvent.click(
-      screen.getByRole("button", { name: "Cargar endpoint" }),
+      screen.getByRole("button", { name: "Cargar operación" }),
     );
 
     expect(onSelect).toHaveBeenCalledWith("ep-99");
@@ -194,11 +194,11 @@ describe("EndpointPicker · elegir endpoint", () => {
     render(<EndpointPicker selectedId="" onSelect={onSelect} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Cargar endpoint" }),
+      screen.getByRole("button", { name: "Cargar operación" }),
     );
     await userEvent.type(screen.getByPlaceholderText("endpointId"), "   ");
     await userEvent.click(
-      screen.getByRole("button", { name: "Cargar endpoint" }),
+      screen.getByRole("button", { name: "Cargar operación" }),
     );
 
     expect(onSelect).not.toHaveBeenCalled();
@@ -210,7 +210,7 @@ describe("EndpointPicker · elegir endpoint", () => {
 
     await userEvent.type(screen.getByPlaceholderText("endpointId"), "  ep-5  ");
     await userEvent.click(
-      screen.getByRole("button", { name: "Cargar endpoint" }),
+      screen.getByRole("button", { name: "Cargar operación" }),
     );
 
     expect(onSelect).toHaveBeenCalledWith("ep-5");
@@ -221,13 +221,13 @@ describe("EndpointPicker · endpoint activo", () => {
   it("sin endpoint elegido no anuncia ninguno", () => {
     render(<EndpointPicker selectedId="" onSelect={vi.fn()} />);
 
-    expect(screen.queryByText(/Endpoint seleccionado:/)).toBeNull();
+    expect(screen.queryByText(/Operación elegida:/)).toBeNull();
   });
 
   it("con endpoint elegido lo deja a la vista: es contra quién se va a ejecutar", () => {
     render(<EndpointPicker selectedId="ep-42" onSelect={vi.fn()} />);
 
-    expect(screen.getByText(/Endpoint seleccionado:/)).toBeInTheDocument();
+    expect(screen.getByText(/Operación elegida:/)).toBeInTheDocument();
     expect(screen.getByText("#ep-42")).toBeInTheDocument();
   });
 });

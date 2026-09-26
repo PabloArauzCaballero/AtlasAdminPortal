@@ -1,7 +1,8 @@
 import type { EndpointItem } from "@/features/systems/types";
-import type { ContractField } from "./contract-fields";
 import { executeEndpointDirectly } from "./direct-runner";
-import { generateCases } from "./qa-case-generator";
+import { fetchFakerCases } from "./fakers/faker-client";
+import type { FakerContext } from "./fakers/faker-types";
+import { qaLocalValues } from "./qa-sample-entries";
 import type {
   QaJourneyBatchResult,
   QaJourneyConfig,
@@ -13,20 +14,16 @@ import type {
 import type { EndpointRunInput } from "./types";
 
 /**
- * Campos de una persona simulada, con los mismos nombres que
- * `AtlasExternalProvidersMock/src/domain/derive.mjs` reconoce como identidad (`documentNumber`,
- * `phone`, `email`) — así el mismo `{{persona.documentNumber}}` sirve tanto para un paso propio de
- * Atlas (alta de cliente) como para uno del mock (verificación SEGIP), y las dos observan la MISMA
- * identidad derivada. `generateCases` ya sabe dar formato realista por nombre de campo
- * (`qa-case-generator.ts`): reusarlo aquí evita un segundo generador de datos sintéticos.
+ * De dónde salen las N personas del lote. Por defecto, del generador de datos del mock (`caso`,
+ * con la semilla de la corrida): misma semilla ⇒ mismas N personas. Inyectable para las pruebas.
  */
-const PERSONA_FIELDS: ContractField[] = [
-  { name: "documentNumber", type: "string", required: true },
-  { name: "phone", type: "string", required: true },
-  { name: "email", type: "string", required: true },
-  { name: "firstName", type: "string", required: true },
-  { name: "lastName", type: "string", required: true },
-];
+export type PersonaSource = (
+  seed: string,
+  count: number,
+) => Promise<FakerContext[]>;
+
+const fakerPersonas: PersonaSource = (seed, count) =>
+  fetchFakerCases({ seed, count, variant: "valido" });
 
 /**
  * Corre el journey `iterations` veces — cada una con su propia persona determinista (misma
@@ -38,22 +35,23 @@ export async function runJourneyBatch(
   steps: QaJourneyStepSpec[],
   config: QaJourneyConfig,
   endpointsById: Map<string, EndpointItem>,
+  personaSource: PersonaSource = fakerPersonas,
 ): Promise<QaJourneyBatchResult> {
   const startedAt = new Date().toISOString();
   const iterations = clamp(config.iterations, 1, 200);
   const concurrency = clamp(config.concurrency, 1, 20);
-  const personas = generateCases(
-    PERSONA_FIELDS,
-    "valid",
-    iterations,
-    config.seed || "qa-base",
-  );
+  const seed = config.seed || "qa-base";
+  // Sin generador no hay personas: se corta con el motivo en vez de inventarlas.
+  const cases = await personaSource(seed, iterations);
   const runs: QaJourneyIterationResult[] = new Array(iterations);
 
   await runWithConcurrency(iterations, concurrency, async (index) => {
-    const persona = personas[index]?.payload ?? {};
+    const faker = cases[index] ?? {};
+    const persona = (faker.caso?.persona ?? {}) as Record<string, unknown>;
     const result = await runJourney(steps, config, endpointsById, {
       persona,
+      faker,
+      qa: qaLocalValues(seed, index),
       personaKey: `journey-${index}`,
     });
     runs[index] = { index, persona, result };
@@ -62,7 +60,7 @@ export async function runJourneyBatch(
   return {
     iterations,
     concurrency,
-    seed: config.seed || "qa-base",
+    seed,
     startedAt,
     finishedAt: new Date().toISOString(),
     passedIterations: runs.filter((run) => run.result.failedSteps === 0).length,
@@ -97,12 +95,19 @@ export async function runJourney(
   steps: QaJourneyStepSpec[],
   config: QaJourneyConfig,
   endpointsById: Map<string, EndpointItem>,
-  runContext: { persona?: Record<string, unknown>; personaKey?: string } = {},
+  runContext: {
+    persona?: Record<string, unknown>;
+    faker?: FakerContext;
+    qa?: Record<string, unknown>;
+    personaKey?: string;
+  } = {},
 ): Promise<QaJourneyRunResult> {
   const startedAt = new Date().toISOString();
-  const context: Record<string, unknown> = runContext.persona
-    ? { persona: runContext.persona }
-    : {};
+  const context: Record<string, unknown> = {
+    ...(runContext.persona ? { persona: runContext.persona } : {}),
+    ...(runContext.faker ? { faker: runContext.faker } : {}),
+    ...(runContext.qa ? { qa: runContext.qa } : {}),
+  };
   const results: QaJourneyStepResult[] = [];
 
   for (const step of steps) {
@@ -197,11 +202,23 @@ function buildStepInput(
 
 const PLACEHOLDER_PATTERN = /\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g;
 
+const WHOLE_PLACEHOLDER = /^\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}$/;
+
 function substitute(value: unknown, context: Record<string, unknown>): unknown {
   if (typeof value === "string") {
+    // Un marcador que ocupa todo el valor conserva el tipo (número, objeto…), igual que en la
+    // prueba unitaria (`fakers/faker-template.ts`).
+    const whole = WHOLE_PLACEHOLDER.exec(value);
+    if (whole) {
+      const resolved = getPath(context, whole[1]);
+      if (resolved !== undefined) return resolved;
+    }
     return value.replace(PLACEHOLDER_PATTERN, (match, key) => {
       const resolved = getPath(context, key);
-      return resolved === undefined ? match : String(resolved);
+      if (resolved === undefined) return match;
+      return typeof resolved === "object"
+        ? JSON.stringify(resolved)
+        : String(resolved);
     });
   }
   if (Array.isArray(value)) {

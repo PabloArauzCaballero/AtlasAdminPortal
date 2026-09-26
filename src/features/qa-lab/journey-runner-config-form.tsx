@@ -5,7 +5,7 @@ import { BaseRouteSelect } from "./base-route-select";
 import { CheckBox, NumberField } from "./qa-controls";
 import { DeviceProfileField } from "./qa-device-field";
 import { MockScenarioFields } from "./mock-scenario-fields";
-import { describeQaSeed, QA_SEED_CATALOG } from "./qa-seed-catalog";
+import { QaSeedField } from "./fakers/qa-seed-field";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import type { QaAuthMode } from "./types";
 
@@ -46,7 +46,7 @@ export function JourneyRunnerConfigFields({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="Ambiente"
-          tooltip="Contra qué entorno corre el recorrido completo; decide el host base."
+          tooltip="Contra qué API corre el recorrido completo; decide la dirección base."
         >
           <Select
             name="ambiente"
@@ -56,7 +56,7 @@ export function JourneyRunnerConfigFields({
           />
         </Field>
         <NumberField
-          label="Timeout ms por paso"
+          label="Espera máxima por paso (ms)"
           tooltip="Milisegundos que espera cada paso antes de darlo por fallido."
           value={config.timeoutMs}
           min={1000}
@@ -64,7 +64,7 @@ export function JourneyRunnerConfigFields({
           onChange={(value) => onChange({ timeoutMs: value })}
         />
         <Field
-          label="Auth mode"
+          label="Credencial de la petición"
           tooltip="Qué credencial llevan todos los pasos del recorrido."
         >
           <Select
@@ -81,8 +81,8 @@ export function JourneyRunnerConfigFields({
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
         <Field
-          label="Host URL manual"
-          tooltip="Host completo cuando la ruta base es «Host URL manual». Ej.: https://staging-api.atlas.local"
+          label="Dirección manual"
+          tooltip="Dirección completa cuando la ruta base es «Otra dirección, escrita a mano». Ej.: https://staging-api.atlas.local"
         >
           <Input
             value={config.customHostUrl}
@@ -113,7 +113,7 @@ export function JourneyRunnerConfigFields({
               onChange={(value) => onChange({ iterations: value })}
             />
             <NumberField
-              label="Concurrencia"
+              label="Personas a la vez"
               tooltip="Cuántas personas atraviesan el journey al mismo tiempo."
               value={config.concurrency}
               min={1}
@@ -122,27 +122,16 @@ export function JourneyRunnerConfigFields({
             />
           </>
         )}
-        <Field
-          label="Semilla del lote"
-          tooltip="Fija el lote de personas: la misma semilla genera siempre las mismas N personas, para poder comparar dos corridas."
-          hint={describeQaSeed(config.seed)}
-        >
-          <Select
-            name="semilla-journey"
-            value={config.seed}
-            onChange={(value) => onChange({ seed: value })}
-            options={QA_SEED_CATALOG.map((entry) => ({
-              value: entry.seed,
-              label: entry.label,
-              description: entry.hint,
-            }))}
-          />
-        </Field>
+        <QaSeedField
+          seed={config.seed}
+          onChange={(value) => onChange({ seed: value })}
+          name="semilla-journey"
+        />
       </div>
       {config.authMode === "custom" ? (
         <Field
-          label="Token manual (Bearer)"
-          tooltip="Token JWT de otro actor, sin el prefijo Bearer, para probar sus permisos."
+          label="Token de otro actor"
+          tooltip="Token de acceso de otro actor, sin el prefijo Bearer, para probar sus permisos."
         >
           <Input
             value={config.customAuthToken}
@@ -164,12 +153,12 @@ export function JourneyRunnerConfigFields({
       */}
       <div className="flex flex-wrap gap-3">
         <CheckBox
-          label="Incluir x-tenant-id"
+          label="Enviar la cabecera de empresa (x-tenant-id)"
           checked={config.includeTenantHeader}
           onChange={(value) => onChange({ includeTenantHeader: value })}
         />
         <CheckBox
-          label="Incluir x-idempotency-key"
+          label="Enviar clave anti-duplicados (x-idempotency-key)"
           checked={config.includeIdempotencyKey}
           onChange={(value) => onChange({ includeIdempotencyKey: value })}
         />

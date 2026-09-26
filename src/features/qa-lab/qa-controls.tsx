@@ -1,9 +1,7 @@
 import type { EndpointItem } from "@/features/systems/types";
-import { AUTH_MODE_OPTIONS } from "./qa-lab-options";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
 import { BaseRouteSelect } from "./base-route-select";
 import { MockScenarioFields } from "./mock-scenario-fields";
-import { getQaScenario, QA_SCENARIOS } from "./qa-scenarios";
 import type { QaAuthMode } from "./types";
 
 export function QaTargetControls({
@@ -21,9 +19,9 @@ export function QaTargetControls({
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
         <Field
-          label="Host URL manual"
-          tooltip="Host completo a probar cuando la ruta base es «Host URL manual». Ej.: https://staging-api.atlas.local"
-          hint="Se usa cuando Ruta base es Host URL manual."
+          label="Dirección manual"
+          tooltip="Dirección completa a probar cuando la ruta base es «Otra dirección, escrita a mano». Ej.: https://staging-api.atlas.local"
+          hint="Sólo se usa con la ruta base «Otra dirección, escrita a mano»."
         >
           <Input
             value={form.customHostUrl}
@@ -35,9 +33,9 @@ export function QaTargetControls({
         </Field>
       </div>
       <Field
-        label="Ruta/path del endpoint"
-        tooltip="Sobrescribe la ruta del catálogo, p. ej. para rellenar un :id concreto."
-        hint={`Acepta path relativo o URL completa. Default: ${defaultPath || "sin ruta"}`}
+        label="Ruta de la operación"
+        tooltip="Cambia la ruta que trae el catálogo, p. ej. para escribir un :id concreto."
+        hint={`Acepta una ruta relativa o una dirección completa. Por defecto: ${defaultPath || "sin ruta"}`}
       >
         <Input
           value={form.routeOverride}
@@ -67,7 +65,7 @@ export function QaExpectationsControls({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Field
           label="HTTP esperados"
-          tooltip="Códigos de estado que dan la prueba por buena, separados por coma."
+          tooltip="Códigos de respuesta que dan la prueba por buena, separados por coma."
           hint="Ej: 200, 201, 204"
         >
           <Input
@@ -95,115 +93,41 @@ export function QaExpectationsControls({
         />
       </Field>
       <NumberField
-        label="Max latencia ms"
-        tooltip="Latencia máxima aceptable; si la respuesta tarda más, la prueba falla."
+        label="Tiempo máximo de respuesta (ms)"
+        tooltip="Milisegundos aceptables; si la respuesta tarda más, la prueba falla."
         value={form.maxLatencyMs}
         min={0}
         max={120000}
-        hint="Falla la prueba si la respuesta tarda más de este umbral (0 = sin límite)."
+        hint="La prueba falla si la respuesta tarda más que esto (0 = sin límite)."
         onChange={(value) => onChange({ maxLatencyMs: value })}
       />
       <NumberField
-        label="Max respuesta bytes"
-        tooltip="Tamaño máximo del cuerpo de respuesta; detecta listados sin paginar."
+        label="Tamaño máximo de respuesta (bytes)"
+        tooltip="Peso máximo de la respuesta; detecta listados que devuelven todo sin paginar."
         value={form.maxResponseSizeBytes}
         min={0}
         max={10000000}
-        hint="Falla la prueba si el body de respuesta pesa más que esto (0 = sin límite)."
+        hint="La prueba falla si la respuesta pesa más que esto (0 = sin límite)."
         onChange={(value) => onChange({ maxResponseSizeBytes: value })}
       />
       <Field
         label="Respuesta contiene"
         tooltip="Texto que debe aparecer en la respuesta; si falta, la prueba falla."
-        hint="Texto plano que debe aparecer en el body de la respuesta."
+        hint="Texto que debe aparecer en la respuesta."
       >
         <Input
           value={form.expectedBodyContains}
           onChange={(event) =>
             onChange({ expectedBodyContains: event.target.value })
           }
-          placeholder="texto requerido en body"
+          placeholder="texto que debe aparecer"
         />
       </Field>
     </div>
   );
 }
 
-export function QaScenarioControls({
-  form,
-  onChange,
-}: Readonly<QaScenarioControlsProps>) {
-  const active = getQaScenario(form.scenario ?? "valid_payload");
-  return (
-    <div className="space-y-3 rounded-xl border border-atlas-border bg-atlas-soft p-3">
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field
-          label="Escenario de prueba"
-          tooltip="Caso común ya preparado; al elegirlo rellena payload y expectativas."
-          hint="Preconfigura payload/expectativas para un caso común (payload inválido, sin auth, etc.)."
-        >
-          <Select
-            name="escenario"
-            value={active.key}
-            options={QA_SCENARIOS.map((scenario) => ({
-              value: scenario.key,
-              label: scenario.label,
-              description: `${scenario.description} Resultado esperado: ${scenario.expectedOutcome}`,
-            }))}
-            onChange={(valor) => {
-              const scenario = getQaScenario(valor);
-              onChange({
-                scenario: scenario.key,
-                ...(scenario.patch ?? {}),
-              });
-            }}
-          />
-        </Field>
-        <Field
-          label="Auth mode efectivo"
-          tooltip="Qué credencial lleva la petición; sirve para probar accesos sin cambiar de sesión."
-          hint="Con qué credencial se firma el request, sin importar tu sesión actual."
-        >
-          <Select
-            name="auth-mode"
-            value={form.authMode}
-            options={AUTH_MODE_OPTIONS}
-            onChange={(valor) => onChange({ authMode: valor as QaAuthMode })}
-          />
-        </Field>
-      </div>
-      {/* La descripción y el resultado esperado del escenario los repite el select bajo el campo. */}
-      {form.authMode === "custom" ? (
-        <Field
-          label="Token manual (Bearer)"
-          tooltip="Token JWT de otro actor, sin el prefijo Bearer. No lo guardes en notas."
-          hint="Pega un token de otro actor (customer/merchant/qa_engineer/etc.) para probar la matriz de permisos."
-        >
-          <Input
-            value={form.customAuthToken}
-            onChange={(event) =>
-              onChange({ customAuthToken: event.target.value })
-            }
-            placeholder="eyJhbGciOi..."
-            className="font-mono"
-          />
-        </Field>
-      ) : null}
-      <div className="flex flex-wrap gap-3">
-        <CheckBox
-          label="Incluir x-tenant-id"
-          checked={form.includeTenantHeader}
-          onChange={(value) => onChange({ includeTenantHeader: value })}
-        />
-        <CheckBox
-          label="Incluir x-idempotency-key"
-          checked={form.includeIdempotencyKey}
-          onChange={(value) => onChange({ includeIdempotencyKey: value })}
-        />
-      </div>
-    </div>
-  );
-}
+export { QaScenarioControls } from "./qa-scenario-controls";
 
 export function NumberField({
   label,
@@ -263,11 +187,6 @@ export type CommonLabFormState = {
 type QaTargetControlsProps = {
   form: CommonLabFormState;
   endpoint?: EndpointItem;
-  onChange: (value: Partial<CommonLabFormState>) => void;
-};
-
-type QaScenarioControlsProps = {
-  form: CommonLabFormState;
   onChange: (value: Partial<CommonLabFormState>) => void;
 };
 

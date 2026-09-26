@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Gauge, History, TestTube, Waves } from "lucide-react";
+import { Gauge, TestTube } from "lucide-react";
 import { useLabEndpoint as useEndpoint } from "./endpoint-lookup";
 import { Button } from "@/shared/components/ui/button";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -61,7 +61,7 @@ function AuthorizedQaLabPage({
       <PageHeader
         eyebrow="QA Console"
         title="Laboratorio de testing"
-        description="Prueba un endpoint suelto — funcional y de carga —, encadena varios en un journey que reproduce un flujo real de negocio, o mirá el árbol de decisión del recorrido estándar que publica el backend."
+        description="Prueba una operación suelta —si responde bien y cuánta carga aguanta—, encadena varias en un recorrido que reproduce un flujo real de negocio, o mira el árbol de decisión del recorrido estándar. Las pruebas sueltas corren en tu navegador y no se guardan: descarga el registro si necesitas conservarlas."
         actions={
           <>
             <TutorialLaunchButton
@@ -72,18 +72,6 @@ function AuthorizedQaLabPage({
             </Link>
             <Link href="/internal/qa/guia" data-tutorial-id="qa-lab-guide-link">
               <Button>Guía</Button>
-            </Link>
-            <Link href="/internal/qa/runs">
-              <Button>
-                <History className="h-4 w-4" aria-hidden />
-                Historial
-              </Button>
-            </Link>
-            <Link href="/internal/qa/stress/runs">
-              <Button>
-                <Waves className="h-4 w-4" aria-hidden />
-                Stress runs
-              </Button>
             </Link>
           </>
         }
@@ -167,7 +155,7 @@ function PickPrompt() {
   return (
     <p className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-atlas-muted">
       <TestTube className="h-4 w-4 text-atlas-accent" aria-hidden />
-      Elige un endpoint arriba para configurar su prueba funcional y su prueba
+      Elige una operación arriba para configurar su prueba funcional y su prueba
       de carga.
     </p>
   );
@@ -183,7 +171,7 @@ function EndpointState({
         description={
           isAtlasApiError(endpoint.error)
             ? endpoint.error.message
-            : "No se pudo cargar el endpoint seleccionado."
+            : "No se pudo cargar la operación elegida."
         }
         requestId={
           isAtlasApiError(endpoint.error) ? endpoint.error.requestId : undefined
@@ -196,7 +184,7 @@ function EndpointState({
     return (
       <p className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
         <Gauge className="h-4 w-4 shrink-0" aria-hidden />
-        No se encontró ningún endpoint con ese identificador en el catálogo.
+        No se encontró ninguna operación con ese identificador en el catálogo.
       </p>
     );
   }

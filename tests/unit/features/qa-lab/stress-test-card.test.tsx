@@ -11,6 +11,13 @@ vi.setConfig({ testTimeout: 30000 });
 const hasPermission = vi.hoisted(() => vi.fn());
 const useEndpointStressMutation = vi.hoisted(() => vi.fn());
 
+vi.mock("@/features/qa-lab/fakers/use-fakers", async () => {
+  const { qaTestDataStub } = await import("./qa-test-data-stub");
+  return {
+    ADJUSTABLE_FAKER_TYPES: ["caso", "monto"],
+    useQaTestData: () => qaTestDataStub,
+  };
+});
 vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => ({ hasPermission }),
 }));
@@ -43,7 +50,7 @@ const HEALTH = endpointFixture({
 });
 
 function runButton() {
-  return screen.getByRole("button", { name: /stress$/ });
+  return screen.getByRole("button", { name: /carga( real)?$/ });
 }
 
 async function selectProduction() {
@@ -102,10 +109,10 @@ describe("StressTestCard · bloqueo de producción", () => {
 
     await selectProduction();
 
-    expect(screen.getByText("Stress bloqueado")).toBeInTheDocument();
+    expect(screen.getByText("Carga bloqueada")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "No se permiten pruebas de stress desde la interfaz en producción.",
+        "No se permiten pruebas de carga contra producción desde el portal.",
       ),
     ).toBeInTheDocument();
     expect(runButton()).toBeDisabled();
@@ -130,14 +137,14 @@ describe("StressTestCard · bloqueo de producción", () => {
       "STAGING",
     );
 
-    expect(screen.queryByText("Stress bloqueado")).toBeNull();
+    expect(screen.queryByText("Carga bloqueada")).toBeNull();
     expect(runButton()).toBeEnabled();
   });
 
   it("LOCAL y STAGING no están bloqueados de salida", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
-    expect(screen.queryByText("Stress bloqueado")).toBeNull();
+    expect(screen.queryByText("Carga bloqueada")).toBeNull();
     expect(runButton()).toBeEnabled();
   });
 });
@@ -179,7 +186,7 @@ describe("StressTestCard · confirmación", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.getByRole("button", { name: "Previsualizar stress" }),
+      screen.getByRole("button", { name: "Previsualizar carga" }),
     ).toBeInTheDocument();
   });
 
@@ -191,7 +198,7 @@ describe("StressTestCard · confirmación", () => {
 
     expect(
       within(screen.getByRole("dialog")).getByText(
-        "Se previsualizará stress contra el endpoint #ep-1: 5 RPS, 5 concurrencia, 30s.",
+        "Se previsualizará carga contra la operación #ep-1: 5 peticiones por segundo, 5 a la vez, 30s.",
       ),
     ).toBeInTheDocument();
   });
@@ -227,7 +234,9 @@ describe("StressTestCard · errores visibles (RESUELTO_ATLAS_F1_R7)", () => {
     // Con el diálogo abierto encima, su backdrop `z-50` tapa el `ErrorState`
     // de la card: el clic parecería no hacer nada.
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
-    const payload = screen.getByRole("textbox", { name: /Payload base/ });
+    const payload = screen.getByRole("textbox", {
+      name: /Datos de entrada base/,
+    });
     await userEvent.clear(payload);
     await userEvent.type(payload, "no soy json");
 
@@ -274,7 +283,7 @@ describe("StressTestCard · errores visibles (RESUELTO_ATLAS_F1_R7)", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.getByText("No se pudo ejecutar el stress run."),
+      screen.getByText("No se pudo lanzar la prueba de carga."),
     ).toBeInTheDocument();
   });
 });
@@ -334,9 +343,9 @@ describe("StressTestCard · cambio de endpoint", () => {
     const { rerender } = render(
       <StressTestCard endpointId="ep-1" endpoint={HEALTH} />,
     );
-    expect(screen.getByRole("textbox", { name: /Ruta\/path/ })).toHaveValue(
-      "/api/v1/health",
-    );
+    expect(
+      screen.getByRole("textbox", { name: /Ruta de la operación/ }),
+    ).toHaveValue("/api/v1/health");
 
     rerender(
       <StressTestCard
@@ -349,9 +358,9 @@ describe("StressTestCard · cambio de endpoint", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole("textbox", { name: /Ruta\/path/ })).toHaveValue(
-        "/api/v1/otra",
-      ),
+      expect(
+        screen.getByRole("textbox", { name: /Ruta de la operación/ }),
+      ).toHaveValue("/api/v1/otra"),
     );
   });
 });

@@ -1,110 +1,115 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Dices, FlaskConical, Info, TriangleAlert } from "lucide-react";
+import { Dices, FlaskConical, Info } from "lucide-react";
 import type { EndpointItem } from "@/features/systems/types";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/cn";
-import { pathParamFields, readContract } from "./contract-fields";
+import { FakerError, FAKER_UNAVAILABLE_TEXT } from "./fakers/faker-client";
+import { FakerParamsPanel } from "./fakers/faker-params-panel";
+import { QaSeedField } from "./fakers/qa-seed-field";
+import type { QaTestData } from "./fakers/use-fakers";
 import {
   CASE_KINDS,
   generateCases,
+  generateLocalValues,
   KIND_INTENT,
   KIND_LABELS,
+  KIND_VARIANT,
   type QaCaseKind,
   type QaGeneratedCase,
 } from "./qa-case-generator";
-import { describeQaSeed, QA_SEED_CATALOG } from "./qa-seed-catalog";
+import { CheckBox } from "./qa-controls";
+import { SampleNotice } from "./qa-sample-notice";
+import { contractOf, pathFieldsOf } from "./qa-sample-entries";
 
-const KIND_TONE: Record<QaCaseKind, "success" | "warning" | "critical"> = {
-  valid: "success",
-  boundary: "warning",
-  invalid: "critical",
+export type SampleLoad = {
+  kind: QaCaseKind;
+  payload: Record<string, unknown>;
+  pathParams: Record<string, unknown>;
 };
 
 /**
- * Genera datos de prueba a partir del contrato del endpoint, en vez de dejar seis cajas `{}` vacías
- * que el operador rellena a mano.
- *
- * Es la pieza que el QA Lab del portal no tenía y el del motor de decisión sí. La diferencia
- * práctica: antes, probar un endpoint empezaba por inventarse un payload —lo que hacía que casi
- * nadie probara el caso inválido, porque escribir a mano el payload que FALTA un campo cuesta lo
- * mismo que el válido y parece menos útil—. Con el lote generado, la clase inválida sale gratis y
- * cubre un caso por cada campo obligatorio del contrato.
+ * «Generar datos de prueba»: casos válidos, en el límite o inválidos a partir del contrato de la
+ * operación, con los datos de persona sacados del generador del mock (semilla + parámetros). Si
+ * el generador no responde, lo dice y no se inventa nada.
  */
 export function QaSampleBar({
   endpoint,
+  data,
   onLoad,
 }: Readonly<{
   endpoint?: EndpointItem;
-  onLoad: (value: {
-    payload: Record<string, unknown>;
-    pathParams: Record<string, unknown>;
-  }) => void;
+  data: QaTestData;
+  onLoad: (value: SampleLoad) => void;
 }>) {
   const [kind, setKind] = useState<QaCaseKind>("valid");
   const [count, setCount] = useState(3);
-  const [seed, setSeed] = useState(QA_SEED_CATALOG[0].seed);
+  const [includeOptional, setIncludeOptional] = useState(false);
   const [cases, setCases] = useState<QaGeneratedCase[]>([]);
   const [active, setActive] = useState(0);
-  const [generated, setGenerated] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
-  const contract = useMemo(
-    () => readContract(endpoint?.minPayloadSchema),
-    [endpoint?.minPayloadSchema],
-  );
-  const pathFields = useMemo(
-    () => pathParamFields(endpoint?.fullPath ?? endpoint?.routePath),
-    [endpoint?.fullPath, endpoint?.routePath],
-  );
-
+  const contract = useMemo(() => contractOf(endpoint), [endpoint]);
+  const pathFields = useMemo(() => pathFieldsOf(endpoint), [endpoint]);
   const canGenerate = contract.fields.length > 0 || pathFields.length > 0;
 
-  function generate() {
-    const batch = generateCases(contract.fields, kind, count, seed);
-    const pathBatch = generateCases(
-      pathFields,
-      "valid",
-      Math.max(count, 1),
-      seed,
-    );
-    const merged = batch.length
-      ? batch
-      : pathBatch.map((item, index) => ({
-          ...item,
-          label: `Ruta ${index + 1}`,
-          payload: {},
-        }));
-    setCases(merged);
-    setActive(0);
-    setGenerated(true);
-    if (merged.length) {
-      onLoad({
-        payload: merged[0].payload,
-        pathParams: pathBatch[0]?.payload ?? {},
-      });
+  function load(item: QaGeneratedCase | undefined, index: number) {
+    onLoad({
+      kind,
+      payload: item?.payload ?? {},
+      pathParams: generateLocalValues(pathFields, `${data.seed}:${index}`),
+    });
+  }
+
+  async function generate() {
+    setPending(true);
+    setFailure(null);
+    try {
+      const batch = await data.fetchCases(KIND_VARIANT[kind], count);
+      const generated = contract.fields.length
+        ? generateCases({
+            fields: contract.fields,
+            kind,
+            count,
+            seed: data.seed,
+            cases: batch,
+            includeOptional,
+          })
+        : Array.from({ length: count }, (_, index) => ({
+            label: `Ruta ${index + 1}`,
+            kind,
+            mutation: null,
+            payload: {},
+            unresolved: [],
+          }));
+      setCases(generated);
+      setActive(0);
+      load(generated[0], 0);
+    } catch (error) {
+      setCases([]);
+      setFailure(
+        error instanceof FakerError ? error.message : FAKER_UNAVAILABLE_TEXT,
+      );
+    } finally {
+      setPending(false);
     }
   }
 
   function choose(index: number) {
     setActive(index);
-    const pathBatch = generateCases(
-      pathFields,
-      "valid",
-      Math.max(count, 1),
-      seed,
-    );
-    onLoad({
-      payload: cases[index].payload,
-      pathParams:
-        pathBatch[index % Math.max(pathBatch.length, 1)]?.payload ?? {},
-    });
+    load(cases[index], index);
   }
 
+  const current = cases[active];
   return (
-    <section className="space-y-3 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3.5">
+    <section
+      className="space-y-3 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3.5"
+      data-tutorial-id="qa-lab-sample-bar"
+    >
       <header className="flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-atlas-accent to-atlas-primary text-white">
           <FlaskConical className="h-4 w-4" aria-hidden />
@@ -117,10 +122,10 @@ export function QaSampleBar({
         </Badge>
       </header>
 
-      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Field
           label="Clase de caso"
-          tooltip="Qué clase de datos genera: aceptables, al borde del contrato o que deben rechazarse."
+          tooltip="Qué clase de datos genera: aceptables, en el borde de lo admitido o que deben rechazarse."
         >
           <Select
             name="clase-caso"
@@ -149,47 +154,46 @@ export function QaSampleBar({
             }
           />
         </Field>
-        <Field
-          label="Semilla"
-          tooltip="Fija el lote: la misma semilla genera siempre los mismos casos para comparar."
-        >
-          <Select
-            name="semilla"
-            value={seed}
-            onChange={setSeed}
-            options={QA_SEED_CATALOG.map((entry) => ({
-              value: entry.seed,
-              label: entry.label,
-              description: entry.hint,
-            }))}
-          />
-        </Field>
-        <div className="flex items-end">
-          <Button
-            variant="primary"
-            className="w-full"
-            disabled={!canGenerate}
-            onClick={generate}
-            title={
-              canGenerate
-                ? undefined
-                : "Este endpoint no declara contrato de entrada en el catálogo."
-            }
-          >
-            <Dices className="h-4 w-4" aria-hidden />
-            Generar {count} caso{count === 1 ? "" : "s"}
-          </Button>
-        </div>
+        <QaSeedField seed={data.rawSeed} onChange={data.setSeed} />
       </div>
 
-      <Notice
+      <FakerParamsPanel data={data} />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <CheckBox
+          label="Incluir también los campos opcionales"
+          checked={includeOptional}
+          onChange={setIncludeOptional}
+        />
+        <Button
+          variant="primary"
+          disabled={!canGenerate}
+          isLoading={pending}
+          loadingText="Generando…"
+          onClick={() => void generate()}
+          data-tutorial-id="qa-lab-generate-cases"
+          title={
+            canGenerate
+              ? undefined
+              : "El catálogo no declara qué datos de entrada lleva esta operación."
+          }
+        >
+          <Dices className="h-4 w-4" aria-hidden />
+          Generar {count} caso{count === 1 ? "" : "s"}
+        </Button>
+      </div>
+
+      <SampleNotice
         kind={kind}
         contract={contract}
         canGenerate={canGenerate}
-        seed={seed}
+        failure={
+          failure ??
+          (data.baseCase.error ? messageOf(data.baseCase.error) : null)
+        }
       />
 
-      {generated && cases.length > 0 ? (
+      {cases.length > 0 ? (
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
@@ -215,62 +219,21 @@ export function QaSampleBar({
         </div>
       ) : null}
 
-      {generated && cases[active]?.mutation ? (
+      {current?.mutation || current?.unresolved.length ? (
         <p className="flex items-start gap-1.5 text-xs text-atlas-muted">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-          Caso cargado: {cases[active].mutation}.
+          <span>
+            {current.mutation ? `Caso cargado: ${current.mutation}. ` : ""}
+            {current.unresolved.length
+              ? `Sin dato generado para: ${current.unresolved.join(", ")}; complétalo a mano.`
+              : ""}
+          </span>
         </p>
       ) : null}
     </section>
   );
 }
 
-function Notice({
-  kind,
-  contract,
-  canGenerate,
-  seed,
-}: Readonly<{
-  kind: QaCaseKind;
-  contract: ReturnType<typeof readContract>;
-  canGenerate: boolean;
-  seed: string;
-}>) {
-  /*
-   * Un contrato que es sólo un puntero al Zod del backend NO se puede generar, y decirlo con
-   * precisión evita la conclusión falsa: el problema no es el endpoint ni el laboratorio, es que el
-   * catálogo no publica los campos de ese endpoint.
-   */
-  if (contract.isReference) {
-    return (
-      <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900">
-        <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span>
-          El catálogo sólo publica una referencia al schema del backend (
-          <code className="font-mono">{contract.referenceName}</code>), no sus
-          campos: no hay contrato del que derivar valores. Usa el payload de
-          ejemplo escrito a mano si existe para esta ruta.
-        </span>
-      </p>
-    );
-  }
-  if (!canGenerate) {
-    return (
-      <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900">
-        <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        Este endpoint no declara contrato de entrada en el catálogo, así que no
-        hay campos que generar. Escribe el payload a mano o registra el
-        contrato.
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-start gap-2 text-xs text-atlas-muted">
-      <Badge tone={KIND_TONE[kind]}>{KIND_LABELS[kind]}</Badge>
-      <span>
-        {KIND_INTENT[kind]} {describeQaSeed(seed)} Los valores se derivan del
-        contrato publicado, no de las reglas Zod del backend.
-      </span>
-    </p>
-  );
+function messageOf(error: unknown): string {
+  return error instanceof FakerError ? error.message : FAKER_UNAVAILABLE_TEXT;
 }

@@ -1,42 +1,48 @@
 import type { ContractField } from "./contract-fields";
+import { fakerPathForField } from "./fakers/faker-field-map";
+import type { FakerContext, FakerVariant } from "./fakers/faker-types";
+import {
+  boundaryValue,
+  localValue,
+  makeRandom,
+  wrongTypeValue,
+} from "./qa-local-values";
 
 /**
- * Generación DETERMINISTA de datos de prueba a partir del contrato del endpoint.
+ * Casos de prueba a partir del CONTRATO del endpoint y de un lote del generador de datos.
  *
- * Es el equivalente, para pruebas de endpoint, de lo que el motor de decisión hace en el simulador
- * («Generar valores»): las tres clases describen la ENTRADA —si respeta el contrato, si roza el
- * límite, o si debe ser rechazada— y la semilla hace el lote reproducible.
+ * - Los datos de persona (correo, teléfono, carnet, nombre, fecha de nacimiento, dirección, GPS,
+ *   dispositivo, ingresos, montos) salen del `caso` del mock, pedido con la semilla elegida: nada
+ *   de listas escritas a mano. El mapeo es por nombre de campo (`fakers/faker-field-map.ts`).
+ * - Lo que no es de nadie (booleanos, ids, códigos, enums, fechas de evento) lo pone un PRNG local
+ *   sembrado con la misma semilla (`qa-local-values.ts`).
  *
- * Dos decisiones que no son cosméticas:
- *
- * 1. **Determinismo real.** El azar sale de un PRNG sembrado con la cadena de la semilla, no de
- *    `Math.random()`. Sin eso, «repite la corrida que falló» es imposible: cada pulsación produce
- *    un payload distinto y el fallo no se puede volver a mirar.
- * 2. **Valores creíbles, no rellenos.** El valor se elige por el NOMBRE del campo: `email` recibe
- *    un correo, `phone` un móvil boliviano con su prefijo, `documentNumber` un carnet, `amount` un
- *    importe con dos decimales. Un `"string-1"` en cada hueco pasa la validación de tipo y falla la
- *    de formato, así que la prueba habría medido el validador de formato y no el endpoint.
- *
- * Lo que este generador NO hace, y por eso se avisa en la interfaz: no conoce las reglas Zod del
- * backend (rangos, enums, regex propias). Deriva de lo que el CATÁLOGO declara. Para los endpoints
- * con reglas finas siguen estando los presets escritos a mano de `payload-presets.ts`.
+ * Por defecto sólo se generan los campos OBLIGATORIOS: mandar todos los opcionales —incluidos
+ * enums que el catálogo no enumera— hacía que el caso «válido» rebotara con 400. Si el contrato no
+ * marca ninguno como obligatorio, se generan todos.
  */
-
 export const CASE_KINDS = ["valid", "boundary", "invalid"] as const;
 export type QaCaseKind = (typeof CASE_KINDS)[number];
 
 export const KIND_LABELS: Record<QaCaseKind, string> = {
   valid: "Válidos",
-  boundary: "En el límite del contrato",
+  boundary: "En el límite",
   invalid: "Inválidos (deben rechazarse)",
 };
 
 export const KIND_INTENT: Record<QaCaseKind, string> = {
-  valid: "El endpoint debería aceptarlos y responder 2xx.",
+  valid: "Datos que cumplen las reglas: la operación debería aceptarlos.",
   boundary:
-    "Valores extremos que el contrato todavía admite: cadenas vacías, cero, negativos, listas vacías.",
+    "Datos válidos pero en el borde: edad mínima exacta, monto máximo, carnet corto.",
   invalid:
-    "Rompen el contrato a propósito: falta un campo obligatorio o el tipo no corresponde. Un 2xx aquí es un defecto.",
+    "Cada caso rompe UNA regla a propósito (un dato imposible o un campo obligatorio que falta). Si la operación los acepta, hay un defecto.",
+};
+
+/** Qué variante del generador corresponde a cada clase de caso. */
+export const KIND_VARIANT: Record<QaCaseKind, FakerVariant> = {
+  valid: "valido",
+  boundary: "frontera",
+  invalid: "invalido",
 };
 
 export type QaGeneratedCase = {
@@ -45,205 +51,198 @@ export type QaGeneratedCase = {
   /** Qué se alteró respecto del caso válido. Vacío en los válidos. */
   mutation: string | null;
   payload: Record<string, unknown>;
+  /** Campos que el generador debía rellenar y no pudo (dato ausente en el lote). */
+  unresolved: string[];
 };
 
-/** PRNG sembrado (mulberry32) — 32 bits, suficiente y estable entre navegadores. */
-function makeRandom(seed: string): () => number {
-  let hash = 2166136261;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  let state = hash >>> 0;
-  return () => {
-    state += 0x6d2b79f5;
-    let value = state;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export type GenerateCasesInput = {
+  fields: readonly ContractField[];
+  kind: QaCaseKind;
+  count: number;
+  seed: string;
+  /** Lote del generador pedido con la variante de `KIND_VARIANT[kind]`. */
+  cases: readonly FakerContext[];
+  includeOptional?: boolean;
+};
 
-function pick<T>(random: () => number, values: readonly T[]): T {
-  return values[Math.floor(random() * values.length) % values.length];
-}
-
-function intBetween(random: () => number, min: number, max: number): number {
-  return min + Math.floor(random() * (max - min + 1));
-}
-
-const FIRST_NAMES = ["Ana", "Luis", "Carla", "Hugo", "Sofia", "Marco"];
-const LAST_NAMES = ["Arispe", "Quiroga", "Mendoza", "Villarroel", "Tarifa"];
-
-/**
- * Valor «normal» para un campo, elegido por su nombre y su tipo.
- *
- * El orden importa: primero el nombre (más específico), y solo si no lo reconoce, el tipo. Un campo
- * `amount` de tipo `string` sigue queriendo un importe, no una cadena cualquiera.
- */
-function validValue(field: ContractField, random: () => number): unknown {
-  const name = field.name.toLowerCase();
-  const first = pick(random, FIRST_NAMES);
-  const last = pick(random, LAST_NAMES);
-
-  /*
-   * `identifier` es el nombre que usa la autenticación de este ecosistema para la identidad con la
-   * que alguien entra: un correo o un teléfono. Sin reconocerlo, el caso «válido» de un login salía
-   * con `qa-identifier-417`, que el endpoint rechaza por formato — y la prueba habría medido el
-   * validador de formato en vez del login.
-   */
-  if (name.includes("email") || name === "identifier") {
-    return `${first.toLowerCase()}.${last.toLowerCase()}@atlas.test`;
-  }
-  if (name.includes("password")) return "Atlas_Qa#2026!";
-  if (name.includes("phone") || name.includes("msisdn")) {
-    return `+591${intBetween(random, 60000000, 79999999)}`;
-  }
-  if (name.includes("documentnumber") || name.includes("nationalid")) {
-    return String(intBetween(random, 1000000, 9999999));
-  }
-  if (name.includes("firstname")) return first;
-  if (name.includes("lastname")) return last;
-  if (name.includes("fullname") || name === "name") return `${first} ${last}`;
-  if (name.includes("birth")) {
-    return `19${intBetween(random, 70, 99)}-0${intBetween(random, 1, 9)}-1${intBetween(random, 0, 9)}`;
-  }
-  if (name.endsWith("at") || name.includes("date")) {
-    return new Date(Date.UTC(2026, 0, intBetween(random, 1, 28))).toISOString();
-  }
-  if (
-    name.includes("amount") ||
-    name.includes("salary") ||
-    name.includes("income")
-  ) {
-    return Number((intBetween(random, 500, 25000) + random()).toFixed(2));
-  }
-  if (name.includes("currency")) return "BOB";
-  if (name.includes("code")) return `QA_${intBetween(random, 100, 999)}`;
-  if (name.includes("uuid") || name.includes("token")) {
-    return `qa-${intBetween(random, 100000, 999999)}-${intBetween(random, 1000, 9999)}`;
-  }
-  if (name.endsWith("id")) return String(intBetween(random, 1, 9));
-  if (name.includes("accepted") || name.includes("consent")) {
-    return field.type === "array" ? ["risk_fraud_assessment"] : true;
-  }
-
-  switch (field.type) {
-    case "boolean":
-      return random() > 0.5;
-    case "number":
-      return Number((random() * 1000).toFixed(2));
-    case "integer":
-      return intBetween(random, 1, 500);
-    case "array":
-      return [`qa-${intBetween(random, 1, 99)}`];
-    case "object":
-      return {};
-    default:
-      return `qa-${field.name}-${intBetween(random, 100, 999)}`;
-  }
-}
-
-/** Valor en el borde de lo admisible: sigue respetando el TIPO, pero es el extremo. */
-function boundaryValue(field: ContractField): unknown {
-  switch (field.type) {
-    case "boolean":
-      return false;
-    case "number":
-    case "integer":
-      return 0;
-    case "array":
-      return [];
-    case "object":
-      return {};
-    default:
-      return "";
-  }
-}
-
-/** Valor que rompe el contrato: el tipo es OTRO. */
-function wrongTypeValue(field: ContractField): unknown {
-  return field.type === "string" || field.type === "unknown"
-    ? 12345
-    : "no-es-el-tipo";
-}
-
-function buildValid(
+export function selectFields(
   fields: readonly ContractField[],
+  includeOptional = false,
+): ContractField[] {
+  if (includeOptional) return [...fields];
+  const required = fields.filter((field) => field.required);
+  return required.length > 0 ? required : [...fields];
+}
+
+type Built = {
+  payload: Record<string, unknown>;
+  used: string[];
+  unresolved: string[];
+};
+
+function lookup(context: FakerContext, path: string): unknown {
+  let current: unknown = context;
+  for (const key of path.split(".")) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current === undefined
+    ? undefined
+    : (JSON.parse(JSON.stringify(current)) as unknown);
+}
+
+function buildObject(
+  fields: readonly ContractField[],
+  context: FakerContext,
   random: () => number,
-): Record<string, unknown> {
-  const payload: Record<string, unknown> = {};
-  for (const field of fields) payload[field.name] = validValue(field, random);
-  return payload;
+  includeOptional: boolean,
+  prefix = "",
+): Built {
+  const built: Built = { payload: {}, used: [], unresolved: [] };
+  for (const field of selectFields(fields, includeOptional)) {
+    const label = `${prefix}${field.name}`;
+    // Un objeto que declara sus campos se construye por dentro; sólo sin ellos recibe el objeto
+    // entero del caso (p. ej. `device` → el dispositivo completo).
+    const declaresFields =
+      field.type === "object" && Boolean(field.fields?.length);
+    const path = declaresFields
+      ? null
+      : fakerPathForField(field.name, field.type);
+    if (path) {
+      const value = lookup(context, path);
+      if (value !== undefined) {
+        built.payload[field.name] = stripInvalidMark(value);
+        built.used.push(path);
+        continue;
+      }
+      if (field.type !== "object") {
+        built.unresolved.push(label);
+        continue;
+      }
+    }
+    if (field.type === "object") {
+      if (!field.fields?.length) {
+        built.unresolved.push(`${label} (objeto sin campos en el contrato)`);
+        built.payload[field.name] = {};
+        continue;
+      }
+      const nested = buildObject(
+        field.fields,
+        context,
+        random,
+        includeOptional,
+        `${label}.`,
+      );
+      built.payload[field.name] = nested.payload;
+      built.used.push(...nested.used);
+      built.unresolved.push(...nested.unresolved);
+      continue;
+    }
+    built.payload[field.name] = localValue(field, random);
+  }
+  return built;
 }
 
-/**
- * Genera el lote. Los casos inválidos se derivan uno por campo obligatorio —quitándolo, o
- * poniéndole el tipo que no es—, no al azar: así el lote cubre CADA regla del contrato en vez de
- * repetir tres veces la misma violación y dejar el resto sin probar.
- */
-export function generateCases(
-  fields: readonly ContractField[],
-  kind: QaCaseKind,
-  count: number,
-  seed: string,
-): QaGeneratedCase[] {
+function stripInvalidMark(value: unknown): unknown {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const { _invalid: _ignored, ...rest } = value as Record<string, unknown>;
+    return rest;
+  }
+  return value;
+}
+
+/** ¿El payload lleva el dato que el mock rompió a propósito? */
+function carriesBrokenField(
+  used: readonly string[],
+  fakerField: string,
+): boolean {
+  const target = `caso.${fakerField}`;
+  return used.some((path) => target === path || target.startsWith(`${path}.`));
+}
+
+export function generateCases(input: GenerateCasesInput): QaGeneratedCase[] {
+  const { fields, kind, seed, cases } = input;
+  const includeOptional = input.includeOptional ?? false;
   if (fields.length === 0) return [];
   const random = makeRandom(`${seed}:${kind}`);
-  const cases: QaGeneratedCase[] = [];
+  const selected = selectFields(fields, includeOptional);
+  const required = selected.filter((field) => field.required);
+  const result: QaGeneratedCase[] = [];
+  let structural = 0;
 
-  if (kind === "valid") {
-    for (let index = 0; index < count; index += 1) {
-      cases.push({
-        label: `Válido ${index + 1}`,
-        kind,
-        mutation: null,
-        payload: buildValid(fields, random),
-      });
+  for (let index = 0; index < input.count; index += 1) {
+    const context = cases.length ? cases[index % cases.length] : {};
+    const built = buildObject(fields, context, random, includeOptional);
+    const base = { kind, payload: built.payload, unresolved: built.unresolved };
+
+    if (kind === "valid") {
+      result.push({ ...base, label: `Válido ${index + 1}`, mutation: null });
+      continue;
     }
-    return cases;
-  }
 
-  if (kind === "boundary") {
-    for (let index = 0; index < count; index += 1) {
-      const target = fields[index % fields.length];
-      const payload = buildValid(fields, random);
-      payload[target.name] = boundaryValue(target);
-      cases.push({
+    if (kind === "boundary") {
+      if (built.used.length > 0) {
+        result.push({
+          ...base,
+          label: `En el límite ${index + 1}`,
+          mutation: "datos de persona en el borde de lo admitido",
+        });
+        continue;
+      }
+      const target = selected[index % selected.length];
+      built.payload[target.name] = boundaryValue(target);
+      result.push({
+        ...base,
         label: `Límite · ${target.name}`,
-        kind,
         mutation: `${target.name} en su valor extremo`,
-        payload,
       });
+      continue;
     }
-    return cases;
-  }
 
-  // Inválidos: se prioriza quitar los obligatorios, que es la violación que todo endpoint debe
-  // rechazar. Si el contrato no declara ninguno, se ataca por tipo.
-  const required = fields.filter((field) => field.required);
-  const targets = required.length > 0 ? required : fields;
-  for (let index = 0; index < count; index += 1) {
-    const target = targets[index % targets.length];
-    const payload = buildValid(fields, random);
-    const removeIt = index < targets.length && required.length > 0;
+    const mark = context.caso?._invalid;
+    if (mark && carriesBrokenField(built.used, mark.field)) {
+      result.push({
+        ...base,
+        label: `Regla rota · ${mark.field.split(".").pop()}`,
+        mutation: mark.reason,
+      });
+      continue;
+    }
+    const targets = required.length > 0 ? required : selected;
+    const target = targets[structural % targets.length];
+    const removeIt = structural < targets.length && required.length > 0;
+    structural += 1;
     if (removeIt) {
-      delete payload[target.name];
-      cases.push({
+      delete built.payload[target.name];
+      result.push({
+        ...base,
         label: `Sin ${target.name}`,
-        kind,
         mutation: `falta el campo obligatorio ${target.name}`,
-        payload,
       });
     } else {
-      payload[target.name] = wrongTypeValue(target);
-      cases.push({
+      built.payload[target.name] = wrongTypeValue(target);
+      result.push({
+        ...base,
         label: `${target.name} con tipo erróneo`,
-        kind,
         mutation: `${target.name} deja de ser ${target.type}`,
-        payload,
       });
     }
   }
-  return cases;
+  return result;
+}
+
+/** Datos de ruta o de consulta: sólo valores locales (ids, enums), nunca de persona. */
+export function generateLocalValues(
+  fields: readonly ContractField[],
+  seed: string,
+  context: FakerContext = {},
+  includeOptional = false,
+): Record<string, unknown> {
+  if (fields.length === 0) return {};
+  return buildObject(
+    fields,
+    context,
+    makeRandom(`${seed}:local`),
+    includeOptional,
+  ).payload;
 }

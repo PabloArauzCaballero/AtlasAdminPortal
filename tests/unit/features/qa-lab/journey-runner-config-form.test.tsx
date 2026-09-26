@@ -58,7 +58,7 @@ describe("JourneyRunnerConfigFields · ambiente y timeout", () => {
     );
 
     await userEvent.type(
-      screen.getByRole("spinbutton", { name: "Timeout ms por paso" }),
+      screen.getByRole("spinbutton", { name: "Espera máxima por paso (ms)" }),
       "0",
     );
 
@@ -85,10 +85,12 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
     const { rerender } = render(
       <JourneyRunnerConfigFields config={config()} onChange={onChange} />,
     );
-    expect(screen.queryByRole("textbox", { name: /Token manual/ })).toBeNull();
+    expect(
+      screen.queryByRole("textbox", { name: /Token de otro actor/ }),
+    ).toBeNull();
 
     await elegirOpcion(
-      screen.getByRole("combobox", { name: "Auth mode" }),
+      screen.getByRole("combobox", { name: "Credencial de la petición" }),
       "custom",
     );
     expect(onChange).toHaveBeenCalledWith({ authMode: "custom" });
@@ -100,7 +102,7 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
       />,
     );
     expect(
-      screen.getByRole("textbox", { name: /Token manual/ }),
+      screen.getByRole("textbox", { name: /Token de otro actor/ }),
     ).toBeInTheDocument();
   });
 
@@ -114,7 +116,7 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
     );
 
     await userEvent.type(
-      screen.getByRole("textbox", { name: /Token manual/ }),
+      screen.getByRole("textbox", { name: /Token de otro actor/ }),
       "e",
     );
 
@@ -123,7 +125,9 @@ describe("JourneyRunnerConfigFields · credencial del journey", () => {
 
   it("ofrece correr sin autenticación o con token inválido (matriz de permisos)", async () => {
     render(<JourneyRunnerConfigFields config={config()} onChange={vi.fn()} />);
-    const select = screen.getByRole("combobox", { name: "Auth mode" });
+    const select = screen.getByRole("combobox", {
+      name: "Credencial de la petición",
+    });
 
     expect(await valoresDeOpciones(select)).toEqual([
       "session",
@@ -151,7 +155,9 @@ describe("JourneyRunnerConfigFields · guardas", () => {
     render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
 
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Incluir x-idempotency-key" }),
+      screen.getByRole("checkbox", {
+        name: "Enviar clave anti-duplicados (x-idempotency-key)",
+      }),
     );
 
     expect(onChange).toHaveBeenCalledWith({ includeIdempotencyKey: false });
@@ -162,7 +168,7 @@ describe("JourneyRunnerConfigFields · guardas", () => {
     const onChange = vi.fn();
     render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
     const select = screen.getByRole("combobox", {
-      name: /Simulador de dispositivo/,
+      name: /Cabeceras de dispositivo/,
     });
     const otro = (await valoresDeOpciones(select)).find(
       (valor) => valor !== "none",
@@ -202,7 +208,7 @@ describe("JourneyRunnerConfigFields · volumen (personas simuladas)", () => {
     );
 
     await userEvent.type(
-      screen.getByRole("spinbutton", { name: "Concurrencia" }),
+      screen.getByRole("spinbutton", { name: "Personas a la vez" }),
       "5",
     );
 
@@ -214,7 +220,7 @@ describe("JourneyRunnerConfigFields · volumen (personas simuladas)", () => {
     render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
 
     await elegirOpcion(
-      screen.getByRole("combobox", { name: "Semilla del lote" }),
+      screen.getByRole("combobox", { name: "Personas de prueba" }),
       "qa-frontera",
     );
 

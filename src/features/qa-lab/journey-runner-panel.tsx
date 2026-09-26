@@ -16,6 +16,7 @@ import {
 import { JourneyStepsEditor } from "./journey-steps-editor";
 import { parseSteps } from "./journey-form";
 import { runJourneyBatch } from "./journey-runner";
+import { defaultQaEnvironment } from "./environment";
 import { JourneyBatchResults } from "./journey-batch-results";
 import { JOURNEY_EXAMPLE_SPEC } from "./journey-types";
 
@@ -43,7 +44,10 @@ export function JourneyRunnerPanel() {
   const [stepsText, setStepsText] = useState(DEFAULT_STEPS_TEXT);
   const [parseError, setParseError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [config, setConfig] = useState<JourneyRunnerConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<JourneyRunnerConfig>(() => ({
+    ...DEFAULT_CONFIG,
+    environment: defaultQaEnvironment(),
+  }));
 
   function patchConfig(value: Partial<JourneyRunnerConfig>) {
     setConfig((current) => ({ ...current, ...value }));
@@ -109,7 +113,9 @@ export function JourneyRunnerPanel() {
             description={
               isAtlasApiError(runMutation.error)
                 ? runMutation.error.message
-                : String(runMutation.error)
+                : runMutation.error instanceof Error
+                  ? runMutation.error.message
+                  : String(runMutation.error)
             }
           />
         ) : null}

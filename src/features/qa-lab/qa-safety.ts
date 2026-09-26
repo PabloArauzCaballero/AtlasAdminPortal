@@ -1,6 +1,7 @@
 import type { EndpointItem } from "@/features/systems/types";
 import { getQaAllowedHosts } from "@/shared/api/config";
 import { QA_BASE_ROUTE_OPTIONS, resolveQaBaseRoute } from "./base-routes";
+import { isProductionTarget, isTestingTarget } from "./environment";
 
 /**
  * Base route cuyo host lo escribe el operador en el formulario: es la única que
@@ -8,7 +9,12 @@ import { QA_BASE_ROUTE_OPTIONS, resolveQaBaseRoute } from "./base-routes";
  */
 const OPERATOR_CONTROLLED_ROUTE_KEYS = new Set(["CUSTOM_HOST"]);
 
-const KNOWN_QA_ENVIRONMENTS = ["LOCAL", "STAGING", "PRODUCTION_READONLY"];
+const KNOWN_QA_ENVIRONMENTS = [
+  "PORTAL",
+  "LOCAL",
+  "STAGING",
+  "PRODUCTION_READONLY",
+];
 
 const SENSITIVE_HEADER_NAMES = [
   "authorization",
@@ -66,29 +72,58 @@ export function assertRequestAllowed(input: {
   dryRun: boolean;
   allowMutations: boolean;
 }): void {
-  const environment = input.environment.toUpperCase();
   const mutates =
     isMutatingMethod(input.method) ||
     Boolean(input.endpoint.isDestructive) ||
     input.endpoint.isReadonly === false;
 
-  if (environment === "PRODUCTION_READONLY" && !input.dryRun) {
+  if (isProductionTarget(input.environment) && !input.dryRun) {
     throw new Error(
-      "Producción readonly solo permite dry-run desde el QA Lab.",
+      "En producción el laboratorio sólo deja previsualizar la petición, no enviarla.",
     );
   }
 
   if (mutates && !input.dryRun && !input.allowMutations) {
     throw new Error(
-      "El endpoint puede modificar datos. Activa 'permitir mutación real' para ejecutarlo.",
+      "Esta operación puede cambiar datos. Marca «Permitir cambios reales» para enviarla.",
     );
   }
 
-  if (input.endpoint.testEnvironmentOnly && environment !== "LOCAL") {
+  if (
+    input.endpoint.testEnvironmentOnly &&
+    !isTestingTarget(input.environment)
+  ) {
     throw new Error(
-      "Este endpoint solo puede ejecutarse en ambiente local/testing.",
+      "Esta operación sólo se puede probar en tu máquina o en un portal de pruebas.",
     );
   }
+}
+
+/**
+ * «Token de otro actor» sin token caía en silencio a TU sesión: la prueba de permisos se firmaba
+ * con tus permisos y daba un 200 que no probaba nada. Ahora se bloquea antes de enviar.
+ */
+export function assertAuthModeUsable(input: {
+  authMode?: string;
+  customAuthToken?: string;
+}): void {
+  if (input.authMode === "custom" && !input.customAuthToken?.trim()) {
+    throw new Error(
+      "Elegiste «Token de otro actor» pero no pegaste ningún token. Sin él la petición se firmaría con tu propia sesión y la prueba no diría nada.",
+    );
+  }
+}
+
+/**
+ * Qué credenciales del NAVEGADOR viajan. Con la sesión en cookie (el modo por defecto del portal)
+ * no hay token que quitar: «Sin identificarse» y «Credencial falsa» seguían mandando la cookie y el
+ * servidor respondía 200 con tu sesión. En esos modos, y con el token de otro actor, la cookie no
+ * se envía.
+ */
+export function credentialsForAuthMode(authMode?: string): RequestCredentials {
+  return authMode === "none" || authMode === "invalid" || authMode === "custom"
+    ? "omit"
+    : "include";
 }
 
 /**
@@ -109,9 +144,9 @@ export function assertHostAllowed(rawUrl: string): void {
   if (isHostAllowed(rawUrl)) return;
   const host = hostOf(rawUrl);
   throw new Error(
-    `El host destino${host ? ` (${host})` : ""} no está en la allowlist del QA Lab. ` +
-      "No se envían credenciales a hosts no confiables. " +
-      "Añádelo a NEXT_PUBLIC_QA_ALLOWED_HOSTS si es un backend de ATLAS.",
+    `La dirección destino${host ? ` (${host})` : ""} no está en la lista de direcciones permitidas del laboratorio, ` +
+      "y a una dirección no confiable no se le envían credenciales. " +
+      "Si es un backend de ATLAS, pide que la añadan a NEXT_PUBLIC_QA_ALLOWED_HOSTS.",
   );
 }
 
