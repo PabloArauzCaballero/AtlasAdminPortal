@@ -7,7 +7,8 @@
  *
  *  - Sólo PUT, sólo con una firma AWS v4 prefirmada en la URL (lo único que emite AtlasBackend).
  *  - Sólo a hosts del almacén: los de `ALMACEN_HOSTS_PERMITIDOS` (separados por comas, se lee en
- *    cada petición) o, sin esa variable, los que empiezan por `minio.` y el propio equipo en local.
+ *    cada petición) o, sin esa variable, los que empiezan por `minio.` (TEST), los de Tailscale
+ *    `*.ts.net` (DEV: `https://pablo-h310.taila8f993.ts.net`) y el propio equipo en local.
  *  - Sin seguir redirecciones, y sin la sesión del portal: sólo pasan las cabeceras que la firma cubre.
  *
  * La firma incluye el `Host`, y `fetch` lo pone a partir de la URL de destino, así que el almacén
@@ -35,7 +36,11 @@ function hostPermitido(host: string): boolean {
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean);
   if (lista.length > 0) return lista.includes(host);
-  return host.startsWith("minio.") || HOSTS_LOCALES.has(host);
+  return (
+    host.startsWith("minio.") ||
+    host.endsWith(".ts.net") ||
+    HOSTS_LOCALES.has(host)
+  );
 }
 
 function rechazo(status: number, message: string): Response {
