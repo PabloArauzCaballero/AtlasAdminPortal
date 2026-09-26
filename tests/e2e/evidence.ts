@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { expect, type Page, type TestInfo, type Request, type Locator } from "@playwright/test";
+import {
+  expect,
+  type Page,
+  type TestInfo,
+  type Request,
+  type Locator,
+} from "@playwright/test";
 
 /**
  * Evidencia física de cada paso del E2E.
@@ -60,7 +66,10 @@ export class PageHealth {
 
   constructor(private readonly page: Page) {
     const label = (request: Request): string =>
-      `${request.method()} ${request.url().split("/api/v1")[1] ?? request.url()}`.slice(0, 160);
+      `${request.method()} ${request.url().split("/api/v1")[1] ?? request.url()}`.slice(
+        0,
+        160,
+      );
     page.on("request", (request) => this.inFlight.set(request, label(request)));
     page.on("requestfinished", (request) => this.inFlight.delete(request));
     page.on("requestfailed", (request) => this.inFlight.delete(request));
