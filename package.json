@@ -77,7 +77,6 @@
     "browserslist": "^4.28.7",
     "js-yaml": "^4.3.2",
     "nanoid": "^3.3.18",
-    "postcss": "^8.5.26",
     "sharp": "^0.35.4",
     "undici": "^7.29.0"
   },
@@ -86,7 +85,6 @@
     "browserslist": "^4.28.7",
     "js-yaml": "^4.3.2",
     "nanoid": "^3.3.18",
-    "postcss": "^8.5.26",
     "sharp": "^0.35.4",
     "undici": "^7.29.0"
   }
