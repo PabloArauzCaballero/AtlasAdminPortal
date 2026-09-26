@@ -62,6 +62,16 @@ describe("reenvío de subidas al almacén", () => {
     expect(fetchFalso).not.toHaveBeenCalled();
   });
 
+  it("acepta el almacén de DEV por Tailscale", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("", { status: 200 })),
+    );
+
+    const destino = `https://pablo-h310.taila8f993.ts.net/atlas-evidence/x?${FIRMA}`;
+    expect((await PUT(pedir(destino))).status).toBe(200);
+  });
+
   it("con ALMACEN_HOSTS_PERMITIDOS manda la lista, no el prefijo", async () => {
     vi.stubGlobal(
       "fetch",
