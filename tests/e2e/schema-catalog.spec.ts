@@ -33,9 +33,10 @@ test.describe("catálogo de esquema", () => {
     // de `expectHealthy` (que imprime la consola real) dice más que un timeout esperando el título.
     await health.expectHealthy();
 
-    await expect(
+    await health.expectVisible(
       page.getByRole("heading", { level: 2, name: /esquemas de datos/i }),
-    ).toBeVisible();
+      "la versión no abrió tras el clic",
+    );
     await capture(page, testInfo, "2 version abierta con sus esquemas");
 
     const schemaCards = page.getByRole("button", { name: /tablas/i });

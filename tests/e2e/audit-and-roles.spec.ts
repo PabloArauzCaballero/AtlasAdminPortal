@@ -33,9 +33,10 @@ test.describe("auditoría y RBAC", () => {
     // de `expectHealthy` (que imprime la consola real) dice más que un timeout esperando un heading.
     await health.expectHealthy(/logs\/mongo/);
 
-    await expect(
+    await health.expectVisible(
       page.getByRole("heading", { level: 1, name: new RegExp(requestId) }),
-    ).toBeVisible();
+      "la ficha del request no abrió tras el clic",
+    );
     // La cabecera vive de `logs.data[0]`: con la respuesta mal leída no aparecía ninguna.
     await expect(page.getByText("Correlation ID")).toBeVisible();
     // Y la tabla debe traer al menos el evento del propio request.
