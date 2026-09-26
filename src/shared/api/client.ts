@@ -4,13 +4,24 @@ import { coordinateSessionRefresh } from "./refresh-coordinator";
 import {
   buildRequestInit,
   buildUrl,
+  idempotencyKeyOf,
+  isMutatingMethod,
   type ApiRequestOptions,
 } from "./request-init";
-import { extractData, parseJsonSafely, toAtlasApiError } from "./response";
+import {
+  extractData,
+  invalidSuccessError,
+  parseJsonSafely,
+  toAtlasApiError,
+  unknownOutcomeError,
+} from "./response";
 import { fetchWithTimeout } from "./transport";
 import {
+  isGatewayResponse,
+  isTransportFailure,
   retryModeFor,
   sendWithGatewayRetry,
+  type RetryMode,
   type SentRequest,
 } from "./gateway-retry";
 import { reportEvent } from "@/shared/observability/reporter";
@@ -52,6 +63,14 @@ function finalizeResponse<T>(
   path: string,
   options: RequestOptions<T>,
 ): T {
+  // Un 2xx con HTML, JSON roto o `{ success: false }` no es éxito: antes llegaba a la pantalla como
+  // dato y el formulario decía «guardado» sin que se guardara nada. 204 y cuerpo vacío sí lo son.
+  const invalid = invalidSuccessError(
+    response,
+    payload,
+    isMutatingMethod(options.method),
+  );
+  if (invalid) throw invalid;
   const data = extractData<T>(payload);
   if (!options.schema) return data;
   try {
@@ -82,10 +101,15 @@ async function retryRequest<T>(
   options: RequestOptions<T>,
   session: NonNullable<ReturnType<typeof getSessionForBrowser>>,
 ): Promise<T> {
+  // El 401 dice que el backend no la ejecutó: se manda otra vez con la sesión nueva. Una mutación
+  // sin llave sale UNA vez: no se abre otro ciclo entero de reintentos detrás del primero.
   const { response, payload } = await send(
     path,
     { ...options, skipRefresh: true },
     session,
+    isMutatingMethod(options.method) && !idempotencyKeyOf(options)
+      ? "single"
+      : undefined,
   );
   if (response.ok) return finalizeResponse<T>(payload, response, path, options);
   handleUnauthorized(response.status, options);
@@ -93,14 +117,36 @@ async function retryRequest<T>(
 }
 
 /**
- * Una petición, repetida si el API no estaba. Ver `gateway-retry.ts`: durante un
- * despliegue del backend contesta la pasarela, y eso no es un error que el
- * operador tenga que ver ni resolver.
+ * Una petición, repetida si el API no estaba y repetirla es seguro. Ver
+ * `gateway-retry.ts`. En una mutación, un desenlace sin respuesta del backend
+ * —corte, plazo agotado o respuesta de la pasarela— no es «falló» sino «no se
+ * sabe», y se dice así (`UNKNOWN_OUTCOME`).
  */
-function send(
+async function send(
   path: string,
   options: ApiRequestOptions,
   session: ReturnType<typeof getSessionForBrowser>,
+  mode?: RetryMode,
+): Promise<SentRequest> {
+  if (!isMutatingMethod(options.method))
+    return sendOnce(path, options, session, mode);
+  let sent: SentRequest;
+  try {
+    sent = await sendOnce(path, options, session, mode);
+  } catch (error) {
+    if (isTransportFailure(error)) throw unknownOutcomeError(0);
+    throw error;
+  }
+  if (isGatewayResponse(sent.response, sent.payload))
+    throw unknownOutcomeError(sent.response.status, sent.response);
+  return sent;
+}
+
+function sendOnce(
+  path: string,
+  options: ApiRequestOptions,
+  session: ReturnType<typeof getSessionForBrowser>,
+  mode: RetryMode | undefined,
 ): Promise<SentRequest> {
   return sendWithGatewayRetry(
     async () => {
@@ -111,7 +157,7 @@ function send(
       return { response, payload: await parseJsonSafely(response) };
     },
     {
-      mode: retryModeFor(options.method, options.idempotencyKey),
+      mode: mode ?? retryModeFor(options.method, idempotencyKeyOf(options)),
       signal: options.signal,
     },
   );

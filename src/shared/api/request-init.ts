@@ -19,9 +19,44 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "headers"> & {
   flow?: string;
 };
 
-function isMutatingMethod(method?: string): boolean {
+export function isMutatingMethod(method?: string): boolean {
   const normalized = (method ?? "GET").toUpperCase();
   return !["GET", "HEAD", "OPTIONS"].includes(normalized);
+}
+
+/**
+ * La cabecera que lee AtlasBackend (`runtime-hardening/idempotency.interceptor.ts`). Antes el cliente
+ * mandaba `Idempotency-Key`, que el backend ignoraba: la llave viajaba y nadie deduplicaba.
+ */
+export const IDEMPOTENCY_HEADER = "x-idempotency-key";
+
+const IDEMPOTENCY_HEADER_NAMES = new Set([
+  "x-idempotency-key",
+  "idempotency-key",
+]);
+
+/**
+ * La llave de la petición, venga por `idempotencyKey` o puesta a mano en `headers` (con cualquier
+ * mayúscula). Así una mutación con llave a mano también se repite de forma segura.
+ */
+export function idempotencyKeyOf(
+  options: ApiRequestOptions,
+): string | undefined {
+  if (options.idempotencyKey) return options.idempotencyKey;
+  for (const [name, value] of Object.entries(options.headers ?? {})) {
+    if (IDEMPOTENCY_HEADER_NAMES.has(name.toLowerCase()) && value) return value;
+  }
+  return undefined;
+}
+
+function withoutIdempotencyHeaders(
+  headers: Record<string, string> | undefined,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers ?? {}).filter(
+      ([name]) => !IDEMPOTENCY_HEADER_NAMES.has(name.toLowerCase()),
+    ),
+  );
 }
 
 function appendCsrfHeader(
@@ -129,16 +164,18 @@ function buildHeaders(
       ? { "x-atlas-flow": (options.flow ?? getCurrentScreen()) as string }
       : {}),
     ...(tenantId ? { "x-tenant-id": tenantId } : {}),
-    ...options.headers,
+    ...withoutIdempotencyHeaders(options.headers),
   };
 
   if (!options.skipAuth && session?.accessToken) {
     headers.Authorization = `Bearer ${session.accessToken}`;
   }
   appendCsrfHeader(headers, session, options.method);
-  // La llave solo tiene sentido en mutaciones; en un GET se ignora.
-  if (options.idempotencyKey && isMutatingMethod(options.method)) {
-    headers["Idempotency-Key"] = options.idempotencyKey;
+  // La llave solo tiene sentido en mutaciones; en un GET se ignora. Una sola cabecera, con el
+  // nombre que lee el backend, venga la llave por la opción o puesta a mano.
+  const idempotencyKey = idempotencyKeyOf(options);
+  if (idempotencyKey && isMutatingMethod(options.method)) {
+    headers[IDEMPOTENCY_HEADER] = idempotencyKey;
   }
   return headers;
 }
