@@ -3,6 +3,7 @@ import { capture, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 import { normalizeRolesPayload } from "../../src/features/internal-users/normalize";
 import { generateTemporaryPassword } from "../../src/features/internal-users/temporary-password";
+import { BuzonPin } from "./pin-inbox";
 
 /**
  * Mensajería interna de punta a punta, con DOS personas reales.
@@ -109,6 +110,10 @@ test.describe("mensajería interna entre usuarios", () => {
   test("el usuario nuevo puede abrir su propia sesión", async ({
     browser,
   }, testInfo) => {
+    // `loginAs` hace un login de dos pasos desde cero: hasta 30 s esperando el PIN y otros 30 s
+    // esperando la redirección post-login. El timeout global (30 s) alcanza para las pruebas que
+    // reusan la sesión del setup, pero no para las que inician sesión ellas mismas.
+    test.setTimeout(90_000);
     const context = await browser.newContext({ storageState: undefined });
     const page = await context.newPage();
     await loginAs(page, NEW_USER_EMAIL, temporaryPassword);
@@ -123,6 +128,10 @@ test.describe("mensajería interna entre usuarios", () => {
     page,
     browser,
   }, testInfo) => {
+    // Manda el broadcast con la sesión del setup y DESPUÉS hace un login de dos pasos desde cero
+    // como el usuario nuevo (`loginAs`, hasta 60 s): el timeout global (30 s) no alcanza para las
+    // dos cosas.
+    test.setTimeout(90_000);
     await page.goto("/internal/notifications");
     await settled(page);
     await page.getByRole("button", { name: /enviar notificaci[óo]n/i }).click();
@@ -165,19 +174,36 @@ async function loginAs(
   email: string,
   password: string,
 ): Promise<void> {
-  await page.goto("/internal/login");
-  const tenant = page.getByLabel("Tenant");
-  await tenant.clear();
-  await tenant.fill(process.env.TEST_TENANT_ID ?? "1");
-  await page.getByLabel("Correo interno").fill(email);
-  await page.getByLabel("Contraseña").fill(password);
-  await page.getByRole("button", { name: /entrar al portal interno/i }).click();
-  await page.waitForURL(
-    (url) =>
-      url.pathname.startsWith("/internal") &&
-      !url.pathname.startsWith("/internal/login"),
-    { timeout: 20_000 },
-  );
+  const buzon = new BuzonPin();
+  await buzon.abrir();
+  buzon.vaciar();
+  try {
+    await page.goto("/internal/login");
+    const form = page.locator("form").last();
+    const tenant = form.getByLabel("Tenant");
+    await expect(tenant).toBeEditable();
+    await tenant.clear();
+    await tenant.fill(process.env.TEST_TENANT_ID ?? "1");
+    await form.getByLabel("Correo interno").fill(email);
+    await form.getByLabel("Contraseña").fill(password);
+    await form
+      .getByRole("button", { name: /entrar al portal interno/i })
+      .click();
+    const pinField = page.getByLabel("Código de verificación");
+    await expect(pinField).toBeVisible({ timeout: 30_000 });
+    await pinField.fill(await buzon.esperarPin(email));
+    await page
+      .getByRole("button", { name: /verificar|continuar|entrar/i })
+      .click();
+    await page.waitForURL(
+      (url) =>
+        url.pathname.startsWith("/internal") &&
+        !url.pathname.startsWith("/internal/login"),
+      { timeout: 30_000 },
+    );
+  } finally {
+    await buzon.cerrar();
+  }
   await settled(page);
 }
 

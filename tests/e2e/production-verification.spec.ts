@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAsInternalUser } from "./internal-session";
 
 /**
  * Verificación E2E real contra backend levantado (:3005) + DB seedeada.
@@ -9,9 +10,16 @@ import { expect, test, type Page } from "@playwright/test";
  *   R11 — smoke de flujos críticos (login, navegación, permisos, logout)
  * Credenciales por env var para no hardcodear secretos.
  */
-const EMAIL = process.env.E2E_EMAIL ?? "pablo@atlas.internal";
-const PASSWORD = process.env.E2E_PASSWORD ?? "";
+const EMAIL =
+  process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "pablo@atlas.internal";
+const PASSWORD = process.env.E2E_PASSWORD ?? process.env.TEST_PASSWORD ?? "";
 const TENANT = process.env.E2E_TENANT ?? "1";
+const HAS_QA_LOGIN = Boolean(
+  !process.env.E2E_PASSWORD &&
+  process.env.TEST_EMAIL &&
+  process.env.TEST_PASSWORD &&
+  process.env.PW_PIN_INBOX_PORT,
+);
 // El backend solo habilita CORS para http://localhost:5273 (no 127.0.0.1),
 // y el navegador hace fetch directo al API — hay que entrar por "localhost".
 const APP = process.env.E2E_BASE_URL ?? "http://localhost:5273";
@@ -36,6 +44,10 @@ function attachDiagnostics(page: Page): Diag {
 }
 
 async function login(page: Page): Promise<void> {
+  if (HAS_QA_LOGIN) {
+    await loginAsInternalUser(page);
+    return;
+  }
   await page.goto(url("/internal/login"));
   // El form es controlado por react-hook-form y "Tenant" viene con defaultValue.
   // Rellenarlo antes de que React hidrate duplica el valor ("11") y el backend
