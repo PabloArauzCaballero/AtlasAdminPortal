@@ -42,6 +42,13 @@ yarn lint
 yarn build
 ```
 
+Tras `finished` de Coolify, el workflow de `dev` comprueba el portal publicado: portada,
+ruta legal, `/internal/login`, assets JS/CSS, proxy `/api/v1/health` y `/version` con el SHA
+servido. También abre el login en Chromium y falla ante errores JavaScript. El SHA llega desde
+`SOURCE_COMMIT` al proceso como `APP_COMMIT_SHA`; si Coolify no informa el dominio, configura
+`DEV_SMOKE_BASE_URL` en GitHub Variables. Se conserva el puerto público `:5273` cuando figura
+en ese dominio.
+
 ## Rutas fase 1
 
 - `/internal/login`
