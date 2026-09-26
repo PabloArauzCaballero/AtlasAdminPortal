@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Gauge, History, TestTube, Waves } from "lucide-react";
+import { Gauge, TestTube } from "lucide-react";
 import { useLabEndpoint as useEndpoint } from "./endpoint-lookup";
-import { Button } from "@/shared/components/ui/button";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
@@ -64,27 +62,11 @@ function AuthorizedQaLabPage({
         description="Prueba un endpoint suelto — funcional y de carga —, encadena varios en un journey que reproduce un flujo real de negocio, o mirá el árbol de decisión del recorrido estándar que publica el backend."
         actions={
           <>
+            {/* Aprendizaje, guía e historiales viven en el menú QA: repetirlos aquí eran cinco botones
+                compitiendo con la prueba. */}
             <TutorialLaunchButton
               tutorialId={TUTORIAL_BY_TAB[activeTab] ?? "qa-lab-overview"}
             />
-            <Link href="/internal/qa/aprender">
-              <Button>Centro de aprendizaje</Button>
-            </Link>
-            <Link href="/internal/qa/guia" data-tutorial-id="qa-lab-guide-link">
-              <Button>Guía</Button>
-            </Link>
-            <Link href="/internal/qa/runs">
-              <Button>
-                <History className="h-4 w-4" aria-hidden />
-                Historial
-              </Button>
-            </Link>
-            <Link href="/internal/qa/stress/runs">
-              <Button>
-                <Waves className="h-4 w-4" aria-hidden />
-                Stress runs
-              </Button>
-            </Link>
           </>
         }
       />

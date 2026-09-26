@@ -1,7 +1,7 @@
+import { defaultQaEnvironment } from "./environment";
 import type { EndpointItem } from "@/features/systems/types";
-import { ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import { Badge } from "@/shared/components/ui/badges";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
 import { formatNumber } from "@/shared/lib/format";
 import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
 import { HARD_MAX_STRESS_REQUESTS } from "./stress-plan";
@@ -25,18 +25,6 @@ export function StressControls({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <Field
-          label="Ambiente"
-          tooltip="Entorno contra el que se lanza la carga; producción está bloqueada."
-          hint="LOCAL/STAGING permiten stress; producción queda bloqueada."
-        >
-          <Select
-            name="ambiente"
-            options={ENVIRONMENT_OPTIONS}
-            value={form.environment}
-            onChange={(valor) => onChange({ environment: valor })}
-          />
-        </Field>
         <NumberField
           label="RPS objetivo"
           tooltip="Peticiones por segundo que la prueba intenta sostener."
@@ -220,7 +208,7 @@ export type StressFormState = CommonLabFormState & {
 };
 
 export const DEFAULT_STRESS_FORM: StressFormState = {
-  environment: "LOCAL",
+  environment: defaultQaEnvironment(),
   baseRouteKey: DEFAULT_QA_BASE_ROUTE,
   customHostUrl: "",
   routeOverride: "",

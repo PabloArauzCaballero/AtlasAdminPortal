@@ -9,6 +9,7 @@ import type {
   QaRunRequest,
   QaRunStatus,
   QaRunSummary,
+  QaRunTimeline,
   QaSampleInputs,
   QaTemplateDetail,
   QaTemplateSummary,
@@ -122,5 +123,11 @@ export function cancelQaRun(runId: string) {
   return apiRequest<{ runId: string; status: QaRunStatus }>(
     `${BASE}/runs/${encodeURIComponent(runId)}/cancel`,
     { method: "POST" },
+  );
+}
+
+export function getQaRunTimeline(runId: string) {
+  return apiRequest<QaRunTimeline>(
+    `${BASE}/runs/${encodeURIComponent(runId)}/timeline`,
   );
 }
