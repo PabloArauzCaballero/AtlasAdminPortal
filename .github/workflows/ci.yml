@@ -131,6 +131,12 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      # El npm que trae Node 22 (10.x) tiene un bug de arborist ("Cannot read properties of
+      # null (reading 'edgesOut')") al resolver el árbol de peers de este devDependencies
+      # (vitest/rolldown con sus binarios opcionales por plataforma); npm 12 ya no lo tiene.
+      - name: Actualizar npm (bug de arborist en 10.x)
+        run: npm install -g npm@12
+
       - name: Generar package-lock desde package.json (sin instalar)
         run: npm install --package-lock-only --ignore-scripts
 
