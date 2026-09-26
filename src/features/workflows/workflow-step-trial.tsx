@@ -90,7 +90,11 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
   return (
     <div className="space-y-2 rounded-lg border border-atlas-border bg-atlas-soft p-2.5">
       <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-atlas-muted">
-        Probar este paso
+        Probar este paso · diagnóstico
+      </p>
+      <p className="text-[0.6875rem] leading-4 text-atlas-muted">
+        Manda sólo esta llamada, con tu sesión. No recorre el flujo ni crea
+        personas: para eso usa «Ejecutar flujo con N personas».
       </p>
 
       {params.length > 0 ? (
@@ -140,8 +144,8 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
       <div className="block max-w-[10rem]">
         <FieldLabel
           className="text-[0.6875rem] text-atlas-muted"
-          label="Cantidad"
-          tooltip={`Cuántas veces se manda esta misma llamada seguida — simula este paso con volumen sin salir del lienzo. Hasta ${MAX_REPEAT}.`}
+          label="Repeticiones de esta llamada"
+          tooltip={`Cuántas veces se repite esta MISMA llamada, con tu sesión. No son personas ni recorridos completos. Hasta ${MAX_REPEAT}.`}
         />
         <input
           type="number"
