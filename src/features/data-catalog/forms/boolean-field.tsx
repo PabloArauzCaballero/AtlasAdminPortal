@@ -10,14 +10,27 @@ export function BooleanField({
   onChange: (value: boolean) => void;
 }>) {
   return (
-    <Field label={label}>
+    <Field
+      tooltip={`Indica si «${label}» se cumple para esta entidad del catálogo.`}
+      label={label}
+    >
       <Select
+        name={label}
         value={value ? "true" : "false"}
-        onChange={(event) => onChange(event.target.value === "true")}
-      >
-        <option value="true">Sí</option>
-        <option value="false">No</option>
-      </Select>
+        onChange={(valor) => onChange(valor === "true")}
+        options={[
+          {
+            value: "true",
+            label: "Sí",
+            description: "Se cumple para esta entidad.",
+          },
+          {
+            value: "false",
+            label: "No",
+            description: "No se cumple para esta entidad.",
+          },
+        ]}
+      />
     </Field>
   );
 }

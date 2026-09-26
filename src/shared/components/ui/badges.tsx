@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 
 type Tone =
@@ -8,8 +9,8 @@ const toneClasses: Record<Tone, string> = {
   success: "border-emerald-200 bg-emerald-50 text-emerald-700",
   warning: "border-amber-200 bg-amber-50 text-amber-700",
   critical: "border-red-200 bg-red-50 text-red-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
-  pii: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  info: "border-atlas-info/25 bg-atlas-info/10 text-atlas-info",
+  pii: "border-atlas-pii/25 bg-atlas-pii/10 text-atlas-pii",
   muted: "border-slate-200 bg-slate-100 text-slate-500",
 };
 
@@ -18,8 +19,8 @@ const dotClasses: Record<Tone, string> = {
   success: "bg-emerald-500",
   warning: "bg-amber-500",
   critical: "bg-red-500",
-  info: "bg-blue-500",
-  pii: "bg-indigo-500",
+  info: "bg-atlas-info",
+  pii: "bg-atlas-pii",
   muted: "bg-slate-400",
 };
 
@@ -28,21 +29,31 @@ export function Badge({
   tone = "default",
   className,
   dot = false,
+  icon: Icon,
 }: Readonly<{
   children: React.ReactNode;
   tone?: Tone;
   className?: string;
   dot?: boolean;
+  /**
+   * Icono a la izquierda, alternativa al punto (que sólo transmite el TONO, ya presente en el
+   * color del texto y del borde). El icono dice además de QUÉ se habla, que es lo que distingue
+   * de un vistazo, en una fila con cinco insignias, la salud del proveedor de nuestra credencial.
+   * Con icono no se pinta el punto: dos marcas antes del texto sólo compiten.
+   */
+  icon?: LucideIcon;
 }>) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold shadow-sm",
+        "inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-xs font-medium",
         toneClasses[tone],
         className,
       )}
     >
-      {dot ? (
+      {Icon ? (
+        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      ) : dot ? (
         tone === "success" ? (
           <LiveDot tone={tone} />
         ) : (
@@ -210,6 +221,34 @@ export function ModuleBadge({ value }: Readonly<{ value?: string | null }>) {
   return (
     <Badge tone={value ? "info" : "muted"} className="font-mono normal-case">
       {value ?? "Sin módulo"}
+    </Badge>
+  );
+}
+
+/**
+ * El BLOQUE del ecosistema al que pertenece la fila.
+ *
+ * Cada bloque lleva su propio tono para que la mezcla se lea de un vistazo en una tabla larga: el
+ * problema que esta insignia resuelve es que el catálogo no dejaba ver, en ninguna columna, que
+ * todo lo que había venía de un solo producto.
+ */
+const blockTones: Record<string, "info" | "success" | "warning"> = {
+  ATLAS_BACKEND: "info",
+  DECISION_ENGINE: "success",
+  ERP_BACKEND: "warning",
+};
+
+const blockLabels: Record<string, string> = {
+  ATLAS_BACKEND: "Atlas Backend",
+  DECISION_ENGINE: "Decision Engine",
+  ERP_BACKEND: "ERP Backend",
+};
+
+export function BlockBadge({ value }: Readonly<{ value?: string | null }>) {
+  if (!value) return <Badge tone="muted">Sin bloque</Badge>;
+  return (
+    <Badge tone={blockTones[value] ?? "default"}>
+      {blockLabels[value] ?? value}
     </Badge>
   );
 }

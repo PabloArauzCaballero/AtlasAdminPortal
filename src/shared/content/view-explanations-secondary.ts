@@ -12,17 +12,30 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       "/internal/notifications",
       "/internal/my-notifications",
       "/internal/exports",
+      "/internal/files",
     ],
     systems:
       "Herramientas del día a día del equipo interno: cola de trabajo de casos, jobs programados del backend, alertas operativas, mensajería interna (broadcasts, plantillas y preferencias) y exportaciones de datos con trazabilidad.",
     business:
       "Concentra la operación diaria: qué casos hay que atender, qué procesos automáticos corrieron, qué avisos llegaron y cómo se comunica el equipo — todo auditable.",
     views: {
+      "/internal/operations/pending-contacts": {
+        systems:
+          "Lista de `customer_contact_methods` con status `unverified` (GET /operations/customers/pending-contact-verification). El botón dispara POST /customer-onboarding/:id/contact-verification/request con rol interno: el backend genera y manda el código, con cooldown por destino.",
+        business:
+          "Los usuarios de la app que se quedaron sin confirmar el correo o el teléfono, y un botón para reenviarles el código sin pedirles que vuelvan a empezar.",
+      },
       "/internal/operations/work-queue": {
         systems:
           "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",
         business:
           "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
+      },
+      "/internal/files": {
+        systems:
+          "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
+        business:
+          "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
       },
       "/internal/operations/runtime-jobs": {
         systems:
@@ -181,6 +194,30 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     business:
       "Define quién puede hacer qué dentro del portal y mantiene actualizado el inventario sobre el que operan todos los demás módulos.",
     views: {
+      "/internal/settings/decision-artifacts": {
+        systems:
+          "Catálogo de decisiones delegadas al Decision Engine. Cada fila declara qué artefacto la resuelve, qué versión se ejecuta, qué endpoints del backend la disparan y en qué punto del recorrido ocurre. Las opciones del selector las publica el propio motor (GET /v1/artifacts), así que no se puede asignar un código que no exista.",
+        business:
+          "Cambiar la política que evalúa un crédito o una identidad deja de ser un despliegue: lo decide Riesgo desde aquí. Por ejemplo, si Riesgo publica una versión nueva del scoring BNPL, esta pantalla es donde se decide si entra en producción o se sigue con la anterior — y donde se ve, sin abrir el código, qué se rompe si se cambia.",
+      },
+      "/internal/settings/consent-documents": {
+        systems:
+          "Edita el TEXTO de cada documento de consentimiento (`/operations/consent-documents`), nunca su código ni su versión: el backend lo impone y esta pantalla ni siquiera ofrece esos campos. La app móvil lee el título y el cuerpo del servidor, así que corregir una palabra no exige compilar ni publicar en las tiendas.",
+        business:
+          "Quien aceptó bajo la v1 tiene derecho a que la v1 siga diciendo lo que leyó. Aquí se corrige la redacción; un cambio de fondo se publica como versión nueva y vuelve a pedirse la aceptación.",
+      },
+      "/internal/settings/app-content": {
+        systems:
+          "Contenido por superficie (`/operations/app-content`): bienvenida, preguntas frecuentes, ayuda, inicio, legal, perfil y crédito. Crear y editar son la misma operación, resuelta por superficie + clave + idioma, así que reeditar una pieza la actualiza en vez de duplicarla. El botón de WhatsApp se guarda como número local y el servidor le añade el prefijo del país.",
+        business:
+          "El eslogan, los pasos de bienvenida y las respuestas de ayuda estaban escritos en el código de la app: corregir una respuesta que confunde costaba dos publicaciones en tiendas y, hasta que cada persona actualizara, convivían dos versiones de lo que Atlas dice ser.",
+      },
+      "/internal/settings/notification-policies": {
+        systems:
+          "Declara qué avisos existen, por qué canal salen y cuáles son irrenunciables (`/operations/notification-policies`). El flag de irrenunciable se fija AQUÍ, del lado del servidor: antes llegaba en la petición del cliente y bastaba mandarlo en `false` para silenciar el aviso de mora. Un aviso irrenunciable no puede guardarse sin el motivo que la app enseña junto al candado.",
+        business:
+          "Un interruptor bloqueado sin explicación se lee como abuso; con el motivo delante, «no puedes apagarlo» se convierte en «no te conviene apagarlo, y por esto». Aquí se decide qué le llega al cliente y qué puede él silenciar.",
+      },
       "/internal/settings/users": {
         systems:
           "CRUD de usuarios internos con asignación de roles y estado de la cuenta.",

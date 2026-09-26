@@ -13,6 +13,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { formatNumber } from "@/shared/lib/format";
+import { Waypoints } from "lucide-react";
 
 export function LineageImpactPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -40,6 +41,7 @@ function AuthorizedLineageImpactPage() {
   return (
     <>
       <PageHeader
+        icon={Waypoints}
         eyebrow="Lineage"
         title="Impacto entre activos"
         description="Consulta server-side del impacto entre tablas, endpoints, reportes, reglas, políticas y jobs."
@@ -85,7 +87,7 @@ function AuthorizedLineageImpactPage() {
       ) : null}
       {impact.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Impactos"
               value={formatNumber(impact.data.meta.total)}

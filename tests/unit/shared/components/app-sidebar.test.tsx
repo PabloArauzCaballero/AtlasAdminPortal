@@ -93,6 +93,29 @@ describe("AppSidebar · filtrado por permisos", () => {
   });
 });
 
+describe("AppSidebar · las dos colas del comercio piden lo que el backend exige", () => {
+  it("«Usuarios de comercio» sólo con merchant.users.read", () => {
+    // Con `permissions: []` salía para todo el mundo y `GET /merchant/users/provisioning-requests`
+    // respondía 403 a quien no lo tenía.
+    renderSidebar({ permissions: [], roles: ["internal_operator"] });
+    expect(verEnlace("Usuarios de comercio")).toBe(false);
+
+    renderSidebar({
+      permissions: ["merchant.users.read"],
+      roles: ["internal_operator"],
+    });
+    expect(verEnlace("Usuarios de comercio")).toBe(true);
+  });
+
+  it("«Expedientes de comercio» sólo con los roles de PartnerOperationsController", () => {
+    renderSidebar({ permissions: [], roles: ["compliance_analyst"] });
+    expect(verEnlace("Expedientes de comercio")).toBe(false);
+
+    renderSidebar({ permissions: [], roles: ["risk_analyst"] });
+    expect(verEnlace("Expedientes de comercio")).toBe(true);
+  });
+});
+
 describe("AppSidebar · filtrado por rol", () => {
   it("un ítem restringido por rol no se ve sin ese rol, aunque no pida permisos", () => {
     // "Formularios" tiene permissions: [] pero roles: ["SUPER_ADMIN"]. Si el

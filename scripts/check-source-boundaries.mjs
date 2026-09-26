@@ -7,7 +7,22 @@ const checks = [
   {
     label: "fetch directo",
     pattern: /\bfetch\s*\(/,
-    allowed: new Set(["src/shared/api/transport.ts"]),
+    allowed: new Set([
+      "src/shared/api/transport.ts",
+      // Cliente del endpoint portal-owned de progreso de tutoriales (same-origin,
+      // Next Route Handler): no pasa por el cliente de AtlasBackend a propósito.
+      "src/features/qa-tutorials/progress-remote.ts",
+      // El PUT de una subida al expediente va DIRECTO al almacén de objetos con una URL
+      // prefirmada, no a AtlasBackend. El cliente de la API no sirve aquí y además rompería la
+      // firma: añade `Authorization` y `credentials`, y S3 firma el conjunto de cabeceras. El
+      // backend sigue mandando —firma el permiso y verifica el objeto después—, pero los bytes
+      // no lo atraviesan.
+      "src/features/files/upload.ts",
+      // El lector de eventos del servidor (SSE). Es transporte, y está aquí por eso: `EventSource`
+      // sería lo natural pero no admite cabeceras, así que el token viajaría en la URL y acabaría
+      // en los registros de cualquier proxy. Con `fetch` va en `Authorization`, como el resto.
+      "src/shared/api/server-events.ts",
+    ]),
   },
   {
     label: "storage del navegador",
@@ -15,6 +30,8 @@ const checks = [
     allowed: new Set([
       "src/shared/auth/session-storage.ts",
       "src/shared/lib/local-search-history.ts",
+      // Caché (no fuente de verdad) del progreso de tutoriales de QA LAB.
+      "src/features/qa-tutorials/progress-storage.ts",
     ]),
   },
   {

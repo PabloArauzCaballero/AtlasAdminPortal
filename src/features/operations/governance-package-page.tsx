@@ -12,6 +12,7 @@ import {
 } from "./governance-package-schema";
 import { useUpsertGovernancePackageMutation } from "./hooks";
 import { PackageEditor } from "./package-editor";
+import { Package } from "lucide-react";
 
 /**
  * Publicación del paquete de políticas de gobernanza de datos.
@@ -26,6 +27,7 @@ export function GovernancePackagePage() {
   return (
     <PermissionGate permissions={["governance.policies.read"]}>
       <PageHeader
+        icon={Package}
         eyebrow="Gobierno de datos"
         title="Publicar paquete de gobernanza"
         description="Conectado a `/operations/data-governance/policy-package`. Crea o actualiza en lote propósitos, retenciones, proveedores, clasificaciones, campos sensibles y reglas de calidad."

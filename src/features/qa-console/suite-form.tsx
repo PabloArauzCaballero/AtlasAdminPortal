@@ -1,5 +1,7 @@
 "use client";
 
+import { FormSelect } from "@/shared/components/ui/form-select";
+import { SUITE_TYPE_OPTIONS } from "./qa-options";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Controller,
@@ -13,7 +15,7 @@ import {
 import type { TestSuite, TestSuiteDetail } from "@/features/systems/types";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import {
   toSuiteForm,
@@ -23,7 +25,6 @@ import {
 import {
   emptySuiteForm,
   SUITE_ENVIRONMENTS,
-  SUITE_TYPES,
   suiteSchema,
   type SuiteForm as SuiteFormValues,
 } from "./suite-schema";
@@ -61,9 +62,10 @@ export function SuiteForm({
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label={isEdit ? "Código (no editable)" : "Código"}
+          tooltip="Identificador único de la suite en el catálogo; con él se lanza desde CI."
           hint={
             isEdit
               ? "El código identifica la suite en el catálogo y no se renombra desde acá."
@@ -79,31 +81,39 @@ export function SuiteForm({
           />
         </Field>
 
-        <Field label="Nombre" error={errors.name?.message}>
+        <Field
+          label="Nombre"
+          tooltip="Nombre legible de la suite, tal como se verá en la lista y en los informes."
+          error={errors.name?.message}
+        >
           <Input placeholder="Smoke — login interno" {...register("name")} />
         </Field>
 
         <Field
           label="Módulo"
+          tooltip="Módulo del backend que prueba; agrupa la cobertura por área. Ej.: internal-auth"
           hint="Módulo del sistema que cubre la suite."
           error={errors.module?.message}
         >
           <Input placeholder="internal-auth" {...register("module")} />
         </Field>
 
-        <Field label="Tipo de suite" error={errors.suiteType?.message}>
-          <Select {...register("suiteType")}>
-            {SUITE_TYPES.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </Select>
+        <Field
+          label="Tipo de suite"
+          tooltip="Qué clase de prueba es; decide cuándo se ejecuta y cómo se lee su resultado."
+          error={errors.suiteType?.message}
+        >
+          <FormSelect
+            control={control}
+            name="suiteType"
+            options={SUITE_TYPE_OPTIONS}
+          />
         </Field>
       </div>
 
       <Field
         label="Descripción (opcional)"
+        tooltip="Qué cubre y qué debería romperse si falla; ayuda a quien la herede."
         hint="Qué cubre la suite y qué debería fallar si algo se rompe."
         error={errors.description?.message}
       >
@@ -116,6 +126,7 @@ export function SuiteForm({
         render={({ field }) => (
           <Field
             label="Ambientes"
+            tooltip="Dónde se permite ejecutar la suite; producción sólo en modo lectura."
             hint="Incluir PRODUCTION_READONLY exige marcar la suite como segura para producción."
             error={errors.environmentScope?.message}
           >
@@ -144,7 +155,7 @@ export function SuiteForm({
         )}
       />
 
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2">
         <SuiteToggle
           label="Habilitada"
           description="Deshabilitada queda en el catálogo pero no se ejecuta."

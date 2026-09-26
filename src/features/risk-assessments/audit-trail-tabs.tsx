@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
@@ -30,9 +31,10 @@ function RunTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
       {run.sessionId ? (
         <Link
           href={`/internal/operations/sessions/${run.sessionId}/investigation-summary`}
-          className="inline-flex text-sm font-semibold text-atlas-accent underline"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-atlas-accent underline"
         >
-          Ver la investigación de la sesión #{run.sessionId} →
+          Ver la investigación de la sesión #{run.sessionId}
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       ) : null}
       <KeyValueGrid

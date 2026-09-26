@@ -4,11 +4,13 @@ import { UserCreateForm } from "./user-create-form";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { UserPlus } from "lucide-react";
 
 export function UserCreatePage() {
   return (
     <PermissionGate permissions={["internal.users.manage"]}>
       <PageHeader
+        icon={UserPlus}
         eyebrow="Administración"
         title="Nuevo usuario interno"
         description="Alta de personal con acceso al backoffice. La contraseña inicial es temporal y generada al azar; nadie la elige a mano."

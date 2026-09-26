@@ -48,7 +48,7 @@ export function RouteProgress() {
       role="status"
       aria-label="Cargando página"
     >
-      <div className="h-full w-1/3 animate-route-progress bg-gradient-to-r from-atlas-accent via-blue-500 to-atlas-accent" />
+      <div className="h-full w-1/3 animate-route-progress bg-gradient-to-r from-atlas-accent via-atlas-accentSoft to-atlas-accent" />
     </div>
   );
 }

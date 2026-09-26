@@ -4,7 +4,6 @@ import type {
   ReportDefinition,
   ReportListResponse,
   ReportRunResult,
-  ReportSnapshotListResponse,
 } from "./types";
 
 export function listReports(query: QueryParams) {
@@ -20,11 +19,4 @@ export function runReport(reportId: string, filters: unknown) {
     method: "POST",
     body: { filters },
   });
-}
-
-export function listReportSnapshots(reportId: string, query: QueryParams) {
-  return apiRequest<ReportSnapshotListResponse>(
-    `/internal/reports/${reportId}/snapshots`,
-    { query },
-  );
 }

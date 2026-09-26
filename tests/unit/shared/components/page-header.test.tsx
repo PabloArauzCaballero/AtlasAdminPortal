@@ -118,16 +118,19 @@ describe("BusinessContextNote", () => {
     render(<BusinessContextNote>Esta vista muestra X.</BusinessContextNote>);
 
     expect(screen.queryByText("Esta vista muestra X.")).not.toBeInTheDocument();
-    expect(screen.getByText("Ver")).toBeInTheDocument();
+    expect(screen.getByRole("button")).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
   });
 
-  it("al abrir muestra la nota y cambia la etiqueta a 'Ocultar'", async () => {
+  it("al abrir muestra la nota y el control queda anunciado como expandido", async () => {
     render(<BusinessContextNote>Esta vista muestra X.</BusinessContextNote>);
 
     await userEvent.click(screen.getByRole("button"));
 
     expect(screen.getByText("Esta vista muestra X.")).toBeInTheDocument();
-    expect(screen.getByText("Ocultar")).toBeInTheDocument();
+    expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "true");
   });
 
   it("el segundo click vuelve a ocultar", async () => {

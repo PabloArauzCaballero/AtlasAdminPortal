@@ -61,6 +61,7 @@ export function ReportRunCard({ reportId }: Readonly<{ reportId: string }>) {
       <CardContent className="space-y-4">
         <PermissionGate permissions={["reporting.execute"]}>
           <Field
+            tooltip="Filtros del reporte en JSON; sólo los que admite su definición."
             label="Filtros JSON"
             error={localError ?? undefined}
             hint="Usa solo filtros permitidos por la definición del reporte."

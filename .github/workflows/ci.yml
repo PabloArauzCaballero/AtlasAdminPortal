@@ -1,10 +1,13 @@
 name: CI
 
+# `dev` es la rama que despliega `deploy-dev.yml`. Mientras esto decía sólo `main`, un push a dev
+# desplegaba el portal SIN haber pasado una sola puerta: type-check, lint, pruebas, build, gitleaks
+# y auditoría de dependencias no se ejecutaban nunca sobre lo que se estaba sirviendo.
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 # Un solo run por rama: cancela el anterior si llega un push nuevo.
 concurrency:

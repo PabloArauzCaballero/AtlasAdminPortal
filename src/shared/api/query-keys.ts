@@ -2,6 +2,9 @@ export const queryKeys = {
   me: ["internal-auth", "me"] as const,
   dashboard: ["systems", "dashboard"] as const,
   toolsHealth: ["systems", "tools-health"] as const,
+  platformBlocks: ["systems", "blocks"] as const,
+  networkHealth: ["systems", "network-health"] as const,
+  decisionArtifacts: ["systems", "decision-engine-artifacts"] as const,
   endpoints: (params: unknown) => ["systems", "endpoints", params] as const,
   endpoint: (endpointId: string) =>
     ["systems", "endpoint", endpointId] as const,
@@ -14,16 +17,37 @@ export const queryKeys = {
   tableImpact: (schemaName: string, tableName: string) =>
     ["systems", "impact-by-table", schemaName, tableName] as const,
   testSuites: (params: unknown) => ["systems", "test-suites", params] as const,
+  flows: (params: unknown) => ["systems", "flows", params] as const,
+  flow: (flowId: string) => ["systems", "flow", flowId] as const,
+  flowsSummary: ["systems", "flows-summary"] as const,
+  flowModules: ["systems", "flows-modules"] as const,
+  flowFindings: (params: unknown) =>
+    ["systems", "flows-findings", params] as const,
+  flowScreens: (params: unknown) =>
+    ["systems", "flows-screens", params] as const,
+  flowImports: ["systems", "flows-imports"] as const,
+  flowBusiness: ["systems", "flows-business"] as const,
+  flowPendingWork: (windowDays: number) =>
+    ["systems", "flows-pending-work", windowDays] as const,
+  flowRbacDrift: ["systems", "flows-rbac-drift"] as const,
+  flowDocumentationGate: ["systems", "flows-documentation-gate"] as const,
+  flowReviewQueue: (params: unknown) =>
+    ["systems", "flows-review-queue", params] as const,
+  flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
+  flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
+    ["systems", "flow-module-graph", systemCode, module, roles] as const,
   testSuite: (suiteId: string) => ["systems", "test-suite", suiteId] as const,
   testRuns: (params: unknown) => ["systems", "test-runs", params] as const,
   testRun: (runId: string) => ["systems", "test-run", runId] as const,
   actionLogs: (params: unknown) => ["systems", "action-logs", params] as const,
+  actionLogFilterCatalog: ["systems", "action-logs", "filter-catalog"] as const,
   actionLogsByRequest: (requestId: string) =>
     ["systems", "action-logs-by-request", requestId] as const,
   mongoLogs: (params: unknown) => ["systems", "mongo-logs", params] as const,
   tools: (params: unknown) => ["systems", "tools", params] as const,
   tool: (toolId: string) => ["systems", "tool", toolId] as const,
   domains: (params: unknown) => ["systems", "domains", params] as const,
+  domainOverview: ["systems", "domains", "overview"] as const,
   domain: (domainCode: string) => ["systems", "domain", domainCode] as const,
   reviewQueue: (params: unknown) =>
     ["systems", "review-queue", params] as const,
@@ -67,8 +91,6 @@ export const queryKeys = {
     ["internal", "data-quality", "rule", ruleId] as const,
   reports: (params: unknown) => ["internal", "reports", params] as const,
   report: (reportId: string) => ["internal", "report", reportId] as const,
-  reportSnapshots: (reportId: string, params: unknown) =>
-    ["internal", "report", reportId, "snapshots", params] as const,
   businessTerms: (params: unknown) =>
     ["internal", "business-metadata", "terms", params] as const,
   businessTerm: (termId: string) =>
@@ -97,6 +119,21 @@ export const queryKeys = {
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  pendingContactVerification: [
+    "operations",
+    "pending-contact-verification",
+  ] as const,
+  supportCases: (params: unknown) => ["support", "cases", params] as const,
+  supportCase: (caseId: string) => ["support", "case", caseId] as const,
+  supportCaseTimeline: (caseId: string) =>
+    ["support", "case", caseId, "timeline"] as const,
+  supportCategories: ["support", "catalog", "categories"] as const,
+  supportQueues: ["support", "catalog", "queues"] as const,
+  supportCodes: ["support", "catalog", "codes"] as const,
+  supportDeskQueue: ["support", "desk", "queue"] as const,
+  supportAgents: ["support", "agents"] as const,
+  supportTranscript: (channelId: string) =>
+    ["support", "channel", channelId, "transcript"] as const,
   investigationSummary: (customerId: string) =>
     ["operations", "investigation-summary", customerId] as const,
   sessionInvestigationSummary: (sessionId: string) =>
@@ -108,6 +145,9 @@ export const queryKeys = {
   schemaVersions: (params: unknown) => ["schema", "versions", params] as const,
   schemaVersion: (versionId: string) =>
     ["schema", "version", versionId] as const,
+  /** Cuelga de la clave de la versión: al invalidarla se refrescan también sus esquemas. */
+  schemaVersionSchemas: (versionId: string) =>
+    ["schema", "version", versionId, "schemas"] as const,
   schemaTables: (params: unknown) => ["schema", "tables", params] as const,
   schemaTable: (tableId: string) => ["schema", "table", tableId] as const,
   schemaChangeLog: (params: unknown) =>
@@ -118,4 +158,38 @@ export const queryKeys = {
     ["external-providers", "cost-policy", providerCode] as const,
   externalProvidersReport: (report: string, params: unknown = null) =>
     ["external-providers", "report", report, params] as const,
+  externalProvidersAuthState: ["external-providers", "auth-state"] as const,
+  externalProviderAuthState: (providerCode: string) =>
+    ["external-providers", "auth-state", providerCode] as const,
+  externalProvidersPendingRotation: [
+    "external-providers",
+    "pending-rotation",
+  ] as const,
+  authBrokerAvailability: ["external-providers", "auth-broker"] as const,
+  externalProvidersDashboard: (params: unknown = null) =>
+    ["external-providers", "dashboard", params] as const,
+  externalProviderRequests: (params: unknown = null) =>
+    ["external-providers", "requests", params] as const,
+
+  // Expedientes: el explorador de archivos del cliente.
+  expedientes: (params: unknown) => ["expedientes", "lista", params] as const,
+  expediente: (expedienteId: string) =>
+    ["expedientes", "detalle", expedienteId] as const,
+  expedientePorCliente: (customerId: string) =>
+    ["expedientes", "por-cliente", customerId] as const,
+  expedienteNodos: (
+    expedienteId: string,
+    parentId: string | null,
+    q?: string,
+  ) => ["expedientes", "nodos", expedienteId, parentId, q ?? ""] as const,
+  expedienteContenido: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "contenido", expedienteId, nodoId] as const,
+  expedienteActividad: (expedienteId: string, params: unknown) =>
+    ["expedientes", "actividad", expedienteId, params] as const,
+  expedienteContactos: (expedienteId: string) =>
+    ["expedientes", "contactos", expedienteId] as const,
+  expedienteConcesiones: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "concesiones", expedienteId, nodoId] as const,
+  expedienteVisibilidad: (expedienteId: string, nodoId: string) =>
+    ["expedientes", "visibilidad", expedienteId, nodoId] as const,
 };

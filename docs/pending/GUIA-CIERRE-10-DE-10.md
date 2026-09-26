@@ -11,7 +11,26 @@ Lo que sí quedó hecho y verificado con tests está en `docs/pending/pending-it
 
 ---
 
-## Resumen: 5 cosas dependen de ti
+## ESTADO 2026-07-19: los 5 puntos quedaron CERRADOS y verificados en ejecución real
+
+Se levantó el entorno completo (Postgres `:5433` + `AtlasBackend :3005` con las 57 migraciones
+aplicadas + portal en `:5273`) y se verificó todo con Playwright contra backend real. El detalle y la
+evidencia están en `pending-items.md`, sección "Verificación en entorno real con navegador
+(2026-07-19)". Resumen:
+
+| #   | Tema                                    | Estado                                                                                                                                                                                 |
+| --- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Cookies de sesión en el navegador (R2)  | **CERRADO** — `HttpOnly` + `SameSite=Lax` en ambas cookies, sin tokens en body ni en `sessionStorage`. Falta solo observar `Secure` en el despliegue https.                            |
+| 2   | Auditoría `axe` + contraste AA (R10)    | **CERRADO** — 0 violaciones serias/críticas. Se corrigieron 3 defectos reales; el `color-contrast` intermitente era falso positivo por animación.                                      |
+| 3   | Teclado en el grafo SVG de linaje (R10) | **CERRADO (ya lo estaba)** — los nodos son `<button>` HTML, no SVG inerte: foco por Tab y Enter para abrir. Solo falta navegación por flechas, que es mejora de UX, no requisito WCAG. |
+| 4   | Smoke E2E con Playwright (R11)          | **CERRADO** — `tests/e2e/production-verification.spec.ts`, 6/6 en verde contra backend real.                                                                                           |
+| 5   | Reconfirmar cobertura                   | **CERRADO en esta misma máquina** — `shared` 98.01%, `qa-lab` 92.55%, 1664/1664 tests. El truco es limitar workers: `--pool=threads --maxWorkers=2`.                                   |
+
+Lo que sigue abajo es la guía original, que se conserva como referencia del procedimiento manual.
+
+---
+
+## Resumen original: 5 cosas dependen de ti
 
 | #   | Tema                                              | Esfuerzo | Bloqueante para 10/10            |
 | --- | ------------------------------------------------- | -------- | -------------------------------- |

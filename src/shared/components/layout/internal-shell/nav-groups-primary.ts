@@ -1,57 +1,23 @@
 import {
-  Activity,
   BarChart3,
   BookOpen,
   ClipboardCheck,
   Database,
   FileClock,
+  FileSignature,
+  FileText,
   Gauge,
   GitBranch,
+  GraduationCap,
   ShieldCheck,
-  SlidersHorizontal,
-  Stethoscope,
   TestTube2,
-  Wrench,
 } from "lucide-react";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import type { InternalNavGroup } from "./nav-config";
+import { systemsOpsGroup } from "./nav-groups-systems-ops";
 
 export const navGroupsPrimary: InternalNavGroup[] = [
-  {
-    label: "Systems Ops",
-    icon: Activity,
-    items: [
-      {
-        label: "Panel de control",
-        href: "/internal/systems/dashboard",
-        icon: Gauge,
-        permissions: ["systems.endpoints.read", "systems.tools.health.read"],
-      },
-      {
-        label: "Endpoints",
-        href: "/internal/systems/endpoints",
-        icon: Activity,
-        permissions: ["systems.endpoints.read"],
-      },
-      {
-        label: "Herramientas",
-        href: "/internal/systems/tools",
-        icon: Wrench,
-        permissions: ["systems.tools.read"],
-      },
-      {
-        label: "Salud herramientas",
-        href: "/internal/systems/tools/health",
-        icon: Stethoscope,
-        permissions: ["systems.tools.health.read"],
-      },
-      {
-        label: "Cola de revisión",
-        href: "/internal/review-queue",
-        icon: SlidersHorizontal,
-        permissions: ["systems.reviewQueue.read"],
-      },
-    ],
-  },
+  systemsOpsGroup,
   {
     label: "Catálogo y metadata",
     icon: Database,
@@ -117,6 +83,64 @@ export const navGroupsPrimary: InternalNavGroup[] = [
     icon: ShieldCheck,
     items: [
       {
+        /*
+         * Va con las politicas y no en «Administracion», que es donde estaba: quien busca el texto
+         * legal que acepta el cliente lo busca junto a las demas politicas, no al final de una lista
+         * de cuarenta y nueve enlaces. Estaba puesto, pero no se encontraba — que a efectos
+         * practicos es lo mismo que no estar.
+         */
+        label: "Consentimientos del cliente",
+        href: "/internal/settings/consent-documents",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
+      {
+        /*
+         * El contrato del COMERCIO va junto al consentimiento del CLIENTE: son los dos textos que
+         * alguien acepta para entrar, y quien revisa uno revisa el otro. Verificar que un comercio
+         * existe no es tener algo firmado con él, y hasta ahora no había dónde fijar ese texto.
+         */
+        label: "Contrato de comercios",
+        href: "/internal/settings/partner-contracts",
+        icon: FileSignature,
+        // El backend gatea por @Roles, como el resto de operaciones sobre el expediente.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        /*
+         * El contenido de la app va JUNTO a los consentimientos y no en un apartado de marketing:
+         * las preguntas frecuentes explican como se calcula la linea y que pasa si te atrasas, que
+         * es informacion contractual con otro tono. Quien revisa lo que se le dice al cliente tiene
+         * que poder revisarlo todo desde el mismo sitio.
+         */
+        label: "Contenido de la app",
+        href: "/internal/settings/app-content",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
+      {
+        /*
+         * Y las politicas de aviso tambien: declarar que el aviso de mora es irrenunciable es una
+         * decision de cumplimiento, no un ajuste de producto.
+         */
+        label: "Políticas de notificación",
+        href: "/internal/settings/notification-policies",
+        icon: FileText,
+        permissions: ["governance.policies.read"],
+      },
+      {
+        /*
+         * Que politica del motor decide una identidad o un credito era una variable de entorno:
+         * cambiarla exigia un despliegue y nadie podia ver cual estaba decidiendo. Es gobierno del
+         * riesgo, y por eso vive aqui y no en un fichero de configuracion.
+         */
+        label: "Motor de decisiones",
+        href: "/internal/settings/decision-artifacts",
+        icon: ShieldCheck,
+        permissions: ["governance.policies.read"],
+      },
+      {
         label: "Gobierno de datos",
         href: "/internal/governance",
         icon: ShieldCheck,
@@ -174,6 +198,18 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         label: "Laboratorio QA",
         href: "/internal/qa/lab",
         icon: TestTube2,
+        permissions: ["systems.endpoints.read"],
+      },
+      {
+        label: "Centro de aprendizaje",
+        href: "/internal/qa/aprender",
+        icon: GraduationCap,
+        permissions: ["systems.endpoints.read"],
+      },
+      {
+        label: "Guía QA Lab",
+        href: "/internal/qa/guia",
+        icon: GraduationCap,
         permissions: ["systems.endpoints.read"],
       },
       {

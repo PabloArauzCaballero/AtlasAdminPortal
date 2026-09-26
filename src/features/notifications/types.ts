@@ -116,6 +116,9 @@ export type BroadcastResult = {
   broadcastId: string;
   targeted: number;
   created: number;
+  // El backend devuelve 202: crea los mensajes (targeted/created) y entrega en background.
+  // 'queued' = entrega en curso; 'completed' = entrega ya finalizada (broadcasts internos pequeños).
+  status: "queued" | "completed";
 };
 
 export type NotificationPreference = {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PermissionGate } from "@/shared/auth/permission-gate";
+import { RoleGate } from "@/shared/auth/role-gate";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { useAcknowledgeAlertMutation } from "./hooks";
@@ -11,10 +12,7 @@ export function AlertActions({ alertId }: Readonly<{ alertId: string }>) {
   const acknowledge = useAcknowledgeAlertMutation();
 
   return (
-    <PermissionGate
-      permissions={["internal.alerts.acknowledge"]}
-      fallback={null}
-    >
+    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST} fallback={null}>
       <Button onClick={() => setOpen(true)}>Reconocer</Button>
       <ConfirmDialog
         open={open}
@@ -27,6 +25,6 @@ export function AlertActions({ alertId }: Readonly<{ alertId: string }>) {
           void acknowledge.mutateAsync(alertId).finally(() => setOpen(false));
         }}
       />
-    </PermissionGate>
+    </RoleGate>
   );
 }

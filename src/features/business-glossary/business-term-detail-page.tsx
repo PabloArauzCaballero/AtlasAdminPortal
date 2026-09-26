@@ -16,6 +16,7 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+import { BookMarked } from "lucide-react";
 
 type Relation = NonNullable<BusinessTermDetail["relations"]>[number];
 type AuditEntry = NonNullable<BusinessTermDetail["audit"]>[number];
@@ -68,6 +69,7 @@ function AuthorizedBusinessTermDetailPage({
   return (
     <>
       <PageHeader
+        icon={BookMarked}
         eyebrow="Glosario"
         title={data?.name ?? "Detalle de término"}
         description="Definición, relaciones y uso funcional de un término de negocio."

@@ -15,7 +15,8 @@ import {
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -28,6 +29,7 @@ export function UserEditForm({
   const isSelf = currentUser?.id === user.id;
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
@@ -60,23 +62,37 @@ export function UserEditForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Nombre completo" error={errors.fullName?.message}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Field
+              tooltip="Nombre y apellidos de la persona tal como aparecerán en la auditoría."
+              label="Nombre completo"
+              error={errors.fullName?.message}
+            >
               <Input {...register("fullName")} />
             </Field>
-            <Field label="Cargo" error={errors.jobTitle?.message}>
+            <Field
+              tooltip="Puesto de la persona en la empresa, p. ej. analista de riesgo."
+              label="Cargo"
+              error={errors.jobTitle?.message}
+            >
               <Input {...register("jobTitle")} />
             </Field>
-            <Field label="Departamento" error={errors.department?.message}>
-              <Select {...register("department")}>
-                {EDIT_DEPARTMENTS.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
+            <Field
+              tooltip="Área de la empresa a la que pertenece la cuenta."
+              label="Departamento"
+              error={errors.department?.message}
+            >
+              <FormSelect
+                control={control}
+                name="department"
+                options={EDIT_DEPARTMENTS.map((value) => ({
+                  value,
+                  label: value,
+                }))}
+              />
             </Field>
             <Field
+              tooltip="Si la cuenta puede entrar; dejar de estar activa revoca sus sesiones."
               label="Estado"
               error={errors.status?.message}
               hint={
@@ -87,13 +103,15 @@ export function UserEditForm({
                     : undefined
               }
             >
-              <Select {...register("status")} disabled={isSelf}>
-                {EDIT_STATUSES.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
+              <FormSelect
+                control={control}
+                name="status"
+                disabled={isSelf}
+                options={EDIT_STATUSES.map((value) => ({
+                  value,
+                  label: value,
+                }))}
+              />
             </Field>
           </div>
           <label className="flex items-center gap-2 text-sm">
@@ -101,6 +119,7 @@ export function UserEditForm({
             Forzar cambio de contraseña en el próximo login
           </label>
           <Field
+            tooltip="Por qué se modifica la cuenta; queda en la auditoría con los cambios."
             label="Motivo (obligatorio, mínimo 8 caracteres)"
             error={errors.reason?.message}
             hint="Se guarda en el registro de auditoría junto con los campos modificados."

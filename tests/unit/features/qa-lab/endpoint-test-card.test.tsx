@@ -1,3 +1,4 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -42,7 +43,9 @@ const HEALTH = endpointFixture({
 });
 
 function runButton() {
-  return screen.getByRole("button", { name: /request/ });
+  return screen.getByRole("button", {
+    name: /^(Previsualizar|Ejecutar) request/,
+  });
 }
 
 function runResult(overrides: Partial<DirectRunResult> = {}): DirectRunResult {
@@ -176,7 +179,7 @@ describe("EndpointTestCard · confirmación", () => {
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Permitir mutacion real" }),
     );
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: /Ambiente/ }),
       "STAGING",
     );

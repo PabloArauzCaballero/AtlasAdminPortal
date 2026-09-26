@@ -236,6 +236,30 @@ describe("AuthProvider · comprobación de permisos", () => {
     expect(auth.hasAnyRole(["admin", "operator"])).toBe(true);
   });
 
+  /**
+   * El backend habla DOS vocabularios de rol y autoriza con los dos: `roles` son los códigos RBAC
+   * (`SUPER_ADMIN`…) y `legacyRoles` el rol del token (`admin`, `platform_admin`…), que es el que
+   * miran los `@Roles()` de `InternalPortalController` y `RuntimeJobsController`. Comparando sólo
+   * contra `roles`, un `RoleGate(["admin"])` no acertaba nunca —ni para un superadministrador— y
+   * Alertas, Exportaciones y Jobs mostraban "Acceso restringido" sobre endpoints que respondían 200.
+   */
+  it("hasAnyRole también reconoce el rol legacy del token", () => {
+    setStoredInternalSession(
+      makeSession({
+        user: makeUser({
+          permissions: [],
+          roles: ["SUPER_ADMIN"],
+          legacyRoles: ["admin"],
+        }),
+      }),
+    );
+    mountAuth();
+
+    expect(auth.hasAnyRole(["admin"])).toBe(true);
+    expect(auth.hasAnyRole(["SUPER_ADMIN"])).toBe(true);
+    expect(auth.hasAnyRole(["platform_admin"])).toBe(false);
+  });
+
   it("hasAnyRole([]) es true: sin restricción de rol", () => {
     mountConPermisos([], []);
 
@@ -545,6 +569,53 @@ describe("AuthProvider · restoreSessionFromServer", () => {
     });
 
     expect(resultado).toBeNull();
+  });
+
+  /**
+   * Un 429 del limitador —cien peticiones por minuto y por IP, y el portal pide `/internal/auth/me`
+   * en CADA navegación— no es una respuesta sobre quién eres. Borrar la sesión ahí desloguea de
+   * verdad a alguien que nunca dejó de estar autorizado.
+   */
+  it("un 429 NO borra la sesión guardada: no es un veredicto de autorización", async () => {
+    setStoredInternalSession(makeSession());
+    mountAuth();
+    getInternalMe.mockRejectedValue(
+      new AtlasApiError({ status: 429, code: "TOO_MANY", message: "espera" }),
+    );
+
+    await act(async () => {
+      await expect(auth.restoreSessionFromServer()).rejects.toThrow();
+    });
+
+    expect(getStoredInternalSession()).not.toBeNull();
+  });
+
+  it("un 500 tampoco borra la sesión guardada", async () => {
+    setStoredInternalSession(makeSession());
+    mountAuth();
+    getInternalMe.mockRejectedValue(
+      new AtlasApiError({ status: 500, code: "BOOM", message: "falló" }),
+    );
+
+    await act(async () => {
+      await expect(auth.restoreSessionFromServer()).rejects.toThrow();
+    });
+
+    expect(getStoredInternalSession()).not.toBeNull();
+  });
+
+  it("un 401 sí la borra: ahí el backend sí respondió sobre la identidad", async () => {
+    setStoredInternalSession(makeSession());
+    mountAuth();
+    getInternalMe.mockRejectedValue(
+      new AtlasApiError({ status: 401, code: "UNAUTHORIZED", message: "no" }),
+    );
+
+    await act(async () => {
+      await auth.restoreSessionFromServer();
+    });
+
+    expect(getStoredInternalSession()).toBeNull();
   });
 
   it("un error de red se propaga: no es lo mismo que 'no autenticado'", async () => {

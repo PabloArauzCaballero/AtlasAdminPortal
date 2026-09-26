@@ -1,4 +1,4 @@
-import type { JsonRecord, PaginatedResponse } from "@/shared/api/types";
+import type { JsonRecord } from "@/shared/api/types";
 
 export type ReviewStatus =
   "AUTO_DETECTED" | "NEEDS_REVIEW" | "APPROVED" | "REJECTED" | string;
@@ -22,10 +22,10 @@ export type ToolHealth = {
   isWorker?: boolean;
   isConfigured?: boolean;
   missingEnvVars?: string[];
-  /** Estado vivo: true = operativa, false = caída, null = sin probe activo (solo configuración). */
+  /** Estado vivo: true = operativa, false = caída, null = sin chequeo en vivo (config o no-aplica). */
   isHealthy?: boolean | null;
   healthMessage?: string | null;
-  checkType?: "LIVE" | "CONFIGURATION" | string;
+  checkType?: "LIVE" | "CONFIGURATION" | "NOT_APPLICABLE" | string;
   [key: string]: unknown;
 };
 
@@ -50,6 +50,8 @@ export type EndpointItem = {
   endpointId: string;
   code: string;
   module: string;
+  /** Bloque del ecosistema (PRODUCTO) que expone el endpoint; `backendService` es el PROCESO. */
+  systemCode?: string;
   /** Backend/servicio dueño del endpoint (ej. atlas-backend); soporta catálogos multi-backend. */
   backendService?: string;
   backendBaseUrl?: string | null;
@@ -181,105 +183,9 @@ export type EndpointImpact = {
   fields: FieldImpact[];
 };
 
-export type DataEntityColumn = {
-  columnId?: string;
-  columnName: string;
-  businessName?: string | null;
-  dataType?: string | null;
-  isNullable?: boolean | null;
-  businessDescription?: string | null;
-  technicalDescription?: string | null;
-  containsPii?: boolean | null;
-  piiType?: string | null;
-  containsSensitive?: boolean | null;
-  containsFinancial?: boolean | null;
-  usedInScoring?: boolean | null;
-  usedInMl?: boolean | null;
-  validationRule?: string | null;
-  description?: string | null;
-  allowedValues?: unknown;
-  [key: string]: unknown;
-};
-
-export type DataEntity = {
-  entityId: string;
-  schemaName: string;
-  tableName: string;
-  modelName: string | null;
-  entityName: string | null;
-  module: string | null;
-  businessPurpose: string | null;
-  dataOwner: string | null;
-  containsPii: boolean;
-  containsFinancialData: boolean;
-  containsRiskData: boolean;
-  containsLegalData: boolean;
-  containsDeviceData: boolean;
-  containsLocationData: boolean;
-  isAuditCritical: boolean;
-  isAppendOnly?: boolean | null;
-  allowsUpdates?: boolean | null;
-  allowsDeletes?: boolean | null;
-  allowsHardDeletes?: boolean | null;
-  requiresApproval?: boolean | null;
-  retentionPolicyCode: string | null;
-  status: string;
-  detectedFrom: string | null;
-  confidenceLevel: string | null;
-  reviewStatus: ReviewStatus;
-  columns?: DataEntityColumn[];
-  governanceConfig?: Record<string, unknown> | null;
-};
-
-export type DataEntityMetadataInput = {
-  entityName: string;
-  businessPurpose: string;
-  dataOwner: string;
-  module: string;
-  retentionPolicyCode: string;
-  status: string;
-  containsPii: boolean;
-  containsFinancialData: boolean;
-  containsRiskData: boolean;
-  containsLegalData: boolean;
-  containsDeviceData: boolean;
-  containsLocationData: boolean;
-  isAuditCritical: boolean;
-  governance: {
-    mutationMode: string;
-    appendOnly: boolean;
-    updatesAllowed: boolean;
-    deletesAllowed: boolean;
-    hardDeleteAllowed: boolean;
-    approvalRequired: boolean;
-    notes: string;
-  };
-};
-
-export type TableImpact = {
-  entity: DataEntity;
-  endpointImpacts: DataEntityImpact[];
-  columns?: DataEntityColumn[];
-  governanceConfig?: Record<string, unknown> | null;
-};
-
-export type ToolItem = {
-  toolId: string;
-  code: string;
-  name: string;
-  type: string | null;
-  provider: string | null;
-  purpose: string | null;
-  requiredEnvVars: string[];
-  hasSandbox: boolean;
-  healthcheckRoute: string | null;
-  requiresCredentials: boolean;
-  isCritical: boolean;
-  status: string;
-  ownerTeam: string | null;
-};
-
-export type EndpointListResponse = PaginatedResponse<EndpointItem>;
-export type DataEntityListResponse = PaginatedResponse<DataEntity>;
-export type ToolListResponse = PaginatedResponse<ToolItem>;
-export type DomainListResponse = PaginatedResponse<Domain>;
+/**
+ * Las entidades de datos, las herramientas y el mapa de dominios viven en `catalog-data-types`:
+ * juntos pasaban de las 300 líneas que `yarn max-lines` admite. Se re-exportan aquí para que
+ * `import … from "@/features/systems/types/catalog-types"` siga siendo la puerta de entrada.
+ */
+export * from "./catalog-data-types";

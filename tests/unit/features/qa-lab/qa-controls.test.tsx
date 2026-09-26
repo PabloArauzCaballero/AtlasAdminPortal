@@ -1,3 +1,4 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -138,7 +139,7 @@ describe("QaScenarioControls · escenario y credencial", () => {
     const onChange = vi.fn();
     render(<QaScenarioControls form={commonForm()} onChange={onChange} />);
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: /Escenario de prueba/ }),
       "without_auth",
     );
@@ -161,7 +162,7 @@ describe("QaScenarioControls · escenario y credencial", () => {
 
     expect(
       screen.getByRole("combobox", { name: /Escenario de prueba/ }),
-    ).toHaveValue("valid_payload");
+    ).toHaveAttribute("data-value", "valid_payload");
   });
 
   it("el token manual solo se pide cuando el auth mode es 'custom'", async () => {
@@ -171,7 +172,7 @@ describe("QaScenarioControls · escenario y credencial", () => {
     );
     expect(screen.queryByPlaceholderText("eyJhbGciOi...")).toBeNull();
 
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: /Auth mode efectivo/ }),
       "custom",
     );
@@ -206,6 +207,7 @@ describe("NumberField", () => {
     render(
       <NumberField
         label="Timeout ms"
+        tooltip="Milisegundos que espera la petición antes de fallar."
         value={2}
         min={0}
         max={100}
@@ -225,6 +227,7 @@ describe("NumberField", () => {
     render(
       <NumberField
         label="RPS"
+        tooltip="Peticiones por segundo que se intentan sostener."
         value={5}
         min={1}
         max={500}

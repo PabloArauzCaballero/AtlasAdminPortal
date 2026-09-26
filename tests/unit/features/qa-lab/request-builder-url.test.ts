@@ -103,6 +103,63 @@ describe("buildQaRequest · composición de la URL", () => {
 
     expect(built.unresolvedPathParams).toEqual(["id"]);
   });
+
+  it("no confunde el puerto de una URL absoluta con un path param pendiente", () => {
+    // Bug real encontrado al cablear el mock de proveedores externos: sus endpoints tienen
+    // `fullPath` absoluto con puerto explícito (`http://localhost:4010/...`), y el patrón
+    // `:([a-zA-Z0-9_]+)` de sustitución de path params matcheaba igual de bien el `:4010` del
+    // puerto que un `:id` de ruta — un stress real contra el mock fallaba con "Faltan path
+    // params: 4010" sin que hubiera ningún path param de verdad.
+    const built = buildQaRequest(
+      endpointFixture({
+        fullPath: "http://localhost:4010/mock/segip/identity/verify",
+        routePath: "http://localhost:4010/mock/segip/identity/verify",
+      }),
+      inputFixture(),
+    );
+
+    expect(built.unresolvedPathParams).toEqual([]);
+    expect(built.url).toBe("http://localhost:4010/mock/segip/identity/verify");
+  });
+
+  it("sí sustituye un :param real dentro del path de una URL absoluta con puerto", () => {
+    const built = buildQaRequest(
+      endpointFixture({
+        fullPath: "http://localhost:4010/mock/customers/:customerId",
+      }),
+      inputFixture({ pathParams: { customerId: "c-1" } }),
+    );
+
+    expect(built.unresolvedPathParams).toEqual([]);
+    expect(built.url).toBe("http://localhost:4010/mock/customers/c-1");
+  });
+});
+
+describe("buildQaRequest · ruta base del mock de proveedores externos", () => {
+  it("no inyecta /api/v1 cuando la ruta base es el mock de proveedores externos", () => {
+    // El mock (`AtlasExternalProvidersMock`) vive bajo `/mock`, no `/api/v1`: unirlos a ciegas
+    // producía `.../mock/api/v1/segip/...`, que el emulador responde con 404 ROUTE_NOT_FOUND.
+    const built = buildQaRequest(
+      endpointFixture({ fullPath: "/segip/identity/verify" }),
+      inputFixture({ baseRouteKey: "MOCK_PROVIDERS" }),
+    );
+
+    expect(built.url).toBe("http://localhost:4010/mock/segip/identity/verify");
+  });
+
+  it("una CUSTOM_HOST con prefijo propio sigue recibiendo /api/v1 como antes", () => {
+    // La excepción de la ruta del mock es específica a esa base, no a "cualquier base con path":
+    // un host manual con su propio prefijo (p. ej. un gateway) no debe perder el /api/v1.
+    const built = buildQaRequest(
+      endpointFixture({ fullPath: "/health" }),
+      inputFixture({
+        baseRouteKey: "CUSTOM_HOST",
+        customHostUrl: "https://gateway.atlas.local/edge",
+      }),
+    );
+
+    expect(built.url).toBe("https://gateway.atlas.local/edge/api/v1/health");
+  });
 });
 
 describe("buildQaRequest · query params", () => {

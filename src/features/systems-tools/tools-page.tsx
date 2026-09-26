@@ -14,6 +14,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Wrench } from "lucide-react";
 
 export function ToolsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -43,7 +44,7 @@ function AuthorizedToolsPage() {
         accessorKey: "code",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/systems/tools/${row.original.toolId}`}
           >
             {row.original.code}
@@ -80,6 +81,7 @@ function AuthorizedToolsPage() {
   return (
     <>
       <PageHeader
+        icon={Wrench}
         eyebrow="Herramientas"
         title="Herramientas internas"
         description="Catálogo de herramientas técnicas requeridas por endpoints. No se muestran valores de variables de entorno ni secretos."

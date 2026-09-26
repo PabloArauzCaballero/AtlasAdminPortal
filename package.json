@@ -15,20 +15,23 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"docs/**/*.md\" \"scripts/**/*.mjs\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\" \"docs/**/*.md\" \"scripts/**/*.mjs\"",
     "clean": "node -e \"const fs=require('node:fs'); for (const p of ['.next','out','dist','coverage','tsconfig.tsbuildinfo']) fs.rmSync(p,{recursive:true,force:true})\"",
-    "validate": "npm run max-lines && npm run source-boundaries && npm run format:check && npm run type-check && npm run lint",
+    "validate": "npm run max-lines && npm run source-boundaries && npm run field-help && npm run format:check && npm run type-check && npm run lint",
     "validate:full": "npm run validate && npm run test:coverage && npm run build && npm run audit:high",
     "build:raw": "next build",
     "audit:high": "npm audit --audit-level=high",
     "build:portable": "node scripts/next-build.mjs",
     "build:stable": "cross-env NEXT_TELEMETRY_DISABLED=1 NEXT_PRIVATE_BUILD_WORKER=1 next build",
     "max-lines": "node scripts/check-max-lines.mjs 300",
-    "source-boundaries": "node scripts/check-source-boundaries.mjs"
+    "source-boundaries": "node scripts/check-source-boundaries.mjs",
+    "field-help": "node scripts/check-field-help.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-table": "^8.21.3",
+    "@xyflow/react": "^12",
     "clsx": "^2.1.1",
+    "elkjs": "^0.11",
     "lucide-react": "^0.577.0",
     "next": "15.5.25",
     "next-intl": "^4.14.5",
@@ -55,6 +58,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.39.5",
     "eslint-config-next": "15.5.25",
+    "eslint-plugin-playwright": "^2.12.0",
     "jsdom": "^29.1.1",
     "msw": "^2.15.0",
     "postcss": "^8.5.28",
@@ -67,5 +71,23 @@
   "engines": {
     "node": ">=20.11 <23",
     "yarn": ">=1.22.22 <2"
+  },
+  "resolutions": {
+    "brace-expansion": "^2.0.2",
+    "browserslist": "^4.28.7",
+    "js-yaml": "^4.3.2",
+    "nanoid": "^3.3.18",
+    "postcss": "^8.5.26",
+    "sharp": "^0.35.4",
+    "undici": "^7.29.0"
+  },
+  "overrides": {
+    "brace-expansion": "^2.0.2",
+    "browserslist": "^4.28.7",
+    "js-yaml": "^4.3.2",
+    "nanoid": "^3.3.18",
+    "postcss": "^8.5.26",
+    "sharp": "^0.35.4",
+    "undici": "^7.29.0"
   }
 }

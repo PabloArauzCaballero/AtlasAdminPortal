@@ -1,4 +1,9 @@
 "use client";
+
+import {
+  CATALOG_ACTIVE_OPTIONS,
+  CATALOG_VERSION_STATUS_OPTIONS,
+} from "./operations-filter-options";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -22,6 +27,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
+import { Boxes } from "lucide-react";
 export function OperationCatalogsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -89,7 +95,7 @@ function AuthorizedOperationCatalogsPage() {
           return (
             <Link
               href={`/internal/operations/catalogs/${row.original.catalogCode}/versions/${version.catalogVersionId}`}
-              className="font-mono text-xs font-semibold text-blue-700 underline"
+              className="font-mono text-xs font-semibold text-atlas-accent underline"
             >
               {version.versionCode}
             </Link>
@@ -131,6 +137,7 @@ function AuthorizedOperationCatalogsPage() {
   return (
     <>
       <PageHeader
+        icon={Boxes}
         eyebrow="Catálogos"
         title="Catálogos operativos"
         description="Conectado a `/operations/catalogs`. Verifica catálogos, versiones, dueños y estados antes de generar reportes o reglas nuevas."
@@ -145,29 +152,23 @@ function AuthorizedOperationCatalogsPage() {
       <FilterBar
         search={domain}
         searchPlaceholder="Filtrar por dominio…"
+        searchTooltip="Escribe el dominio del catálogo, p. ej. bancos, para acotar la lista."
         filters={[
           {
             name: "status",
             label: "Estado versión",
+            tooltip:
+              "Momento del ciclo de aprobación de la versión vigente de cada catálogo.",
             value: status,
-            options: [
-              "draft",
-              "pending_approval",
-              "approved",
-              "published",
-              "retired",
-              "all",
-            ].map((value) => ({ value, label: value })),
+            options: CATALOG_VERSION_STATUS_OPTIONS,
           },
           {
             name: "active",
             label: "Activo",
+            tooltip:
+              "Si el catálogo está encendido para el motor o apagado sin borrarse.",
             value: active,
-            options: [
-              { value: "all", label: "Todos" },
-              { value: "true", label: "Activos" },
-              { value: "false", label: "Inactivos" },
-            ],
+            options: CATALOG_ACTIVE_OPTIONS,
           },
         ]}
         onSearchChange={setDomain}
@@ -199,7 +200,7 @@ function AuthorizedOperationCatalogsPage() {
       ) : null}
       {catalogs.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Catálogos" value={formatNumber(items.length)} />
             <MetricCard
               label="Activos"

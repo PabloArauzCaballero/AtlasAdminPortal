@@ -72,6 +72,33 @@ El frontend soporta modo `cookie`, `session` y `auto`. Producción debe usar coo
 | GET    | `/systems/health/tools`                           | Salud de herramientas | `systems.tools.health.read`            |
 | POST   | `/systems/tools/infer-requirements`               | Inferir requisitos    | `systems.tools.inferRequirements`      |
 
+### El catálogo incluye los otros dos backends del ecosistema
+
+`/systems/health/tools` y `/systems/tools` no devuelven sólo dependencias técnicas de este backend
+(Postgres, Redis, JWT…): desde agosto de 2026 incluyen también **`DECISION_ENGINE`** y
+**`ERP_BACKEND`**, los otros dos servicios desplegables de ATLAS. El portal no necesita saber dónde
+viven ni hablar con ellos — el backend los comprueba por HTTP y devuelve el resultado como una
+herramienta más.
+
+Sobre esa respuesta importan dos cosas al pintarla:
+
+- **`checkType: "CONFIGURATION"` no es una caída.** Significa que ese despliegue no tiene la
+  dirección del servicio configurada. `ToolLiveBadge` ya lo distingue; pintarlo como rojo de
+  incidente mandaría a operaciones a investigar un servicio probablemente sano.
+- **`healthMessage` trae el motivo y la degradación**, no un «error» genérico: qué respondió, en
+  cuánto tiempo y qué deja de funcionar. Es el texto que se muestra tal cual; resumirlo pierde
+  justo lo accionable.
+
+### Metadata de gobierno en el detalle de herramienta
+
+`GET /systems/tools/:toolId` devuelve además cinco textos largos —`description`, `businessValue`,
+`technicalUsage`, `auditNotes`, `failureRisks`— que la ficha pinta en «Gobierno de la herramienta».
+
+Son **opcionales en el tipo a propósito**: las columnas existían en la base desde el principio, pero
+el modelo del backend no las declaraba y Sequelize las descartaba en silencio, así que todo catálogo
+sembrado antes de la corrección las tiene en `NULL`. Un portal que asumiera su presencia rompería la
+ficha entera por un texto que falta.
+
 ## QA y stress
 
 | Método | Ruta                                        | Pantalla        | Permiso esperado            |

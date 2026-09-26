@@ -1,20 +1,108 @@
 import type { EndpointItem } from "@/features/systems/types";
+import type { ContractField } from "./contract-fields";
 import { executeEndpointDirectly } from "./direct-runner";
+import { generateCases } from "./qa-case-generator";
 import type {
+  QaJourneyBatchResult,
   QaJourneyConfig,
+  QaJourneyIterationResult,
   QaJourneyRunResult,
   QaJourneyStepResult,
   QaJourneyStepSpec,
 } from "./journey-types";
 import type { EndpointRunInput } from "./types";
 
+/**
+ * Campos de una persona simulada, con los mismos nombres que
+ * `AtlasExternalProvidersMock/src/domain/derive.mjs` reconoce como identidad (`documentNumber`,
+ * `phone`, `email`) — así el mismo `{{persona.documentNumber}}` sirve tanto para un paso propio de
+ * Atlas (alta de cliente) como para uno del mock (verificación SEGIP), y las dos observan la MISMA
+ * identidad derivada. `generateCases` ya sabe dar formato realista por nombre de campo
+ * (`qa-case-generator.ts`): reusarlo aquí evita un segundo generador de datos sintéticos.
+ */
+const PERSONA_FIELDS: ContractField[] = [
+  { name: "documentNumber", type: "string", required: true },
+  { name: "phone", type: "string", required: true },
+  { name: "email", type: "string", required: true },
+  { name: "firstName", type: "string", required: true },
+  { name: "lastName", type: "string", required: true },
+];
+
+/**
+ * Corre el journey `iterations` veces — cada una con su propia persona determinista (misma
+ * semilla ⇒ mismas N personas) y su propio `x-mock-persona-key`, para que el mock de proveedores
+ * externos aísle el estado de cada una. Es lo que convierte "un journey" en "simular un lote de
+ * clientes atravesando el mismo flujo con las cantidades pedidas", en vez de una corrida suelta.
+ */
+export async function runJourneyBatch(
+  steps: QaJourneyStepSpec[],
+  config: QaJourneyConfig,
+  endpointsById: Map<string, EndpointItem>,
+): Promise<QaJourneyBatchResult> {
+  const startedAt = new Date().toISOString();
+  const iterations = clamp(config.iterations, 1, 200);
+  const concurrency = clamp(config.concurrency, 1, 20);
+  const personas = generateCases(
+    PERSONA_FIELDS,
+    "valid",
+    iterations,
+    config.seed || "qa-base",
+  );
+  const runs: QaJourneyIterationResult[] = new Array(iterations);
+
+  await runWithConcurrency(iterations, concurrency, async (index) => {
+    const persona = personas[index]?.payload ?? {};
+    const result = await runJourney(steps, config, endpointsById, {
+      persona,
+      personaKey: `journey-${index}`,
+    });
+    runs[index] = { index, persona, result };
+  });
+
+  return {
+    iterations,
+    concurrency,
+    seed: config.seed || "qa-base",
+    startedAt,
+    finishedAt: new Date().toISOString(),
+    passedIterations: runs.filter((run) => run.result.failedSteps === 0).length,
+    failedIterations: runs.filter((run) => run.result.failedSteps > 0).length,
+    runs,
+  };
+}
+
+async function runWithConcurrency(
+  total: number,
+  concurrency: number,
+  task: (index: number) => Promise<void>,
+): Promise<void> {
+  let next = 0;
+  async function worker(): Promise<void> {
+    while (next < total) {
+      const index = next;
+      next += 1;
+      await task(index);
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, total) }, () => worker()),
+  );
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(Number.isFinite(value) ? value : min, min), max);
+}
+
 export async function runJourney(
   steps: QaJourneyStepSpec[],
   config: QaJourneyConfig,
   endpointsById: Map<string, EndpointItem>,
+  runContext: { persona?: Record<string, unknown>; personaKey?: string } = {},
 ): Promise<QaJourneyRunResult> {
   const startedAt = new Date().toISOString();
-  const context: Record<string, unknown> = {};
+  const context: Record<string, unknown> = runContext.persona
+    ? { persona: runContext.persona }
+    : {};
   const results: QaJourneyStepResult[] = [];
 
   for (const step of steps) {
@@ -32,7 +120,7 @@ export async function runJourney(
       });
       continue;
     }
-    const input = buildStepInput(step, config, context);
+    const input = buildStepInput(step, config, context, runContext.personaKey);
     const runResult = await executeEndpointDirectly(endpoint, input);
     const extracted = config.dryRun
       ? {}
@@ -69,7 +157,13 @@ function buildStepInput(
   step: QaJourneyStepSpec,
   config: QaJourneyConfig,
   context: Record<string, unknown>,
+  personaKey?: string,
 ): EndpointRunInput {
+  const headers = substitute(step.headers ?? {}, context) as Record<
+    string,
+    string
+  >;
+  if (personaKey) headers["x-mock-persona-key"] = personaKey;
   return {
     environment: config.environment,
     baseRouteKey: config.baseRouteKey,
@@ -82,6 +176,8 @@ function buildStepInput(
     includeTenantHeader: config.includeTenantHeader,
     includeIdempotencyKey: config.includeIdempotencyKey,
     deviceProfile: config.deviceProfile,
+    mockScenario: config.mockScenario,
+    mockLatencyMs: config.mockLatencyMs,
     payload: substitute(step.payload ?? {}, context) as Record<string, unknown>,
     queryParams: substitute(step.queryParams ?? {}, context) as Record<
       string,
@@ -91,7 +187,7 @@ function buildStepInput(
       string,
       unknown
     >,
-    headers: substitute(step.headers ?? {}, context) as Record<string, string>,
+    headers,
     expectedResponse: {
       statusCodes: step.expectedStatusCodes ?? [200, 201, 202, 204],
       headers: {},

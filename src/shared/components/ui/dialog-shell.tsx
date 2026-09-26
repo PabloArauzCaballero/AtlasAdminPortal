@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/shared/lib/cn";
+import { bloquearElFondo } from "./dialog-backdrop";
+
+/** El montaje no cambia nunca después de la hidratación: no hay a qué suscribirse. */
+function suscribirNada(): () => void {
+  return () => {};
+}
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -36,12 +43,43 @@ export function DialogShell({
   labelledBy: string;
   onClose: () => void;
   closeOnBackdrop?: boolean;
+  /**
+   * Sólo la DISPOSICIÓN del panel dentro del velo (centrado, relleno). El color, el desenfoque y
+   * el orden de apilamiento los pone el propio shell: cuando cada diálogo los traía puestos, dos
+   * de ellos se quedaron sin ninguno y la barra lateral —`z-30`— se pintaba por encima.
+   */
   overlayClassName?: string;
   panelClassName?: string;
   children: React.ReactNode;
 }>) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  /*
+   * `document` no existe durante el render del servidor y `createPortal` lo exige. Con
+   * `useSyncExternalStore` el servidor y la primera pasada del cliente coinciden en `false`
+   * —ningún desajuste de hidratación—, y el portal se monta en la pasada siguiente.
+   */
+  const montado = useSyncExternalStore(
+    suscribirNada,
+    () => true,
+    () => false,
+  );
+
+  /*
+   * Mientras el diálogo está abierto, el resto de la aplicación no se usa: ni con el ratón, ni con
+   * la rueda, ni con el tabulador. Ver `dialog-backdrop.ts`.
+   *
+   * `montado` está en las dependencias porque el velo no existe hasta que el portal se monta, en la
+   * pasada siguiente a la primera: sin él, el efecto correría con la referencia todavía vacía.
+   */
+  useEffect(() => {
+    if (!open || !montado) return;
+    const velo = overlayRef.current;
+    if (!velo) return;
+    return bloquearElFondo(velo);
+  }, [open, montado]);
 
   useEffect(() => {
     if (!open) return;
@@ -104,16 +142,21 @@ export function DialogShell({
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !montado) return null;
 
-  return (
+  const overlay = (
     // El backdrop cierra con el ratón como atajo; el equivalente accesible es
     // Escape, que este mismo componente implementa y cubre con tests. No se le
     // pone role interactivo a propósito: es decorado, no un control que deba
     // anunciarse ni recibir foco.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
-      className={cn("fixed inset-0", overlayClassName)}
+      ref={overlayRef}
+      data-atlas-overlay=""
+      className={cn(
+        "fixed inset-0 z-50 atlas-veil animate-fade-in",
+        overlayClassName,
+      )}
       onMouseDown={(event) => {
         if (closeOnBackdrop && event.target === event.currentTarget) onClose();
       }}
@@ -130,4 +173,19 @@ export function DialogShell({
       </div>
     </div>
   );
+
+  /*
+   * El diálogo se monta en `document.body`, no donde se escribe.
+   *
+   * `AppShell` envuelve cada vista en un `<main>` con `animate-fade-in`, y una animación con
+   * `fill-mode: both` sobre la opacidad deja al elemento con contexto de apilamiento PROPIO
+   * aunque ya haya terminado. Dentro de ese contexto, el `z-40` del overlay no compite con el
+   * `z-20` de la barra superior: `main` no está posicionado, así que se pinta entero por debajo
+   * de ella. El síntoma era que la cabecera del drawer —su título y la ✕ de cerrar— quedaba
+   * TAPADA por la barra, y el único modo de cerrarlo era Escape o el fondo.
+   *
+   * Subir el `z-index` no lo arregla: el contexto padre lo acota igual. Salir del árbol de
+   * `main`, sí.
+   */
+  return createPortal(overlay, document.body);
 }

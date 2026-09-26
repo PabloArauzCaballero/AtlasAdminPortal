@@ -19,6 +19,10 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
 import { useLabEndpoints } from "./hooks";
+import {
+  isMockEndpointId,
+  searchMockProviderEndpoints,
+} from "./mock-provider-endpoints";
 
 export function EndpointPicker({
   selectedId,
@@ -28,6 +32,7 @@ export function EndpointPicker({
   const [manualId, setManualId] = useState(selectedId);
   const endpoints = useLabEndpoints({ page: 1, limit: 10, q });
   const columns = useMemo(() => buildColumns(onSelect), [onSelect]);
+  const mockMatches = useMemo(() => searchMockProviderEndpoints(q), [q]);
 
   function loadManual() {
     const value = manualId.trim();
@@ -38,16 +43,20 @@ export function EndpointPicker({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="1. Seleccionar endpoint"
+          title="Seleccionar endpoint"
           description="Busca una ruta registrada o pega el identificador exacto del endpoint para ejecutar pruebas funcionales y de carga controlada."
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_260px_auto]">
+        <div
+          className="grid gap-3 grid-cols-1 lg:grid-cols-[1fr_260px_auto]"
+          data-tutorial-id="qa-lab-endpoint-search"
+        >
           <FilterBar
             search={q}
             searchPlaceholder="Buscar ruta, módulo o acción..."
+            searchTooltip="Busca por ruta, módulo o acción de negocio del endpoint a probar."
             onSearchChange={setQ}
             onClear={() => setQ("")}
           />
@@ -62,7 +71,7 @@ export function EndpointPicker({
           </Button>
         </div>
         {selectedId ? (
-          <p className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          <p className="rounded-xl border border-atlas-accentSoft bg-atlas-accentWash px-4 py-3 text-sm text-atlas-text">
             Endpoint seleccionado:{" "}
             <span className="font-mono">#{selectedId}</span>
           </p>
@@ -72,13 +81,30 @@ export function EndpointPicker({
           <EndpointPickerError error={endpoints.error} />
         ) : null}
         {endpoints.data ? (
-          <DataTable
-            data={endpoints.data.items}
-            columns={columns}
-            meta={endpoints.data.meta}
-            emptyTitle="No se encontraron endpoints."
-            emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
-          />
+          <div data-tutorial-id="qa-lab-catalog-results">
+            <DataTable
+              data={endpoints.data.items}
+              columns={columns}
+              meta={endpoints.data.meta}
+              emptyTitle="No se encontraron endpoints."
+              emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
+            />
+          </div>
+        ) : null}
+        {mockMatches.length > 0 ? (
+          <div className="space-y-2" data-tutorial-id="qa-lab-mock-providers">
+            <SectionHeader
+              title="Proveedores externos (mock)"
+              description="Los 9 endpoints de negocio de AtlasExternalProvidersMock — para probar stress y journeys sin depender del proveedor real. Al elegir uno, la ruta base pasa sola a «Mock de proveedores externos»."
+              className="mb-0"
+            />
+            <DataTable
+              data={mockMatches}
+              columns={columns}
+              emptyTitle="Sin coincidencias en el mock."
+              emptyDescription="Ajusta la búsqueda."
+            />
+          </div>
         ) : null}
       </CardContent>
     </Card>
@@ -95,14 +121,21 @@ function buildColumns(
     },
     {
       header: "Ruta",
-      cell: ({ row }) => (
-        <Link
-          className="font-mono text-xs text-blue-700 underline"
-          href={`/internal/systems/endpoints/${row.original.endpointId}`}
-        >
-          {safeText(row.original.fullPath ?? row.original.routePath)}
-        </Link>
-      ),
+      // Un endpoint del mock no tiene ficha en `/internal/systems/endpoints`: no es
+      // parte del catálogo de AtlasBackend, así que ese link sería un 404.
+      cell: ({ row }) =>
+        isMockEndpointId(row.original.endpointId) ? (
+          <span className="font-mono text-xs text-atlas-text">
+            {safeText(row.original.fullPath ?? row.original.routePath)}
+          </span>
+        ) : (
+          <Link
+            className="font-mono text-xs text-atlas-accent underline"
+            href={`/internal/systems/endpoints/${row.original.endpointId}`}
+          >
+            {safeText(row.original.fullPath ?? row.original.routePath)}
+          </Link>
+        ),
     },
     {
       header: "Módulo",

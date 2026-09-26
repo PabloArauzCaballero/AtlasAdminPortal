@@ -5,7 +5,8 @@ import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
-import { Field, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Textarea } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -31,6 +32,7 @@ export function ResolutionDialog({
 }>) {
   const titleId = useId();
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -48,7 +50,7 @@ export function ResolutionDialog({
       open
       labelledBy={titleId}
       onClose={onCancel}
-      overlayClassName="z-50 flex items-center justify-center bg-slate-950/40 p-4"
+      overlayClassName="flex items-center justify-center p-4"
       panelClassName="w-full max-w-2xl rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
     >
       <form onSubmit={submit}>
@@ -59,23 +61,49 @@ export function ResolutionDialog({
           title={`Cerrar issue #${issueId}`}
           description="Completa resolución y notas. Evita incluir datos sensibles."
         />
-        <div className="grid gap-4 md:grid-cols-[180px_1fr]">
-          <Field label="Resolución" error={errors.resolution?.message}>
-            <Select {...register("resolution")}>
-              <option value="resolved">resolved</option>
-              <option value="ignored">ignored</option>
-            </Select>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-[180px_1fr]">
+          <Field
+            tooltip="Cómo se cierra el issue: corregido o aceptado sin corregir."
+            label="Resolución"
+            error={errors.resolution?.message}
+          >
+            <FormSelect
+              control={control}
+              name="resolution"
+              options={[
+                {
+                  value: "resolved",
+                  label: "resolved",
+                  description: "El problema se corrigió.",
+                },
+                {
+                  value: "ignored",
+                  label: "ignored",
+                  description:
+                    "Se cierra sin corregir el dato; el motivo queda en las notas.",
+                },
+              ]}
+            />
           </Field>
-          <Field label="Razón" error={errors.reasonCode?.message}>
-            <Select {...register("reasonCode")}>
-              <option value="manual_review">manual_review</option>
-              <option value="source_validated">source_validated</option>
-              <option value="false_positive">false_positive</option>
-              <option value="temporary_exception">temporary_exception</option>
-            </Select>
+          <Field
+            tooltip="Motivo codificado del cierre, para agrupar los cierres en la auditoría."
+            label="Razón"
+            error={errors.reasonCode?.message}
+          >
+            <FormSelect
+              control={control}
+              name="reasonCode"
+              options={[
+                "manual_review",
+                "source_validated",
+                "false_positive",
+                "temporary_exception",
+              ].map((value) => ({ value, label: value }))}
+            />
           </Field>
           <div className="md:col-span-2">
             <Field
+              tooltip="Criterio operativo del cierre, sin datos personales; queda en la auditoría."
               label={`Notas (obligatorio, mínimo ${MIN_RESOLUTION_NOTES_LENGTH} caracteres)`}
               error={errors.notes?.message}
               hint="Explica criterio operativo sin pegar datos personales. Queda en la auditoría del issue."

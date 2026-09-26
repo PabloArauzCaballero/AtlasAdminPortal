@@ -16,6 +16,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildRuleColumns } from "./rule-columns";
 import { useDataQualityRules } from "./hooks";
+import { ShieldCheck } from "lucide-react";
 
 export function DataQualityRulesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -48,6 +49,7 @@ function AuthorizedDataQualityRulesPage() {
   return (
     <>
       <PageHeader
+        icon={ShieldCheck}
         eyebrow="Reglas de calidad"
         title="Reglas de calidad"
         description="Catálogo real de reglas de calidad, severidad, dueño, estado y última ejecución."
@@ -101,7 +103,7 @@ function AuthorizedDataQualityRulesPage() {
       ) : null}
       {rules.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Reglas"
               value={formatNumber(rules.data.meta.total)}

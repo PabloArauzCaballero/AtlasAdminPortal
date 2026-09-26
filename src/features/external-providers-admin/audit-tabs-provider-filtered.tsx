@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Field, Input } from "@/shared/components/ui/input";
 import { useProductionGate, useSlaReport, useUsageReport } from "./hooks";
-import { ReportView } from "./report-view";
+import { ProductionGateView } from "./audit/quality-views";
+import { SlaReportView, UsageReportView } from "./audit/usage-views";
+import { ReportCheckbox, ReportFilters } from "./report-view";
 
 export function ProductionGateTab() {
   const [providerCode, setProviderCode] = useState("");
@@ -15,27 +17,27 @@ export function ProductionGateTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <Field label="Código de proveedor (opcional)">
+      <ReportFilters>
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
-        <label className="flex items-center gap-2 pb-2.5 text-sm text-atlas-text">
-          <input
-            type="checkbox"
-            checked={strict}
-            onChange={(event) => setStrict(event.target.checked)}
-          />
-          Modo estricto
-        </label>
-      </div>
-      <ReportView query={query} title="Production gate" />
+        <ReportCheckbox
+          label="Modo estricto"
+          checked={strict}
+          onChange={setStrict}
+        />
+      </ReportFilters>
+      <ProductionGateView query={query} />
     </div>
   );
 }
@@ -47,28 +49,35 @@ export function SlaReportTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <Field label="Código de proveedor (opcional)">
+      <ReportFilters>
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
-        <Field label="Ventana (días)">
+        <Field
+          tooltip="Cuántos días hacia atrás abarca el informe, de 1 a 366."
+          label="Ventana (días)"
+        >
           <Input
             type="number"
             min={1}
             max={366}
+            className="w-32"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 30)}
           />
         </Field>
-      </div>
-      <ReportView query={query} title="Reporte de SLA" />
+      </ReportFilters>
+      <SlaReportView query={query} />
     </div>
   );
 }
@@ -83,28 +92,35 @@ export function UsageReportTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <Field label="Código de proveedor (opcional)">
+      <ReportFilters>
+        <Field
+          tooltip="Limita el informe a un proveedor, p. ej. SEGIP; vacío incluye todos."
+          label="Código de proveedor (opcional)"
+        >
           <Input
             value={providerCode}
             onChange={(event) =>
               setProviderCode(event.target.value.toUpperCase())
             }
             placeholder="ej: SEGIP"
-            className="font-mono text-xs"
+            className="w-44 font-mono text-xs"
           />
         </Field>
-        <Field label="Ventana (días)">
+        <Field
+          tooltip="Cuántos días hacia atrás abarca el informe, de 1 a 366."
+          label="Ventana (días)"
+        >
           <Input
             type="number"
             min={1}
             max={366}
+            className="w-32"
             value={days}
             onChange={(event) => setDays(Number(event.target.value) || 30)}
           />
         </Field>
-      </div>
-      <ReportView query={query} title="Uso y costo" />
+      </ReportFilters>
+      <UsageReportView query={query} />
     </div>
   );
 }

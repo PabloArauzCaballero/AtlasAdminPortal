@@ -20,6 +20,10 @@ export type EndpointRunInput = {
   includeTenantHeader: boolean;
   includeIdempotencyKey: boolean;
   deviceProfile?: string;
+  /** Escenario a forzar en AtlasExternalProvidersMock (x-mock-scenario). Ignorado fuera de ese host. */
+  mockScenario?: string;
+  /** Latencia exacta a forzar en el mock (x-mock-latency-ms), en ms. Ignorado fuera de ese host. */
+  mockLatencyMs?: number;
   payload: JsonRecord;
   queryParams: JsonRecord;
   pathParams: JsonRecord;
@@ -52,6 +56,10 @@ export type EndpointStressRunInput = {
   includeTenantHeader: boolean;
   includeIdempotencyKey: boolean;
   deviceProfile?: string;
+  /** Escenario a forzar en AtlasExternalProvidersMock (x-mock-scenario). Ignorado fuera de ese host. */
+  mockScenario?: string;
+  /** Latencia exacta a forzar en el mock (x-mock-latency-ms), en ms. Ignorado fuera de ese host. */
+  mockLatencyMs?: number;
   payload: JsonRecord;
   queryParams: JsonRecord;
   pathParams: JsonRecord;

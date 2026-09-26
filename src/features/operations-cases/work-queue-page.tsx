@@ -10,14 +10,28 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
+import {
+  WORK_QUEUE_PRIORITY_HELP,
+  WORK_QUEUE_STATUS_HELP,
+} from "./decision-options";
 import { DecisionDialog } from "./decision-dialog";
 import { useWorkQueue } from "./hooks";
 import { buildWorkQueueColumns } from "./work-queue-columns";
 import type { WorkQueueItem } from "./types";
+import { ShieldAlert } from "lucide-react";
 
 const queueOptions = [
-  { label: "Revisión manual", value: "manual_review" },
-  { label: "Fraude", value: "fraud" },
+  {
+    label: "Revisión manual",
+    value: "manual_review",
+    description: "Altas con KYC dudoso o incompleto que decide un analista.",
+  },
+  {
+    label: "Fraude",
+    value: "fraud",
+    description:
+      "Patrones de fraude detectados; sólo analistas de fraude deciden.",
+  },
 ];
 
 export function WorkQueuePage() {
@@ -42,17 +56,26 @@ export function WorkQueuePage() {
     [],
   );
   const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
+    () =>
+      uniqueTextOptions(
+        items.map((item) => item.status),
+        WORK_QUEUE_STATUS_HELP,
+      ),
     [items],
   );
   const priorityOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.priority)),
+    () =>
+      uniqueTextOptions(
+        items.map((item) => item.priority),
+        WORK_QUEUE_PRIORITY_HELP,
+      ),
     [items],
   );
 
   return (
     <>
       <PageHeader
+        icon={ShieldAlert}
         eyebrow="Operaciones"
         title="Cola de trabajo"
         description="Casos de revisión manual y de fraude pendientes de decisión, combinados en una sola cola priorizada."
@@ -67,23 +90,30 @@ export function WorkQueuePage() {
       <FilterBar
         search={customerId}
         searchPlaceholder="Buscar por ID de cliente…"
+        searchTooltip="Pega el identificador exacto del cliente para ver sólo sus casos abiertos."
         filters={[
           {
             name: "queue",
             label: "Cola",
             value: queue === "all" ? "" : queue,
+            tooltip:
+              "Separa la revisión manual (KYC) de los casos de fraude, que decide otro equipo.",
             options: queueOptions,
           },
           {
             name: "status",
             label: "Estado",
             value: status,
+            tooltip:
+              "Acota la cola al momento del caso; los estados salen de los casos cargados.",
             options: statusOptions,
           },
           {
             name: "priority",
             label: "Prioridad",
             value: priority,
+            tooltip:
+              "Muestra primero lo urgente: la prioridad la asigna el backend al abrir el caso.",
             options: priorityOptions,
           },
         ]}
@@ -123,7 +153,7 @@ export function WorkQueuePage() {
       ) : null}
       {workQueue.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Casos en cola"
               value={formatNumber(workQueue.data.meta.total)}

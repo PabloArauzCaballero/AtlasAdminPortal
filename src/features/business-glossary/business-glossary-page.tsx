@@ -14,6 +14,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { formatNumber } from "@/shared/lib/format";
+import { BookMarked } from "lucide-react";
 
 export function BusinessGlossaryPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -41,6 +42,7 @@ function AuthorizedBusinessGlossaryPage() {
   return (
     <>
       <PageHeader
+        icon={BookMarked}
         eyebrow="Glosario de negocio"
         title="Glosario de negocio"
         description="Términos funcionales administrados desde el servicio interno; no hay diccionario hardcodeado en la interfaz."
@@ -93,7 +95,7 @@ function AuthorizedBusinessGlossaryPage() {
       ) : null}
       {terms.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Términos"
               value={formatNumber(terms.data.meta.total)}

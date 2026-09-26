@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, HeartPulse, RefreshCw } from "lucide-react";
 import { useToolsHealth } from "@/features/systems/hooks";
 import {
   ToolLiveBadge,
@@ -32,11 +32,16 @@ function AuthorizedToolsHealthPage() {
   const tools = health.data ?? [];
   const downTools = tools.filter((tool) => toolLiveState(tool) === "DOWN");
   const upCount = tools.filter((tool) => toolLiveState(tool) === "UP").length;
-  const noProbeCount = tools.length - upCount - downTools.length;
+  const notApplicableCount = tools.filter(
+    (tool) => toolLiveState(tool) === "NOT_APPLICABLE",
+  ).length;
+  const noProbeCount =
+    tools.length - upCount - downTools.length - notApplicableCount;
 
   return (
     <>
       <PageHeader
+        icon={HeartPulse}
         title="Salud de herramientas"
         description="Estado vivo reportado por `/systems/health/tools` — la misma fuente que dispara las notificaciones de servicio caído/recuperado. Se actualiza automáticamente cada 30s."
         actions={
@@ -55,7 +60,7 @@ function AuthorizedToolsHealthPage() {
           Última actualización:{" "}
           {formatDateTime(new Date(health.dataUpdatedAt).toISOString())} ·{" "}
           {upCount} operativas · {downTools.length} caídas · {noProbeCount} sin
-          probe
+          chequeo en vivo · {notApplicableCount} no aplican
         </p>
       ) : null}
       {downTools.length > 0 ? (
@@ -91,7 +96,7 @@ function AuthorizedToolsHealthPage() {
         />
       ) : null}
       {health.data ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {tools.map((tool, index) => {
             const liveState = toolLiveState(tool);
             return (
@@ -120,8 +125,10 @@ function AuthorizedToolsHealthPage() {
                     {tool.checkType ? (
                       <span className="font-mono">
                         {tool.checkType === "LIVE"
-                          ? "probe en vivo"
-                          : "solo configuración"}
+                          ? "chequeo en vivo"
+                          : tool.checkType === "NOT_APPLICABLE"
+                            ? "no aplica monitoreo"
+                            : "solo configuración"}
                       </span>
                     ) : null}
                   </div>

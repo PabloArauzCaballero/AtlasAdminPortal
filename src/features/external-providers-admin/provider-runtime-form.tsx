@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { OctagonX, Save } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Select } from "@/shared/components/ui/input";
@@ -12,6 +13,31 @@ import {
 } from "./hooks";
 import type { ProviderRuntimePatchInput } from "./types";
 import type { ProviderRow } from "./provider-columns";
+
+/**
+ * Una frase por opción, porque la diferencia entre los dos modos simulados no se deduce del
+ * nombre y es la que decide si el emulador interviene o no.
+ */
+const AYUDA_MODO: Record<string, string> = {
+  mock_local:
+    "El backend fabrica la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
+  mock_server:
+    "Llama por red al emulador de proveedores. Es el modo que permite medir salud y latencia de verdad.",
+  sandbox:
+    "Entorno de pruebas del proveedor real. Hoy ningún conector lo implementa: falla explícitamente.",
+  production:
+    "El proveedor real. Exige credenciales cargadas y la integración implementada.",
+  disabled: "No se le llama. Cualquier solicitud a este proveedor se rechaza.",
+};
+
+const AYUDA_ESTADO: Record<string, string> = {
+  ACTIVE:
+    "Es el proveedor oficial para esta categoría. No implica que ya se le llame de verdad: eso lo dice el modo.",
+  MOCK_ONLY:
+    "Existe para fijar el contrato mientras no haya proveedor firmado.",
+  SANDBOX_ONLY: "Sólo autorizado contra el entorno de pruebas del proveedor.",
+  DISABLED: "Retirado del catálogo operativo.",
+};
 
 export function ProviderRuntimeForm({
   provider,
@@ -31,38 +57,89 @@ export function ProviderRuntimeForm({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Modo">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        {/*
+         * Las opciones se escribían con el literal del backend (`mock_local`, `MOCK_ONLY`). El
+         * mismo concepto se pintaba en castellano en la tabla y en inglés técnico aquí, en el
+         * único sitio donde hay que ELEGIR — que es justo donde importa entender la diferencia
+         * entre simular en proceso y simular por red.
+         */}
+        <Field
+          tooltip="Si Atlas simula al proveedor, usa su sandbox, producción o no lo llama."
+          label="Cómo se le llama"
+          hint={AYUDA_MODO[defaultMode ?? ""]}
+        >
           <Select
+            name="defaultMode"
             value={defaultMode}
-            onChange={(event) =>
-              setDefaultMode(
-                event.target.value as ProviderRuntimePatchInput["defaultMode"],
-              )
+            onChange={(valor) =>
+              setDefaultMode(valor as ProviderRuntimePatchInput["defaultMode"])
             }
-          >
-            <option value="mock_local">mock_local</option>
-            <option value="mock_server">mock_server</option>
-            <option value="sandbox">sandbox</option>
-            <option value="production">production</option>
-            <option value="disabled">disabled</option>
-          </Select>
+            options={[
+              {
+                value: "mock_local",
+                label: "Simulado en proceso (sin red)",
+                description: AYUDA_MODO.mock_local,
+              },
+              {
+                value: "mock_server",
+                label: "Simulado por red (emulador)",
+                description: AYUDA_MODO.mock_server,
+              },
+              {
+                value: "sandbox",
+                label: "Sandbox del proveedor",
+                description: AYUDA_MODO.sandbox,
+              },
+              {
+                value: "production",
+                label: "Producción",
+                description: AYUDA_MODO.production,
+              },
+              {
+                value: "disabled",
+                label: "No llamar",
+                description: AYUDA_MODO.disabled,
+              },
+            ]}
+          />
         </Field>
-        <Field label="Estado">
+        <Field
+          tooltip="Papel del proveedor en el catálogo: oficial, de prueba, sólo sandbox o retirado."
+          label="Tipo de proveedor"
+          hint={AYUDA_ESTADO[providerStatus ?? ""]}
+        >
           <Select
+            name="providerStatus"
             value={providerStatus}
-            onChange={(event) =>
+            onChange={(valor) =>
               setProviderStatus(
-                event.target
-                  .value as ProviderRuntimePatchInput["providerStatus"],
+                valor as ProviderRuntimePatchInput["providerStatus"],
               )
             }
-          >
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="DISABLED">DISABLED</option>
-            <option value="MOCK_ONLY">MOCK_ONLY</option>
-            <option value="SANDBOX_ONLY">SANDBOX_ONLY</option>
-          </Select>
+            options={[
+              {
+                value: "ACTIVE",
+                label: "Oficial (Atlas lo usará de verdad)",
+                description: AYUDA_ESTADO.ACTIVE,
+              },
+              {
+                value: "MOCK_ONLY",
+                label: "De prueba (relleno contractual)",
+                description: AYUDA_ESTADO.MOCK_ONLY,
+              },
+              {
+                value: "SANDBOX_ONLY",
+                label: "Sólo sandbox",
+                description: AYUDA_ESTADO.SANDBOX_ONLY,
+              },
+              {
+                value: "DISABLED",
+                label: "Deshabilitado",
+                description: AYUDA_ESTADO.DISABLED,
+              },
+            ]}
+          />
         </Field>
       </div>
       {defaultMode === "production" ? (
@@ -78,7 +155,10 @@ export function ProviderRuntimeForm({
           para producción.
         </label>
       ) : null}
-      <Field label="Motivo (opcional)">
+      <Field
+        tooltip="Por qué cambias el modo o el tipo del proveedor."
+        label="Motivo (opcional)"
+      >
         <Input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
@@ -118,9 +198,11 @@ export function ProviderRuntimeForm({
             })
           }
         >
+          <Save className="h-4 w-4" aria-hidden />
           Guardar cambios de runtime
         </Button>
         <Button variant="danger" onClick={() => setConfirmingKillSwitch(true)}>
+          <OctagonX className="h-4 w-4" aria-hidden />
           Kill switch de emergencia
         </Button>
       </div>

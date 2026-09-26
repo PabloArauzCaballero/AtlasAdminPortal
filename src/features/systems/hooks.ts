@@ -5,8 +5,8 @@ import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
-  getActionLogsByRequest,
   getDomain,
+  getDomainOverview,
   getTool,
   inferDataImpacts,
   inferToolRequirements,
@@ -18,9 +18,7 @@ import {
   getToolsHealth,
   getTrafficLatencyReport,
   getTrafficLatencyTimeseries,
-  listActionLogs,
   listDomains,
-  listMongoLogs,
   listReviewQueue,
   listTools,
   listDataEntities,
@@ -29,6 +27,11 @@ import {
   reviewCatalogTarget,
   updateDataEntityMetadata,
 } from "./services";
+import {
+  getActionLogsByRequest,
+  listActionLogs,
+  listMongoLogs,
+} from "./log-services";
 import type {
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
@@ -38,6 +41,12 @@ import type {
 } from "./types";
 
 export { useEndpointsByIds } from "./endpoint-reference-hooks";
+export {
+  usePlatformBlocks,
+  useNetworkHealth,
+  useFederateBlocksMutation,
+  useActiveDecisionArtifacts,
+} from "./network-hooks";
 export {
   useStressProfiles,
   useStressProfile,
@@ -197,6 +206,13 @@ export function useDomains(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.domains(query),
     queryFn: () => listDomains(query),
+  });
+}
+
+export function useDomainOverview() {
+  return useQuery({
+    queryKey: queryKeys.domainOverview,
+    queryFn: () => getDomainOverview(),
   });
 }
 

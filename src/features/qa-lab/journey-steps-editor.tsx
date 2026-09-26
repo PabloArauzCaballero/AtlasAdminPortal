@@ -117,6 +117,7 @@ export function JourneyStepsEditor({
           </div>
           <Field
             label="Especificación de pasos (JSON)"
+            tooltip="La lista de pasos del recorrido en JSON; cada paso puede reusar lo extraído antes."
             hint="Array de pasos: { key, name, endpointId, pathParams, queryParams, payload, headers, expectedStatusCodes, extract }. Usa {{variable}} para reusar valores extraídos de pasos previos."
           >
             <Textarea

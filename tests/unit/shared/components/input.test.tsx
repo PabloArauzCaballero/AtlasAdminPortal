@@ -1,13 +1,19 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import {
+  Field,
+  Input,
+  NativeSelect,
+  Select,
+  Textarea,
+} from "@/shared/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 
 describe("Field", () => {
-  it("envuelve el control en un <label>, así la etiqueta lo activa", () => {
-    // El <label> envolvente es lo que da nombre accesible al input: sin él,
-    // un lector de pantalla anuncia "cuadro de edición" y nada más.
+  it("asocia la etiqueta al control por htmlFor, así lo nombra", () => {
+    // Ya NO por envoltura: el botón de ayuda no puede vivir dentro del <label> sin meter su
+    // propio nombre en el nombre accesible del campo. El `id` se lo pasa `Field` por contexto.
     render(
       <Field label="Correo">
         <Input />
@@ -97,20 +103,120 @@ describe("Input", () => {
   });
 });
 
-describe("Select", () => {
-  it("reenvía la selección", async () => {
-    const onChange = vi.fn();
+describe("Field · ayuda", () => {
+  it("con tooltip pinta el ⓘ y el control lo enlaza con aria-describedby", () => {
     render(
-      <Select aria-label="Estado" defaultValue="a" onChange={onChange}>
-        <option value="a">A</option>
-        <option value="b">B</option>
-      </Select>,
+      <Field
+        label="Correo"
+        tooltip="Buzón al que llegan los avisos del portal. Ej.: soporte@atlas.bo"
+      >
+        <Input />
+      </Field>,
     );
 
-    await userEvent.selectOptions(screen.getByLabelText("Estado"), "b");
+    const ayuda = screen.getByRole("button", { name: "Ayuda: Correo" });
+    const control = screen.getByLabelText("Correo");
+    expect(ayuda).toBeInTheDocument();
+    expect(control.getAttribute("aria-describedby")).toContain(
+      ayuda.getAttribute("aria-describedby"),
+    );
+  });
+
+  it("sin tooltip no hay botón de ayuda", () => {
+    render(
+      <Field label="Correo">
+        <Input />
+      </Field>,
+    );
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("enfocar el control abre la burbuja del campo", async () => {
+    render(
+      <Field
+        label="Correo"
+        tooltip="Buzón al que llegan los avisos del portal. Ej.: soporte@atlas.bo"
+      >
+        <Input />
+      </Field>,
+    );
+
+    // Dos tabuladores: el primero cae en el ⓘ (va antes en el DOM) y el segundo en el control.
+    // Al segundo el icono ya ha perdido el foco, así que la burbuja abierta es la del CONTROL.
+    await userEvent.tab();
+    await userEvent.tab();
+
+    expect(screen.getByLabelText("Correo")).toHaveFocus();
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Buzón al que llegan",
+    );
+  });
+
+  it("el hint sigue estando, y además entra en la descripción del control", () => {
+    render(
+      <Field
+        label="Correo"
+        hint="Usa el corporativo"
+        tooltip="Buzón al que llegan los avisos del portal."
+      >
+        <Input />
+      </Field>,
+    );
+
+    const pista = screen.getByText("Usa el corporativo");
+    expect(
+      screen.getByLabelText("Correo").getAttribute("aria-describedby"),
+    ).toContain(pista.id);
+  });
+});
+
+describe("Select", () => {
+  it("recibe opciones con descripción y devuelve el valor elegido", async () => {
+    const onChange = vi.fn();
+    render(
+      <Select
+        name="estado"
+        ariaLabel="Estado"
+        defaultValue="a"
+        onChange={onChange}
+        options={[
+          {
+            value: "a",
+            label: "A",
+            description: "La primera, la que se usa por defecto al crear.",
+          },
+          {
+            value: "b",
+            label: "B",
+            description: "La segunda, sólo para casos ya revisados.",
+          },
+        ]}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("combobox"));
+    await userEvent.click(screen.getByTestId("select-estado-option-b"));
+
+    expect(onChange).toHaveBeenCalledWith("b");
+    expect(screen.getByRole("combobox")).toHaveTextContent("B");
+  });
+});
+
+describe("NativeSelect", () => {
+  it("sigue siendo un <select> nativo para las listas sin dominio que explicar", async () => {
+    const onChange = vi.fn();
+    render(
+      <NativeSelect aria-label="Ruta" defaultValue="a" onChange={onChange}>
+        <option value="a">/v1/a</option>
+        <option value="b">/v1/b</option>
+      </NativeSelect>,
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Ruta"), "b");
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(screen.getByLabelText("Estado")).toHaveValue("b");
+    expect(screen.getByLabelText("Ruta")).toHaveValue("b");
   });
 });
 

@@ -84,6 +84,8 @@ export type CommonFormInput = {
   includeTenantHeader: boolean;
   includeIdempotencyKey: boolean;
   deviceProfile?: string;
+  mockScenario?: string;
+  mockLatencyMs?: number;
 };
 
 type RunFormInput = CommonFormInput & {
@@ -137,6 +139,8 @@ function parseCommonForm(
       includeTenantHeader: input.includeTenantHeader,
       includeIdempotencyKey: input.includeIdempotencyKey,
       deviceProfile: input.deviceProfile,
+      mockScenario: emptyToUndefined(input.mockScenario ?? ""),
+      mockLatencyMs: positiveOrUndefined(input.mockLatencyMs ?? 0),
     },
   };
 }

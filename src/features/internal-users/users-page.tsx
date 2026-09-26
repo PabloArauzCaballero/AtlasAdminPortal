@@ -16,6 +16,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Users } from "lucide-react";
 
 export function UsersPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -54,7 +55,7 @@ function AuthorizedUsersPage() {
         accessorKey: "email",
         cell: ({ row }) => (
           <Link
-            className="text-blue-700 underline"
+            className="text-atlas-accent underline"
             href={`/internal/settings/users/${row.original.id}`}
           >
             {row.original.email}
@@ -95,6 +96,7 @@ function AuthorizedUsersPage() {
   return (
     <>
       <PageHeader
+        icon={Users}
         eyebrow="Usuarios internos"
         title="Usuarios internos"
         description="Listado de usuarios internos desde `/internal/users`. No se inventan roles: se muestran únicamente los que devuelve el servicio interno."

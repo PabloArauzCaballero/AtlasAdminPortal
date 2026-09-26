@@ -4,13 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Select, Textarea } from "@/shared/components/ui/input";
+import { FormSelect } from "@/shared/components/ui/form-select";
+import { Field, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import {
   FRAUD_DECISIONS,
   FRAUD_NEXT_STATUS_VALUES,
   NEXT_STATUS_OPTIONS,
+  NO_STATUS_CHANGE,
 } from "./decision-options";
 import {
   fraudDefaults,
@@ -19,6 +21,7 @@ import {
   type FraudForm,
 } from "./decision-schemas";
 import { useDecideFraudCaseMutation } from "./hooks";
+import { AvisoDeExpediente } from "@/features/files/expediente-notice";
 import type { WorkQueueItem } from "./types";
 
 export function FraudDecisionForm({
@@ -28,6 +31,7 @@ export function FraudDecisionForm({
   const decide = useDecideFraudCaseMutation();
   const {
     register,
+    control,
     handleSubmit,
     watch,
     formState: { errors },
@@ -54,17 +58,20 @@ export function FraudDecisionForm({
       onClose={onClose}
     >
       <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <Field label="Decisión">
-          <Select {...register("decision")}>
-            {FRAUD_DECISIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+        <AvisoDeExpediente customerId={item.customerId} />
+        <Field
+          label="Decisión"
+          tooltip="Desenlace del caso de fraude. Queda auditado con tu usuario y no se deshace desde aquí."
+        >
+          <FormSelect
+            control={control}
+            name="decision"
+            options={FRAUD_DECISIONS}
+          />
         </Field>
         <Field
           label="Código de motivo"
+          tooltip="Código corto que resume por qué decides así; alimenta los informes. Ej.: device_reuse_across_identities"
           error={errors.reasonCode?.message}
           hint={
             reasonRequired
@@ -78,18 +85,21 @@ export function FraudDecisionForm({
           <input type="checkbox" {...register("applyWatchlist")} />
           Aplicar watchlist (marca teléfono/email hasheados del cliente real)
         </label>
-        <Field label="Notas (opcional)">
+        <Field
+          label="Notas (opcional)"
+          tooltip="Contexto para quien revise el caso después. No pegues datos personales del cliente."
+        >
           <Textarea className="min-h-20" {...register("notes")} />
         </Field>
-        <Field label="Próximo estado del cliente (opcional)">
-          <Select {...register("nextCustomerStatus")}>
-            <option value="">Sin cambio</option>
-            {nextStatusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+        <Field
+          label="Próximo estado del cliente (opcional)"
+          tooltip="En qué estado queda el cliente al cerrar el caso; déjalo en «Sin cambio» si no debe moverse."
+        >
+          <FormSelect
+            control={control}
+            name="nextCustomerStatus"
+            options={[NO_STATUS_CHANGE, ...nextStatusOptions]}
+          />
         </Field>
         {decide.error ? (
           <ErrorState

@@ -1,0 +1,182 @@
+"use client";
+
+import { useId, useState } from "react";
+import { isAtlasApiError } from "@/shared/api/errors";
+import { Button } from "@/shared/components/ui/button";
+import { DialogShell } from "@/shared/components/ui/dialog-shell";
+import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { usePublishEventMutation } from "./hooks";
+import type { DomainEventDefinition } from "./types";
+
+/**
+ * Publicar un evento a mano.
+ *
+ * Existe para lo que no se puede arreglar reintentando: cuando un módulo dejó de publicar algo que
+ * ya ocurrió, un operador tiene que poder inyectarlo en el outbox. Por eso el código de evento se
+ * elige del CATÁLOGO y no se teclea: un código libre entra en la tabla y no lo consume ningún
+ * suscriptor, que es un evento perdido con aspecto de evento publicado.
+ *
+ * La llave de idempotencia se genera aquí, una por envío. Es lo que hace que reintentar el
+ * formulario tras un error de red no duplique el efecto.
+ */
+export function PublishEventDialog({
+  open,
+  definiciones,
+  onClose,
+}: Readonly<{
+  open: boolean;
+  definiciones: DomainEventDefinition[];
+  onClose: () => void;
+}>) {
+  const titleId = useId();
+  const publicar = usePublishEventMutation();
+  const [eventCode, setEventCode] = useState("");
+  const [aggregateType, setAggregateType] = useState("");
+  const [aggregateId, setAggregateId] = useState("");
+  const [payload, setPayload] = useState("{}");
+  const [errorPayload, setErrorPayload] = useState<string | null>(null);
+
+  /*
+   * El catálogo dice sobre qué agregados puede publicarse cada evento. Con la definición elegida,
+   * el tipo se escoge de esa lista: teclearlo a mano producía un 400 `EVENT_AGGREGATE_NOT_ALLOWED`
+   * que sólo se entendía leyendo el registro del backend.
+   */
+  const permitidos =
+    definiciones.find((definicion) => definicion.eventCode === eventCode)
+      ?.allowedAggregateTypes ?? [];
+
+  if (!open) return null;
+
+  async function enviar(evento: React.FormEvent) {
+    evento.preventDefault();
+    let cuerpo: unknown;
+    try {
+      cuerpo = JSON.parse(payload || "{}");
+    } catch {
+      setErrorPayload("El payload no es JSON válido.");
+      return;
+    }
+    setErrorPayload(null);
+    await publicar.mutateAsync({
+      body: {
+        eventCode,
+        aggregateType,
+        ...(aggregateId ? { aggregateId } : {}),
+        payload: cuerpo,
+      },
+      idempotencyKey: globalThis.crypto.randomUUID(),
+    });
+    onClose();
+  }
+
+  return (
+    <DialogShell
+      open
+      labelledBy={titleId}
+      onClose={onClose}
+      overlayClassName="flex items-center justify-center p-4"
+      panelClassName="w-full max-w-2xl rounded-lg border border-atlas-border bg-white p-5 shadow-subtle"
+    >
+      <form onSubmit={(evento) => void enviar(evento)} className="space-y-4">
+        <h2 id={titleId} className="text-lg font-semibold text-atlas-text">
+          Publicar un evento de dominio
+        </h2>
+        <p className="text-sm text-atlas-muted">
+          El evento entra en el outbox y lo consumirán sus suscriptores como si
+          lo hubiera publicado el módulo de origen. Queda auditado con el
+          usuario que lo publicó.
+        </p>
+
+        <Field
+          tooltip="Evento del catálogo registrado que se inyecta en el outbox."
+          label="Código de evento"
+          hint="Sale del catálogo registrado: un código libre no lo consume ningún suscriptor."
+        >
+          <Select
+            name="eventCode"
+            required
+            value={eventCode}
+            onChange={setEventCode}
+            placeholder="— Elige un evento —"
+            options={definiciones.map((definicion) => ({
+              value: definicion.eventCode,
+              label: definicion.eventCode,
+            }))}
+          />
+        </Field>
+
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <Field
+            tooltip="Entidad sobre la que ocurre el evento, p. ej. customer o loan."
+            label="Tipo de agregado"
+            hint={
+              permitidos.length > 0
+                ? "Los que admite la definición elegida; otro tipo responde EVENT_AGGREGATE_NOT_ALLOWED."
+                : "Sobre qué entidad ocurre: customer, loan, partner…"
+            }
+          >
+            {permitidos.length > 0 ? (
+              <Select
+                name="aggregateType"
+                required
+                value={aggregateType}
+                onChange={setAggregateType}
+                placeholder="— Elige el agregado —"
+                options={permitidos.map((tipo) => ({
+                  value: tipo,
+                  label: tipo,
+                }))}
+              />
+            ) : (
+              <Input
+                required
+                value={aggregateType}
+                onChange={(evento) => setAggregateType(evento.target.value)}
+              />
+            )}
+          </Field>
+          <Field
+            tooltip="Identificador concreto de la entidad afectada; es opcional."
+            label="Id del agregado"
+            hint="Opcional: el identificador concreto."
+          >
+            <Input
+              value={aggregateId}
+              onChange={(evento) => setAggregateId(evento.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field
+          tooltip="JSON que recibirán los suscriptores del evento."
+          label="Payload"
+          hint="JSON. Es lo que recibirán los suscriptores."
+          error={errorPayload ?? undefined}
+        >
+          <Textarea
+            rows={6}
+            value={payload}
+            onChange={(evento) => setPayload(evento.target.value)}
+          />
+        </Field>
+
+        {publicar.error ? (
+          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {isAtlasApiError(publicar.error)
+              ? publicar.error.message
+              : "No se pudo publicar el evento."}
+          </p>
+        ) : null}
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="primary" disabled={publicar.isPending}>
+            Publicar
+          </Button>
+        </div>
+      </form>
+    </DialogShell>
+  );
+}

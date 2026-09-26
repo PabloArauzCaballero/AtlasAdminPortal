@@ -1,5 +1,6 @@
 "use client";
 
+import { RUN_STATUS_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -12,16 +13,12 @@ import { Button } from "@/shared/components/ui/button";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { FlaskConical } from "lucide-react";
 
-const statusOptions = [
-  { label: "Queued", value: "QUEUED" },
-  { label: "Running", value: "RUNNING" },
-  { label: "Passed", value: "PASSED" },
-  { label: "Failed", value: "FAILED" },
-  { label: "Cancelled", value: "CANCELLED" },
-];
+const statusOptions = RUN_STATUS_OPTIONS;
 
 export function TestRunsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -46,7 +43,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "runId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs font-semibold text-blue-700 underline"
+            className="font-mono text-xs font-semibold text-atlas-accent underline"
             href={`/internal/qa/runs/${row.original.runId}`}
           >
             #{row.original.runId}
@@ -58,7 +55,7 @@ function AuthorizedTestRunsPage() {
         accessorKey: "suiteId",
         cell: ({ row }) => (
           <Link
-            className="font-mono text-xs text-blue-700 underline"
+            className="font-mono text-xs text-atlas-accent underline"
             href={`/internal/qa/suites/${row.original.suiteId}`}
           >
             #{row.original.suiteId}
@@ -98,17 +95,22 @@ function AuthorizedTestRunsPage() {
   return (
     <>
       <PageHeader
+        icon={FlaskConical}
         title="Runs QA registrados en backend"
         description="Historial dinámico desde `/systems/test-runs`. ¿Quieres ejecutar requests directos contra otra URL?"
         actions={
-          <Link href="/internal/qa/lab">
-            <Button>Abrir QA Live Lab</Button>
-          </Link>
+          <div className="flex gap-2">
+            <TutorialLaunchButton tutorialId="qa-runs-interpret" />
+            <Link href="/internal/qa/lab">
+              <Button>Abrir QA Live Lab</Button>
+            </Link>
+          </div>
         }
       />
       <FilterBar
         search=""
         searchPlaceholder="Búsqueda por suite pendiente del servicio interno"
+        searchTooltip="Todavía no filtra: el servicio interno no admite buscar corridas por suite."
         onSearchChange={() => undefined}
         onFilterChange={(name, value) => {
           if (name === "status") setStatus(value);
@@ -122,6 +124,8 @@ function AuthorizedTestRunsPage() {
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Resultado de la corrida; FAILED es lo que conviene revisar primero.",
             value: status,
             options: statusOptions,
           },
@@ -142,12 +146,14 @@ function AuthorizedTestRunsPage() {
         />
       ) : null}
       {runs.data ? (
-        <DataTable
-          data={runs.data.items}
-          columns={columns}
-          meta={runs.data.meta}
-          onPageChange={setPage}
-        />
+        <div data-tutorial-id="qa-runs-table">
+          <DataTable
+            data={runs.data.items}
+            columns={columns}
+            meta={runs.data.meta}
+            onPageChange={setPage}
+          />
+        </div>
       ) : null}
     </>
   );

@@ -18,6 +18,7 @@ import {
 } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
+import { Scale } from "lucide-react";
 type PolicyRow = {
   id: string;
   type: string;
@@ -104,6 +105,7 @@ function AuthorizedDataGovernancePoliciesPage() {
   return (
     <>
       <PageHeader
+        icon={Scale}
         eyebrow="Políticas de gobierno"
         title="Políticas reales de gobierno"
         description="Consume `/operations/data-governance/policies`; no deriva gobierno solo desde flags técnicos."
@@ -126,7 +128,7 @@ function AuthorizedDataGovernancePoliciesPage() {
       ) : null}
       {governance.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Políticas/control"
               value={formatNumber(rows.length)}
@@ -164,7 +166,7 @@ function AuthorizedDataGovernancePoliciesPage() {
               {rows.length === 0 ? (
                 <EmptyState title="No hay políticas de gobierno sembradas." />
               ) : (
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                   {rows.map((row) => (
                     <PolicyCard key={row.id} row={row} />
                   ))}
@@ -186,7 +188,7 @@ function PolicyCard({ row }: Readonly<{ row: PolicyRow }>) {
         <StatusBadge value={row.active ? "active" : "inactive"} />
       </div>
       <Link
-        className="font-mono text-xs font-semibold text-blue-700 underline"
+        className="font-mono text-xs font-semibold text-atlas-accent underline"
         href={`/internal/governance/policies/${encodeURIComponent(row.id)}`}
       >
         {row.code}

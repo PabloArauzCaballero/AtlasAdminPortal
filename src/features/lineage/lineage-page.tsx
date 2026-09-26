@@ -24,6 +24,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { buildEndpointColumns, buildEntityColumns } from "./lineage-columns";
 import { DomainMapCard } from "./domain-map-card";
 import { buildDomainNodes, countSensitiveNodes } from "./domain-nodes";
+import { Waypoints } from "lucide-react";
 
 export function LineagePage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -64,6 +65,7 @@ function AuthorizedLineagePage() {
   return (
     <>
       <PageHeader
+        icon={Waypoints}
         eyebrow="Linaje"
         title="Lineage e impacto operativo"
         description="Vista de relaciones derivada desde endpoints, dominios y entidades reales. La lógica está separada para mantener la pantalla liviana."
@@ -101,7 +103,7 @@ function AuthorizedLineagePage() {
 
       {endpoints.data && entities.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Dominios detectados"
               value={formatNumber(domainNodes.length)}

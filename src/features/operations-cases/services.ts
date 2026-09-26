@@ -1,10 +1,16 @@
 import { apiRequest } from "@/shared/api/client";
+import { apiDownload } from "@/shared/api/download";
 import type { QueryParams } from "@/shared/api/types";
 import type {
+  EvidenceDocumentList,
   FraudDecisionInput,
+  IdentityDecisionInput,
+  IdentityDecisionResult,
   FraudDecisionResult,
   InvestigationSummary,
   ManualReviewDecisionInput,
+  PendingContactVerificationResponse,
+  ResendContactVerificationInput,
   ManualReviewDecisionResult,
   WorkQueueListResponse,
 } from "./types";
@@ -49,5 +55,73 @@ export function decideFraudCase(caseId: string, body: FraudDecisionInput) {
 export function getInvestigationSummary(customerId: string) {
   return apiRequest<InvestigationSummary>(
     `/operations/customers/${customerId}/investigation-summary`,
+  );
+}
+
+/**
+ * Los documentos de identidad del cliente (carnet, dorso, selfie) y su decisión.
+ *
+ * Hasta el 2026-09-14 el portal decidía los casos de revisión sin ver las imágenes: la ruta que
+ * las sirve existía y sólo la usaba el portal del Motor, y la ruta que resuelve la identidad
+ * (`identity-verification/decision`) no tenía ningún llamador en ninguna pantalla.
+ */
+export function listEvidenceDocuments(customerId: string) {
+  return apiRequest<EvidenceDocumentList>(
+    `/customer-onboarding/${customerId}/evidence-documents`,
+  );
+}
+
+/** Los bytes por descarga autenticada: un `<img src>` no manda `Authorization` y saldría roto. */
+export function downloadEvidenceDocument(
+  customerId: string,
+  documentId: string,
+) {
+  return apiDownload(
+    `/customer-onboarding/${customerId}/evidence-documents/${documentId}/content`,
+    `evidencia-${documentId}`,
+  );
+}
+
+export function decideIdentityVerification(
+  customerId: string,
+  body: IdentityDecisionInput,
+) {
+  return apiRequest<IdentityDecisionResult>(
+    `/operations/customers/${customerId}/identity-verification/decision`,
+    { method: "POST", body },
+  );
+}
+
+/** Correos y teléfonos declarados por clientes y todavía sin confirmar. */
+export function listPendingContactVerification() {
+  return apiRequest<PendingContactVerificationResponse>(
+    "/operations/customers/pending-contact-verification",
+  );
+}
+
+/**
+ * Vuelve a mandar el código de verificación al contacto del cliente.
+ *
+ * Es el mismo endpoint que usa la app (`contact-verification/request`), que ya admite roles
+ * internos: el operador no inventa un código ni ve el valor del contacto, sólo dispara el envío.
+ * El canal sale del tipo: correo por email; teléfono por SMS.
+ */
+export function resendContactVerification(
+  customerId: string,
+  body: ResendContactVerificationInput,
+) {
+  return apiRequest<{ verificationStatus?: string; nextStep?: string }>(
+    `/customer-onboarding/${customerId}/contact-verification/request`,
+    {
+      method: "POST",
+      body: {
+        contactType: body.contactType,
+        verificationChannel: body.contactType === "email" ? "email" : "sms",
+        ...(body.contactMethodId
+          ? { contactMethodId: body.contactMethodId }
+          : {}),
+      },
+      headers: { "X-Idempotency-Key": idempotencyKey("resend-contact") },
+    },
   );
 }

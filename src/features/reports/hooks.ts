@@ -3,12 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
-import {
-  getReport,
-  listReportSnapshots,
-  listReports,
-  runReport,
-} from "./services";
+import { getReport, listReports, runReport } from "./services";
 
 export function useReports(query: QueryParams) {
   return useQuery({
@@ -21,14 +16,6 @@ export function useReport(reportId: string) {
   return useQuery({
     queryKey: queryKeys.report(reportId),
     queryFn: () => getReport(reportId),
-    enabled: Boolean(reportId),
-  });
-}
-
-export function useReportSnapshots(reportId: string, query: QueryParams) {
-  return useQuery({
-    queryKey: queryKeys.reportSnapshots(reportId, query),
-    queryFn: () => listReportSnapshots(reportId, query),
     enabled: Boolean(reportId),
   });
 }

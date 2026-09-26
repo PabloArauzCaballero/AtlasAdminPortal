@@ -11,6 +11,7 @@ import { ReadinessActions, ReadinessChecklist } from "./readiness-checklist";
 import { toReadinessView } from "./adapters";
 import { useReleaseReadiness } from "./hooks";
 import { ReportsReadinessPage } from "@/features/reports-readiness/reports-readiness-page";
+import { Rocket } from "lucide-react";
 
 export function ReleaseReadinessPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -33,6 +34,7 @@ function AuthorizedReleaseReadinessPage() {
   return (
     <>
       <PageHeader
+        icon={Rocket}
         eyebrow="Readiness"
         title="Readiness Release"
         description="Vista unificada del semáforo operativo del release y de la preparación de metadata necesaria para reportes."
@@ -55,7 +57,7 @@ function AuthorizedReleaseReadinessPage() {
       ) : null}
       {view ? (
         <div className="space-y-6">
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Score readiness" value={`${score}%`} />
             <MetricCard label="Estado" value={safeText(view.status)} />
             <MetricCard

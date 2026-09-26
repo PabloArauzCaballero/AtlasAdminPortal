@@ -18,6 +18,7 @@ import { RiskBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { Workflow } from "lucide-react";
 
 export function LineageNodeDetailPage(props: Readonly<{ nodeId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -41,6 +42,7 @@ function AuthorizedLineageNodeDetailPage({
   return (
     <>
       <PageHeader
+        icon={Workflow}
         eyebrow="Lineage"
         title={data?.label ?? "Detalle de nodo"}
         description="Impacto entrante, saliente y metadata de un nodo oficial."

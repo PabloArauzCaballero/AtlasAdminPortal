@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Play } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useTestProviderMutation } from "./hooks";
+import { RequestResultCard } from "./request-result-card";
 
 export function ProviderTestForm({
   providerCode,
@@ -45,39 +46,57 @@ export function ProviderTestForm({
         Ejecuta una solicitud real de prueba contra el proveedor (útil para
         QA/debug). Usa valores por defecto razonables si dejás campos vacíos.
       </p>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Customer ID">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <Field
+          tooltip="Cliente sobre el que se lanza la consulta de prueba."
+          label="Customer ID"
+        >
           <Input
             value={customerId}
             onChange={(event) => setCustomerId(event.target.value)}
           />
         </Field>
-        <Field label="Query type">
+        <Field
+          tooltip="Tipo de consulta de prueba, p. ej. IDENTITY_VERIFICATION."
+          label="Query type"
+        >
           <Input
             value={queryType}
             onChange={(event) => setQueryType(event.target.value)}
           />
         </Field>
-        <Field label="Propósito">
+        <Field
+          tooltip="Finalidad declarada de la consulta de prueba, p. ej. onboarding."
+          label="Propósito"
+        >
           <Input
             value={purpose}
             onChange={(event) => setPurpose(event.target.value)}
           />
         </Field>
-        <Field label="Etapa de decisión">
+        <Field
+          tooltip="Etapa del ciclo del cliente para la prueba, p. ej. ONBOARDING."
+          label="Etapa de decisión"
+        >
           <Input
             value={decisionStage}
             onChange={(event) => setDecisionStage(event.target.value)}
           />
         </Field>
       </div>
-      <Field label="Escenario (opcional, adapters mock)">
+      <Field
+        tooltip="Caso que fuerza un adapter simulado, p. ej. happy_path o provider_down."
+        label="Escenario (opcional, adapters mock)"
+      >
         <Input
           value={scenario}
           onChange={(event) => setScenario(event.target.value)}
         />
       </Field>
-      <Field label="Input (JSON)">
+      <Field
+        tooltip="Datos de entrada de la consulta de prueba en JSON."
+        label="Input (JSON)"
+      >
         <Textarea
           value={inputJson}
           onChange={(event) => setInputJson(event.target.value)}
@@ -106,9 +125,12 @@ export function ProviderTestForm({
         loadingText="Ejecutando…"
         onClick={submit}
       >
+        <Play className="h-4 w-4" aria-hidden />
         Ejecutar prueba
       </Button>
-      {test.data ? <JsonViewer title="Resultado" value={test.data} /> : null}
+      {test.data ? (
+        <RequestResultCard title="Respuesta del proveedor" result={test.data} />
+      ) : null}
     </div>
   );
 }

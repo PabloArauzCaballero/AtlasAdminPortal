@@ -1,5 +1,5 @@
-import { RiskRulesetPackagePage } from "@/features/operations/risk-ruleset-package-page";
+import { RulesetAuthoringMovedPage } from "@/features/risk-policy/ruleset-authoring-moved-page";
 
 export default function Page() {
-  return <RiskRulesetPackagePage />;
+  return <RulesetAuthoringMovedPage />;
 }

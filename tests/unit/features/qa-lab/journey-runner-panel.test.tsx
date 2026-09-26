@@ -1,17 +1,21 @@
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
-import type { QaJourneyRunResult } from "@/features/qa-lab/journey-types";
+import type {
+  QaJourneyBatchResult,
+  QaJourneyRunResult,
+} from "@/features/qa-lab/journey-types";
 import { endpointFixture } from "./endpoint-fixture";
 
 vi.setConfig({ testTimeout: 30000 });
 
 const useEndpointsByIds = vi.hoisted(() => vi.fn());
-const runJourney = vi.hoisted(() => vi.fn());
+const runJourneyBatch = vi.hoisted(() => vi.fn());
 
 vi.mock("@/features/systems/hooks", () => ({ useEndpointsByIds }));
-vi.mock("@/features/qa-lab/journey-runner", () => ({ runJourney }));
+vi.mock("@/features/qa-lab/journey-runner", () => ({ runJourneyBatch }));
 vi.mock("@/features/qa-lab/journey-step-endpoint-select", () => ({
   JourneyStepEndpointSelect: () => null,
 }));
@@ -19,7 +23,7 @@ vi.mock("@/features/qa-lab/journey-step-endpoint-select", () => ({
 const { JourneyRunnerPanel } =
   await import("@/features/qa-lab/journey-runner-panel");
 
-const OK_RESULT: QaJourneyRunResult = {
+const OK_RUN: QaJourneyRunResult = {
   startedAt: "2026-07-17T10:00:00.000Z",
   finishedAt: "2026-07-17T10:00:01.000Z",
   totalSteps: 1,
@@ -42,9 +46,22 @@ const OK_RESULT: QaJourneyRunResult = {
   ],
 };
 
+function batchOf(run: QaJourneyRunResult): QaJourneyBatchResult {
+  return {
+    iterations: 1,
+    concurrency: 1,
+    seed: "qa-base",
+    startedAt: run.startedAt,
+    finishedAt: run.finishedAt,
+    passedIterations: run.failedSteps === 0 ? 1 : 0,
+    failedIterations: run.failedSteps === 0 ? 0 : 1,
+    runs: [{ index: 0, persona: {}, result: run }],
+  };
+}
+
 beforeEach(() => {
-  runJourney.mockReset();
-  runJourney.mockResolvedValue(OK_RESULT);
+  runJourneyBatch.mockReset();
+  runJourneyBatch.mockResolvedValue(batchOf(OK_RUN));
   useEndpointsByIds.mockReturnValue({
     isLoading: false,
     byId: { "ep-1": endpointFixture() },
@@ -70,8 +87,12 @@ async function writeSteps(json: string) {
   await userEvent.paste(json);
 }
 
-function runButton() {
-  return screen.getByRole("button", { name: /journey/ });
+function previewButton() {
+  return screen.getByRole("button", { name: /Previsualizar \(dry-run\)/ });
+}
+
+function realButton() {
+  return screen.getByRole("button", { name: /Ejecutar journey real/ });
 }
 
 describe("JourneyRunnerPanel · pasos por defecto", () => {
@@ -92,15 +113,16 @@ describe("JourneyRunnerPanel · pasos por defecto", () => {
     ]);
   });
 
-  it("arranca en dry-run", () => {
+  it("ofrece los dos modos como botones separados, no un checkbox que cambia el rótulo de uno solo", () => {
+    // Ver journey-runner-panel.tsx: un solo botón con rótulo condicionado a un checkbox lejano es
+    // justo lo que hacía fácil pulsar "ejecutar real" sin notar que dry-run seguía marcado.
     render_();
 
+    expect(previewButton()).toBeInTheDocument();
+    expect(realButton()).toBeInTheDocument();
     expect(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
-    ).toBeChecked();
-    expect(
-      screen.getByRole("button", { name: "Previsualizar journey" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("checkbox", { name: /dry-run/i }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -110,7 +132,8 @@ describe("JourneyRunnerPanel · pasos inválidos", () => {
 
     await writeSteps("no soy json");
 
-    expect(runButton()).toBeDisabled();
+    expect(previewButton()).toBeDisabled();
+    expect(realButton()).toBeDisabled();
   });
 
   it("un array vacío tampoco es ejecutable", async () => {
@@ -118,7 +141,7 @@ describe("JourneyRunnerPanel · pasos inválidos", () => {
 
     await writeSteps("[]");
 
-    expect(runButton()).toBeDisabled();
+    expect(previewButton()).toBeDisabled();
   });
 
   it("un paso sin endpointId se rechaza señalando cuál", async () => {
@@ -128,7 +151,7 @@ describe("JourneyRunnerPanel · pasos inválidos", () => {
 
     await writeSteps('[{"key":"a"}]');
 
-    expect(runButton()).toBeDisabled();
+    expect(previewButton()).toBeDisabled();
   });
 
   it("una secuencia válida sí es ejecutable", async () => {
@@ -136,73 +159,84 @@ describe("JourneyRunnerPanel · pasos inválidos", () => {
 
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
 
-    expect(runButton()).toBeEnabled();
+    expect(previewButton()).toBeEnabled();
+    expect(realButton()).toBeEnabled();
   });
 });
 
 describe("JourneyRunnerPanel · ejecución", () => {
-  it("ejecutar pide confirmación y dice cuántos pasos y dónde", async () => {
+  it("«Previsualizar» pide confirmación y dice que no manda tráfico real", async () => {
     render_();
     await writeSteps(
       '[{"key":"a","endpointId":"ep-1"},{"key":"b","endpointId":"ep-1"}]',
     );
 
-    await userEvent.click(runButton());
+    await userEvent.click(previewButton());
 
     expect(
       within(screen.getByRole("dialog")).getByText(
-        "Se previsualizarán 2 pasos encadenados en LOCAL.",
+        /Se previsualizarán 2 pasos encadenados en LOCAL\. No se manda tráfico real\./,
       ),
     ).toBeInTheDocument();
-    expect(runJourney).not.toHaveBeenCalled();
+    expect(runJourneyBatch).not.toHaveBeenCalled();
   });
 
-  it("confirmar corre el journey con los pasos, la config y el catálogo", async () => {
+  it("«Ejecutar journey real» pide confirmación mencionando la cantidad de personas", async () => {
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(runButton());
+
+    await userEvent.click(realButton());
+
+    expect(
+      within(screen.getByRole("dialog")).getByText(
+        /Se ejecutarán de verdad 1 pasos encadenados en LOCAL, 1 vez \(1 persona simulada, semilla «qa-base»\)\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("confirmar «Previsualizar» corre el lote en dry-run con los pasos, la config y el catálogo", async () => {
+    render_();
+    await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
+    await userEvent.click(previewButton());
 
     await userEvent.click(
       screen.getByRole("button", { name: "Previsualizar" }),
     );
 
-    await waitFor(() => expect(runJourney).toHaveBeenCalledTimes(1));
-    expect(runJourney.mock.calls[0][0]).toEqual([
+    await waitFor(() => expect(runJourneyBatch).toHaveBeenCalledTimes(1));
+    expect(runJourneyBatch.mock.calls[0][0]).toEqual([
       { key: "a", endpointId: "ep-1" },
     ]);
-    expect(runJourney.mock.calls[0][1]).toMatchObject({
+    expect(runJourneyBatch.mock.calls[0][1]).toMatchObject({
       dryRun: true,
       environment: "LOCAL",
+      iterations: 1,
     });
-    expect(runJourney.mock.calls[0][2]).toEqual({ "ep-1": endpointFixture() });
+    expect(runJourneyBatch.mock.calls[0][2]).toEqual({
+      "ep-1": endpointFixture(),
+    });
   });
 
   it("un journey real fuera de LOCAL exige teclear EJECUTAR", async () => {
     // Encadena escrituras reales: es el freno más importante del panel.
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
-    );
-    await userEvent.selectOptions(
+    await elegirOpcion(
       screen.getByRole("combobox", { name: "Ambiente" }),
       "STAGING",
     );
 
-    await userEvent.click(runButton());
+    await userEvent.click(realButton());
 
     expect(screen.getByRole("button", { name: "Ejecutar" })).toBeDisabled();
-    expect(runJourney).not.toHaveBeenCalled();
+    expect(runJourneyBatch).not.toHaveBeenCalled();
   });
 
   it("un journey real en LOCAL no exige la frase", async () => {
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
-    );
 
-    await userEvent.click(runButton());
+    await userEvent.click(realButton());
 
     expect(screen.getByRole("button", { name: "Ejecutar" })).toBeEnabled();
   });
@@ -210,20 +244,20 @@ describe("JourneyRunnerPanel · ejecución", () => {
   it("cancelar no corre nada", async () => {
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(runButton());
+    await userEvent.click(previewButton());
 
     await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
 
-    expect(runJourney).not.toHaveBeenCalled();
+    expect(runJourneyBatch).not.toHaveBeenCalled();
   });
 
-  it("mientras se resuelve el catálogo el botón queda ocupado", () => {
+  it("mientras se resuelve el catálogo los botones quedan ocupados", () => {
     // Correr sin las definiciones dejaría todos los pasos omitidos.
     useEndpointsByIds.mockReturnValue({ isLoading: true, byId: {} });
     render_();
 
     expect(
-      screen.getByRole("button", { name: /Ejecutando journey/ }),
+      screen.getByRole("button", { name: /Previsualizando/ }),
     ).toBeDisabled();
   });
 });
@@ -232,7 +266,7 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
   it("el resultado del journey se muestra al terminar", async () => {
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(runButton());
+    await userEvent.click(previewButton());
 
     await userEvent.click(
       screen.getByRole("button", { name: "Previsualizar" }),
@@ -243,23 +277,24 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
   });
 
   it("un journey con pasos fallidos se ve como tal, no como uno vacío", async () => {
-    runJourney.mockResolvedValue({
-      ...OK_RESULT,
+    const failedRun: QaJourneyRunResult = {
+      ...OK_RUN,
       passedSteps: 0,
       failedSteps: 1,
       steps: [
         {
-          ...OK_RESULT.steps[0],
+          ...OK_RUN.steps[0],
           passed: false,
           ok: false,
           httpStatus: 500,
           error: "HTTP 500 fuera de los esperados",
         },
       ],
-    });
+    };
+    runJourneyBatch.mockResolvedValue(batchOf(failedRun));
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(runButton());
+    await userEvent.click(previewButton());
 
     await userEvent.click(
       screen.getByRole("button", { name: "Previsualizar" }),
@@ -272,10 +307,10 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
   });
 
   it("un fallo del runner se lee en vez de perderse", async () => {
-    runJourney.mockRejectedValue(new Error("Host no permitido para QA."));
+    runJourneyBatch.mockRejectedValue(new Error("Host no permitido para QA."));
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await userEvent.click(runButton());
+    await userEvent.click(previewButton());
 
     await userEvent.click(
       screen.getByRole("button", { name: "Previsualizar" }),
@@ -301,5 +336,45 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
     expect(
       screen.getByText('El archivo "malo.json" no contiene JSON válido.'),
     ).toBeInTheDocument();
+  });
+
+  it("un lote de varias personas se ve como lote, con su agregado y cada persona expandible", async () => {
+    runJourneyBatch.mockResolvedValue({
+      iterations: 3,
+      concurrency: 2,
+      seed: "qa-base",
+      startedAt: OK_RUN.startedAt,
+      finishedAt: OK_RUN.finishedAt,
+      passedIterations: 2,
+      failedIterations: 1,
+      runs: [
+        { index: 0, persona: { documentNumber: "1" }, result: OK_RUN },
+        { index: 1, persona: { documentNumber: "2" }, result: OK_RUN },
+        {
+          index: 2,
+          persona: { documentNumber: "3" },
+          result: { ...OK_RUN, passedSteps: 0, failedSteps: 1 },
+        },
+      ],
+    });
+    render_();
+    await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
+    await userEvent.click(previewButton());
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Previsualizar" }),
+    );
+
+    expect(await screen.findByText("2/3 personas OK")).toBeInTheDocument();
+    expect(screen.getByText("Persona 1")).toBeInTheDocument();
+    expect(screen.getByText("Persona 3")).toBeInTheDocument();
+    // Sin expandir, el detalle de cada persona (los pasos, el contexto) no está en el DOM.
+    expect(
+      screen.queryByText("Contexto final del journey"),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Persona 1").closest("button")!);
+
+    expect(screen.getByText("Contexto final del journey")).toBeInTheDocument();
   });
 });

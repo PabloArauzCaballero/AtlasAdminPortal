@@ -90,11 +90,14 @@ describe("runStressBurst · allowlist de host", () => {
 });
 
 describe("runStressBurst · puertas de seguridad operativa", () => {
-  it("exige ticket de aprobación para un stress real", async () => {
+  it("exige ticket de aprobación para un stress real fuera de LOCAL", async () => {
     await expect(
       runStressBurst(
         endpointFixture(),
-        stressInputFixture({ approvalTicket: undefined }),
+        stressInputFixture({
+          environment: "STAGING",
+          approvalTicket: undefined,
+        }),
       ),
     ).rejects.toThrow(/ticket de aprobación/);
 
@@ -105,7 +108,7 @@ describe("runStressBurst · puertas de seguridad operativa", () => {
     await expect(
       runStressBurst(
         endpointFixture(),
-        stressInputFixture({ approvalTicket: "  x  " }),
+        stressInputFixture({ environment: "STAGING", approvalTicket: "  x  " }),
       ),
     ).rejects.toThrow(/ticket de aprobación/);
   });
@@ -118,6 +121,23 @@ describe("runStressBurst · puertas de seguridad operativa", () => {
 
     expect(result.dryRun).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("no exige ticket para un stress real en LOCAL: es donde se ensaya contra el mock de proveedores", async () => {
+    const result = await runStressBurst(
+      endpointFixture(),
+      stressInputFixture({
+        environment: "LOCAL",
+        dryRun: false,
+        approvalTicket: undefined,
+        maxRequests: 1,
+        targetRps: 1,
+        durationSeconds: 1,
+      }),
+    );
+
+    expect(result.dryRun).toBe(false);
+    expect(fetchMock).toHaveBeenCalled();
   });
 
   it("bloquea el stress real de un endpoint mutante sin permitir mutaciones", async () => {
@@ -220,6 +240,40 @@ describe("runStressBurst · ejecución del plan", () => {
       `Bearer ${REAL_ACCESS_TOKEN}`,
     );
     expect(init.credentials).toBe("include");
+  });
+
+  it("cada muestra manda su PROPIA x-idempotency-key: contra el mock de proveedores, reenviar la misma convertía el stress en una petición real y el resto en caché", async () => {
+    await runStressBurst(
+      endpointFixture({ method: "POST" }),
+      stressInputFixture({ allowMutations: true, maxRequests: 5 }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    const keys = fetchMock.mock.calls
+      .map(
+        ([, init]) => (init as RequestInit).headers as Record<string, string>,
+      )
+      .map((headers) => headers["x-idempotency-key"]);
+    expect(keys).toHaveLength(5);
+    expect(new Set(keys).size).toBe(5);
+    expect(keys.every((key) => typeof key === "string" && key.length > 0)).toBe(
+      true,
+    );
+  });
+
+  it("cada muestra trae su propia x-mock-persona-key, en orden", async () => {
+    await runStressBurst(
+      endpointFixture(),
+      stressInputFixture({ maxRequests: 3, concurrency: 1 }),
+    );
+
+    const personaKeys = fetchMock.mock.calls.map(
+      ([, init]) =>
+        ((init as RequestInit).headers as Record<string, string>)[
+          "x-mock-persona-key"
+        ],
+    );
+    expect(personaKeys).toEqual(["stress-0", "stress-1", "stress-2"]);
   });
 
   it("cuenta como error una muestra con status inesperado", async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { Activity, ArrowRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useDashboard, useToolsHealth } from "@/features/systems/hooks";
 import {
@@ -42,6 +42,7 @@ function AuthorizedSystemsDashboardPage() {
   return (
     <>
       <PageHeader
+        icon={Activity}
         eyebrow="Systems Ops"
         title="Panel de control del sistema"
         description="Vista consolidada de `/systems/dashboard` y `/systems/health/tools` para monitoreo operativo en un solo lugar."
@@ -67,22 +68,25 @@ function AuthorizedSystemsDashboardPage() {
         bloqueada. Este panel existe para que el equipo de plataforma detecte
         esos problemas en segundos, antes de que un cliente los sufra.
       </BusinessContextNote>
-      {criticalDown.length > 0 ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          {criticalDown.length} herramienta(s) crítica(s) reportando problemas
-          de salud:{" "}
-          {criticalDown.map((tool) => tool.name ?? tool.code).join(", ")}.{" "}
-          <Link
-            className="font-medium underline"
-            href="/internal/systems/tools/health"
-          >
-            Ver detalle
-          </Link>
-        </div>
-      ) : null}
-      <DashboardCounts dashboard={dashboard} />
-      <ToolsHealthSummary health={health} />
-      <TrafficLatencySection />
+      <div className="space-y-6">
+        {criticalDown.length > 0 ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {criticalDown.length} herramienta(s) crítica(s) reportando problemas
+            de salud:{" "}
+            {criticalDown.map((tool) => tool.name ?? tool.code).join(", ")}.{" "}
+            <Link
+              className="inline-flex items-center gap-1 font-medium underline"
+              href="/internal/systems/tools/health"
+            >
+              Ver detalle
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
+        ) : null}
+        <DashboardCounts dashboard={dashboard} />
+        <ToolsHealthSummary health={health} />
+        <TrafficLatencySection />
+      </div>
     </>
   );
 }
@@ -112,7 +116,7 @@ function DashboardCounts({
   const { counts, posture } = dashboard.data;
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {Object.entries(counts ?? {}).map(([key, value]) => (
           <Card key={key}>
             <CardContent className="p-4">
@@ -131,9 +135,12 @@ function DashboardCounts({
           <p className="text-sm font-semibold text-atlas-text">
             Postura operativa
           </p>
-          <dl className="grid gap-2 sm:grid-cols-3">
+          <dl className="grid gap-2 grid-cols-1 sm:grid-cols-3">
             {Object.entries(posture ?? {}).map(([key, value]) => (
-              <div key={key} className="rounded-lg bg-atlas-soft p-3">
+              <div
+                key={key}
+                className="rounded-lg border border-atlas-border bg-[#FAFAFB] p-3"
+              >
                 <dt className="text-xs text-atlas-muted">{humanizeKey(key)}</dt>
                 <dd className="mt-0.5 text-sm font-medium text-atlas-text">
                   {safeText(value)}
@@ -160,7 +167,7 @@ function ToolsHealthSummary({
             Herramientas monitoreadas
           </p>
           <Link
-            className="text-sm font-medium text-blue-700 underline"
+            className="text-sm font-medium text-atlas-accent underline"
             href="/internal/systems/tools/health"
           >
             Ver salud completa
@@ -170,7 +177,7 @@ function ToolsHealthSummary({
           {health.data.map((tool, index) => (
             <div
               key={`${tool.code ?? tool.name ?? index}`}
-              className="flex items-center gap-2 rounded-full border border-atlas-border px-3 py-1 text-xs"
+              className="flex items-center gap-2 rounded-lg border border-atlas-border bg-[#FAFAFB] px-2.5 py-1.5 text-xs"
             >
               <span className="font-medium">
                 {safeText(tool.name ?? tool.code)}

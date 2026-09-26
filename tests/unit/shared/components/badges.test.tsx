@@ -52,8 +52,8 @@ const TONE_BY_CLASS: ReadonlyArray<[string, string]> = [
   ["bg-emerald-50", "success"],
   ["bg-amber-50", "warning"],
   ["bg-red-50", "critical"],
-  ["bg-blue-50", "info"],
-  ["bg-indigo-50", "pii"],
+  ["bg-atlas-info/10", "info"],
+  ["bg-atlas-pii/10", "pii"],
   ["bg-slate-100", "muted"],
   ["bg-slate-50", "default"],
 ];
