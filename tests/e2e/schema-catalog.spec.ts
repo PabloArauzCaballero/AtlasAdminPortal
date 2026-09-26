@@ -29,6 +29,10 @@ test.describe("catálogo de esquema", () => {
     await versionLink.click();
     await settled(page);
 
+    // Comprobado ANTES del heading: si la navegación se atasca por un error de cliente, el mensaje
+    // de `expectHealthy` (que imprime la consola real) dice más que un timeout esperando el título.
+    await health.expectHealthy();
+
     await expect(
       page.getByRole("heading", { level: 2, name: /esquemas de datos/i }),
     ).toBeVisible();

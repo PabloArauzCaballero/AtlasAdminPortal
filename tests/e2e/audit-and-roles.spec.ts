@@ -29,6 +29,10 @@ test.describe("auditoría y RBAC", () => {
     await requestLink.click();
     await settled(page);
 
+    // Comprobado ANTES del título: si la navegación se atasca por un error de cliente, el mensaje
+    // de `expectHealthy` (que imprime la consola real) dice más que un timeout esperando un heading.
+    await health.expectHealthy(/logs\/mongo/);
+
     await expect(
       page.getByRole("heading", { level: 1, name: new RegExp(requestId) }),
     ).toBeVisible();

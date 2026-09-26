@@ -32,7 +32,7 @@ describe("newIdempotencyKey", () => {
   });
 });
 
-describe("buildRequestInit · Idempotency-Key", () => {
+describe("buildRequestInit · x-idempotency-key", () => {
   function headersOf(init: ReturnType<typeof buildRequestInit>) {
     return init.headers as Record<string, string>;
   }
@@ -42,7 +42,7 @@ describe("buildRequestInit · Idempotency-Key", () => {
       { method: "POST", body: {}, idempotencyKey: "idk-123" },
       null,
     );
-    expect(headersOf(init)["Idempotency-Key"]).toBe("idk-123");
+    expect(headersOf(init)["x-idempotency-key"]).toBe("idk-123");
   });
 
   it("ignora la llave en un GET (no es una mutación)", () => {
@@ -50,17 +50,38 @@ describe("buildRequestInit · Idempotency-Key", () => {
       { method: "GET", idempotencyKey: "idk-123" },
       null,
     );
-    expect(headersOf(init)["Idempotency-Key"]).toBeUndefined();
+    expect(headersOf(init)["x-idempotency-key"]).toBeUndefined();
   });
 
   it("sin llave no añade el header", () => {
     const init = buildRequestInit({ method: "POST", body: {} }, null);
-    expect(headersOf(init)["Idempotency-Key"]).toBeUndefined();
+    expect(headersOf(init)["x-idempotency-key"]).toBeUndefined();
   });
 
   it("la llave sobrevive al spread de opciones (reintento reusa la misma)", () => {
     const options = { method: "PATCH" as const, idempotencyKey: "idk-xyz" };
     const init = buildRequestInit({ ...options, skipRefresh: true }, null);
-    expect(headersOf(init)["Idempotency-Key"]).toBe("idk-xyz");
+    expect(headersOf(init)["x-idempotency-key"]).toBe("idk-xyz");
+  });
+
+  it("manda la llave con el nombre que lee el backend, nunca Idempotency-Key", () => {
+    const init = buildRequestInit(
+      { method: "POST", body: {}, idempotencyKey: "idk-1" },
+      null,
+    );
+    expect(headersOf(init)["Idempotency-Key"]).toBeUndefined();
+    expect(headersOf(init)["x-idempotency-key"]).toBe("idk-1");
+  });
+
+  it("una llave puesta a mano (cualquier mayúscula) viaja una sola vez y normalizada", () => {
+    const init = buildRequestInit(
+      { method: "POST", body: {}, headers: { "X-Idempotency-Key": "k-mano" } },
+      null,
+    );
+    const nombres = Object.keys(headersOf(init)).filter((n) =>
+      /idempotency/i.test(n),
+    );
+    expect(nombres).toEqual(["x-idempotency-key"]);
+    expect(headersOf(init)["x-idempotency-key"]).toBe("k-mano");
   });
 });
