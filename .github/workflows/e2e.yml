@@ -219,6 +219,13 @@ jobs:
         if: ${{ !cancelled() }}
         run: node scripts/verificar-e2e.mjs test-results/results.json
 
+      # Playwright escribe los ARGUMENTOS de cada acción en el título de su paso, así que el
+      # `fill(TEST_PASSWORD)` del setup queda en report.jsonl de todos los fragmentos. Se sustituyen
+      # las claves por *** y DESPUÉS el guardián vuelve a buscarlas: si queda alguna, aborta.
+      - name: Retirar las claves QA del reporte
+        if: success()
+        run: python3 scripts/redact-e2e-secrets.py blob-report/
+
       - name: Comprobar que el reporte no conserva la clave QA
         if: success()
         run: python3 scripts/assert-no-e2e-secret.py blob-report/

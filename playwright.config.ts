@@ -61,7 +61,11 @@ const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: 30_000,
+  timeout: process.env.CI ? 60_000 : 30_000,
+  // 5 s (el valor por defecto de `expect`) no alcanza en un runner de CI frío: la primera visita a
+  // una página que consulta la auditoría SQL o el catálogo tardaba más y el mismo caso salía verde
+  // en un intento y rojo en el siguiente (flaky), sin que el portal estuviera roto.
+  expect: { timeout: process.env.CI ? 15_000 : 5_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
