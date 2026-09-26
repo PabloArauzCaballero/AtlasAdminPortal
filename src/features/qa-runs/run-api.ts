@@ -13,6 +13,11 @@ import type {
   QaTemplateDetail,
   QaTemplateSummary,
 } from "./types";
+import type {
+  QaCampaign,
+  QaRunEventPage,
+  QaRunEvidence,
+} from "./run-extras-types";
 
 /**
  * Cliente de la API de control QA. Usa el MISMO `apiRequest` que el resto del portal: sesión
@@ -122,5 +127,33 @@ export function cancelQaRun(runId: string) {
   return apiRequest<{ runId: string; status: QaRunStatus }>(
     `${BASE}/runs/${encodeURIComponent(runId)}/cancel`,
     { method: "POST" },
+  );
+}
+
+export async function listQaCampaigns() {
+  const response = await apiRequest<{ items: QaCampaign[] }>(
+    `${BASE}/campaigns`,
+  );
+  return response.items ?? [];
+}
+
+/** Eventos posteriores a `after` (cursor = último `sequence` visto). Sondeo, no SSE. */
+export async function listQaRunEvents(
+  runId: string,
+  after: number,
+): Promise<QaRunEventPage> {
+  const response = await apiRequest<Partial<QaRunEventPage>>(
+    `${BASE}/runs/${encodeURIComponent(runId)}/events`,
+    { query: { after } },
+  );
+  return {
+    items: response.items ?? [],
+    nextCursor: response.nextCursor ?? after,
+  };
+}
+
+export function getQaRunEvidence(runId: string) {
+  return apiRequest<QaRunEvidence>(
+    `${BASE}/runs/${encodeURIComponent(runId)}/evidence`,
   );
 }

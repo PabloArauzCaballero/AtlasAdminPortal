@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/layout/page-header";
+import { CampaignCatalog } from "./campaign-catalog";
 import { RunProgress } from "./run-progress";
 import { TemplateCatalog } from "./template-catalog";
 
@@ -40,6 +41,18 @@ export function JourneysTab({
         </CardHeader>
         <CardContent>
           <TemplateCatalog onLaunched={onRunIdChange} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <SectionHeader
+            title="Campañas"
+            description="Grupos de recorridos que se prueban juntos y en qué proporción reparten las personas."
+            className="mb-0"
+          />
+        </CardHeader>
+        <CardContent>
+          <CampaignCatalog />
         </CardContent>
       </Card>
       <section className="rounded-2xl border border-dashed border-slate-300 bg-white/60">

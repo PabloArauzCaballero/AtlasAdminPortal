@@ -11,6 +11,9 @@ import { newIdempotencyKey } from "@/shared/api/idempotency";
 import {
   cancelQaRun,
   getQaCapabilities,
+  getQaRunEvidence,
+  listQaCampaigns,
+  listQaRunEvents,
   getQaCoverage,
   getQaRun,
   getQaSampleInputs,
@@ -22,6 +25,8 @@ import {
   listQaTemplates,
   preflightQaRun,
 } from "./run-api";
+import { mergeRunEvents } from "./run-events";
+import type { QaRunEventLog } from "./run-extras-types";
 import { pollInterval } from "./run-status";
 import type { QaDatasetMode, QaRunRequest } from "./types";
 
@@ -176,5 +181,50 @@ export function useCancelQaRun(runId?: string | null) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [...ROOT, "run", runId] });
     },
+  });
+}
+
+export function useQaCampaigns() {
+  return useQuery({
+    queryKey: [...ROOT, "campaigns"],
+    queryFn: listQaCampaigns,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** El manifiesto se pide al abrir el panel: pesa (plan y pasos completos) y no hace falta antes. */
+export function useQaRunEvidence(runId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...ROOT, "run", runId, "evidence"],
+    queryFn: () => getQaRunEvidence(runId),
+    enabled: Boolean(runId) && enabled,
+  });
+}
+
+/**
+ * El diario de eventos de una corrida, acumulado por cursor.
+ *
+ * El servidor no emite un flujo: devuelve los eventos posteriores a `after`. Cada sondeo pide
+ * sólo lo nuevo desde el último `sequence` visto y lo suma a lo que ya había, así que la lista no
+ * se vuelve a descargar entera cada 3 s.
+ */
+export function useQaRunEvents(
+  runId: string,
+  { live, enabled }: { live: boolean; enabled: boolean },
+) {
+  const queryClient = useQueryClient();
+  const key = [...ROOT, "run", runId, "events"];
+  return useQuery({
+    queryKey: key,
+    queryFn: async () => {
+      const previous = queryClient.getQueryData<QaRunEventLog>(key) ?? {
+        items: [],
+        cursor: 0,
+      };
+      const page = await listQaRunEvents(runId, previous.cursor);
+      return mergeRunEvents(previous, page);
+    },
+    enabled: Boolean(runId) && enabled,
+    refetchInterval: live ? 3_000 : false,
   });
 }

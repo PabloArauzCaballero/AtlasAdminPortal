@@ -48,7 +48,7 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/review-queue": {
         systems:
-          "Cola de ítems auto-detectados (endpoints, tablas, impactos, herramientas) con estado NEEDS_REVIEW; aprobar/rechazar actualiza `review_status` y registra el evento.",
+          "Cola de ítems auto-detectados (endpoints, tablas, columnas, impactos, herramientas) con estado NEEDS_REVIEW; aprobar/rechazar llama a `PATCH /systems/*/review`, actualiza `review_status` y guarda el motivo en `notes` (obligatorio al rechazar).",
         business:
           "Control humano sobre lo que detectan los escáneres automáticos: nada se da por confiable para QA, gobierno o reportes hasta que una persona lo valida.",
       },
@@ -232,7 +232,7 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
     views: {
       "/internal/qa/lab": {
         systems:
-          "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda.",
+          "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda. En Journeys, cada corrida enseña su diario (`GET /systems/qa/runs/:runId/events`, sondeo por cursor) y su manifiesto de evidencia, y se listan las campañas precargadas.",
         business:
           "Reproducir un caso puntual en segundos — para soporte, debugging o validar un fix — sin herramientas externas.",
       },

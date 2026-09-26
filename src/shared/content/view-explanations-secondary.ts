@@ -152,7 +152,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/external-providers": {
         systems:
-          "Estado vivo y configuración de cada proveedor, incluidas políticas de costo por operación.",
+          "Estado vivo y configuración de cada proveedor, incluidas políticas de costo por operación. La ficha de un proveedor lee su credencial con `GET /admin/external-providers/:providerCode/auth-state`.",
         business:
           "Semáforo de dependencias externas: si el buró está caído, el onboarding se ve afectado y aquí se confirma.",
       },
@@ -174,7 +174,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/audit": {
         systems:
-          "Explorador de action logs con filtros por módulo, actor, status y ventana temporal; incluye logs sincronizados desde Mongo.",
+          "Explorador de action logs con los filtros que publica `GET /systems/action-logs/filter-catalog` (método, riesgo, módulo, actor, PII, código, fechas, correlación); incluye logs sincronizados desde Mongo.",
         business:
           "La bitácora completa de la plataforma para auditoría continua, no solo cuando hay un problema.",
       },
