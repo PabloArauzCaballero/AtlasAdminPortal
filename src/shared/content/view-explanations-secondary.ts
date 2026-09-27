@@ -13,12 +13,31 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       "/internal/my-notifications",
       "/internal/exports",
       "/internal/files",
+      "/internal/support",
     ],
     systems:
       "Herramientas del día a día del equipo interno: cola de trabajo de casos, jobs programados del backend, alertas operativas, mensajería interna (broadcasts, plantillas y preferencias) y exportaciones de datos con trazabilidad.",
     business:
       "Concentra la operación diaria: qué casos hay que atender, qué procesos automáticos corrieron, qué avisos llegaron y cómo se comunica el equipo — todo auditable.",
     views: {
+      "/internal/support": {
+        systems:
+          "Bandeja de `internal/support/cases` paginada por cursor y cola de chats de `desk/queue`. «Revisar plazos ahora» llama a POST /internal/support/desk/sla/sweep (sólo admin y platform_admin): marca como incumplidos los relojes vencidos y publica `support.sla.breached`, lo mismo que hace el job programado. En la ficha del caso, «Vincular» escribe POST /cases/:id/links y la integridad de cada conversación se recalcula con GET /desk/channels/:id/integrity.",
+        business:
+          "Los casos que abren clientes y comercios, quién los atiende y cuánto les falta para vencer. El supervisor puede forzar la revisión de plazos antes de un comité; cada caso puede enlazarse con su duplicado o su incidente, y cualquier conversación se puede comprobar para demostrar que nadie la alteró.",
+      },
+      "/internal/support/knowledge": {
+        systems:
+          "Crea artículos y versiones con POST /admin/support/knowledge/articles y /articles/:id/versions, y las mueve con /versions/:id/submit-review, /approve y /publish. El servidor impide que el autor apruebe su propia versión y exige riesgo o cumplimiento para los equipos de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. La lista de artículos (GET /articles, cualquier estado y audiencia) y la cola de versiones por estado (GET /versions) son lecturas del personal; antes de cada paso se lee la versión completa con GET /versions/:id, y la versión propia en revisión no ofrece «Aprobar».",
+        business:
+          "Las respuestas oficiales que ven clientes, comercios y el equipo. Se redactan, las revisa y aprueba otra persona, y sólo entonces se publican; lo publicado no se edita, se reemplaza por otra versión y queda la historia de qué decía cada día.",
+      },
+      "/internal/support/agents": {
+        systems:
+          "Alta y baja de `support.support_agent_profiles` (GET/POST/DELETE /internal/support/desk/agents), sólo para admin y platform_admin.",
+        business:
+          "Quién puede atender casos de soporte, con qué nivel, en qué cola y cuántas conversaciones a la vez.",
+      },
       "/internal/operations/pending-contacts": {
         systems:
           "Lista de `customer_contact_methods` con status `unverified` (GET /operations/customers/pending-contact-verification). El botón dispara POST /customer-onboarding/:id/contact-verification/request con rol interno: el backend genera y manda el código, con cooldown por destino.",

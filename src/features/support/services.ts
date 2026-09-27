@@ -5,8 +5,10 @@ import type {
   SupportLiveEvent,
   SupportTranscript,
   CloseInput,
+  ChannelIntegrity,
   CreateAgentInput,
   EscalateInput,
+  LinkCaseInput,
   ResolveInput,
   SupportAgentProfile,
   SupportCaseDetail,
@@ -152,6 +154,31 @@ export function addInternalNote(caseId: string, body: string) {
     `/internal/support/cases/${caseId}/notes`,
     "support-note",
     { body },
+  );
+}
+
+/** Enlazar escribe `CASE_LINKED` en la historia del expediente, como cualquier otra acción. */
+export function linkCase(caseId: string, body: LinkCaseInput) {
+  return accion<{ caseId: string; linkedCaseId: string; linkType: string }>(
+    `/internal/support/cases/${caseId}/links`,
+    "support-link",
+    body,
+  );
+}
+
+/** Sólo lectura: recalcula la cadena de hash de la conversación y dice dónde se rompió. */
+export function verifyChannelIntegrity(channelId: string) {
+  return apiRequest<ChannelIntegrity>(
+    `/internal/support/desk/channels/${channelId}/integrity`,
+  );
+}
+
+/** Marca como incumplidos los plazos ya vencidos; el mismo trabajo que corre el job programado. */
+export function sweepSupportSla() {
+  return accion<{ breached: number }>(
+    "/internal/support/desk/sla/sweep",
+    "support-sla-sweep",
+    {},
   );
 }
 

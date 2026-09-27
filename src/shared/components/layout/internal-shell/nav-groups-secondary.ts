@@ -7,7 +7,6 @@ import {
   Gauge,
   Landmark,
   History,
-  LifeBuoy,
   ListChecks,
   LockKeyhole,
   MessageSquare,
@@ -23,7 +22,6 @@ import {
   Stamp,
   Table2,
   UserCircle,
-  UserCog,
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
@@ -33,8 +31,8 @@ import {
   LOAN_PORTFOLIO_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
-  SUPPORT_ADMIN_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
+import { supportNavItems } from "./nav-items-support";
 
 export const navGroupsSecondary: InternalNavGroup[] = [
   {
@@ -65,22 +63,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: [],
       },
       ...CASE_QUEUE_NAV_ITEMS,
-      {
-        label: "Soporte",
-        href: "/internal/support",
-        icon: LifeBuoy,
-        // Como "Cola de trabajo" (@Roles) y además exige perfil de agente vivo; visible porque un
-        // ítem oculto no explica nada, y la pantalla sí dice qué falta y dónde habilitarlo.
-        permissions: [],
-      },
-      {
-        label: "Agentes de soporte",
-        href: "/internal/support/agents",
-        icon: UserCog,
-        // Decide quién lee expedientes de soporte (con la conversación): sólo admin y platform_admin.
-        permissions: [],
-        roles: SUPPORT_ADMIN_ROLE_LIST,
-      },
+      ...supportNavItems,
       {
         label: "Archivos",
         href: "/internal/files",

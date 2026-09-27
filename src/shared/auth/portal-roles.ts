@@ -37,6 +37,18 @@ export const RUNTIME_JOB_ROLES = ["admin", "platform_admin", "system"] as const;
 export const SUPPORT_ADMIN_ROLES = ["admin", "platform_admin"] as const;
 
 /**
+ * `SupportKnowledgeAdminController`: leer, redactar, revisar, aprobar y publicar la ayuda. Ni
+ * `readonly_auditor` ni `fraud_analyst` entran.
+ */
+export const SUPPORT_KNOWLEDGE_ROLES = [
+  "internal_operator",
+  "compliance_analyst",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+
+/**
  * `PartnerOperationsController` (expedientes de comercio): la cola, la decisión degradada y
  * volver a pedir la verificación. Más estrecho que el portal operacional: ni `compliance_analyst`
  * ni `readonly_auditor` entran, y el ítem del menú no debe prometerles una pantalla que da 403.
@@ -104,6 +116,9 @@ export const PARTNER_OPERATIONS_ROLE_LIST: string[] = [
   ...PARTNER_OPERATIONS_ROLES,
 ];
 export const SUPPORT_ADMIN_ROLE_LIST: string[] = [...SUPPORT_ADMIN_ROLES];
+export const SUPPORT_KNOWLEDGE_ROLE_LIST: string[] = [
+  ...SUPPORT_KNOWLEDGE_ROLES,
+];
 export const RUNTIME_JOB_ROLE_LIST: string[] = [...RUNTIME_JOB_ROLES];
 export const CREDIT_OPERATIONS_ROLE_LIST: string[] = [
   ...CREDIT_OPERATIONS_ROLES,
