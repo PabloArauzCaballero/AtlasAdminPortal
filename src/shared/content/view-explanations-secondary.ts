@@ -25,6 +25,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Los usuarios de la app que se quedaron sin confirmar el correo o el teléfono, y un botón para reenviarles el código sin pedirles que vuelvan a empezar.",
       },
+      "/internal/operations/payment-claims": {
+        systems:
+          "Lista paginada de `credit.loan_payment_claims` de todo el tenant (GET /operations/payment-claims) con comercio, cliente, préstamo, cuota y horas de espera. Sólo lectura: la verificación es `POST /merchant/partners/:id/payment-claims/:claimId/verification`, que llama el ERP del comercio.",
+        business:
+          "Los comprobantes que los clientes mandaron al pagar y que su comercio todavía no confirmó. Sirve para ver qué comercio deja avisos sin mirar más de 48 horas y llamarle, antes de que el cliente crea que su pago se perdió.",
+      },
       "/internal/operations/work-queue": {
         systems:
           "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",

@@ -47,6 +47,7 @@ export const breadcrumbLabels: Record<string, string> = {
   "runtime-jobs": "Jobs de runtime",
   "work-queue": "Cola de trabajo",
   "pending-contacts": "Contactos sin verificar",
+  "payment-claims": "Avisos de pago",
   support: "Soporte",
   cases: "Casos",
   caseId: "Caso",

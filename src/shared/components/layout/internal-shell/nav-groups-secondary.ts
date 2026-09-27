@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
+import { paymentClaimsNavItem } from "./nav-items-payment-claims";
 import {
   INTERNAL_PORTAL_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
@@ -131,6 +132,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: [],
         roles: INTERNAL_PORTAL_ROLE_LIST,
       },
+      paymentClaimsNavItem,
       {
         label: "Eventos de dominio",
         href: "/internal/events",
