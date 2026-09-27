@@ -2,11 +2,11 @@ import { z } from "zod";
 import type { FraudDecisionInput, ManualReviewDecisionInput } from "./types";
 
 const NEXT_STATUS = [
-  "approved_for_next_step",
+  "active",
+  "observed",
+  "under_review",
   "rejected",
-  "pending_more_information",
-  "pending_fraud_review",
-  "registered",
+  "suspended",
   "blocked",
 ] as const;
 

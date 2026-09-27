@@ -73,12 +73,28 @@ export const FRAUD_DECISIONS: TypedOption<FraudDecision>[] = [
   },
 ];
 
+/**
+ * Estados de la máquina de estados del cliente (`customer-lifecycle.constants.ts` en AtlasBackend).
+ * Desde la corrección H1 el backend sólo acepta éstos: los nombres anteriores
+ * («aprobado — siguiente paso», «pendiente de información»…) daban 400 al elegirlos.
+ */
 export const NEXT_STATUS_OPTIONS: TypedOption<NextCustomerStatus>[] = [
   {
-    value: "approved_for_next_step",
-    label: "Aprobado — siguiente paso",
+    value: "active",
+    label: "Habilitado",
     description:
-      "El cliente avanza a la siguiente etapa de su alta o de su solicitud.",
+      "El cliente queda habilitado y puede pedir crédito si la evaluación lo permite.",
+  },
+  {
+    value: "observed",
+    label: "Observado",
+    description:
+      "El cliente debe corregir o aportar algo en su alta antes de volver a revisión.",
+  },
+  {
+    value: "under_review",
+    label: "En revisión",
+    description: "El cliente queda en revisión hasta que alguien decida.",
   },
   {
     value: "rejected",
@@ -86,27 +102,16 @@ export const NEXT_STATUS_OPTIONS: TypedOption<NextCustomerStatus>[] = [
     description: "El cliente queda rechazado y no puede seguir con el alta.",
   },
   {
-    value: "pending_more_information",
-    label: "Pendiente de información",
+    value: "suspended",
+    label: "Suspendido",
     description:
-      "El cliente debe aportar algo antes de que nadie vuelva a revisarlo.",
-  },
-  {
-    value: "pending_fraud_review",
-    label: "Pendiente revisión de fraude",
-    description:
-      "El cliente queda congelado hasta que fraude cierre su propio caso.",
-  },
-  {
-    value: "registered",
-    label: "Registrado",
-    description:
-      "Vuelve al estado inicial de registrado, sin verificación aprobada.",
+      "Un cliente habilitado deja de operar temporalmente hasta que se revise.",
   },
   {
     value: "blocked",
     label: "Bloqueado",
-    description: "El cliente no puede operar hasta que alguien lo desbloquee.",
+    description:
+      "El cliente no puede operar; levantar el bloqueo obliga a volver a revisarlo.",
   },
 ];
 
@@ -117,11 +122,12 @@ export const NO_STATUS_CHANGE: Option = {
   description: "La decisión cierra el caso sin tocar el estado del cliente.",
 };
 
+/** Fraude decide sobre el acceso: bloquear, suspender, volver a revisión o dejar habilitado. */
 export const FRAUD_NEXT_STATUS_VALUES: NextCustomerStatus[] = [
   "blocked",
-  "pending_fraud_review",
-  "registered",
-  "approved_for_next_step",
+  "suspended",
+  "under_review",
+  "active",
 ];
 
 export const IDENTITY_DECISIONS: Option[] = [
