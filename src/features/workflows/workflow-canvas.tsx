@@ -16,7 +16,7 @@ import type { WorkflowSelection } from "./workflow-graph-helpers";
 import type { WorkflowStage, WorkflowTreeQuery } from "./types";
 import { useQaRun } from "@/features/qa-runs/run-hooks";
 import { stepCountsByEndpoint } from "@/features/qa-runs/run-step-counts";
-import { WorkflowRunBar } from "@/features/qa-runs/workflow-run-bar";
+import { WorkflowLoadBar } from "@/features/qa-runs/workflow-load-bar";
 import type { QaRunStepCounts } from "@/features/qa-runs/types";
 
 const STANDARD_WORKFLOW = "customer_credit_journey";
@@ -98,7 +98,7 @@ export function WorkflowCanvas({
       />
       {runControls ? (
         <div className="mt-3">
-          <WorkflowRunBar
+          <WorkflowLoadBar
             workflowCode={workflowCode}
             runId={runControls.runId}
             onRunIdChange={runControls.onRunIdChange}

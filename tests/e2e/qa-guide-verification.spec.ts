@@ -132,9 +132,10 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     expect(clip).toContain("{{customerId}}");
   });
 
-  test("el botón Guía del lab lleva a la guía", async ({ page }) => {
+  // La cabecera del lab ya no repite la guía: vive en el menú QA, junto al lab.
+  test("el menú QA lleva del lab a la guía", async ({ page }) => {
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
-    await page.getByRole("link", { name: "Guía" }).first().click();
+    await page.getByRole("link", { name: "Guía QA Lab" }).first().click();
     await expect(page).toHaveURL(/\/internal\/qa\/guia$/);
     await expect(
       page.getByRole("heading", {

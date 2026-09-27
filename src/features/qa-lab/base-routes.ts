@@ -17,7 +17,19 @@ export type QaBaseRouteOption = {
   hint: string;
 };
 
-export const DEFAULT_QA_BASE_ROUTE: QaBaseRouteKey = "ENVIRONMENT_DEFAULT";
+/**
+ * Por defecto, la API de ESTE portal: es la única que existe de verdad en un portal desplegado.
+ * El default anterior («base del ambiente» con LOCAL) mandaba cada prueba a `localhost:3005` desde
+ * el navegador del operador, y en TEST no ejecutaba nada.
+ */
+export const DEFAULT_QA_BASE_ROUTE: QaBaseRouteKey = "CONFIGURED_API";
+
+/** Las rutas base que se ofrecen en pantalla. Las demás claves siguen resolviendo (enlaces viejos). */
+export const VISIBLE_QA_BASE_ROUTE_KEYS: readonly QaBaseRouteKey[] = [
+  "CONFIGURED_API",
+  "MOCK_PROVIDERS",
+  "CUSTOM_HOST",
+];
 
 export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   {
@@ -42,8 +54,8 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   },
   {
     key: "CONFIGURED_API",
-    label: "NEXT_PUBLIC_API_BASE_URL",
-    hint: "Base publica configurada para el portal.",
+    label: "API de este portal",
+    hint: "La misma API que usa el portal ahora mismo, con tu sesión.",
   },
   {
     key: "STAGING_CONFIGURED",
@@ -119,8 +131,17 @@ export function getQaMockProvidersBaseUrl(): string {
   );
 }
 
+/**
+ * En DEV y TEST `NEXT_PUBLIC_API_BASE_URL` vale `/api/v1`, RELATIVA al portal. `new URL()` no la
+ * acepta sin origen, así que cada prueba fallaba con «Invalid URL» antes de salir. Se resuelve
+ * contra el origen de la página, que es exactamente a donde la manda el propio portal.
+ */
 function normalizeBaseUrl(value: string): string {
-  return value.trim().replace(/\/+$/, "");
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (trimmed.startsWith("/") && typeof window !== "undefined") {
+    return `${window.location.origin}${trimmed}`;
+  }
+  return trimmed;
 }
 
 type ResolveBaseRouteInput = {

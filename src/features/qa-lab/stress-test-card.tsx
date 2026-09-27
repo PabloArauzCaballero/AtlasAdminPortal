@@ -1,5 +1,6 @@
 "use client";
 
+import { defaultQaEnvironment } from "./environment";
 import { useEffect, useState } from "react";
 import type { EndpointItem } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
@@ -34,7 +35,10 @@ export function StressTestCard({
   const mutation = useEndpointStressMutation(endpoint);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<StressFormState>(DEFAULT_STRESS_FORM);
+  const [form, setForm] = useState<StressFormState>(() => ({
+    ...DEFAULT_STRESS_FORM,
+    environment: defaultQaEnvironment(),
+  }));
   const canExecute = hasPermission("systems.stress.execute");
   const isProd = form.environment === "PRODUCTION_READONLY";
   const canRun =
@@ -44,6 +48,7 @@ export function StressTestCard({
     const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
     setForm({
       ...DEFAULT_STRESS_FORM,
+      environment: defaultQaEnvironment(),
       // Ver el mismo comentario en `endpoint-test-card.tsx`: revela los controles de
       // escenario/latencia del mock; la URL ya es absoluta y no depende de esto para resolver.
       baseRouteKey: isMock

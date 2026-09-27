@@ -1,4 +1,3 @@
-import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -186,18 +185,12 @@ describe("RunControls · destino", () => {
     expect(field).toHaveAttribute("readonly");
   });
 
-  it("el ambiente se puede mover a producción (el bloqueo vive en la card)", async () => {
-    const onChange = vi.fn();
-    render(<RunControls form={runForm()} onChange={onChange} />);
+  it("no ofrece elegir ambiente: sale del despliegue del portal", () => {
+    render(<RunControls form={runForm()} onChange={vi.fn()} />);
 
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: /Ambiente/ }),
-      "PRODUCTION_READONLY",
-    );
-
-    expect(onChange).toHaveBeenCalledWith({
-      environment: "PRODUCTION_READONLY",
-    });
+    expect(
+      screen.queryByRole("combobox", { name: /Ambiente/ }),
+    ).not.toBeInTheDocument();
   });
 });
 

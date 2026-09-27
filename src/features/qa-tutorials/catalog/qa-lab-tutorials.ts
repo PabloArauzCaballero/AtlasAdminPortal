@@ -59,17 +59,6 @@ const overview: TutorialDefinition = {
       position: "top",
       waitForElement: true,
     },
-    {
-      id: "guide",
-      target: "qa-lab-guide-link",
-      title: "¿Dónde pedir ayuda?",
-      content:
-        "En cualquier momento tienes la Guía y el botón «Tutorial» de cada pestaña. No necesitas memorizar nada: la ayuda vive dentro de la herramienta.",
-      example:
-        "¿Te pierdes en mitad de una prueba? Pulsa «Tutorial» arriba y retomas justo donde lo dejaste.",
-      position: "bottom",
-      optional: true,
-    },
   ],
 };
 
