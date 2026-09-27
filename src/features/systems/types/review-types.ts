@@ -33,11 +33,30 @@ export type ActionLog = {
 };
 
 export type ReviewQueueBucket<T> = { items: T[]; total: number };
+
+/** Una columna detectada por el escáner, tal como la devuelve la cola (`mapDataField`). */
+export type ReviewQueueColumn = {
+  columnId: string;
+  dataEntityId: string | null;
+  schemaName: string;
+  tableName: string;
+  columnName: string;
+  businessName: string | null;
+  dataType: string | null;
+  containsPii: boolean | null;
+  reviewStatus: string;
+};
+
 export type ReviewQueue = {
   endpoints: ReviewQueueBucket<EndpointItem>;
   dataEntities: ReviewQueueBucket<DataEntity>;
   dataEntityImpacts: ReviewQueueBucket<DataEntityImpact>;
   fieldImpacts: ReviewQueueBucket<FieldImpact>;
+  /**
+   * Opcional porque llegó después que los demás cubos: un servidor anterior no lo manda y la
+   * sección de columnas debe quedar vacía, no romper la cola entera.
+   */
+  dataColumnImpacts?: ReviewQueueBucket<ReviewQueueColumn>;
   toolRequirements: ReviewQueueBucket<ToolRequirement>;
 };
 
