@@ -16,6 +16,7 @@ import {
   subscribeToChannel,
 } from "./services";
 import type { SupportCaseChannelRef, SupportMessage } from "./types";
+import { UnirseALaConversacion } from "./chat-join";
 import { MessagesSquare, WifiOff } from "lucide-react";
 
 /**
@@ -61,10 +62,13 @@ export function ChatPanel({
     );
   }
 
-  return <Conversacion channelId={abierto.channelId} />;
+  return <Conversacion channelId={abierto.channelId} status={abierto.status} />;
 }
 
-function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
+function Conversacion({
+  channelId,
+  status,
+}: Readonly<{ channelId: string; status: string }>) {
   const queryClient = useQueryClient();
   const [enVivo, setEnVivo] = useState(false);
   const [texto, setTexto] = useState("");
@@ -75,7 +79,14 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
   const transcripcion = useQuery({
     queryKey: queryKeys.supportTranscript(channelId),
     queryFn: () => readTranscript(channelId),
+    // Un 403 no se arregla reintentando: se arregla entrando en la conversación.
+    retry: (intentos, error) =>
+      !(isAtlasApiError(error) && error.status === 403) && intentos < 3,
   });
+  const fuera =
+    isAtlasApiError(transcripcion.error) &&
+    transcripcion.error.code === "SUPPORT_CHANNEL_NOT_PARTICIPANT";
+  const dentro = transcripcion.isSuccess;
 
   const refrescar = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -90,6 +101,8 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
    * recibiendo mensajes de una conversación que ya nadie mira y cada navegación sumaría otro.
    */
   useEffect(() => {
+    // Sin estar dentro, el stream responde 403 y el reintento lo martillaría cada pocos segundos.
+    if (!dentro) return undefined;
     return subscribeToChannel(
       channelId,
       (evento) => {
@@ -102,7 +115,7 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
       },
       setEnVivo,
     );
-  }, [channelId, refrescar]);
+  }, [channelId, refrescar, dentro]);
 
   const mensajes = transcripcion.data?.messages ?? [];
   const ultimo = mensajes[mensajes.length - 1];
@@ -139,6 +152,14 @@ function Conversacion({ channelId }: Readonly<{ channelId: string }>) {
       setEnviando(false);
     }
   };
+
+  if (fuera) {
+    return (
+      <Bloque titulo="Conversación">
+        <UnirseALaConversacion channelId={channelId} status={status} />
+      </Bloque>
+    );
+  }
 
   return (
     <Bloque

@@ -23,13 +23,10 @@ import {
 } from "./tutorial-engine";
 import { useTutorialProgress } from "./use-tutorial-progress";
 import { useTutorialRuntime } from "./use-tutorial-runtime";
+import { usePathQueue } from "./use-path-queue";
+import { nowIso, resumeStepFor, routeForStep } from "./tutorial-routing";
 import { SpotlightOverlay } from "./spotlight-overlay";
-import type {
-  TutorialDefinition,
-  TutorialProgress,
-  TutorialStatus,
-  TutorialStep,
-} from "./types";
+import type { TutorialDefinition, TutorialStatus, TutorialStep } from "./types";
 
 type TutorialContextValue = Readonly<{
   activeDefinition: TutorialDefinition | null;
@@ -39,6 +36,8 @@ type TutorialContextValue = Readonly<{
   isLast: boolean;
   /** Arranca o RETOMA (sin `stepIndex`, sigue en el último paso guardado). */
   start: (tutorialId: string, stepIndex?: number) => void;
+  /** Arranca un recorrido sugerido: al terminar cada tutorial se ofrece el siguiente. */
+  startPath: (pathId: string) => void;
   next: () => void;
   prev: () => void;
   skipStep: () => void;
@@ -51,33 +50,6 @@ type TutorialContextValue = Readonly<{
 }>;
 
 const TutorialContext = createContext<TutorialContextValue | null>(null);
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
-
-/** Paso en el que retomar: el último visto si quedó a medias; 0 si no. */
-export function resumeStepFor(
-  definition: TutorialDefinition,
-  progress: TutorialProgress | undefined,
-): number {
-  if (!progress) return 0;
-  if (progress.status !== "in-progress" && progress.status !== "skipped") {
-    return 0;
-  }
-  return Math.max(
-    0,
-    Math.min(progress.lastStepIndex, definition.steps.length - 1),
-  );
-}
-
-/** A dónde tiene que estar el usuario para ver el paso: su pestaña o la herramienta. */
-function routeForStep(
-  definition: TutorialDefinition,
-  step: TutorialStep | undefined,
-): string {
-  return step?.nextRoute ?? definition.route;
-}
 
 export function TutorialProvider({
   children,
@@ -146,7 +118,7 @@ export function TutorialProvider({
     [pathname, router],
   );
 
-  const start = useCallback(
+  const startTutorial = useCallback(
     (tutorialId: string, stepIndex?: number) => {
       const definition = getTutorial(tutorialId);
       if (!definition) return;
@@ -160,6 +132,17 @@ export function TutorialProvider({
       saveProgress(progressOnStart(definition, previous, nowIso()));
     },
     [getProgress, saveProgress, navigateTo],
+  );
+
+  const path = usePathQueue(startTutorial);
+  const { clearPath } = path;
+  // Arrancar un tutorial suelto abandona el recorrido que hubiera en curso.
+  const start = useCallback(
+    (tutorialId: string, stepIndex?: number) => {
+      clearPath();
+      startTutorial(tutorialId, stepIndex);
+    },
+    [clearPath, startTutorial],
   );
 
   const advance = useCallback(() => {
@@ -189,7 +172,11 @@ export function TutorialProvider({
     dispatch({ type: "CLOSE" });
   }, [activeDefinition, state.stepIndex, getProgress, saveProgress]);
 
-  const close = useCallback(() => dispatch({ type: "CLOSE" }), []);
+  const close = useCallback(() => {
+    // Cerrar la tarjeta de «completado» sin pulsar «Siguiente» termina el recorrido.
+    if (state.phase === "completed") clearPath();
+    dispatch({ type: "CLOSE" });
+  }, [state.phase, clearPath]);
   const setMissing = useCallback(
     (missing: boolean) => dispatch({ type: "SET_MISSING", missing }),
     [],
@@ -228,6 +215,7 @@ export function TutorialProvider({
       phase: state.phase,
       isLast,
       start,
+      startPath: path.startPath,
       next: advance,
       prev,
       skipStep: advance,
@@ -244,6 +232,7 @@ export function TutorialProvider({
       state.phase,
       isLast,
       start,
+      path.startPath,
       advance,
       prev,
       skipTutorial,
@@ -273,6 +262,15 @@ export function TutorialProvider({
           onLocate={locate}
           canLocate={canLocate}
           onMissingChange={setMissing}
+          nextInPath={
+            path.nextTitle
+              ? {
+                  pathTitle: path.pathTitle ?? "",
+                  title: path.nextTitle,
+                  onContinue: path.continuePath,
+                }
+              : undefined
+          }
         />
       ) : null}
     </TutorialContext.Provider>

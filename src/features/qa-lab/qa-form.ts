@@ -115,11 +115,18 @@ function parseCommonForm(
 > {
   const target = parseTarget(input);
   if (!target.ok) return target;
+  if (input.authMode === "custom" && !(input.customAuthToken ?? "").trim()) {
+    return {
+      ok: false,
+      error:
+        "Elegiste «Token de otro actor» pero no pegaste ningún token. Sin él la petición se firmaría con tu propia sesión.",
+    };
+  }
   const parsed = parseJsonBlocks([
-    ["payload", input.payload, "Payload"],
-    ["queryParams", input.queryParams, "Query params"],
-    ["pathParams", input.pathParams, "Path params"],
-    ["headers", input.headers, "Headers"],
+    ["payload", input.payload, "Datos de entrada"],
+    ["queryParams", input.queryParams, "Datos de consulta"],
+    ["pathParams", input.pathParams, "Datos de la ruta"],
+    ["headers", input.headers, "Cabeceras extra"],
   ]);
   if (!parsed.ok) return parsed;
   const expected = parseExpectedResponse(input);
@@ -148,17 +155,19 @@ function parseCommonForm(
 function parseTarget(input: CommonFormInput) {
   if (input.baseRouteKey === "CUSTOM_HOST") {
     const host = input.customHostUrl.trim();
-    if (!host) return { ok: false as const, error: "Host URL es requerido." };
+    if (!host)
+      return { ok: false as const, error: "Escribe la dirección manual." };
     try {
       const url = new URL(host);
       if (!["http:", "https:"].includes(url.protocol)) {
         return {
           ok: false as const,
-          error: "Host URL debe usar http o https.",
+          error:
+            "La dirección manual tiene que empezar por http:// o https://.",
         };
       }
     } catch {
-      return { ok: false as const, error: "Host URL no es valido." };
+      return { ok: false as const, error: "La dirección manual no es válida." };
     }
   }
   return {
@@ -175,11 +184,11 @@ function parseTarget(input: CommonFormInput) {
 function parseExpectedResponse(
   input: CommonFormInput,
 ): ParseResult<QaExpectedResponse> {
-  const headers = parseJsonRecord(input.expectedHeaders, "Headers esperados");
+  const headers = parseJsonRecord(input.expectedHeaders, "Cabeceras esperadas");
   if (!headers.ok) return headers;
   const jsonSubset = parseOptionalJsonValue(
     input.expectedJsonSubset,
-    "JSON esperado",
+    "Fragmento esperado",
   );
   if (!jsonSubset.ok) return jsonSubset;
   return {

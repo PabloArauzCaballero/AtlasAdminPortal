@@ -72,7 +72,7 @@ export function SelectedEndpointBar({
         </Link>
         <Button onClick={onChange}>
           <ArrowLeftRight className="h-4 w-4" aria-hidden />
-          Cambiar endpoint
+          Cambiar operación
         </Button>
       </div>
     </div>

@@ -7,26 +7,26 @@ export { ENVIRONMENT_OPTIONS } from "@/features/qa-console/qa-options";
 export const AUTH_MODE_OPTIONS: (Option & { value: QaAuthMode })[] = [
   {
     value: "session",
-    label: "Sesión actual",
+    label: "Tu sesión",
     description:
       "Firma con tu propia sesión del portal: prueba lo que tú puedes hacer.",
   },
   {
     value: "none",
-    label: "Sin autenticación",
+    label: "Sin identificarse",
     description:
-      "Sin cabecera Authorization: el endpoint protegido debería responder 401.",
+      "Ni token ni cookie de sesión: una operación protegida debería responder 401.",
   },
   {
     value: "invalid",
-    label: "Token inválido",
+    label: "Credencial falsa",
     description:
-      "Envía un token corrupto a propósito para comprobar que se rechaza.",
+      "Envía un token corrupto a propósito (y sin cookie) para comprobar que se rechaza con 401.",
   },
   {
     value: "custom",
-    label: "Token manual",
+    label: "Token de otro actor",
     description:
-      "Pegas el token de otro actor para probar la matriz de permisos.",
+      "Pegas el token de otro actor (cliente, comercio…) para probar qué puede hacer; tu cookie no viaja.",
   },
 ];

@@ -139,6 +139,7 @@ export const queryKeys = {
   supportQueues: ["support", "catalog", "queues"] as const,
   supportCodes: ["support", "catalog", "codes"] as const,
   supportDeskQueue: ["support", "desk", "queue"] as const,
+  supportDeskMine: ["support", "desk", "mine"] as const,
   supportAgents: ["support", "agents"] as const,
   supportTranscript: (channelId: string) =>
     ["support", "channel", channelId, "transcript"] as const,

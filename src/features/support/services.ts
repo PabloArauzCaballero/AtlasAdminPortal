@@ -77,6 +77,15 @@ export function listQueuedChannels() {
   );
 }
 
+/** Mi presencia real y las conversaciones que llevo; sin esto, un chat auto-asignado no se veía. */
+export function getMyDesk() {
+  return apiRequest<{
+    agentProfileId: string;
+    presenceState: string;
+    channels: SupportChannel[];
+  }>("/internal/support/desk/mine");
+}
+
 export function claimChannel(channelId: string) {
   return accion<{ channelId: string }>(
     `/internal/support/desk/channels/${channelId}/claim`,

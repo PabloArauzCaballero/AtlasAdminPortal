@@ -54,7 +54,7 @@ describe("TutorialLaunchButton", () => {
   it("muestra estado 'Disponible' y aria-label accesible", () => {
     renderButton();
     const button = screen.getByRole("button", {
-      name: /Iniciar tutorial · Probar un endpoint/i,
+      name: /Iniciar tutorial · Probar una operación/i,
     });
     expect(button).toBeInTheDocument();
     expect(screen.getByText("Disponible")).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("TutorialLaunchButton", () => {
   it("variante compacta expone tooltip por title y aria-label", () => {
     renderButton({ variant: "compact" });
     const button = screen.getByRole("button", {
-      name: /Iniciar tutorial · Probar un endpoint/i,
+      name: /Iniciar tutorial · Probar una operación/i,
     });
     expect(button).toHaveAttribute("title");
   });

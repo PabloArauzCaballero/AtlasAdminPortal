@@ -46,13 +46,15 @@ describe("QaTargetControls · destino de la prueba", () => {
       />,
     );
 
-    expect(screen.getByText(/Default: \/api\/v1\/health/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Por defecto: \/api\/v1\/health/),
+    ).toBeInTheDocument();
   });
 
   it("sin endpoint seleccionado lo dice en vez de mostrar 'Default: undefined'", () => {
     render(<QaTargetControls form={commonForm()} onChange={vi.fn()} />);
 
-    expect(screen.getByText(/Default: sin ruta/)).toBeInTheDocument();
+    expect(screen.getByText(/Por defecto: sin ruta/)).toBeInTheDocument();
   });
 
   it("el host manual sólo aparece al elegir «Host URL manual»", () => {
@@ -99,8 +101,12 @@ describe("QaExpectationsControls · criterios de salida", () => {
   it("la variante funcional ofrece todos los umbrales de aprobación", () => {
     render(<QaExpectationsControls form={commonForm()} onChange={vi.fn()} />);
 
-    expect(screen.getByText("Max latencia ms")).toBeInTheDocument();
-    expect(screen.getByText("Max respuesta bytes")).toBeInTheDocument();
+    expect(
+      screen.getByText("Tiempo máximo de respuesta (ms)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Tamaño máximo de respuesta (bytes)"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Respuesta contiene")).toBeInTheDocument();
   });
 
@@ -116,7 +122,7 @@ describe("QaExpectationsControls · criterios de salida", () => {
     );
 
     expect(screen.getByText("HTTP esperados")).toBeInTheDocument();
-    expect(screen.queryByText("Max latencia ms")).toBeNull();
+    expect(screen.queryByText("Tiempo máximo de respuesta (ms)")).toBeNull();
     expect(screen.queryByText("Respuesta contiene")).toBeNull();
   });
 
@@ -185,7 +191,7 @@ describe("QaScenarioControls · escenario y credencial", () => {
     expect(screen.queryByPlaceholderText("eyJhbGciOi...")).toBeNull();
 
     await elegirOpcion(
-      screen.getByRole("combobox", { name: /Auth mode efectivo/ }),
+      screen.getByRole("combobox", { name: /Credencial de la petición/ }),
       "custom",
     );
     expect(onChange).toHaveBeenCalledWith({ authMode: "custom" });
@@ -204,7 +210,9 @@ describe("QaScenarioControls · escenario y credencial", () => {
     render(<QaScenarioControls form={commonForm()} onChange={onChange} />);
 
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Incluir x-tenant-id" }),
+      screen.getByRole("checkbox", {
+        name: "Enviar la cabecera de empresa (x-tenant-id)",
+      }),
     );
 
     expect(onChange).toHaveBeenCalledWith({ includeTenantHeader: false });

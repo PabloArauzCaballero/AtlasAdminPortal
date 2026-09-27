@@ -158,8 +158,11 @@ export function Historial() {
       title="Dónde quedan las corridas"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Desde la cabecera del lab, dos accesos guardan lo que ejecutas para
-        auditoría y comparación manual:
+        Las pruebas sueltas del lab (funcional y carga) y el editor de pasos del
+        journey corren en tu navegador y{" "}
+        <strong>no se guardan en ningún historial</strong>: si necesitas
+        conservar una, descarga su registro. Lo que sí queda guardado vive en
+        otras pantallas:
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Link
@@ -170,8 +173,8 @@ export function Historial() {
             /internal/qa/runs
           </p>
           <p className="mt-1 text-sm text-atlas-muted">
-            <strong className="text-atlas-text">Ejecuciones QA</strong> —
-            corridas funcionales y de journey ejecutadas desde el lab.
+            <strong className="text-atlas-text">Ejecuciones QA</strong> — las
+            corridas de suites y los recorridos que se lanzan en el servidor.
           </p>
         </Link>
         <Link
@@ -182,8 +185,9 @@ export function Historial() {
             /internal/qa/stress
           </p>
           <p className="mt-1 text-sm text-atlas-muted">
-            <strong className="text-atlas-text">Carga QA</strong> — el registro
-            de pruebas de carga, perfil por perfil.
+            <strong className="text-atlas-text">Carga QA</strong> — perfiles de
+            carga guardados. Encolar una corrida hoy sólo la deja en cola: no
+            hay un proceso que la ejecute.
           </p>
         </Link>
       </div>

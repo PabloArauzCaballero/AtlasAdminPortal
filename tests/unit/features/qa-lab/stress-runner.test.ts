@@ -44,7 +44,7 @@ describe("runStressBurst · allowlist de host", () => {
           customHostUrl: EVIL_HOST_URL,
         }),
       ),
-    ).rejects.toThrow(/allowlist/);
+    ).rejects.toThrow(/lista de direcciones permitidas/);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -59,7 +59,7 @@ describe("runStressBurst · allowlist de host", () => {
           customHostUrl: EVIL_HOST_URL,
         }),
       ),
-    ).rejects.toThrow(/allowlist/);
+    ).rejects.toThrow(/lista de direcciones permitidas/);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -70,7 +70,7 @@ describe("runStressBurst · allowlist de host", () => {
         endpointFixture(),
         stressInputFixture({ routeOverride: `${EVIL_HOST_URL}/collect` }),
       ),
-    ).rejects.toThrow(/allowlist/);
+    ).rejects.toThrow(/lista de direcciones permitidas/);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -146,7 +146,7 @@ describe("runStressBurst · puertas de seguridad operativa", () => {
         endpointFixture({ method: "POST", isReadonly: false }),
         stressInputFixture({ allowMutations: false }),
       ),
-    ).rejects.toThrow(/permitir mutación real/);
+    ).rejects.toThrow(/Permitir cambios reales/);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -157,7 +157,7 @@ describe("runStressBurst · puertas de seguridad operativa", () => {
         endpointFixture(),
         stressInputFixture({ environment: "PRODUCTION_READONLY" }),
       ),
-    ).rejects.toThrow(/readonly/);
+    ).rejects.toThrow(/sólo deja previsualizar/);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });

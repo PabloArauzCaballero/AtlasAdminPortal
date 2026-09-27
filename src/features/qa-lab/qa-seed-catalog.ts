@@ -18,31 +18,88 @@ export type QaSeedEntry = {
   hint: string;
 };
 
+/**
+ * Las semillas con nombre repiten SIEMPRE las mismas personas. Es lo que las hace útiles para
+ * comparar dos corridas, y también lo que hace que una operación de ALTA (registrar cliente, crear
+ * comercio) responda «ya existe» la segunda vez: el correo y el carnet son los de la primera.
+ */
+const REPEATS =
+  " Repite las MISMAS personas cada vez: en operaciones de alta la segunda corrida chocará con «ya existe»; para eso usa «Personas nuevas».";
+
 export const QA_SEED_CATALOG: readonly QaSeedEntry[] = [
   {
     seed: "qa-base",
     label: "Base",
-    hint: "El lote de referencia. Úsalo para comparar dos despliegues del mismo endpoint: mismo lote, misma vara de medir.",
+    hint:
+      "El lote de referencia, para comparar dos despliegues con la misma vara de medir." +
+      REPEATS,
   },
   {
     seed: "qa-regresion",
     label: "Regresión",
-    hint: "El lote que se repite en cada cambio. Si hoy falla algo que ayer pasaba, lo rompió el cambio y no el azar.",
+    hint:
+      "El lote que se repite en cada cambio: si hoy falla algo que ayer pasaba, lo rompió el cambio." +
+      REPEATS,
   },
   {
     seed: "qa-frontera",
     label: "Frontera",
-    hint: "El lote reservado para las tandas con mucho caso límite: cadenas vacías, máximos, cero, negativos.",
+    hint: "Lote reservado para tandas con muchos casos en el límite." + REPEATS,
   },
   {
     seed: "qa-revision",
     label: "Revisión",
-    hint: "El lote que se adjunta a una aprobación, para que quien revise pueda repetir la corrida tal cual.",
+    hint:
+      "El lote que se adjunta a una aprobación, para que quien revise repita la corrida tal cual." +
+      REPEATS,
   },
 ];
+
+/** Valor del selector que pide una semilla nueva en vez de una con nombre. */
+export const NEW_PEOPLE_SEED = "__personas-nuevas__";
+
+export const NEW_PEOPLE_HINT =
+  "Genera una semilla única (qa-AAAAMMDD-HHMMSS) y con ella personas que nunca se usaron: sirve para las operaciones de alta. Copia la semilla si quieres repetir exactamente ese lote.";
+
+/** Semilla única y legible: `qa-20260926-181502`. */
+export function freshQaSeed(now: Date = new Date()): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `qa-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+}
+
+export function isNamedQaSeed(seed: string): boolean {
+  return QA_SEED_CATALOG.some((entry) => entry.seed === seed);
+}
 
 export function describeQaSeed(seed: string): string {
   const known = QA_SEED_CATALOG.find((entry) => entry.seed === seed);
   if (known) return known.hint;
-  return "Semilla propia. Repite el mismo lote de casos sobre este contrato.";
+  return `Semilla propia (${seed}): repite exactamente este lote de personas cada vez que la uses.`;
+}
+
+/** Opciones del selector: las semillas con nombre, «Personas nuevas» y, si aplica, la actual. */
+export function qaSeedOptions(currentSeed: string) {
+  const named = QA_SEED_CATALOG.map((entry) => ({
+    value: entry.seed,
+    label: entry.label,
+    description: entry.hint,
+  }));
+  const current = isNamedQaSeed(currentSeed)
+    ? []
+    : [
+        {
+          value: currentSeed,
+          label: `Semilla ${currentSeed}`,
+          description: describeQaSeed(currentSeed),
+        },
+      ];
+  return [
+    ...named,
+    ...current,
+    {
+      value: NEW_PEOPLE_SEED,
+      label: "Personas nuevas",
+      description: NEW_PEOPLE_HINT,
+    },
+  ];
 }

@@ -8,7 +8,7 @@ export function RunResultSummary({
     <section className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge
-          value={result.ok ? "OK" : result.error ? "ERROR" : "DRY_RUN"}
+          value={result.ok ? "OK" : result.error ? "ERROR" : "PREVISUALIZACIÓN"}
         />
         <Badge tone="info">{result.method}</Badge>
         {result.httpStatus ? <Badge>HTTP {result.httpStatus}</Badge> : null}
@@ -55,15 +55,15 @@ export function StressResultSummary({
         <StatusBadge
           value={
             result.dryRun
-              ? "DRY_RUN"
+              ? "PREVISUALIZACIÓN"
               : result.errorCount === 0
                 ? "OK"
                 : "WARNING"
           }
         />
         <Badge tone="info">{result.method}</Badge>
-        <Badge>{result.totalRequests} requests</Badge>
-        <Badge>{result.throughputRps} rps</Badge>
+        <Badge>{result.totalRequests} peticiones</Badge>
+        <Badge>{result.throughputRps} peticiones/s</Badge>
         <Badge>p95 {result.p95LatencyMs} ms</Badge>
         <Badge tone={result.errorRate > 0 ? "warning" : "success"}>
           error {(result.errorRate * 100).toFixed(1)}%

@@ -43,8 +43,8 @@ export function EndpointPicker({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Seleccionar endpoint"
-          description="Busca una ruta registrada o pega el identificador exacto del endpoint para ejecutar pruebas funcionales y de carga controlada."
+          title="Seleccionar operación"
+          description="Busca una ruta registrada o pega el identificador exacto de la operación para probarla (funcional y de carga)."
           className="mb-0"
         />
       </CardHeader>
@@ -56,7 +56,7 @@ export function EndpointPicker({
           <FilterBar
             search={q}
             searchPlaceholder="Buscar ruta, módulo o acción..."
-            searchTooltip="Busca por ruta, módulo o acción de negocio del endpoint a probar."
+            searchTooltip="Busca por ruta, módulo o acción de negocio de la operación a probar."
             onSearchChange={setQ}
             onClear={() => setQ("")}
           />
@@ -67,13 +67,12 @@ export function EndpointPicker({
             onChange={(event) => setManualId(event.target.value)}
           />
           <Button className="h-11" variant="primary" onClick={loadManual}>
-            Cargar endpoint
+            Cargar operación
           </Button>
         </div>
         {selectedId ? (
           <p className="rounded-xl border border-atlas-accentSoft bg-atlas-accentWash px-4 py-3 text-sm text-atlas-text">
-            Endpoint seleccionado:{" "}
-            <span className="font-mono">#{selectedId}</span>
+            Operación elegida: <span className="font-mono">#{selectedId}</span>
           </p>
         ) : null}
         {endpoints.isLoading ? <LoadingSkeleton rows={4} /> : null}
@@ -86,7 +85,7 @@ export function EndpointPicker({
               data={endpoints.data.items}
               columns={columns}
               meta={endpoints.data.meta}
-              emptyTitle="No se encontraron endpoints."
+              emptyTitle="No se encontraron operaciones."
               emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
             />
           </div>
@@ -95,7 +94,7 @@ export function EndpointPicker({
           <div className="space-y-2" data-tutorial-id="qa-lab-mock-providers">
             <SectionHeader
               title="Proveedores externos (mock)"
-              description="Los 9 endpoints de negocio de AtlasExternalProvidersMock — para probar stress y journeys sin depender del proveedor real. Al elegir uno, la ruta base pasa sola a «Mock de proveedores externos»."
+              description="Las 9 operaciones del simulador de proveedores externos (AtlasExternalProvidersMock), para probar carga y journeys sin depender del proveedor real. Al elegir una, la ruta base pasa sola a «Simulador de proveedores externos»."
               className="mb-0"
             />
             <DataTable
@@ -166,7 +165,7 @@ function EndpointPickerError({ error }: Readonly<{ error: unknown }>) {
       description={
         isAtlasApiError(error)
           ? error.message
-          : "No se pudo cargar el catálogo de endpoints."
+          : "No se pudo cargar el catálogo de operaciones."
       }
       requestId={isAtlasApiError(error) ? error.requestId : undefined}
     />

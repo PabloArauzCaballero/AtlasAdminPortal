@@ -14,6 +14,7 @@ import {
   getSupportCase,
   getSupportCaseTimeline,
   getSupportCodes,
+  getMyDesk,
   listQueuedChannels,
   listSupportAgents,
   listSupportCases,
@@ -97,6 +98,15 @@ export function useQueuedChannels() {
   });
 }
 
+export function useMyDesk() {
+  return useQuery({
+    queryKey: queryKeys.supportDeskMine,
+    queryFn: getMyDesk,
+    refetchInterval: 15_000,
+    retry: false,
+  });
+}
+
 export function useSupportAgents() {
   return useQuery({
     queryKey: queryKeys.supportAgents,
@@ -145,6 +155,9 @@ export function useClaimChannelMutation() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["support", "desk"] });
       await queryClient.invalidateQueries({ queryKey: ["support", "cases"] });
+      // La ficha del caso reintenta la transcripción que antes le negó el 403.
+      await queryClient.invalidateQueries({ queryKey: ["support", "case"] });
+      await queryClient.invalidateQueries({ queryKey: ["support", "channel"] });
     },
   });
 }

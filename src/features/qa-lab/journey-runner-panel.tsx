@@ -1,6 +1,5 @@
 "use client";
 
-import { defaultQaEnvironment } from "./environment";
 import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -18,6 +17,7 @@ import {
 import { JourneyStepsEditor } from "./journey-steps-editor";
 import { parseSteps } from "./journey-form";
 import { runJourneyBatch } from "./journey-runner";
+import { defaultQaEnvironment } from "./environment";
 import { JourneyBatchResults } from "./journey-batch-results";
 import { JOURNEY_EXAMPLE_SPEC } from "./journey-types";
 
@@ -115,7 +115,9 @@ export function JourneyRunnerPanel() {
             description={
               isAtlasApiError(runMutation.error)
                 ? runMutation.error.message
-                : String(runMutation.error)
+                : runMutation.error instanceof Error
+                  ? runMutation.error.message
+                  : String(runMutation.error)
             }
           />
         ) : null}
