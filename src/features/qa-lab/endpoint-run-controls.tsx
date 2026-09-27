@@ -16,6 +16,7 @@ import {
 } from "./qa-controls";
 import { QaDeviceControls } from "./qa-device-field";
 import { isMutatingMethod } from "./qa-safety";
+import { expectedStatusesText } from "./qa-form";
 
 export type EndpointRunFormState = CommonLabFormState & {
   environment: string;
@@ -34,6 +35,8 @@ type RunControlsProps = {
   form: EndpointRunFormState;
   endpoint?: EndpointItem;
   onChange: (value: Partial<EndpointRunFormState>) => void;
+  /** «Datos inválidos» pide un caso inválido al generador. */
+  onInvalidCase?: () => void;
 };
 
 export function requiresDoubleConfirmation(
@@ -46,6 +49,7 @@ export function RunControls({
   form,
   endpoint,
   onChange,
+  onInvalidCase,
 }: Readonly<RunControlsProps>) {
   const method = endpoint?.method ?? "GET";
   const requiresMutationGuard =
@@ -54,35 +58,40 @@ export function RunControls({
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <NumberField
-          label="Timeout ms"
-          tooltip="Milisegundos que espera la petición antes de marcarla como error."
+          label="Espera máxima (ms)"
+          tooltip="Milisegundos que se espera la respuesta antes de dar la petición por fallida."
           value={form.timeoutMs}
           min={1000}
           max={120000}
-          hint="Tiempo máximo de espera antes de marcar la request como error."
+          hint="Pasado este tiempo sin respuesta, la petición cuenta como error."
           onChange={(value) => onChange({ timeoutMs: value })}
         />
         <Field
-          label="Metodo"
-          tooltip="Verbo HTTP del endpoint elegido; no se cambia aquí sino eligiendo otro endpoint."
-          hint="Determinado por el endpoint seleccionado."
+          label="Método"
+          tooltip="Verbo HTTP de la operación elegida; no se cambia aquí sino eligiendo otra operación."
+          hint="Lo fija la operación elegida."
         >
           <Input value={method} readOnly className="font-mono" />
         </Field>
       </div>
       <QaTargetControls form={form} endpoint={endpoint} onChange={onChange} />
-      <QaScenarioControls form={form} onChange={onChange} />
+      <QaScenarioControls
+        form={form}
+        onChange={onChange}
+        contractStatuses={expectedStatusesText(endpoint?.expectedStatusCodes)}
+        onInvalidCase={onInvalidCase}
+      />
       <QaDeviceControls form={form} onChange={onChange} />
       <QaExpectationsControls form={form} onChange={onChange} />
       <div className="flex flex-wrap gap-3">
         <CheckBox
-          label="Dry-run / modo seguro"
+          label="Sólo previsualizar (no envía nada)"
           checked={form.dryRun}
           onChange={(value) => onChange({ dryRun: value })}
         />
         {requiresMutationGuard ? (
           <CheckBox
-            label="Permitir mutacion real"
+            label="Permitir cambios reales"
             checked={form.allowMutations}
             onChange={(value) => onChange({ allowMutations: value })}
           />
@@ -103,16 +112,16 @@ export function EndpointSafetyHints({
     <div className="flex flex-wrap gap-2 rounded-xl border border-atlas-border bg-atlas-soft p-3 text-xs">
       <Badge tone="default">esperado: {expectedStatuses.join(", ")}</Badge>
       <Badge tone={endpoint.requiresAuth ? "warning" : "success"}>
-        {endpoint.requiresAuth ? "requiere sesion" : "sin auth"}
+        {endpoint.requiresAuth ? "requiere sesión" : "sin sesión"}
       </Badge>
       <Badge tone={endpoint.isReadonly ? "success" : "warning"}>
-        {endpoint.isReadonly ? "readonly" : "cambia estado"}
+        {endpoint.isReadonly ? "sólo lectura" : "cambia datos"}
       </Badge>
       {endpoint.isDestructive ? (
         <Badge tone="critical">destructivo</Badge>
       ) : null}
       {endpoint.testEnvironmentOnly ? (
-        <Badge tone="warning">solo testing</Badge>
+        <Badge tone="warning">sólo pruebas</Badge>
       ) : null}
     </div>
   );
@@ -124,7 +133,9 @@ export function MutationError({ error }: Readonly<{ error: unknown }>) {
       description={
         isAtlasApiError(error)
           ? error.message
-          : "No se pudo ejecutar el endpoint."
+          : error instanceof Error && !(error instanceof TypeError)
+            ? error.message
+            : "No se pudo ejecutar la operación."
       }
       requestId={isAtlasApiError(error) ? error.requestId : undefined}
     />

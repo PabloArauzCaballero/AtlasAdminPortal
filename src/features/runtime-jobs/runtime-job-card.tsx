@@ -196,9 +196,11 @@ function RuntimeJobResult({ run }: Readonly<{ run: RuntimeJobRun }>) {
     <div className="space-y-3 rounded-lg border border-atlas-border bg-atlas-soft p-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge tone="success">{run.status}</Badge>
-        <span className="text-atlas-muted">
-          Job run <span className="font-mono text-xs">#{run.jobRunId}</span>
-        </span>
+        {run.jobRunId ? (
+          <span className="text-atlas-muted">
+            Job run <span className="font-mono text-xs">#{run.jobRunId}</span>
+          </span>
+        ) : null}
       </div>
       <JsonViewer value={run.result} title="Resultado" />
     </div>

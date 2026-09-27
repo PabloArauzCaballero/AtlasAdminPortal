@@ -33,7 +33,7 @@ test.describe("cobertura del generador de datos de prueba", () => {
         path.includes("/customer-onboarding/") && path.endsWith("/profile"),
     );
     await page.getByPlaceholder(/endpointId/i).fill(endpointId);
-    await page.getByRole("button", { name: /cargar endpoint/i }).click();
+    await page.getByRole("button", { name: /cargar operación/i }).click();
     await settled(page);
 
     // El contrato llegó del backend: el generador dice cuántos campos tiene.
@@ -43,7 +43,7 @@ test.describe("cobertura del generador de datos de prueba", () => {
     await capture(page, testInfo, "1 endpoint con contrato derivado");
 
     // Y produce un payload real, no las llaves vacías de antes.
-    const payload = page.getByLabel("Payload de entrada");
+    const payload = page.getByLabel("Datos de entrada");
     await expect(payload).not.toHaveValue("{}");
     await expect(payload).not.toContainText("string|optional");
 

@@ -91,6 +91,17 @@ export function getProviderAuthStates() {
   return apiRequest<{ providers: ProviderAuthState[] }>(`${BASE}/auth-state`);
 }
 
+/**
+ * El estado de UN proveedor, leído directamente del broker. El panel de un proveedor lo usa en vez
+ * de bajar la lista entera y buscarlo: la respuesta es la de ese proveedor aunque la lista del
+ * broker venga paginada o recortada, y un proveedor sin credencial responde 404 propio.
+ */
+export function getProviderAuthState(providerCode: string) {
+  return apiRequest<ProviderAuthState>(
+    `${BASE}/${encodeURIComponent(providerCode)}/auth-state`,
+  );
+}
+
 export function getPendingRotation() {
   return apiRequest<{ credentials: ProviderAuthState[] }>(
     `${BASE}/credentials/pending-rotation`,

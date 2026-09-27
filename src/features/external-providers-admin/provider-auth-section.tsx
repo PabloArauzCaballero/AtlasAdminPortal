@@ -11,9 +11,9 @@ import { formatDateTime } from "@/shared/lib/format";
 import {
   useAuthBrokerAvailability,
   useInvalidateTokenMutation,
-  useProviderAuthStates,
   useRevokeCredentialMutation,
 } from "./hooks";
+import { isNotFound, useProviderAuthState } from "./provider-auth-hooks";
 import {
   AuthMethodBadge,
   CredentialStatusBadge,
@@ -158,7 +158,11 @@ export function ProviderAuthSection({
   providerCode,
 }: Readonly<{ providerCode: string }>) {
   const availability = useAuthBrokerAvailability();
-  const states = useProviderAuthStates(availability.data?.configured === true);
+  const authState = useProviderAuthState(
+    providerCode,
+    availability.data?.configured === true &&
+      availability.data?.reachable !== false,
+  );
 
   if (availability.isLoading) return <LoadingSkeleton rows={4} />;
 
@@ -186,29 +190,10 @@ export function ProviderAuthSection({
     );
   }
 
-  if (states.isLoading) return <LoadingSkeleton rows={4} />;
+  if (authState.isLoading) return <LoadingSkeleton rows={4} />;
 
-  if (states.error) {
-    return (
-      <ErrorState
-        description={
-          isAtlasApiError(states.error)
-            ? states.error.message
-            : "No se pudo cargar el estado de autenticación."
-        }
-        requestId={
-          isAtlasApiError(states.error) ? states.error.requestId : undefined
-        }
-        onRetry={() => void states.refetch()}
-      />
-    );
-  }
-
-  const state = (states.data ?? []).find(
-    (entry) => entry.providerCode === providerCode,
-  );
-
-  if (!state) {
+  // Sin credencial declarada el broker responde 404: se dice así, no como un error.
+  if (authState.error && isNotFound(authState.error)) {
     return (
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
         El broker no tiene ninguna credencial declarada para{" "}
@@ -216,6 +201,27 @@ export function ProviderAuthSection({
       </div>
     );
   }
+
+  if (authState.error) {
+    return (
+      <ErrorState
+        description={
+          isAtlasApiError(authState.error)
+            ? authState.error.message
+            : "No se pudo cargar el estado de autenticación."
+        }
+        requestId={
+          isAtlasApiError(authState.error)
+            ? authState.error.requestId
+            : undefined
+        }
+        onRetry={() => void authState.refetch()}
+      />
+    );
+  }
+
+  const state = authState.data;
+  if (!state) return null;
 
   return (
     <div className="space-y-5">

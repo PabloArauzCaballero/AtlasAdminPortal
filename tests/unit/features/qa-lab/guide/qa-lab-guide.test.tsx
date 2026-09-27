@@ -145,7 +145,7 @@ describe("GuideScenarioMatrix · matriz interactiva de headers", () => {
     renderWithProviders(<GuideScenarioMatrix />);
 
     expect(
-      screen.getByText(/Respuesta exitosa segun el contrato del endpoint\./),
+      screen.getByText(/Respuesta correcta según lo que declara el catálogo\./),
     ).toBeInTheDocument();
   });
 
@@ -153,11 +153,11 @@ describe("GuideScenarioMatrix · matriz interactiva de headers", () => {
     renderWithProviders(<GuideScenarioMatrix />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /Sin autenticacion/ }),
+      screen.getByRole("button", { name: /Sin identificarse/ }),
     );
 
     expect(
-      screen.getByText(/401 si el endpoint requiere sesion\./),
+      screen.getByText(/401 si la operación exige sesión\./),
     ).toBeInTheDocument();
     expect(screen.getByText("Authorization: ninguno")).toBeInTheDocument();
   });

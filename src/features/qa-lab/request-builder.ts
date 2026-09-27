@@ -270,8 +270,10 @@ function applyAuthOverride(
     headers.Authorization = "Bearer qa-invalid-token-0000000000";
     return;
   }
-  if (mode === "custom" && overrides.customAuthToken?.trim()) {
-    headers.Authorization = `Bearer ${overrides.customAuthToken.trim()}`;
+  if (mode === "custom") {
+    // Sin token NO se cae a la sesión propia: `assertAuthModeUsable` bloquea antes de enviar.
+    const token = overrides.customAuthToken?.trim();
+    if (token) headers.Authorization = `Bearer ${token}`;
     return;
   }
   // El token real de sesión nunca se adjunta a un host fuera de la allowlist,

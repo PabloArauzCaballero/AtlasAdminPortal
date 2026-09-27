@@ -14,10 +14,12 @@ import {
 } from "lucide-react";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import type { InternalNavGroup } from "./nav-config";
+import { processesGroup } from "./nav-groups-processes";
 import { systemsOpsGroup } from "./nav-groups-systems-ops";
 
 export const navGroupsPrimary: InternalNavGroup[] = [
   systemsOpsGroup,
+  processesGroup,
   {
     label: "Catálogo y metadata",
     icon: Database,

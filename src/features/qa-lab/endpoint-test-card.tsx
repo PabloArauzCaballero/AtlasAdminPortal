@@ -1,6 +1,5 @@
 "use client";
 
-import { defaultQaEnvironment } from "./environment";
 import { useEffect, useState } from "react";
 import type { EndpointItem } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
@@ -17,19 +16,21 @@ import {
   RunControls,
   requiresDoubleConfirmation,
 } from "./endpoint-run-controls";
-import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
 import {
-  getMockExamplePayload,
-  isMockEndpointId,
-} from "./mock-provider-endpoints";
+  DEFAULT_QA_BASE_ROUTE,
+  normalizeQaBaseRouteKey,
+  QA_BASE_ROUTE_OPTIONS,
+} from "./base-routes";
+import { defaultQaEnvironment, isProductionTarget } from "./environment";
+import { useQaTestData } from "./fakers/use-fakers";
+import { isMockEndpointId } from "./mock-provider-endpoints";
 import { expectedStatusesText, parseEndpointRunForm } from "./qa-form";
 import { jsonText } from "./json-utils";
-import { findPayloadPreset } from "./payload-presets";
+import { PresetBar } from "./preset-bar";
 import { QaJsonFields } from "./qa-json-fields";
 import { QaLogDownload } from "./qa-log-download";
-import { pathParamFields, readContract } from "./contract-fields";
-import { generateCases } from "./qa-case-generator";
 import { QaSampleBar } from "./qa-sample-bar";
+import { useGeneratedEntries } from "./use-generated-entries";
 import { RunResultSummary } from "./qa-result-summary";
 import { useEndpointRunMutation } from "./hooks";
 
@@ -50,19 +51,13 @@ export function EndpointTestCard({
     setForm((current) => ({ ...current, ...value }));
   }
 
-  const preset = findPayloadPreset(
-    endpoint?.method ?? "GET",
-    endpoint?.fullPath ?? endpoint?.routePath,
-  );
-
-  function applyPreset() {
-    if (!preset) return;
-    patchForm({
-      payload: jsonText(preset.payload ?? {}),
-      queryParams: jsonText(preset.queryParams ?? {}),
-      pathParams: jsonText(preset.pathParams ?? {}),
-    });
-  }
+  const testData = useQaTestData();
+  const generated = useGeneratedEntries({
+    endpoint,
+    data: testData,
+    form,
+    patchForm,
+  });
 
   /**
    * Se valida ANTES de abrir el diálogo (mismo patrón que `JourneyRunnerPanel`).
@@ -101,7 +96,7 @@ export function EndpointTestCard({
       <CardHeader>
         <SectionHeader
           title="Prueba funcional"
-          description="Genera la entrada desde el contrato, ajusta host y criterios de salida, y ejecuta contra el endpoint real."
+          description="Genera los datos de entrada, elige contra qué API y qué resultado esperas, y envía la petición a la operación real (o sólo previsualízala)."
           className="mb-0"
         />
       </CardHeader>
@@ -114,70 +109,87 @@ export function EndpointTestCard({
         */}
         <QaSampleBar
           endpoint={endpoint}
-          onLoad={(sample) =>
+          data={testData}
+          onLoad={(sample) => {
+            generated.markManual();
             patchForm({
               payload: jsonText(sample.payload),
               ...(Object.keys(sample.pathParams).length
                 ? { pathParams: jsonText(sample.pathParams) }
                 : {}),
-            })
-          }
+              ...(sample.kind === "invalid"
+                ? {
+                    expectedStatusCodes: "400, 422",
+                    scenario: "invalid_payload",
+                  }
+                : {}),
+            });
+          }}
         />
-        <RunControls form={form} endpoint={endpoint} onChange={patchForm} />
-        {preset ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-atlas-accentSoft bg-atlas-accentWash p-3">
-            <Button variant="secondary" onClick={applyPreset}>
-              Usar payload de ejemplo: {preset.label}
-            </Button>
-            <p className="text-xs text-atlas-text">{preset.notes}</p>
-          </div>
-        ) : null}
+        <RunControls
+          form={form}
+          endpoint={endpoint}
+          onChange={patchForm}
+          onInvalidCase={() => void generated.loadInvalidCase()}
+        />
+        <PresetBar
+          preset={generated.preset}
+          onApply={() => generated.applyPreset()}
+          notice={generated.notice}
+        />
         <QaJsonFields
           fields={[
             {
-              label: "Payload de entrada",
-              tooltip: "Cuerpo JSON que envía la petición de prueba.",
+              label: "Datos de entrada",
+              tooltip: "El cuerpo (JSON) que lleva la petición de prueba.",
               value: form.payload,
-              onChange: (value) => patchForm({ payload: value }),
+              onChange: (value) => {
+                generated.markManual();
+                patchForm({ payload: value });
+              },
             },
             {
-              label: "Headers request",
+              label: "Cabeceras extra",
               tooltip:
-                "Cabeceras JSON añadidas a la petición; no pongas secretos.",
+                "Cabeceras (JSON) que se añaden a la petición; no pongas secretos.",
               value: form.headers,
               onChange: (value) => patchForm({ headers: value }),
             },
             {
-              label: "Query params",
-              tooltip: "Parámetros de consulta en JSON que se añaden a la URL.",
+              label: "Datos de consulta",
+              tooltip:
+                "Parámetros (JSON) que se añaden a la dirección tras el «?».",
               value: form.queryParams,
               onChange: (value) => patchForm({ queryParams: value }),
             },
             {
-              label: "Path params",
+              label: "Datos de la ruta",
               tooltip:
-                "Valores en JSON para los :parámetros de la ruta, p. ej. el id.",
+                "Valores (JSON) para los :parámetros de la ruta, p. ej. el número de cliente.",
               value: form.pathParams,
-              onChange: (value) => patchForm({ pathParams: value }),
+              onChange: (value) => {
+                generated.markManual();
+                patchForm({ pathParams: value });
+              },
             },
             {
-              label: "JSON esperado en respuesta",
+              label: "Fragmento esperado en la respuesta",
               tooltip:
-                "Fragmento JSON que la respuesta debe contener para aprobar.",
+                "Fragmento (JSON) que la respuesta debe contener para aprobar.",
               value: form.expectedJsonSubset,
               onChange: (value) => patchForm({ expectedJsonSubset: value }),
             },
             {
-              label: "Headers esperados respuesta",
+              label: "Cabeceras esperadas en la respuesta",
               tooltip:
-                "Cabeceras JSON que la respuesta debe traer, p. ej. content-type.",
+                "Cabeceras (JSON) que la respuesta debe traer, p. ej. content-type.",
               value: form.expectedHeaders,
               onChange: (value) => patchForm({ expectedHeaders: value }),
             },
           ]}
         />
         {error ? (
-          <ErrorState title="Formulario invalido" description={error} />
+          <ErrorState title="Formulario inválido" description={error} />
         ) : null}
         {runMutation.error ? <MutationError error={runMutation.error} /> : null}
         <Button
@@ -186,7 +198,7 @@ export function EndpointTestCard({
           disabled={!endpointId || !canExecute || runMutation.isPending}
           onClick={tryExecute}
         >
-          {form.dryRun ? "Previsualizar request" : "Ejecutar request real"}
+          {form.dryRun ? "Previsualizar petición" : "Enviar petición real"}
         </Button>
         {runMutation.data ? (
           <div
@@ -207,9 +219,11 @@ export function EndpointTestCard({
       </CardContent>
       <ConfirmDialog
         open={confirmOpen}
-        title={form.dryRun ? "Confirmar dry-run" : "Confirmar ejecucion real"}
-        description={`Se ${form.dryRun ? "previsualizara" : "ejecutara"} el endpoint #${endpointId} en ${form.environment}.`}
-        confirmText={form.dryRun ? "Previsualizar" : "Ejecutar"}
+        title={
+          form.dryRun ? "Confirmar previsualización" : "Confirmar envío real"
+        }
+        description={`Se ${form.dryRun ? "previsualizará" : "enviará"} la operación #${endpointId} contra «${destinationLabel(form)}».`}
+        confirmText={form.dryRun ? "Previsualizar" : "Enviar"}
         isLoading={runMutation.isPending}
         typedConfirmationPhrase={
           requiresDoubleConfirmation(form) ? "EJECUTAR" : undefined
@@ -221,11 +235,26 @@ export function EndpointTestCard({
   );
 }
 
+/** El destino real de la petición: la ruta base elegida, y en producción que es sólo lectura. */
+function destinationLabel(form: EndpointRunFormState): string {
+  const key = normalizeQaBaseRouteKey(form.baseRouteKey);
+  const label =
+    key === "CUSTOM_HOST" && form.customHostUrl.trim()
+      ? form.customHostUrl.trim()
+      : (QA_BASE_ROUTE_OPTIONS.find((option) => option.key === key)?.label ??
+        key);
+  return isProductionTarget(form.environment)
+    ? `${label} (producción, sólo lectura)`
+    : label;
+}
+
+/**
+ * El formulario abre con los datos VACÍOS y el generador los rellena en cuanto llega el lote de la
+ * semilla elegida (`useGeneratedEntries`). Las cabeceras abren vacías: antes recibían el contrato
+ * literal (`{"x-tenant-id":"required"}`), que se mandaba tal cual y pisaba la cabecera real.
+ */
 function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
   const isMock = Boolean(endpoint && isMockEndpointId(endpoint.endpointId));
-  const mockPayload = endpoint
-    ? getMockExamplePayload(endpoint.endpointId)
-    : undefined;
   return {
     environment: defaultQaEnvironment(),
     // Un endpoint del mock ya trae `fullPath` absoluto (bypassa la ruta base al construir la
@@ -237,16 +266,10 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     dryRun: true,
     timeoutMs: 20000,
     allowMutations: false,
-    payload: mockPayload
-      ? jsonText(mockPayload)
-      : jsonText(sampleFrom(endpoint?.minPayloadSchema)),
-    queryParams: jsonText(sampleFrom(endpoint?.queryParamsSchema)),
-    pathParams: jsonText(
-      sampleFromFields(
-        pathParamFields(endpoint?.fullPath ?? endpoint?.routePath),
-      ) ?? sampleFrom(endpoint?.pathParamsSchema),
-    ),
-    headers: jsonText(endpoint?.headersSchema),
+    payload: "{}",
+    queryParams: "{}",
+    pathParams: "{}",
+    headers: "{}",
     expectedStatusCodes: expectedStatusesText(endpoint?.expectedStatusCodes),
     expectedHeaders: "{}",
     expectedJsonSubset: "",
@@ -262,25 +285,4 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     mockScenario: "",
     mockLatencyMs: 0,
   };
-}
-
-/**
- * El formulario abría con el CONTRATO metido en la caja del payload.
- *
- * `jsonText(endpoint.minPayloadSchema)` dejaba escrito `{"email":"string|required"}` en «Payload de
- * entrada», que no es un payload: es la descripción de uno. Pulsar «Ejecutar» sin tocarlo mandaba
- * literalmente esa cadena al endpoint y devolvía un 400 de validación — un fallo del formulario que
- * se leía como un fallo del endpoint. Ahora se abre con un caso VÁLIDO derivado de ese mismo
- * contrato, con la semilla de referencia, así que lo que se ve en la caja es lo que se va a enviar.
- */
-function sampleFrom(schema: unknown): Record<string, unknown> | undefined {
-  const contract = readContract(schema);
-  return sampleFromFields(contract.fields);
-}
-
-function sampleFromFields(
-  fields: ReturnType<typeof readContract>["fields"],
-): Record<string, unknown> | undefined {
-  if (fields.length === 0) return undefined;
-  return generateCases(fields, "valid", 1, "qa-base")[0]?.payload;
 }

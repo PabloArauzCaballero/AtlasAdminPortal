@@ -13,8 +13,9 @@ export const learningPaths: readonly LearningPath[] = [
   {
     id: "primeros-pasos",
     title: "Primeros pasos",
-    summary: "De cero a probar tu primer endpoint e interpretar el resultado.",
-    tutorialIds: ["qa-lab-overview", "qa-lab-functional", "qa-runs-interpret"],
+    summary:
+      "De cero a probar tu primera operación con datos generados y medir cuánta carga aguanta.",
+    tutorialIds: ["qa-lab-overview", "qa-lab-functional", "qa-lab-stress"],
   },
   {
     id: "gestion-suites",
@@ -25,7 +26,7 @@ export const learningPaths: readonly LearningPath[] = [
   {
     id: "pruebas-api",
     title: "Pruebas de API",
-    summary: "Probar endpoints funcionalmente y encadenarlos en un journey.",
+    summary: "Probar operaciones una a una y encadenarlas en un journey.",
     tutorialIds: ["qa-lab-functional", "qa-lab-journey"],
   },
   {
@@ -42,13 +43,15 @@ export const learningPaths: readonly LearningPath[] = [
   {
     id: "rendimiento",
     title: "Rendimiento y carga",
-    summary: "Medir carga en el Lab y con perfiles de stress reutilizables.",
+    summary:
+      "Medir carga en el Lab y guardar perfiles de stress reutilizables (hoy sólo se encolan).",
     tutorialIds: ["qa-lab-stress", "qa-stress-profile"],
   },
   {
     id: "analisis-errores",
     title: "Análisis de errores",
-    summary: "Interpretar fallos y usar la ayuda contextual para corregirlos.",
+    summary:
+      "Leer una ejecución de suite y el resultado de una prueba del Lab para encontrar la causa.",
     tutorialIds: ["qa-runs-interpret", "qa-lab-functional"],
   },
 ];

@@ -238,7 +238,9 @@ describe("buildErrorDirectResult", () => {
       [],
       new DOMException("The operation was aborted", "AbortError"),
     );
-    expect(result.error).toBe("Timeout de ejecución alcanzado.");
+    expect(result.error).toBe(
+      "La operación no respondió dentro del tiempo máximo de espera.",
+    );
   });
 
   it("conserva el mensaje de un error de red real", () => {
@@ -248,7 +250,7 @@ describe("buildErrorDirectResult", () => {
       [],
       new TypeError("Failed to fetch"),
     );
-    expect(result.error).toBe("Failed to fetch");
+    expect(result.error).toContain("Failed to fetch");
   });
 
   it("un throw que no es Error no deja el resultado sin explicación", () => {
@@ -332,7 +334,9 @@ describe("buildMissingParamsDirectResult", () => {
       { ...builtFixture(), unresolvedPathParams: ["customerId", "accountId"] },
       [],
     );
-    expect(result.error).toBe("Faltan path params: customerId, accountId");
+    expect(result.error).toBe(
+      "Faltan datos de la ruta: customerId, accountId. Escríbelos en «Datos de la ruta» antes de enviar.",
+    );
   });
 
   it("no se reporta como dry-run: es un intento real que no salió", () => {

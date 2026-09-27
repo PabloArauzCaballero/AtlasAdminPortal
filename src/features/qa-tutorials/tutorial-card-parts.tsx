@@ -86,14 +86,23 @@ export function MissingNotice({
   );
 }
 
+/** El siguiente tutorial del recorrido sugerido en curso, si lo hay. */
+export type NextInPath = Readonly<{
+  pathTitle: string;
+  title: string;
+  onContinue: () => void;
+}>;
+
 export function CompletionCard({
   cardRef,
   title,
   onClose,
+  nextInPath,
 }: Readonly<{
   cardRef: React.RefObject<HTMLDivElement | null>;
   title: string;
   onClose: () => void;
+  nextInPath?: NextInPath;
 }>) {
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -118,12 +127,30 @@ export function CompletionCard({
         ¡Tutorial completado!
       </h3>
       <p className="mt-1.5 text-sm text-atlas-muted">
-        Terminaste «{title}». Tu progreso quedó guardado; puedes repetirlo
+        Terminaste «{title}». Queda marcado en este navegador; puedes repetirlo
         cuando quieras desde el Centro de aprendizaje.
       </p>
-      <Button variant="primary" className="mt-4 w-full" onClick={onClose}>
-        Entendido
-      </Button>
+      {nextInPath ? (
+        <>
+          <p className="mt-3 text-xs text-atlas-muted">
+            Recorrido «{nextInPath.pathTitle}» · siguiente: «{nextInPath.title}»
+          </p>
+          <Button
+            variant="primary"
+            className="mt-2 w-full"
+            onClick={nextInPath.onContinue}
+          >
+            Seguir con «{nextInPath.title}»
+          </Button>
+          <Button variant="ghost" className="mt-2 w-full" onClick={onClose}>
+            Dejarlo aquí
+          </Button>
+        </>
+      ) : (
+        <Button variant="primary" className="mt-4 w-full" onClick={onClose}>
+          Entendido
+        </Button>
+      )}
     </div>
   );
 }

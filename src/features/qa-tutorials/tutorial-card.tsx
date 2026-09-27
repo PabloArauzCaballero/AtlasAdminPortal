@@ -18,6 +18,7 @@ import {
   AwaitingNotice,
   CompletionCard,
   MissingNotice,
+  type NextInPath,
 } from "./tutorial-card-parts";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
@@ -43,6 +44,7 @@ export function TutorialCard({
   onClose,
   onLocate,
   canLocate,
+  nextInPath,
 }: Readonly<{
   step: TutorialStep;
   phase: EnginePhase;
@@ -57,6 +59,7 @@ export function TutorialCard({
   onClose: () => void;
   onLocate: () => void;
   canLocate: boolean;
+  nextInPath?: NextInPath;
 }>) {
   const ref = useRef<HTMLDivElement>(null);
   const awaiting = phase === "awaiting-action";
@@ -83,7 +86,14 @@ export function TutorialCard({
   }, [stepIndex, nextDisabled, onClose, onPrev, onNext]);
 
   if (completed) {
-    return <CompletionCard cardRef={ref} title={title} onClose={onClose} />;
+    return (
+      <CompletionCard
+        cardRef={ref}
+        title={title}
+        onClose={onClose}
+        nextInPath={nextInPath}
+      />
+    );
   }
 
   return (

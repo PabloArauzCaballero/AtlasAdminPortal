@@ -34,9 +34,15 @@ export function useDecideManualReviewCaseMutation() {
     mutationFn: (input: { caseId: string; body: ManualReviewDecisionInput }) =>
       decideManualReviewCase(input.caseId, input.body),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["operations", "work-queue"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["operations", "work-queue"],
+        }),
+        // Las colas por cursor (revisión manual y fraude por separado) enseñan las mismas filas.
+        queryClient.invalidateQueries({
+          queryKey: ["operations", "case-queue"],
+        }),
+      ]);
     },
   });
 }
@@ -47,9 +53,15 @@ export function useDecideFraudCaseMutation() {
     mutationFn: (input: { caseId: string; body: FraudDecisionInput }) =>
       decideFraudCase(input.caseId, input.body),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["operations", "work-queue"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["operations", "work-queue"],
+        }),
+        // Las colas por cursor (revisión manual y fraude por separado) enseñan las mismas filas.
+        queryClient.invalidateQueries({
+          queryKey: ["operations", "case-queue"],
+        }),
+      ]);
     },
   });
 }

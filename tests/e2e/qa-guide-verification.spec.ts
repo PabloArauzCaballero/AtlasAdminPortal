@@ -91,9 +91,9 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
       waitUntil: "domcontentloaded",
     });
 
-    await page.getByRole("button", { name: /Sin autenticacion/ }).click();
+    await page.getByRole("button", { name: /Sin identificarse/ }).click();
     await expect(
-      page.getByText(/401 si el endpoint requiere sesion\./),
+      page.getByText(/401 si la operación exige sesión\./),
     ).toBeVisible();
     await expect(page.getByText("Authorization: ninguno")).toBeVisible();
   });

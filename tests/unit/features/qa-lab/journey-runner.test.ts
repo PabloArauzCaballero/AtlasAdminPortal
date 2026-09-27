@@ -6,6 +6,7 @@ vi.mock("@/shared/auth/session-storage", () => ({
 
 import type { EndpointItem } from "@/features/systems/types";
 import { runJourney, runJourneyBatch } from "@/features/qa-lab/journey-runner";
+import { fakeCases } from "./faker-fixtures";
 import type {
   QaJourneyConfig,
   QaJourneyStepSpec,
@@ -78,7 +79,7 @@ describe("runJourney · allowlist heredada del direct-runner", () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.steps[0].passed).toBe(false);
-    expect(result.steps[0].error).toContain("allowlist");
+    expect(result.steps[0].error).toContain("lista de direcciones permitidas");
   });
 
   it("un journey bloqueado no filtra el token por ningún canal del fetch", async () => {
@@ -275,11 +276,64 @@ describe("runJourney · encadenado de pasos", () => {
 });
 
 describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
+  // Las personas vienen del generador del mock; aquí, de un lote fijo con su misma forma.
+  const personaSource = vi.fn(async (_seed: string, count: number) =>
+    fakeCases(count),
+  );
+
+  it("pide al generador tantas personas como iteraciones, con la semilla de la corrida", async () => {
+    await runJourneyBatch(
+      [stepFixture()],
+      configFixture({ iterations: 4, concurrency: 1, seed: "qa-regresion" }),
+      catalog(endpointFixture()),
+      personaSource,
+    );
+    expect(personaSource).toHaveBeenLastCalledWith("qa-regresion", 4);
+  });
+
+  it("si el generador no responde, el lote falla con su motivo en vez de inventar personas", async () => {
+    await expect(
+      runJourneyBatch(
+        [stepFixture()],
+        configFixture({ iterations: 2, concurrency: 1, seed: "qa-base" }),
+        catalog(endpointFixture()),
+        async () => {
+          throw new Error("El generador de datos de prueba no responde.");
+        },
+      ),
+    ).rejects.toThrow("no responde");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("los marcadores {{faker.…}} del paso se resuelven con la persona de cada corrida", async () => {
+    await runJourneyBatch(
+      [
+        stepFixture({
+          payload: {
+            email: "{{faker.caso.persona.email}}",
+            lat: "{{faker.caso.direccion.latitude}}",
+          },
+        }),
+      ],
+      configFixture({ iterations: 2, concurrency: 1, seed: "qa-base" }),
+      catalog(endpointFixture({ method: "POST" })),
+      personaSource,
+    );
+    const bodies = fetchMock.mock.calls.map(([, init]) =>
+      JSON.parse(String((init as RequestInit).body)),
+    );
+    expect(bodies).toEqual([
+      { email: "persona0@qa.atlas.test", lat: -16.5 },
+      { email: "persona1@qa.atlas.test", lat: -16.51 },
+    ]);
+  });
+
   it("con iterations=1 corre el journey una sola vez, igual que runJourney a secas", async () => {
     const batch = await runJourneyBatch(
       [stepFixture()],
       configFixture({ iterations: 1, concurrency: 1, seed: "qa-base" }),
       catalog(endpointFixture()),
+      personaSource,
     );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -293,6 +347,7 @@ describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
       [stepFixture()],
       configFixture({ iterations: 5, concurrency: 2, seed: "qa-base" }),
       catalog(endpointFixture()),
+      personaSource,
     );
 
     expect(fetchMock).toHaveBeenCalledTimes(5);
@@ -311,11 +366,13 @@ describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
       [stepFixture()],
       configFixture({ iterations: 3, concurrency: 3, seed: "qa-regresion" }),
       catalog(endpointFixture()),
+      personaSource,
     );
     const second = await runJourneyBatch(
       [stepFixture()],
       configFixture({ iterations: 3, concurrency: 3, seed: "qa-regresion" }),
       catalog(endpointFixture()),
+      personaSource,
     );
 
     expect(second.runs.map((run) => run.persona.documentNumber)).toEqual(
@@ -328,6 +385,7 @@ describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
       [stepFixture({ endpointId: "ep-1", queryParams: {} })],
       configFixture({ iterations: 3, concurrency: 1, seed: "qa-base" }),
       catalog(endpointFixture({ method: "GET" })),
+      personaSource,
     );
 
     const personaKeys = fetchMock.mock.calls
@@ -352,6 +410,7 @@ describe("runJourneyBatch · volumen (N personas por el mismo flujo)", () => {
       [stepFixture()],
       configFixture({ iterations: 3, concurrency: 1, seed: "qa-base" }),
       catalog(endpointFixture()),
+      personaSource,
     );
 
     expect(batch.passedIterations).toBe(2);
