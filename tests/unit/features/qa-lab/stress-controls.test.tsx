@@ -1,4 +1,3 @@
-import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -101,20 +100,12 @@ describe("StressControls · plan de carga", () => {
     expect(onChange).toHaveBeenCalledWith({ approvalTicket: "C" });
   });
 
-  it("ofrece producción en el selector aunque la card la bloquee después", async () => {
-    // El bloqueo se explica al elegirla; esconder la opción dejaría al operador
-    // sin saber por qué no puede.
-    const onChange = vi.fn();
-    render(<StressControls form={stressForm()} onChange={onChange} />);
+  it("no ofrece elegir ambiente: sale del despliegue del portal", () => {
+    render(<StressControls form={stressForm()} onChange={vi.fn()} />);
 
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: /Ambiente/ }),
-      "PRODUCTION_READONLY",
-    );
-
-    expect(onChange).toHaveBeenCalledWith({
-      environment: "PRODUCTION_READONLY",
-    });
+    expect(
+      screen.queryByRole("combobox", { name: /Ambiente/ }),
+    ).not.toBeInTheDocument();
   });
 });
 

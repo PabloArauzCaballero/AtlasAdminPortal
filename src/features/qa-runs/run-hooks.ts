@@ -13,6 +13,7 @@ import {
   getQaCapabilities,
   getQaCoverage,
   getQaRun,
+  getQaRunTimeline,
   getQaSampleInputs,
   getQaTemplate,
   launchQaRun,
@@ -176,5 +177,19 @@ export function useCancelQaRun(runId?: string | null) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [...ROOT, "run", runId] });
     },
+  });
+}
+
+/** Latencia y carga de la corrida por tramos; se sondea mientras la corrida sigue viva. */
+export function useQaRunTimeline(
+  runId: string | null | undefined,
+  live: boolean,
+) {
+  return useQuery({
+    queryKey: [...ROOT, "run", runId, "timeline"],
+    queryFn: () => getQaRunTimeline(runId as string),
+    enabled: Boolean(runId),
+    retry: 0,
+    refetchInterval: live ? 3_000 : false,
   });
 }

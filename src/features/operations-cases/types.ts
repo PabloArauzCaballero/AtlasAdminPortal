@@ -39,12 +39,7 @@ export type FraudDecision =
   | "escalated";
 
 export type NextCustomerStatus =
-  | "approved_for_next_step"
-  | "rejected"
-  | "pending_more_information"
-  | "pending_fraud_review"
-  | "registered"
-  | "blocked";
+  "active" | "observed" | "under_review" | "rejected" | "suspended" | "blocked";
 
 export type ManualReviewDecisionInput = {
   decision: ManualReviewDecision;

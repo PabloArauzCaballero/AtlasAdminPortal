@@ -3,8 +3,6 @@ import { getApiBaseUrl } from "@/shared/api/config";
 export type QaEnvironment =
   "LOCAL" | "STAGING" | "PRODUCTION_READONLY" | string;
 
-const LOCAL_API_BASE_URL = "http://localhost:3005/api/v1";
-
 export function getQaEnvironmentBaseUrl(environment: QaEnvironment): string {
   const normalized = environment.trim().toUpperCase();
   if (normalized === "STAGING") {
@@ -18,7 +16,18 @@ export function getQaEnvironmentBaseUrl(environment: QaEnvironment): string {
       getApiBaseUrl()
     );
   }
-  return (
-    process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL?.trim() || LOCAL_API_BASE_URL
-  );
+  // Sin base local explícita, la del propio portal (que en desarrollo ya es localhost:3005).
+  return process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL?.trim() || getApiBaseUrl();
+}
+
+/**
+ * El ambiente de la prueba sale del despliegue, no de un selector: en un portal desplegado sólo hay
+ * una API, y elegir «STAGING» o «LOCAL» a mano sólo servía para apuntar a un host que no existe.
+ * En producción las pruebas quedan en sólo lectura.
+ */
+export function defaultQaEnvironment(): QaEnvironment {
+  const deployment = (process.env.NEXT_PUBLIC_ATLAS_ENVIRONMENT ?? "")
+    .trim()
+    .toLowerCase();
+  return deployment === "production" ? "PRODUCTION_READONLY" : "LOCAL";
 }
