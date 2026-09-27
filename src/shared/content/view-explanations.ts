@@ -1,7 +1,13 @@
 import { creditModuleExplanations } from "./view-explanations-credit";
+import { operationsModuleExplanation } from "./view-explanations-operations";
 import { primaryModuleExplanations } from "./view-explanations-primary";
 import { processesModuleExplanations } from "./view-explanations-processes";
 import { secondaryModuleExplanations } from "./view-explanations-secondary";
+import {
+  homeModuleExplanation,
+  searchModuleExplanation,
+  systemsOpsModuleExplanation,
+} from "./view-explanations-systems-ops";
 import type {
   ModuleExplanation,
   ViewExplanation,
@@ -10,8 +16,12 @@ import type {
 export type { ModuleExplanation, ViewExplanation };
 
 export const moduleExplanations: ModuleExplanation[] = [
+  homeModuleExplanation,
+  systemsOpsModuleExplanation,
   ...primaryModuleExplanations,
+  operationsModuleExplanation,
   ...secondaryModuleExplanations,
+  searchModuleExplanation,
   ...processesModuleExplanations,
   ...creditModuleExplanations,
 ];
@@ -51,10 +61,10 @@ export function resolveExplanation(
   let bestModulePrefix = "";
   for (const moduleEntry of moduleExplanations) {
     for (const prefix of moduleEntry.prefixes) {
-      if (
-        pathname.startsWith(prefix) &&
-        prefix.length > bestModulePrefix.length
-      ) {
+      const matches = moduleEntry.exact
+        ? pathname === prefix
+        : pathname.startsWith(prefix);
+      if (matches && prefix.length > bestModulePrefix.length) {
         bestModule = moduleEntry;
         bestModulePrefix = prefix;
       }

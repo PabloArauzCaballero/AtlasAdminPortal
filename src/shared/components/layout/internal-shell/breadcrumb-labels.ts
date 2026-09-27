@@ -106,6 +106,7 @@ export const breadcrumbLabels: Record<string, string> = {
   requests: "Solicitudes",
   audits: "Auditorías",
   notifications: "Mensajería interna",
+  campaigns: "Campañas",
   "notification-policies": "Políticas de notificación",
   "decision-engine": "Motor de decisión",
   "decision-artifacts": "Motor de decisiones",

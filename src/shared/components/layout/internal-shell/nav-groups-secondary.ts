@@ -1,171 +1,20 @@
 import {
-  Bell,
   Database,
   DatabaseZap,
-  Download,
-  FolderTree,
-  Gauge,
-  Landmark,
   History,
-  ListChecks,
   LockKeyhole,
-  MessageSquare,
-  PlayCircle,
-  Radio,
   Plug,
   Settings,
-  Store,
-  MailCheck,
   ShieldAlert,
   ShieldCheck,
   Siren,
-  Stamp,
-  Table2,
   UserCircle,
   Users,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
-import { CASE_QUEUE_NAV_ITEMS } from "./nav-items-case-queues";
-import {
-  INTERNAL_PORTAL_ROLE_LIST,
-  LOAN_PORTFOLIO_ROLE_LIST,
-  PARTNER_OPERATIONS_ROLE_LIST,
-  RUNTIME_JOB_ROLE_LIST,
-} from "@/shared/auth/portal-roles";
-import { supportNavItems } from "./nav-items-support";
+import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 
 export const navGroupsSecondary: InternalNavGroup[] = [
-  {
-    label: "Operaciones",
-    icon: ListChecks,
-    items: [
-      {
-        label: "Formularios",
-        href: "/internal/forms",
-        icon: ListChecks,
-        permissions: [],
-        // Solo superadmin: el listado también está embebido en "Versiones de esquema".
-        roles: ["SUPER_ADMIN"],
-      },
-      {
-        label: "Contactos sin verificar",
-        href: "/internal/operations/pending-contacts",
-        icon: MailCheck,
-        // Mismo gate por rol que la cola de trabajo (@Roles del OperationsController).
-        permissions: [],
-      },
-      {
-        label: "Cola de trabajo",
-        href: "/internal/operations/work-queue",
-        icon: ShieldAlert,
-        // El backend gatea por @Roles, no por permiso granular (no existe "operations.workQueue.read");
-        // se deja visible y el backend responde 403 con mensaje claro si el rol no alcanza.
-        permissions: [],
-      },
-      ...CASE_QUEUE_NAV_ITEMS,
-      ...supportNavItems,
-      {
-        label: "Archivos",
-        href: "/internal/files",
-        icon: FolderTree,
-        // Aquí SÍ hay permiso granular: `expedientes.leer` existe en el catálogo de
-        // /internal/permissions y lo exige el backend por carpeta. Es lo que distingue esta
-        // entrada del resto de Operaciones, gateadas por @Roles a falta de permiso propio.
-        permissions: ["expedientes.leer"],
-      },
-      {
-        label: "Vistas del negocio",
-        href: "/internal/views",
-        icon: Table2,
-        // Igual que el resto de Operaciones: el backend gatea por @Roles (diez roles internos,
-        // incluido readonly_auditor) y no hay permiso granular en /internal/permissions.
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Usuarios de comercio",
-        href: "/internal/merchant-users",
-        icon: Store,
-        // Identidad del canal del comercio, administrada por personal interno: aquí no entra un
-        // comercio. La membresía (a qué comercio pertenece) vive en el ERP, en otra base.
-        // El backend gatea la cola por PERMISO (`merchant.users.read`; conceder/rechazar exige
-        // además `merchant.users.manage`): con `[]` el ítem salía para todos y respondía 403.
-        permissions: ["merchant.users.read"],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Expedientes de comercio",
-        href: "/internal/operations/partners",
-        icon: Stamp,
-        // La verificación la DECIDE el Motor (PARTNER_KYB_REVIEW) al enviarse el expediente; esta
-        // cola enseña su veredicto y resuelve lo que quedó sin caso. El backend gatea por @Roles
-        // (`PartnerOperationsController`: los cuatro de abajo) y deja FUERA al rol `merchant`: de
-        // aquí en adelante el onboarding es verificación. Es una copia declarada de su lista.
-        permissions: [],
-        roles: PARTNER_OPERATIONS_ROLE_LIST,
-      },
-      {
-        label: "Calificación de cartera",
-        href: "/internal/operations/portfolio",
-        icon: Gauge,
-        // Calificación (de Atlas) y salud de la entrega de desenlaces al Motor; entregarlos es un job.
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Préstamos",
-        href: "/internal/operations/loans",
-        icon: Landmark,
-        permissions: [],
-        roles: LOAN_PORTFOLIO_ROLE_LIST,
-      },
-      {
-        label: "Eventos de dominio",
-        href: "/internal/events",
-        icon: Radio,
-        // Mismo criterio que jobs: el backend gatea por @Roles y no hay permiso granular.
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Jobs internos",
-        href: "/internal/jobs",
-        icon: ListChecks,
-        // Igual que "Cola de trabajo": el backend gatea por @Roles, no por permiso granular.
-        // Con `internal.jobs.read` —que no existe en /internal/permissions— el ítem no salía
-        // en el menú de NADIE y la pantalla quedaba inalcanzable salvo escribiendo la URL.
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Jobs de runtime",
-        href: "/internal/operations/runtime-jobs",
-        icon: PlayCircle,
-        permissions: [],
-        roles: RUNTIME_JOB_ROLE_LIST,
-      },
-      {
-        label: "Alertas",
-        href: "/internal/alerts",
-        icon: Bell,
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-      {
-        label: "Mensajería interna",
-        href: "/internal/notifications",
-        icon: MessageSquare,
-        permissions: ["notifications.messages.read"],
-      },
-      {
-        label: "Exportaciones",
-        href: "/internal/exports",
-        icon: Download,
-        permissions: [],
-        roles: INTERNAL_PORTAL_ROLE_LIST,
-      },
-    ],
-  },
   {
     label: "Esquema de datos",
     icon: Database,
