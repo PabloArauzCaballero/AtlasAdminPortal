@@ -12,16 +12,28 @@ const BAR_MAX_HEIGHT = 46;
 
 export function StressLatencyChart({
   points,
-}: Readonly<{ points?: StressLatencyPoint[] }>) {
+  title = "Evolución de latencia y hits durante el stress",
+  caption = "Cada punto agrupa las solicitudes terminadas por segundo.",
+  emptyText = "Sin datos todavía.",
+  secondLabel = (second: number) => `seg. ${second}`,
+  dashedLabel = "promedio",
+}: Readonly<{
+  points?: StressLatencyPoint[];
+  title?: string;
+  caption?: string;
+  emptyText?: string;
+  /** Cómo se nombra un punto del eje de tiempo al pasar el ratón. */
+  secondLabel?: (second: number) => string;
+  /** Qué mide la línea punteada (el promedio en el stress; la mediana en otras vistas). */
+  dashedLabel?: string;
+}>) {
   const [hoverSecond, setHoverSecond] = useState<number | null>(null);
   const safePoints = points?.filter((point) => point.count > 0) ?? [];
   if (safePoints.length === 0) {
     return (
       <section className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
-        <h3 className="text-sm font-semibold text-atlas-text">
-          Evolución de latencia y hits durante el stress
-        </h3>
-        <p className="mt-2 text-xs text-atlas-muted">Sin datos todavía.</p>
+        <h3 className="text-sm font-semibold text-atlas-text">{title}</h3>
+        <p className="mt-2 text-xs text-atlas-muted">{emptyText}</p>
       </section>
     );
   }
@@ -41,16 +53,12 @@ export function StressLatencyChart({
     <section className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold text-atlas-text">
-            Evolución de latencia y hits durante el stress
-          </h3>
-          <p className="text-xs text-atlas-muted">
-            Cada punto agrupa las solicitudes terminadas por segundo.
-          </p>
+          <h3 className="text-sm font-semibold text-atlas-text">{title}</h3>
+          <p className="text-xs text-atlas-muted">{caption}</p>
         </div>
         {active ? (
           <div className="rounded-md bg-atlas-soft px-3 py-1.5 text-xs text-atlas-text">
-            <span className="font-semibold">seg. {active.second}</span>
+            <span className="font-semibold">{secondLabel(active.second)}</span>
             {" · "}
             {formatNumber(active.count)} hits · p95{" "}
             {formatNumber(active.p95LatencyMs)} ms
@@ -59,7 +67,7 @@ export function StressLatencyChart({
               : ""}
           </div>
         ) : (
-          <Legend />
+          <Legend dashedLabel={dashedLabel} />
         )}
       </div>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-64 w-full">
@@ -129,12 +137,12 @@ export function StressLatencyChart({
   );
 }
 
-function Legend() {
+function Legend({ dashedLabel }: Readonly<{ dashedLabel: string }>) {
   return (
     <div className="flex flex-wrap gap-3 text-xs text-atlas-muted">
-      <span>barra: hits por segundo</span>
+      <span>barra: peticiones terminadas</span>
       <span>línea sólida: p95</span>
-      <span>línea punteada: promedio</span>
+      <span>línea punteada: {dashedLabel}</span>
       <span>punto rojo: segundo con errores</span>
     </div>
   );

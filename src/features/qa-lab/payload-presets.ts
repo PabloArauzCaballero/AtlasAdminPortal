@@ -145,7 +145,7 @@ export const QA_PAYLOAD_PRESETS: QaPayloadPreset[] = [
     payload: {
       decision: "approved",
       reasonCode: "documents_verified",
-      notes: "Documentación verificada por QA.",
+      notes: "Documentación verificada manualmente por QA.",
       nextCustomerStatus: "active",
     },
     notes:

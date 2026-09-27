@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "@/shared/api/config";
-import { getQaEnvironmentBaseUrl, resolveAgainstOrigin } from "./environment";
+import { getQaEnvironmentBaseUrl } from "./environment";
 
 export type QaBaseRouteKey =
   | "ENVIRONMENT_DEFAULT"
@@ -17,48 +17,60 @@ export type QaBaseRouteOption = {
   hint: string;
 };
 
-export const DEFAULT_QA_BASE_ROUTE: QaBaseRouteKey = "ENVIRONMENT_DEFAULT";
+/**
+ * Por defecto, la API de ESTE portal: es la única que existe de verdad en un portal desplegado.
+ * El default anterior («base del ambiente» con LOCAL) mandaba cada prueba a `localhost:3005` desde
+ * el navegador del operador, y en TEST no ejecutaba nada.
+ */
+export const DEFAULT_QA_BASE_ROUTE: QaBaseRouteKey = "CONFIGURED_API";
+
+/** Las rutas base que se ofrecen en pantalla. Las demás claves siguen resolviendo (enlaces viejos). */
+export const VISIBLE_QA_BASE_ROUTE_KEYS: readonly QaBaseRouteKey[] = [
+  "CONFIGURED_API",
+  "MOCK_PROVIDERS",
+  "CUSTOM_HOST",
+];
 
 export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   {
     key: "ENVIRONMENT_DEFAULT",
-    label: "La del ambiente elegido",
-    hint: "Usa la dirección del ambiente de arriba (este portal, tu máquina, pruebas o producción).",
+    label: "Base del ambiente seleccionado",
+    hint: "Usa LOCAL, STAGING o PRODUCTION_READONLY segun el ambiente elegido.",
   },
   {
     key: "CUSTOM_HOST",
     label: "Otra dirección, escrita a mano",
-    hint: "Usa la dirección escrita en «Dirección manual». Sólo se admiten las de la lista permitida.",
+    hint: "Usa la dirección escrita en «Dirección manual». Sólo se admiten las de la lista permitida del portal.",
   },
   {
     key: "LOCAL_API_V1",
-    label: "Tu máquina, con /api/v1",
-    hint: "Backend levantado en tu ordenador, con prefijo: http://localhost:3005/api/v1",
+    label: "Local backend /api/v1",
+    hint: "Backend levantado en tu máquina, con prefijo: http://localhost:3005/api/v1",
   },
   {
     key: "LOCAL_ROOT",
-    label: "Tu máquina, sin prefijo",
-    hint: "Backend levantado en tu ordenador, sin prefijo: http://localhost:3005",
+    label: "Local backend raiz",
+    hint: "Backend levantado en tu máquina, sin prefijo: http://localhost:3005",
   },
   {
     key: "CONFIGURED_API",
-    label: "La API configurada del portal",
-    hint: "La dirección que el portal usa para su propia API (NEXT_PUBLIC_API_BASE_URL).",
+    label: "API de este portal",
+    hint: "La misma API que usa el portal ahora mismo, con tu sesión.",
   },
   {
     key: "STAGING_CONFIGURED",
-    label: "Pruebas compartido configurado",
-    hint: "La API del entorno de pruebas compartido (NEXT_PUBLIC_STAGING_API_BASE_URL); si no hay, la del portal.",
+    label: "Staging configurado",
+    hint: "NEXT_PUBLIC_STAGING_API_BASE_URL con fallback al ambiente.",
   },
   {
     key: "PRODUCTION_READONLY_CONFIGURED",
-    label: "Producción configurada (sólo lectura)",
-    hint: "La API de producción (NEXT_PUBLIC_PROD_READONLY_API_BASE_URL); sólo admite previsualizar.",
+    label: "Produccion readonly configurada",
+    hint: "NEXT_PUBLIC_PROD_READONLY_API_BASE_URL con fallback al ambiente.",
   },
   {
     key: "MOCK_PROVIDERS",
     label: "Simulador de proveedores externos",
-    hint: "El simulador de SEGIP, INFOCENTER, QR, banca, telco, Facebook, WhatsApp y confianza digital (NEXT_PUBLIC_QA_MOCK_BASE_URL, por defecto http://localhost:4010/mock).",
+    hint: "El simulador de SEGIP, INFOCENTER, QR, banca, telco, Facebook, WhatsApp y confianza digital. Nunca llama a un proveedor real.",
   },
 ];
 
@@ -88,12 +100,18 @@ function resolveConfiguredRoute(
 ): string {
   if (key === "LOCAL_API_V1") return "http://localhost:3005/api/v1";
   if (key === "LOCAL_ROOT") return "http://localhost:3005";
-  if (key === "CONFIGURED_API") return resolveAgainstOrigin(getApiBaseUrl());
+  if (key === "CONFIGURED_API") return getApiBaseUrl();
   if (key === "STAGING_CONFIGURED") {
-    return getQaEnvironmentBaseUrl("STAGING");
+    return (
+      process.env.NEXT_PUBLIC_STAGING_API_BASE_URL ||
+      getQaEnvironmentBaseUrl("STAGING")
+    );
   }
   if (key === "PRODUCTION_READONLY_CONFIGURED") {
-    return getQaEnvironmentBaseUrl("PRODUCTION_READONLY");
+    return (
+      process.env.NEXT_PUBLIC_PROD_READONLY_API_BASE_URL ||
+      getQaEnvironmentBaseUrl("PRODUCTION_READONLY")
+    );
   }
   if (key === "MOCK_PROVIDERS") return getQaMockProvidersBaseUrl();
   return getQaEnvironmentBaseUrl(environment);
@@ -113,8 +131,17 @@ export function getQaMockProvidersBaseUrl(): string {
   );
 }
 
+/**
+ * En DEV y TEST `NEXT_PUBLIC_API_BASE_URL` vale `/api/v1`, RELATIVA al portal. `new URL()` no la
+ * acepta sin origen, así que cada prueba fallaba con «Invalid URL» antes de salir. Se resuelve
+ * contra el origen de la página, que es exactamente a donde la manda el propio portal.
+ */
 function normalizeBaseUrl(value: string): string {
-  return value.trim().replace(/\/+$/, "");
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (trimmed.startsWith("/") && typeof window !== "undefined") {
+    return `${window.location.origin}${trimmed}`;
+  }
+  return trimmed;
 }
 
 type ResolveBaseRouteInput = {

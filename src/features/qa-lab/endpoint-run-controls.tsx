@@ -1,9 +1,8 @@
 "use client";
 
-import { ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import type { EndpointItem } from "@/features/systems/types";
 import { Badge } from "@/shared/components/ui/badges";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { normalizeExpectedStatuses } from "./assertions";
@@ -58,18 +57,6 @@ export function RunControls({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <Field
-          label="Ambiente"
-          tooltip="Contra qué API corre la prueba; en producción sólo se puede previsualizar."
-          hint="Decide la dirección base a la que va la petición."
-        >
-          <Select
-            name="ambiente"
-            options={ENVIRONMENT_OPTIONS}
-            value={form.environment}
-            onChange={(valor) => onChange({ environment: valor })}
-          />
-        </Field>
         <NumberField
           label="Espera máxima (ms)"
           tooltip="Milisegundos que se espera la respuesta antes de dar la petición por fallida."

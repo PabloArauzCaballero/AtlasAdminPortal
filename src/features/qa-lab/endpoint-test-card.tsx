@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import type { EndpointItem } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
-import { ENVIRONMENT_OPTIONS } from "./qa-lab-options";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
@@ -17,8 +16,12 @@ import {
   RunControls,
   requiresDoubleConfirmation,
 } from "./endpoint-run-controls";
-import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
-import { defaultQaEnvironment } from "./environment";
+import {
+  DEFAULT_QA_BASE_ROUTE,
+  normalizeQaBaseRouteKey,
+  QA_BASE_ROUTE_OPTIONS,
+} from "./base-routes";
+import { defaultQaEnvironment, isProductionTarget } from "./environment";
 import { useQaTestData } from "./fakers/use-fakers";
 import { isMockEndpointId } from "./mock-provider-endpoints";
 import { expectedStatusesText, parseEndpointRunForm } from "./qa-form";
@@ -219,7 +222,7 @@ export function EndpointTestCard({
         title={
           form.dryRun ? "Confirmar previsualización" : "Confirmar envío real"
         }
-        description={`Se ${form.dryRun ? "previsualizará" : "enviará"} la operación #${endpointId} contra «${environmentLabel(form.environment)}».`}
+        description={`Se ${form.dryRun ? "previsualizará" : "enviará"} la operación #${endpointId} contra «${destinationLabel(form)}».`}
         confirmText={form.dryRun ? "Previsualizar" : "Enviar"}
         isLoading={runMutation.isPending}
         typedConfirmationPhrase={
@@ -232,10 +235,17 @@ export function EndpointTestCard({
   );
 }
 
-function environmentLabel(value: string): string {
-  return (
-    ENVIRONMENT_OPTIONS.find((option) => option.value === value)?.label ?? value
-  );
+/** El destino real de la petición: la ruta base elegida, y en producción que es sólo lectura. */
+function destinationLabel(form: EndpointRunFormState): string {
+  const key = normalizeQaBaseRouteKey(form.baseRouteKey);
+  const label =
+    key === "CUSTOM_HOST" && form.customHostUrl.trim()
+      ? form.customHostUrl.trim()
+      : (QA_BASE_ROUTE_OPTIONS.find((option) => option.key === key)?.label ??
+        key);
+  return isProductionTarget(form.environment)
+    ? `${label} (producción, sólo lectura)`
+    : label;
 }
 
 /**

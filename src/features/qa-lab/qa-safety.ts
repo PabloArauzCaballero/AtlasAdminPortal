@@ -9,12 +9,7 @@ import { isProductionTarget, isTestingTarget } from "./environment";
  */
 const OPERATOR_CONTROLLED_ROUTE_KEYS = new Set(["CUSTOM_HOST"]);
 
-const KNOWN_QA_ENVIRONMENTS = [
-  "PORTAL",
-  "LOCAL",
-  "STAGING",
-  "PRODUCTION_READONLY",
-];
+const KNOWN_QA_ENVIRONMENTS = ["LOCAL", "STAGING", "PRODUCTION_READONLY"];
 
 const SENSITIVE_HEADER_NAMES = [
   "authorization",

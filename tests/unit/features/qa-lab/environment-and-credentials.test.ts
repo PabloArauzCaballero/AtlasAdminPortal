@@ -9,7 +9,6 @@ import {
   defaultQaEnvironment,
   getQaEnvironmentBaseUrl,
   isProductionTarget,
-  resolveAgainstOrigin,
 } from "@/features/qa-lab/environment";
 import { buildQaRequest } from "@/features/qa-lab/request-builder";
 import {
@@ -44,63 +43,39 @@ afterEach(() => {
 });
 
 describe("base relativa del portal (`/api/v1`)", () => {
-  it("se resuelve contra el origen del portal, no lanza «Invalid URL»", () => {
-    expect(resolveAgainstOrigin("/api/v1")).toBe(
-      `${window.location.origin}/api/v1`,
-    );
-    expect(resolveAgainstOrigin("https://api.atlas.test/api/v1/")).toBe(
-      "https://api.atlas.test/api/v1",
-    );
-  });
-
-  it("«Este mismo portal» usa la base relativa configurada", () => {
-    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "/api/v1");
-    expect(getQaEnvironmentBaseUrl("PORTAL")).toBe(
-      `${window.location.origin}/api/v1`,
-    );
-    // STAGING y producción sin base propia caen a la del portal, también resuelta.
-    expect(getQaEnvironmentBaseUrl("STAGING")).toBe(
-      `${window.location.origin}/api/v1`,
-    );
-  });
-
-  it("una petición a «Este mismo portal» se arma y su host está permitido", () => {
+  it("la ruta por defecto es la API de este portal, resuelta contra su origen", () => {
     vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "/api/v1");
     const built = buildQaRequest(
       endpointFixture({ fullPath: "/api/v1/health" }),
-      runInputFixture({
-        environment: "PORTAL",
-        baseRouteKey: "ENVIRONMENT_DEFAULT",
-      }),
+      runInputFixture({ environment: "LOCAL", baseRouteKey: "CONFIGURED_API" }),
     );
     expect(built.url).toBe(`${window.location.origin}/api/v1/health`);
     expect(built.hostAllowed).toBe(true);
     expect(isHostAllowed(built.url)).toBe(true);
   });
 
-  it("con la base relativa, STAGING ya no rompe: la petición sale", async () => {
+  it("con la base relativa la petición sale, no lanza «Invalid URL»", async () => {
     vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "/api/v1");
     const result = await executeEndpointDirectly(
       endpointFixture({ fullPath: "/api/v1/health" }),
-      runInputFixture({
-        environment: "STAGING",
-        baseRouteKey: "ENVIRONMENT_DEFAULT",
-      }),
+      runInputFixture({ environment: "LOCAL", baseRouteKey: "CONFIGURED_API" }),
     );
     expect(result.error).toBeUndefined();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("en el navegador local el ambiente por defecto es «Tu máquina»", () => {
-    expect(window.location.hostname).toBe("localhost");
-    expect(defaultQaEnvironment()).toBe("LOCAL");
+  it("STAGING sin base propia cae a la del portal", () => {
+    vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "/api/v1");
+    expect(getQaEnvironmentBaseUrl("STAGING")).toBe("/api/v1");
   });
 
-  it("«Este mismo portal» cuenta como producción si el portal es el de producción", () => {
-    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
-    expect(isProductionTarget("PORTAL")).toBe(true);
+  it("el ambiente sale del despliegue: producción queda en sólo lectura", () => {
     vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "vps-testing");
-    expect(isProductionTarget("PORTAL")).toBe(false);
+    expect(defaultQaEnvironment()).toBe("LOCAL");
+    expect(isProductionTarget(defaultQaEnvironment())).toBe(false);
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
+    expect(defaultQaEnvironment()).toBe("PRODUCTION_READONLY");
+    expect(isProductionTarget(defaultQaEnvironment())).toBe(true);
   });
 });
 

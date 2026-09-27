@@ -78,14 +78,17 @@ test.describe("campaña de journeys QA", () => {
     await health.expectHealthy();
   });
 
-  test("el árbol ofrece ejecutar el flujo con N personas", async ({
+  test("el árbol ofrece la prueba de carga con usuarios ficticios", async ({
     page,
   }, testInfo) => {
     await page.goto("/internal/qa/lab?tab=arbol");
     await settled(page);
     await expect(
-      page.getByRole("button", { name: /Ejecutar flujo con N personas/ }),
+      page.getByRole("button", { name: /Generar y cargar/ }),
     ).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByRole("spinbutton", { name: /Usuarios ficticios/ }),
+    ).toBeVisible();
     await expect(page.getByText(/Probar este paso/)).toHaveCount(0);
     await capture(page, testInfo, "4 arbol con boton de corrida");
   });

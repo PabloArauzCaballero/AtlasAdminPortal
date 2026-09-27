@@ -36,16 +36,12 @@ function config(
 }
 
 describe("JourneyRunnerConfigFields · ambiente y timeout", () => {
-  it("el ambiente elegido se propaga", async () => {
-    const onChange = vi.fn();
-    render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
+  it("no ofrece elegir ambiente: sale del despliegue del portal", () => {
+    render(<JourneyRunnerConfigFields config={config()} onChange={vi.fn()} />);
 
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: "Ambiente" }),
-      "STAGING",
-    );
-
-    expect(onChange).toHaveBeenCalledWith({ environment: "STAGING" });
+    expect(
+      screen.queryByRole("combobox", { name: "Ambiente" }),
+    ).not.toBeInTheDocument();
   });
 
   it("el timeout por paso llega como número", async () => {
@@ -67,7 +63,12 @@ describe("JourneyRunnerConfigFields · ambiente y timeout", () => {
 
   it("el host manual se propaga", async () => {
     const onChange = vi.fn();
-    render(<JourneyRunnerConfigFields config={config()} onChange={onChange} />);
+    render(
+      <JourneyRunnerConfigFields
+        config={config({ baseRouteKey: "CUSTOM_HOST" })}
+        onChange={onChange}
+      />,
+    );
 
     await userEvent.type(
       screen.getByPlaceholderText("https://staging-api.atlas.local"),

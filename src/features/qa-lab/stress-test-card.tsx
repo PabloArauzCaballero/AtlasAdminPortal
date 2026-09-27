@@ -42,7 +42,10 @@ export function StressTestCard({
   const mutation = useEndpointStressMutation(endpoint);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<StressFormState>(DEFAULT_STRESS_FORM);
+  const [form, setForm] = useState<StressFormState>(() => ({
+    ...DEFAULT_STRESS_FORM,
+    environment: defaultQaEnvironment(),
+  }));
   const canExecute = hasPermission("systems.stress.execute");
   const isProd = isProductionTarget(form.environment);
   const canRun =

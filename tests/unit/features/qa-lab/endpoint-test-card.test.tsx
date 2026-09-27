@@ -1,10 +1,13 @@
-import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AtlasApiError } from "@/shared/api/errors";
 import type { DirectRunResult } from "@/features/qa-lab/types";
 import { endpointFixture } from "./endpoint-fixture";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -146,7 +149,7 @@ describe("EndpointTestCard · confirmación", () => {
 
     expect(
       screen.getByText(
-        "Se previsualizará la operación #ep-1 contra «Tu máquina (localhost:3005)».",
+        "Se previsualizará la operación #ep-1 contra «API de este portal».",
       ),
     ).toBeInTheDocument();
   });
@@ -177,9 +180,10 @@ describe("EndpointTestCard · confirmación", () => {
     });
   });
 
-  it("una mutación real fuera de LOCAL exige teclear EJECUTAR", async () => {
-    // Doble confirmación: es el último freno antes de escribir en un entorno
-    // que no es la máquina del operador.
+  it("en un portal de producción una mutación real exige teclear EJECUTAR", async () => {
+    // Doble confirmación: es el último freno antes de escribir fuera de un
+    // entorno de pruebas. El ambiente ya no se elige: sale del despliegue.
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
     render(
       <EndpointTestCard
         endpointId="ep-1"
@@ -193,10 +197,6 @@ describe("EndpointTestCard · confirmación", () => {
     );
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Permitir cambios reales" }),
-    );
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: /Ambiente/ }),
-      "STAGING",
     );
 
     await userEvent.click(runButton());

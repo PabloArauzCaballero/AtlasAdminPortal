@@ -18,19 +18,20 @@ export function QaTargetControls({
           value={form.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
-        <Field
-          label="Dirección manual"
-          tooltip="Dirección completa a probar cuando la ruta base es «Otra dirección, escrita a mano». Ej.: https://staging-api.atlas.local"
-          hint="Sólo se usa con la ruta base «Otra dirección, escrita a mano»."
-        >
-          <Input
-            value={form.customHostUrl}
-            onChange={(event) =>
-              onChange({ customHostUrl: event.target.value })
-            }
-            placeholder="https://staging-api.atlas.local"
-          />
-        </Field>
+        {form.baseRouteKey === "CUSTOM_HOST" ? (
+          <Field
+            label="Dirección manual"
+            tooltip="Dirección completa a probar, p. ej. https://staging-api.atlas.local. Tiene que estar en la lista de direcciones permitidas del portal."
+          >
+            <Input
+              value={form.customHostUrl}
+              onChange={(event) =>
+                onChange({ customHostUrl: event.target.value })
+              }
+              placeholder="https://staging-api.atlas.local"
+            />
+          </Field>
+        ) : null}
       </div>
       <Field
         label="Ruta de la operación"

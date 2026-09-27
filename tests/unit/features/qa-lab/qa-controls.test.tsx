@@ -57,9 +57,21 @@ describe("QaTargetControls · destino de la prueba", () => {
     expect(screen.getByText(/Por defecto: sin ruta/)).toBeInTheDocument();
   });
 
+  it("el host manual sólo aparece al elegir «Host URL manual»", () => {
+    render(<QaTargetControls form={commonForm()} onChange={vi.fn()} />);
+    expect(
+      screen.queryByPlaceholderText("https://staging-api.atlas.local"),
+    ).not.toBeInTheDocument();
+  });
+
   it("el host manual se propaga al formulario", async () => {
     const onChange = vi.fn();
-    render(<QaTargetControls form={commonForm()} onChange={onChange} />);
+    render(
+      <QaTargetControls
+        form={commonForm({ baseRouteKey: "CUSTOM_HOST" })}
+        onChange={onChange}
+      />,
+    );
 
     await userEvent.type(
       screen.getByPlaceholderText("https://staging-api.atlas.local"),
