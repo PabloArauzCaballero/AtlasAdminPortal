@@ -126,6 +126,13 @@ export const queryKeys = {
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  creditProducts: ["credit", "products"] as const,
+  creditApplication: (applicationId: string) =>
+    ["credit", "application", applicationId] as const,
+  customerCreditLine: (customerId: string) =>
+    ["credit", "customer-line", customerId] as const,
+  customerCreditApplications: (customerId: string) =>
+    ["credit", "customer-applications", customerId] as const,
   pendingContactVerification: [
     "operations",
     "pending-contact-verification",

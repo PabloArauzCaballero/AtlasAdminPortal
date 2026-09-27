@@ -78,4 +78,27 @@ describe("buildWorkQueueColumns · dónde se decide", () => {
 
     expect(screen.getByRole("button", { name: "Decidir" })).toBeDisabled();
   });
+
+  it("un caso CR de crédito lleva a su solicitud en vez de ofrecer «Decidir» (hallazgo A3)", () => {
+    render(
+      <Tabla
+        filas={[
+          item({
+            caseCode: "CR-CA-2026-000077",
+            reasonCode: "credit_application_review",
+          }),
+        ]}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Decidir" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Decidir la solicitud" }),
+    ).toHaveAttribute(
+      "href",
+      "/internal/operations/credit/applications/from-case?customerId=900&caseCode=CR-CA-2026-000077",
+    );
+  });
 });

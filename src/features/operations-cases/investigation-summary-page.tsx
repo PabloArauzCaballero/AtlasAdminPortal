@@ -11,6 +11,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
+import { CustomerCreditSection } from "@/features/credit/customer-credit-section";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import {
@@ -44,8 +45,9 @@ export function InvestigationSummaryPage({
       <BusinessContextNote>
         Aquí se investiga y se actúa sobre el cliente: cribado de listas
         restrictivas, decisión de habilitación y recálculo del riesgo. Los casos
-        abiertos se deciden desde la Cola de trabajo o desde las colas de
-        revisión manual y de fraude.
+        de alta o de fraude se deciden desde la Cola de trabajo o desde las
+        colas de revisión manual y de fraude; las solicitudes de crédito, desde
+        la sección Crédito, abriendo cada solicitud.
       </BusinessContextNote>
       {summary.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {summary.error ? (
@@ -119,6 +121,8 @@ export function InvestigationSummaryPage({
             customerId={customerId}
             currentStatus={summary.data.customer.status}
           />
+
+          <CustomerCreditSection customerId={customerId} />
 
           {/*
             Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.

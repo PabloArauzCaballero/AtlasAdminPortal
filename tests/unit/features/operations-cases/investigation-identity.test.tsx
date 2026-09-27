@@ -22,6 +22,11 @@ import type { InvestigationSummary } from "@/features/operations-cases/types";
 vi.mock("@/features/operations-cases/services", () => ({
   getInvestigationSummary: vi.fn(),
 }));
+// La sección de crédito necesita la sesión (rol) y tiene sus propias pruebas
+// (`tests/unit/features/credit/customer-credit-section.test.tsx`); aquí se mira la identidad.
+vi.mock("@/features/credit/customer-credit-section", () => ({
+  CustomerCreditSection: () => null,
+}));
 
 const { getInvestigationSummary } =
   await import("@/features/operations-cases/services");
