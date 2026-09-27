@@ -48,9 +48,24 @@ export const PARTNER_OPERATIONS_ROLES = [
   "platform_admin",
 ] as const;
 
+/**
+ * `CreditOperationsController` (`operations/credit/*`): catálogo, decisión humana, aceptación del
+ * negocio y recálculo de la línea. Misma lista que los expedientes de comercio, pero se declara
+ * aparte porque es otro controlador y puede cambiar por su cuenta.
+ */
+export const CREDIT_OPERATIONS_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+
 export const INTERNAL_PORTAL_ROLE_LIST: string[] = [...INTERNAL_PORTAL_ROLES];
 export const PARTNER_OPERATIONS_ROLE_LIST: string[] = [
   ...PARTNER_OPERATIONS_ROLES,
 ];
 export const SUPPORT_ADMIN_ROLE_LIST: string[] = [...SUPPORT_ADMIN_ROLES];
 export const RUNTIME_JOB_ROLE_LIST: string[] = [...RUNTIME_JOB_ROLES];
+export const CREDIT_OPERATIONS_ROLE_LIST: string[] = [
+  ...CREDIT_OPERATIONS_ROLES,
+];

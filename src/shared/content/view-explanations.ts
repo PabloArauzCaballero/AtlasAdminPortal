@@ -1,3 +1,4 @@
+import { creditModuleExplanations } from "./view-explanations-credit";
 import { primaryModuleExplanations } from "./view-explanations-primary";
 import { secondaryModuleExplanations } from "./view-explanations-secondary";
 import type {
@@ -10,6 +11,7 @@ export type { ModuleExplanation, ViewExplanation };
 export const moduleExplanations: ModuleExplanation[] = [
   ...primaryModuleExplanations,
   ...secondaryModuleExplanations,
+  ...creditModuleExplanations,
 ];
 
 export type ResolvedExplanation = {

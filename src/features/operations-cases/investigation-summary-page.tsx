@@ -11,6 +11,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
+import { CustomerCreditSection } from "@/features/credit/customer-credit-section";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import {
@@ -40,8 +41,9 @@ export function InvestigationSummaryPage({
         description="Perfil, contactos, consentimientos, última evaluación de riesgo y casos abiertos — vista consolidada para revisión manual o de fraude."
       />
       <BusinessContextNote>
-        Esta vista solo lee. Para decidir un caso, volvé a la Cola de trabajo y
-        usá la acción &quot;Decidir&quot; sobre la fila correspondiente.
+        Para decidir un caso de alta o de fraude, volvé a la Cola de trabajo y
+        usá &quot;Decidir&quot; en su fila. Las solicitudes de crédito se
+        deciden desde la sección Crédito, abriendo cada solicitud.
       </BusinessContextNote>
       {summary.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {summary.error ? (
@@ -109,6 +111,8 @@ export function InvestigationSummaryPage({
           <UltimaEvaluacionDeRiesgo
             evaluacion={summary.data.latestRiskAssessment}
           />
+
+          <CustomerCreditSection customerId={customerId} />
 
           {/*
             Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.
