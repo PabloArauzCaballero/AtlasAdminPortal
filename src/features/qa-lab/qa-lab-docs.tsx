@@ -44,10 +44,11 @@ export function QaLabDocsPanel() {
           </div>
           <div>
             <p className="text-sm font-semibold text-atlas-text">
-              Cómo funciona el QA Live Lab
+              Cómo funciona la prueba unitaria
             </p>
             <p className="text-xs text-atlas-muted">
-              rawFetch directo · matriz de escenarios · contrato de respuesta
+              desde tu navegador · datos generados · escenarios · qué se
+              comprueba
             </p>
           </div>
         </div>
@@ -65,32 +66,34 @@ export function QaLabDocsPanel() {
         <CardContent className="grid gap-4 border-t border-atlas-border pt-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           <DocCard
             icon={<Radar className="h-4 w-4" />}
-            title="Target dinámico"
+            title="Contra qué API"
             points={[
-              "LOCAL / STAGING / PRODUCTION_READONLY, host manual con validación http(s).",
-              "PRODUCTION_READONLY solo permite dry-run: cualquier ejecución real queda bloqueada.",
+              "«Este mismo portal» usa la API del propio portal; es lo correcto en un portal desplegado.",
+              "«Tu máquina» sólo sirve si abriste el portal en tu ordenador.",
+              "En producción sólo se puede previsualizar la petición, nunca enviarla.",
             ]}
           />
           <DocCard
-            icon={<Workflow className="h-4 w-4" />}
-            title="Escenarios de prueba"
+            icon={<FlaskConical className="h-4 w-4" />}
+            title="Datos generados"
             points={[
-              "Presets sobre auth, tenant e idempotencia — sin editar headers a mano.",
-              "Ver matriz completa abajo.",
+              "Los datos de persona salen del generador del simulador de proveedores, con la semilla elegida.",
+              "Una semilla con nombre repite las mismas personas; «Personas nuevas» crea un lote nuevo.",
+              "Si el generador no responde, se dice y no se inventa nada.",
             ]}
           />
           <DocCard
             icon={<KeySquare className="h-4 w-4" />}
-            title="Headers gestionados"
+            title="Credencial y cabeceras"
             points={[
-              "Authorization según el modo elegido (sesión, ninguno, inválido, manual).",
-              "x-tenant-id automático desde la sesión salvo que el escenario lo desactive.",
-              "x-idempotency-key UUID por request en métodos mutables.",
+              "Tu sesión, ninguna, una credencial falsa o el token de otro actor; en las tres últimas tu cookie no viaja.",
+              "x-tenant-id (empresa) sale de tu sesión salvo que el escenario la quite.",
+              "x-idempotency-key (anti-duplicados) nueva en cada petición que cambia datos.",
             ]}
           />
           <DocCard
             icon={<Layers className="h-4 w-4" />}
-            title="Contrato de respuesta"
+            title="Forma de la respuesta"
             points={[]}
           >
             <pre className="mt-1 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-[11px] leading-5 text-slate-100">
@@ -100,17 +103,17 @@ export function QaLabDocsPanel() {
           </DocCard>
           <DocCard
             icon={<Lock className="h-4 w-4" />}
-            title="Seguridad no negociable"
+            title="Seguridad"
             points={[
-              "Tokens nunca persisten en almacenamiento del navegador.",
-              "Authorization/cookies enmascarados en logs y resultados.",
-              'Mutación real fuera de LOCAL exige tildar el checkbox + escribir "EJECUTAR".',
-              "Load probe: tope duro de 10.000 requests, bloqueado en producción.",
+              "En el resultado y en el registro descargable, token y cookies se muestran recortados.",
+              'Un cambio real fuera de tu máquina exige marcar «Permitir cambios reales» y escribir "EJECUTAR", también en la carga.',
+              "La carga tiene un tope firme de 10.000 peticiones y está bloqueada en producción.",
+              "Nada de esto se guarda: la prueba corre en tu navegador.",
             ]}
           />
           <div className="rounded-xl border border-atlas-border bg-atlas-soft p-4 md:col-span-2 xl:col-span-3">
             <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-atlas-text">
-              <Workflow className="h-3.5 w-3.5" /> Matriz de escenarios
+              <Workflow className="h-3.5 w-3.5" /> Escenarios de prueba
             </p>
             <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
               {QA_SCENARIOS.map((scenario) => (

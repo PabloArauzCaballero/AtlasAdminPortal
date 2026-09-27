@@ -83,8 +83,19 @@ export function Antes() {
           </thead>
           <tbody>
             <TargetRow
+              badge={<Badge tone="success">Este mismo portal</Badge>}
+              perm={
+                <>
+                  La API del propio portal (lo correcto en un portal
+                  desplegado). Un cambio real exige teclear{" "}
+                  <code className="font-mono text-atlas-accent">EJECUTAR</code>.
+                </>
+              }
+              url="NEXT_PUBLIC_API_BASE_URL (p. ej. /api/v1 del portal)"
+            />
+            <TargetRow
               badge={<Badge tone="success">LOCAL</Badge>}
-              perm="Todo, incluida mutación real sin fricción extra."
+              perm="Tu máquina: todo, incluido un cambio real sin fricción extra. Sólo sirve si abriste el portal en tu ordenador."
               url="localhost:3005/api/v1"
             />
             <TargetRow

@@ -308,14 +308,13 @@ describe("buildQaRequest · cabeceras", () => {
     expect(built.headers.Authorization).toBe("Bearer mi-token");
   });
 
-  it("authMode custom con token en blanco cae a la sesión, no manda 'Bearer '", () => {
+  it("authMode custom con token en blanco NO cae a la sesión propia (el runner lo bloquea)", () => {
     const built = buildQaRequest(
       endpointFixture(),
       inputFixture({ authMode: "custom", customAuthToken: "   " }),
     );
 
-    expect(built.headers.Authorization).not.toBe("Bearer ");
-    expect(built.headers.Authorization).toContain("Bearer ");
+    expect(built.headers.Authorization).toBeUndefined();
   });
 
   it("sin sesión guardada no inventa un Authorization", () => {

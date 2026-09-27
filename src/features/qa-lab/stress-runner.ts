@@ -1,13 +1,15 @@
 import type { EndpointItem } from "@/features/systems/types";
 import { rawFetch } from "@/shared/api/transport";
 import { resolveExpectedStatuses } from "./assertions";
+import { buildQaRequest, effectiveTimeoutMs } from "./request-builder";
 import {
-  buildQaRequest,
-  effectiveTimeoutMs,
-  generateIdempotencyKey,
-  getBodyForMethod,
-} from "./request-builder";
+  buildInit,
+  buildSample,
+  networkErrorKey,
+  stressBodies,
+} from "./stress-request";
 import {
+  assertAuthModeUsable,
   assertHostAllowed,
   assertRequestAllowed,
   redactedHeaders,
@@ -52,7 +54,7 @@ export async function runStressBurst(
   assertStressAllowed(endpoint, input, built, logger);
   if (built.unresolvedPathParams.length > 0 && !input.dryRun) {
     throw new Error(
-      `Faltan path params: ${built.unresolvedPathParams.join(", ")}`,
+      `Faltan datos de la ruta: ${built.unresolvedPathParams.join(", ")}.`,
     );
   }
   if (input.dryRun) {
@@ -77,6 +79,7 @@ function assertStressAllowed(
   logger: QaPinoLogger,
 ): void {
   try {
+    assertAuthModeUsable(input);
     assertHostAllowed(built.url);
   } catch (error) {
     logger.child("safety").error("stress.blocked", "Host no permitido", error);
@@ -103,7 +106,7 @@ function assertStressAllowed(
       .child("safety")
       .error("stress.blocked", "Falta ticket de aprobación");
     throw new Error(
-      "El stress real fuera de LOCAL requiere ticket de aprobación para auditoría operativa.",
+      "Una carga real fuera de tu máquina necesita un ticket de aprobación (al menos 5 caracteres) para auditoría.",
     );
   }
   logger.child("safety").info("stress.allowed", "Stress permitido");
@@ -118,7 +121,7 @@ async function executeStressPlan(
   warnings: string[],
   logger: QaPinoLogger,
 ): Promise<DirectStressResult> {
-  const body = getBodyForMethod(built.method, input.payload);
+  const bodies = stressBodies(built.method, input);
   const samples: StressRequestSample[] = [];
   const startedAt = performance.now();
   logger.child("transport").info("stress.started", "Front inicia stress", {
@@ -134,7 +137,8 @@ async function executeStressPlan(
     samples.push(
       await executeStressRequest(
         built,
-        body,
+        bodies[index % bodies.length],
+        input.authMode,
         timeoutMs,
         startedAt,
         expectedStatuses,
@@ -159,6 +163,7 @@ async function executeStressPlan(
 async function executeStressRequest(
   built: BuiltRequest,
   body: string | undefined,
+  authMode: string | undefined,
   timeoutMs: number,
   runStartedAt: number,
   expectedStatuses: number[],
@@ -169,7 +174,7 @@ async function executeStressRequest(
   try {
     const response = await rawFetch(
       built.url,
-      buildInit(built, body, index),
+      buildInit(built, body, index, authMode),
       timeoutMs,
     );
     await response.arrayBuffer().catch(() => undefined);
@@ -198,57 +203,6 @@ async function executeStressRequest(
     });
     return sample;
   }
-}
-
-/**
- * Cabeceras de ESTA muestra, no las del plan entero.
- *
- * `built.headers` se arma una sola vez para las miles de peticiones del burst. Reenviarlas tal
- * cual significa que las 10 000 peticiones de un stress comparten la MISMA
- * `x-idempotency-key`: contra un backend real es aceptable (la primera manda, el resto se
- * deduplica), pero contra el mock de proveedores externos (`AtlasExternalProvidersMock`, que
- * reproduce el resultado ante misma clave + mismo cuerpo) convierte el stress en "una petición
- * real y 9999 cachés" — mide la caché de idempotencia, no al proveedor. Por eso cada muestra
- * recibe su propia `x-idempotency-key` y su propia `x-mock-persona-key`: la segunda no afecta a un
- * backend que no la conoce (el mock la usa para aislar estado por persona simulada dentro de la
- * misma corrida; ver el README de `AtlasExternalProvidersMock`).
- */
-function buildInit(
-  built: BuiltRequest,
-  body: string | undefined,
-  index: number,
-): RequestInit {
-  const headers = { ...built.headers };
-  if (headers["x-idempotency-key"]) {
-    headers["x-idempotency-key"] = generateIdempotencyKey();
-  }
-  headers["x-mock-persona-key"] = `stress-${index}`;
-  return {
-    method: built.method,
-    headers,
-    body,
-    credentials: "include",
-  };
-}
-
-function buildSample(
-  ok: boolean,
-  status: number | string,
-  started: number,
-  runStartedAt: number,
-): StressRequestSample {
-  return {
-    ok,
-    latencyMs: Math.round(performance.now() - started),
-    elapsedMs: Math.round(performance.now() - runStartedAt),
-    statusKey: String(status),
-  };
-}
-
-function networkErrorKey(error: unknown): string {
-  if (error instanceof DOMException && error.name === "AbortError")
-    return "Timeout";
-  return error instanceof Error ? error.name || "NetworkError" : "NetworkError";
 }
 
 function hasApprovalTicket(value?: string): boolean {

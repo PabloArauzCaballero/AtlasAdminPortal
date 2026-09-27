@@ -14,6 +14,13 @@ vi.setConfig({ testTimeout: 30000 });
 const hasPermission = vi.hoisted(() => vi.fn());
 const useEndpointRunMutation = vi.hoisted(() => vi.fn());
 
+vi.mock("@/features/qa-lab/fakers/use-fakers", async () => {
+  const { qaTestDataStub } = await import("./qa-test-data-stub");
+  return {
+    ADJUSTABLE_FAKER_TYPES: ["caso", "monto"],
+    useQaTestData: () => qaTestDataStub,
+  };
+});
 vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => ({ hasPermission }),
 }));
@@ -47,7 +54,7 @@ const HEALTH = endpointFixture({
 
 function runButton() {
   return screen.getByRole("button", {
-    name: /^(Previsualizar|Ejecutar) request/,
+    name: /^(Previsualizar|Enviar) petición/,
   });
 }
 
@@ -103,7 +110,7 @@ describe("EndpointTestCard · el botón dice lo que va a pasar", () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.getByRole("button", { name: "Previsualizar request" }),
+      screen.getByRole("button", { name: "Previsualizar petición" }),
     ).toBeInTheDocument();
   });
 
@@ -111,11 +118,13 @@ describe("EndpointTestCard · el botón dice lo que va a pasar", () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
+      screen.getByRole("checkbox", {
+        name: "Sólo previsualizar (no envía nada)",
+      }),
     );
 
     expect(
-      screen.getByRole("button", { name: "Ejecutar request real" }),
+      screen.getByRole("button", { name: "Enviar petición real" }),
     ).toBeInTheDocument();
   });
 });
@@ -127,7 +136,9 @@ describe("EndpointTestCard · confirmación", () => {
     await userEvent.click(runButton());
 
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("Confirmar dry-run")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Confirmar previsualización"),
+    ).toBeInTheDocument();
     expect(mutate).not.toHaveBeenCalled();
   });
 
@@ -137,7 +148,9 @@ describe("EndpointTestCard · confirmación", () => {
     await userEvent.click(runButton());
 
     expect(
-      screen.getByText("Se previsualizara el endpoint #ep-1 en LOCAL."),
+      screen.getByText(
+        "Se previsualizará la operación #ep-1 contra «API de este portal».",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -178,15 +191,17 @@ describe("EndpointTestCard · confirmación", () => {
       />,
     );
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
+      screen.getByRole("checkbox", {
+        name: "Sólo previsualizar (no envía nada)",
+      }),
     );
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Permitir mutacion real" }),
+      screen.getByRole("checkbox", { name: "Permitir cambios reales" }),
     );
 
     await userEvent.click(runButton());
 
-    const confirm = screen.getByRole("button", { name: "Ejecutar" });
+    const confirm = screen.getByRole("button", { name: "Enviar" });
     expect(confirm).toBeDisabled();
     await userEvent.type(
       screen.getByRole("textbox", { name: /EJECUTAR/ }),
@@ -210,29 +225,29 @@ describe("EndpointTestCard · errores visibles (RESUELTO_ATLAS_F1_R7)", () => {
     // el diálogo siguiera abierto, el operador pulsaría "Ejecutar" y no vería
     // absolutamente nada.
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
-    const payload = screen.getByRole("textbox", { name: /Payload de entrada/ });
+    const payload = screen.getByRole("textbox", { name: /Datos de entrada/ });
     await userEvent.clear(payload);
     await userEvent.type(payload, "no soy json");
 
     await userEvent.click(runButton());
 
-    expect(screen.getByText("Formulario invalido")).toBeInTheDocument();
+    expect(screen.getByText("Formulario inválido")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(mutate).not.toHaveBeenCalled();
   });
 
   it("corregido el formulario, el error desaparece y se puede ejecutar", async () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
-    const payload = screen.getByRole("textbox", { name: /Payload de entrada/ });
+    const payload = screen.getByRole("textbox", { name: /Datos de entrada/ });
     await userEvent.clear(payload);
     await userEvent.type(payload, "roto");
     await userEvent.click(runButton());
-    expect(screen.getByText("Formulario invalido")).toBeInTheDocument();
+    expect(screen.getByText("Formulario inválido")).toBeInTheDocument();
 
     await userEvent.clear(payload);
     await userEvent.click(runButton());
 
-    expect(screen.queryByText("Formulario invalido")).toBeNull();
+    expect(screen.queryByText("Formulario inválido")).toBeNull();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
@@ -341,14 +356,14 @@ describe("EndpointTestCard · payload de ejemplo", () => {
     );
 
     await userEvent.click(
-      screen.getByRole("button", { name: /Usar payload de ejemplo/ }),
+      screen.getByRole("button", { name: /Usar el ejemplo/ }),
     );
 
     await waitFor(() =>
       expect(
         (
           screen.getByRole("textbox", {
-            name: /Payload de entrada/,
+            name: /Datos de entrada/,
           }) as HTMLTextAreaElement
         ).value,
       ).toContain('"actorType": "customer"'),
@@ -359,7 +374,7 @@ describe("EndpointTestCard · payload de ejemplo", () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.queryByRole("button", { name: /Usar payload de ejemplo/ }),
+      screen.queryByRole("button", { name: /Usar el ejemplo/ }),
     ).toBeNull();
   });
 });
@@ -370,9 +385,9 @@ describe("EndpointTestCard · cambio de endpoint", () => {
     const { rerender } = render(
       <EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />,
     );
-    expect(screen.getByRole("textbox", { name: /Ruta\/path/ })).toHaveValue(
-      "/api/v1/health",
-    );
+    expect(
+      screen.getByRole("textbox", { name: /Ruta de la operación/ }),
+    ).toHaveValue("/api/v1/health");
 
     rerender(
       <EndpointTestCard
@@ -385,9 +400,9 @@ describe("EndpointTestCard · cambio de endpoint", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole("textbox", { name: /Ruta\/path/ })).toHaveValue(
-        "/api/v1/otra",
-      ),
+      expect(
+        screen.getByRole("textbox", { name: /Ruta de la operación/ }),
+      ).toHaveValue("/api/v1/otra"),
     );
   });
 });

@@ -39,8 +39,8 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   },
   {
     key: "CUSTOM_HOST",
-    label: "Host URL manual",
-    hint: "Usa el host escrito en el formulario del laboratorio.",
+    label: "Otra dirección, escrita a mano",
+    hint: "Usa la dirección escrita en «Dirección manual». Sólo se admiten las de la lista permitida del portal.",
   },
   {
     key: "LOCAL_API_V1",
@@ -69,8 +69,8 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   },
   {
     key: "MOCK_PROVIDERS",
-    label: "Mock de proveedores externos",
-    hint: "NEXT_PUBLIC_QA_MOCK_BASE_URL (default http://localhost:4010/mock). Simula SEGIP, INFOCENTER, QR, banca, telco, Facebook, WhatsApp y digital trust.",
+    label: "Simulador de proveedores externos",
+    hint: "El simulador de SEGIP, INFOCENTER, QR, banca, telco, Facebook, WhatsApp y confianza digital. Nunca llama a un proveedor real.",
   },
 ];
 

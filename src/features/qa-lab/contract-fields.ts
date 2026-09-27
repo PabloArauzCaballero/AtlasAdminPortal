@@ -23,6 +23,10 @@ export type ContractField = {
   name: string;
   type: ContractFieldType;
   required: boolean;
+  /** Valores admitidos cuando el catálogo los enumera (`"all|risk|fraud"`). */
+  options?: string[];
+  /** Campos de un objeto anidado, cuando el catálogo los declara. */
+  fields?: ContractField[];
 };
 
 export type ContractReading = {
@@ -44,6 +48,8 @@ const TYPES: Record<string, ContractFieldType> = {
   decimal: "number",
   integer: "integer",
   int: "integer",
+  "positive integer": "integer",
+  "positive int": "integer",
   boolean: "boolean",
   bool: "boolean",
   array: "array",
@@ -56,16 +62,29 @@ function normalizeType(raw: string): ContractFieldType {
   return TYPES[raw.trim().toLowerCase()] ?? "unknown";
 }
 
-/** `"string|required"` → tipo y obligatoriedad. Sin sufijo, se asume opcional. */
-function readShorthand(value: string): {
-  type: ContractFieldType;
-  required: boolean;
-} {
-  const [type, ...flags] = value.split("|");
-  return {
-    type: normalizeType(type),
-    required: flags.some((flag) => flag.trim().toLowerCase() === "required"),
-  };
+const FLAGS = new Set(["required", "optional", "recommended"]);
+
+/**
+ * `"string|required"` → tipo y obligatoriedad. Sin sufijo, se asume opcional.
+ *
+ * El catálogo sembrado usa además otras dos formas que antes se leían mal: una marca sola
+ * (`"optional"`, `"required"`, `"recommended"`, sin tipo) y una lista de valores (`"all|risk|fraud"`),
+ * que es un enum y no un tipo desconocido.
+ */
+function readShorthand(value: string): Omit<ContractField, "name"> {
+  const tokens = value
+    .split("|")
+    .map((token) => token.trim())
+    .filter(Boolean);
+  const lower = tokens.map((token) => token.toLowerCase());
+  const required = lower.includes("required");
+  const rest = tokens.filter((_, index) => !FLAGS.has(lower[index]));
+  if (rest.length === 0) return { type: "unknown", required };
+  const type = normalizeType(rest[0]);
+  if (type === "unknown" && rest.length > 1) {
+    return { type: "string", required, options: rest };
+  }
+  return { type, required };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -109,19 +128,37 @@ export function readContract(schema: unknown): ContractReading {
       fields.push({ name, ...readShorthand(definition) });
       continue;
     }
-    // Un valor anidado se trata como objeto: el generador producirá `{}` para él y el operador
-    // rellenará lo que haga falta, en vez de que el campo desaparezca del payload sin avisar.
+    // Un valor anidado: si trae sus propios campos (JSON Schema o mapa abreviado) se leen, para
+    // que el generador no deje un `{}` vacío donde el contrato sí dice qué va dentro.
     if (isRecord(definition)) {
-      fields.push({
-        name,
-        type: normalizeType(String(definition.type ?? "object")),
-        required: definition.required === true,
-      });
+      fields.push(readNested(name, definition));
       continue;
     }
     fields.push({ name, type: "unknown", required: false });
   }
   return { ...empty, fields };
+}
+
+function readNested(
+  name: string,
+  definition: Record<string, unknown>,
+): ContractField {
+  const explicitType =
+    typeof definition.type === "string" ? definition.type : "object";
+  const inner = Object.fromEntries(
+    Object.entries(definition).filter(
+      ([key]) => key !== "type" && key !== "required",
+    ),
+  );
+  const nested = isRecord(definition.properties)
+    ? readContract(definition).fields
+    : readContract(inner).fields;
+  return {
+    name,
+    type: normalizeType(explicitType),
+    required: definition.required === true,
+    ...(nested.length ? { fields: nested } : {}),
+  };
 }
 
 /** Los `:parametros` de una ruta. Son obligatorios por definición: sin ellos no hay URL. */
