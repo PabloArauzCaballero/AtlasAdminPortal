@@ -1,6 +1,6 @@
 "use client";
 
-import { AUTH_MODE_OPTIONS, ENVIRONMENT_OPTIONS } from "./qa-lab-options";
+import { AUTH_MODE_OPTIONS } from "./qa-lab-options";
 import { BaseRouteSelect } from "./base-route-select";
 import { CheckBox, NumberField } from "./qa-controls";
 import { DeviceProfileField } from "./qa-device-field";
@@ -44,17 +44,6 @@ export function JourneyRunnerConfigFields({
   return (
     <>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <Field
-          label="Ambiente"
-          tooltip="Contra qué entorno corre el recorrido completo; decide el host base."
-        >
-          <Select
-            name="ambiente"
-            options={ENVIRONMENT_OPTIONS}
-            value={config.environment}
-            onChange={(valor) => onChange({ environment: valor })}
-          />
-        </Field>
         <NumberField
           label="Timeout ms por paso"
           tooltip="Milisegundos que espera cada paso antes de darlo por fallido."
@@ -80,18 +69,20 @@ export function JourneyRunnerConfigFields({
           value={config.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
-        <Field
-          label="Host URL manual"
-          tooltip="Host completo cuando la ruta base es «Host URL manual». Ej.: https://staging-api.atlas.local"
-        >
-          <Input
-            value={config.customHostUrl}
-            onChange={(event) =>
-              onChange({ customHostUrl: event.target.value })
-            }
-            placeholder="https://staging-api.atlas.local"
-          />
-        </Field>
+        {config.baseRouteKey === "CUSTOM_HOST" ? (
+          <Field
+            label="Host URL manual"
+            tooltip="Host completo a probar. Tiene que estar en la lista de hosts permitidos del portal."
+          >
+            <Input
+              value={config.customHostUrl}
+              onChange={(event) =>
+                onChange({ customHostUrl: event.target.value })
+              }
+              placeholder="https://staging-api.atlas.local"
+            />
+          </Field>
+        ) : null}
       </div>
       {config.baseRouteKey === "MOCK_PROVIDERS" ? (
         <MockScenarioFields

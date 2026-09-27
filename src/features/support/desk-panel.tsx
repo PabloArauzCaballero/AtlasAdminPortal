@@ -9,11 +9,14 @@ import { Select } from "@/shared/components/ui/input";
 import { EmptyState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
+import { useRouter } from "next/navigation";
 import {
   useClaimChannelMutation,
+  useMyDesk,
   useQueuedChannels,
   useSetPresenceMutation,
 } from "./hooks";
+import { MisConversaciones } from "./my-conversations";
 import { MessagesSquare } from "lucide-react";
 
 /**
@@ -28,9 +31,22 @@ import { MessagesSquare } from "lucide-react";
  * entienda por qué no se reparte.
  */
 export function ChatsEnEspera() {
+  const router = useRouter();
   const cola = useQueuedChannels();
+  const mia = useMyDesk();
   const presencia = useSetPresenceMutation();
   const tomar = useClaimChannelMutation();
+
+  /*
+   * Tomar lleva a la conversación. Antes el botón sólo cambiaba el estado y el chat desaparecía de
+   * la lista sin decir dónde había ido: el agente lo tenía y no sabía cómo contestar.
+   */
+  const atender = (channelId: string, caseId: string | null) =>
+    tomar.mutate(channelId, {
+      onSuccess: () => {
+        if (caseId) router.push(`/internal/support/cases/${caseId}`);
+      },
+    });
 
   if (cola.error) {
     /*
@@ -43,86 +59,95 @@ export function ChatsEnEspera() {
   const canales = cola.data?.channels ?? [];
 
   return (
-    <section className="mt-8 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <MessagesSquare className="h-4 w-4 text-atlas-muted" aria-hidden />
-          <h2 className="text-sm font-semibold text-atlas-text">
-            Conversaciones en espera
-          </h2>
-          <Badge tone={canales.length > 0 ? "warning" : "muted"}>
-            {canales.length}
-          </Badge>
+    <>
+      <MisConversaciones canales={mia.data?.channels ?? []} />
+      <section className="mt-8 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <MessagesSquare className="h-4 w-4 text-atlas-muted" aria-hidden />
+            <h2 className="text-sm font-semibold text-atlas-text">
+              Conversaciones en espera
+            </h2>
+            <Badge tone={canales.length > 0 ? "warning" : "muted"}>
+              {canales.length}
+            </Badge>
+          </div>
+          <span className="flex items-center gap-2 text-xs text-atlas-muted">
+            Mi presencia
+            <Select
+              name="presencia"
+              ariaLabel="Mi presencia"
+              compact
+              className="w-40"
+              options={PRESENCIA_OPTIONS}
+              // La presencia que tiene la base, no una supuesta: mostrar «Disponible» a quien estaba
+              // en OFFLINE hacía creer que el reparto le mandaba chats.
+              value={
+                presencia.variables ?? mia.data?.presenceState ?? "OFFLINE"
+              }
+              disabled={presencia.isPending || !mia.data}
+              onChange={(valor) => presencia.mutate(valor)}
+            />
+            <FieldTooltip
+              label="Mi presencia"
+              text="Decide si el reparto te manda conversaciones nuevas; ponte «Ausente» al salir del puesto."
+            />
+          </span>
         </div>
-        <span className="flex items-center gap-2 text-xs text-atlas-muted">
-          Mi presencia
-          <Select
-            name="presencia"
-            ariaLabel="Mi presencia"
-            compact
-            className="w-40"
-            options={PRESENCIA_OPTIONS}
-            defaultValue="AVAILABLE"
-            disabled={presencia.isPending}
-            onChange={(valor) => presencia.mutate(valor)}
+
+        {presencia.error && isAtlasApiError(presencia.error) ? (
+          <p className="text-xs text-red-700">{presencia.error.message}</p>
+        ) : null}
+
+        {canales.length === 0 ? (
+          <EmptyState
+            title="Nadie está esperando en el chat."
+            description="Las conversaciones aparecen aquí en cuanto alguien abre soporte desde la app o desde el portal de comercio y no hay agente disponible que las tome."
           />
-          <FieldTooltip
-            label="Mi presencia"
-            text="Decide si el reparto te manda conversaciones nuevas; ponte «Ausente» al salir del puesto."
-          />
-        </span>
-      </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {canales.map((canal) => (
+              <Card key={canal.channelId}>
+                <div className="space-y-2 p-4">
+                  <p className="font-mono text-xs text-atlas-text">
+                    #{canal.channelId}
+                  </p>
+                  <p className="text-xs text-atlas-muted">
+                    Esperando desde {formatDateTime(canal.requestedAt)}
+                  </p>
+                  <p className="text-xs text-atlas-muted">
+                    {canal.caseId ? (
+                      <>Expediente #{canal.caseId}</>
+                    ) : (
+                      /*
+                       * Un canal sin expediente es el fallo que la fase B2 cerró en el backend: el
+                       * chat existía y el caso no, así que la conversación no se podía medir ni
+                       * enrutar. Los que quedan son anteriores a ese arreglo.
+                       */
+                      <span className="text-amber-700">
+                        Sin expediente (canal anterior al arreglo)
+                      </span>
+                    )}
+                  </p>
+                  <Button
+                    className="h-8 w-full px-2 text-xs"
+                    isLoading={
+                      tomar.isPending && tomar.variables === canal.channelId
+                    }
+                    onClick={() => atender(canal.channelId, canal.caseId)}
+                  >
+                    Atender
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {presencia.error && isAtlasApiError(presencia.error) ? (
-        <p className="text-xs text-red-700">{presencia.error.message}</p>
-      ) : null}
-
-      {canales.length === 0 ? (
-        <EmptyState
-          title="Nadie está esperando en el chat."
-          description="Las conversaciones aparecen aquí en cuanto alguien abre soporte desde la app o desde el portal de comercio y no hay agente disponible que las tome."
-        />
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {canales.map((canal) => (
-            <Card key={canal.channelId}>
-              <div className="space-y-2 p-4">
-                <p className="font-mono text-xs text-atlas-text">
-                  #{canal.channelId}
-                </p>
-                <p className="text-xs text-atlas-muted">
-                  Esperando desde {formatDateTime(canal.requestedAt)}
-                </p>
-                <p className="text-xs text-atlas-muted">
-                  {canal.caseId ? (
-                    <>Expediente #{canal.caseId}</>
-                  ) : (
-                    /*
-                     * Un canal sin expediente es el fallo que la fase B2 cerró en el backend: el
-                     * chat existía y el caso no, así que la conversación no se podía medir ni
-                     * enrutar. Los que quedan son anteriores a ese arreglo.
-                     */
-                    <span className="text-amber-700">
-                      Sin expediente (canal anterior al arreglo)
-                    </span>
-                  )}
-                </p>
-                <Button
-                  className="h-8 w-full px-2 text-xs"
-                  isLoading={tomar.isPending}
-                  onClick={() => tomar.mutate(canal.channelId)}
-                >
-                  Atender
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {tomar.error && isAtlasApiError(tomar.error) ? (
-        <p className="text-xs text-red-700">{tomar.error.message}</p>
-      ) : null}
-    </section>
+        {tomar.error && isAtlasApiError(tomar.error) ? (
+          <p className="text-xs text-red-700">{tomar.error.message}</p>
+        ) : null}
+      </section>
+    </>
   );
 }
