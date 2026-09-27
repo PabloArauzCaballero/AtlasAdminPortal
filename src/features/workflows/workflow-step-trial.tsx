@@ -94,7 +94,7 @@ export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
       </p>
       <p className="text-[0.6875rem] leading-4 text-atlas-muted">
         Manda sólo esta llamada, con tu sesión. No recorre el flujo ni crea
-        personas: para eso usa «Ejecutar flujo con N personas».
+        personas: para eso usa «Generar y cargar» encima del árbol.
       </p>
 
       {params.length > 0 ? (
