@@ -1,13 +1,16 @@
-import { elegirOpcion } from "../../shared/option-select-helpers";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
 import type {
   QaJourneyBatchResult,
   QaJourneyRunResult,
 } from "@/features/qa-lab/journey-types";
 import { endpointFixture } from "./endpoint-fixture";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -217,14 +220,11 @@ describe("JourneyRunnerPanel · ejecución", () => {
     });
   });
 
-  it("un journey real fuera de LOCAL exige teclear EJECUTAR", async () => {
+  it("en un portal de producción un journey real exige teclear EJECUTAR", async () => {
     // Encadena escrituras reales: es el freno más importante del panel.
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: "Ambiente" }),
-      "STAGING",
-    );
 
     await userEvent.click(realButton());
 

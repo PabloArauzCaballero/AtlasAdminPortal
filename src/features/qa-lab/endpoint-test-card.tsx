@@ -1,5 +1,6 @@
 "use client";
 
+import { defaultQaEnvironment } from "./environment";
 import { useEffect, useState } from "react";
 import type { EndpointItem } from "@/features/systems/types";
 import { useAuth } from "@/shared/auth/auth-context";
@@ -226,7 +227,7 @@ function defaultRunForm(endpoint?: EndpointItem): EndpointRunFormState {
     ? getMockExamplePayload(endpoint.endpointId)
     : undefined;
   return {
-    environment: "LOCAL",
+    environment: defaultQaEnvironment(),
     // Un endpoint del mock ya trae `fullPath` absoluto (bypassa la ruta base al construir la
     // URL), pero fijar acá "Mock de proveedores externos" es lo que revela en el formulario los
     // controles de escenario/latencia del mock (gateados por `baseRouteKey`).

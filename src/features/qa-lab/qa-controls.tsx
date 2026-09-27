@@ -20,19 +20,20 @@ export function QaTargetControls({
           value={form.baseRouteKey}
           onChange={(value) => onChange({ baseRouteKey: value })}
         />
-        <Field
-          label="Host URL manual"
-          tooltip="Host completo a probar cuando la ruta base es «Host URL manual». Ej.: https://staging-api.atlas.local"
-          hint="Se usa cuando Ruta base es Host URL manual."
-        >
-          <Input
-            value={form.customHostUrl}
-            onChange={(event) =>
-              onChange({ customHostUrl: event.target.value })
-            }
-            placeholder="https://staging-api.atlas.local"
-          />
-        </Field>
+        {form.baseRouteKey === "CUSTOM_HOST" ? (
+          <Field
+            label="Host URL manual"
+            tooltip="Host completo a probar. Tiene que estar en la lista de hosts permitidos del portal."
+          >
+            <Input
+              value={form.customHostUrl}
+              onChange={(event) =>
+                onChange({ customHostUrl: event.target.value })
+              }
+              placeholder="https://staging-api.atlas.local"
+            />
+          </Field>
+        ) : null}
       </div>
       <Field
         label="Ruta/path del endpoint"

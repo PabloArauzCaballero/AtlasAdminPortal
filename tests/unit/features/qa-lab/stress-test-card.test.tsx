@@ -1,10 +1,13 @@
-import { elegirOpcion } from "../../shared/option-select-helpers";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AtlasApiError } from "@/shared/api/errors";
 import type { DirectStressResult } from "@/features/qa-lab/types";
 import { endpointFixture } from "./endpoint-fixture";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -46,11 +49,9 @@ function runButton() {
   return screen.getByRole("button", { name: /stress$/ });
 }
 
-async function selectProduction() {
-  await elegirOpcion(
-    screen.getByRole("combobox", { name: /Ambiente/ }),
-    "PRODUCTION_READONLY",
-  );
+/** El ambiente ya no se elige en pantalla: un portal de producción lo fija al renderizar. */
+function asProductionPortal() {
+  vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", "production");
 }
 
 function stressResult(
@@ -98,9 +99,8 @@ describe("StressTestCard · bloqueo de producción", () => {
   it("en producción el stress queda bloqueado y se explica por qué", async () => {
     // El backend también lo bloquea, pero el operador tiene que entender el
     // botón muerto sin abrir la consola de red.
+    asProductionPortal();
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
-
-    await selectProduction();
 
     expect(screen.getByText("Stress bloqueado")).toBeInTheDocument();
     expect(
@@ -112,8 +112,8 @@ describe("StressTestCard · bloqueo de producción", () => {
   });
 
   it("en producción ni siquiera se puede abrir la confirmación", async () => {
+    asProductionPortal();
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
-    await selectProduction();
 
     await userEvent.click(runButton());
 
@@ -121,20 +121,7 @@ describe("StressTestCard · bloqueo de producción", () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
-  it("volviendo a STAGING se desbloquea y el aviso desaparece", async () => {
-    render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
-    await selectProduction();
-
-    await elegirOpcion(
-      screen.getByRole("combobox", { name: /Ambiente/ }),
-      "STAGING",
-    );
-
-    expect(screen.queryByText("Stress bloqueado")).toBeNull();
-    expect(runButton()).toBeEnabled();
-  });
-
-  it("LOCAL y STAGING no están bloqueados de salida", () => {
+  it("fuera de producción no está bloqueado de salida", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(screen.queryByText("Stress bloqueado")).toBeNull();

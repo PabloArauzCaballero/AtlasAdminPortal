@@ -13,6 +13,7 @@ import type {
   QaTemplateDetail,
   QaTemplateSummary,
 } from "./types";
+import type { QaRunTimeline } from "./timeline-types";
 
 /**
  * Cliente de la API de control QA. Usa el MISMO `apiRequest` que el resto del portal: sesión
@@ -122,5 +123,11 @@ export function cancelQaRun(runId: string) {
   return apiRequest<{ runId: string; status: QaRunStatus }>(
     `${BASE}/runs/${encodeURIComponent(runId)}/cancel`,
     { method: "POST" },
+  );
+}
+
+export function getQaRunTimeline(runId: string) {
+  return apiRequest<QaRunTimeline>(
+    `${BASE}/runs/${encodeURIComponent(runId)}/timeline`,
   );
 }
