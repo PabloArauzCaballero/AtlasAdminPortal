@@ -1,59 +1,7 @@
 import type { ModuleExplanation } from "./view-explanations-types";
 
-/** Módulos del grupo primario de navegación (Systems Ops, catálogo, lineage, gobierno, reportes, QA). */
+/** Módulos del grupo primario de navegación (catálogo, lineage, gobierno, reportes, QA; Systems Ops vive aparte). */
 export const primaryModuleExplanations: ModuleExplanation[] = [
-  {
-    module: "Systems Ops",
-    prefixes: ["/internal/systems", "/internal/review-queue"],
-    systems:
-      "Cataloga automáticamente los endpoints, herramientas y tablas de cada backend conectado (hoy atlas-backend, extensible a otros vía el campo backendService), infiere qué datos afecta cada endpoint escaneando el código fuente y monitorea la salud viva de las herramientas críticas con probes periódicos.",
-    business:
-      "Es el inventario operativo de la plataforma: permite saber qué existe, quién lo usa, qué rompe si falla y detectar incidentes antes de que un cliente los sufra. Sin este módulo, cada cambio o caída se descubriría a ciegas.",
-    views: {
-      "/internal/systems/dashboard": {
-        systems:
-          "Consolida `/systems/dashboard` (contadores del catálogo) y `/systems/health/tools` (salud viva) en una sola pantalla con refresco automático.",
-        business:
-          "Vista de un vistazo para el equipo de plataforma: si algo crítico está caído o el catálogo quedó desactualizado, se ve aquí primero.",
-      },
-      "/internal/systems/endpoints": {
-        systems:
-          "Lista paginada del catálogo `system_endpoint_catalog`, con bloque, método, ruta, riesgo, PII y estado de revisión. Las rutas de este backend se descubren escaneando sus controladores; las del motor de decisión y el ERP llegan del manifiesto que cada uno publica sobre sí mismo.",
-        business:
-          "Inventario de todas las operaciones que expone el ECOSISTEMA, no sólo este backend: qué acciones existen en cada producto, cuáles tocan datos sensibles y cuáles requieren pruebas antes de un release.",
-      },
-      "/internal/systems/tools/health": {
-        systems:
-          "Estado vivo por herramienta (`isHealthy` de `/systems/health/tools`): probes reales a PostgreSQL/Redis y verificación de configuración para el resto. Es la misma señal que dispara las notificaciones de servicio caído/recuperado.",
-        business:
-          "Responde '¿está funcionando lo que la operación necesita ahora mismo?' — si el buró, WhatsApp o la base están caídos, aquí se confirma el incidente que avisó la campana.",
-      },
-      "/internal/systems/network-health": {
-        systems:
-          "Cruza `/systems/health/network`: el probe vivo de cada bloque del ecosistema (Atlas Backend, Decision Engine, ERP) con el estado de la federación de su catálogo. Un bloque federa publicando su propio manifiesto de rutas y tablas; esta vista dice si eso ocurrió, cuándo y con qué resultado.",
-        business:
-          "Responde '¿está completo el ecosistema?', que no es lo mismo que '¿responde cada pieza?'. Un bloque en pie que lleva días sin aportar su catálogo se veía antes igual que uno sano, y por eso el catálogo de datos parecía completo cuando sólo contenía un producto de tres.",
-      },
-      "/internal/systems/decision-engine/artifacts": {
-        systems:
-          "Cruza `/v1/deployments?status=ACTIVE` con `/v1/artifacts` del motor de decisión a través de `/systems/decision-engine/artifacts`: cada fila es un despliegue vigente con su versión, ambiente, autor y reparto de tráfico.",
-        business:
-          "Contesta desde el portal '¿qué política está decidiendo crédito ahora mismo?', que es la primera pregunta de cualquier investigación sobre una aprobación o un rechazo. Antes había que entrar al motor, con otra sesión y otro producto.",
-      },
-      "/internal/systems/tools": {
-        systems:
-          "Catálogo de herramientas técnicas (`system_tool_catalog`): tipo, proveedor, variables de entorno requeridas y criticidad. No muestra secretos.",
-        business:
-          "Mapa de dependencias externas e internas: qué servicios de terceros usa la plataforma y cuáles son imprescindibles para operar.",
-      },
-      "/internal/review-queue": {
-        systems:
-          "Cola de ítems auto-detectados (endpoints, tablas, impactos, herramientas) con estado NEEDS_REVIEW; aprobar/rechazar actualiza `review_status` y registra el evento.",
-        business:
-          "Control humano sobre lo que detectan los escáneres automáticos: nada se da por confiable para QA, gobierno o reportes hasta que una persona lo valida.",
-      },
-    },
-  },
   {
     module: "Catálogo y metadata",
     prefixes: [
@@ -230,6 +178,12 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
     business:
       "Permite verificar que la plataforma se comporta como se espera antes de exponer cambios a clientes, y deja evidencia auditable de cada prueba.",
     views: {
+      "/internal/qa/aprender": {
+        systems:
+          "Catálogo de recorridos guiados del laboratorio de pruebas, filtrable por tema y con buscador. Cada recorrido se sigue sobre las pantallas reales y el avance de cada persona se guarda para retomarlo.",
+        business:
+          "Que alguien nuevo aprenda a probar la plataforma a su ritmo, sin depender de que otra persona le explique. No ejecuta pruebas por sí mismo ni deja evidencia de calidad: eso lo hacen el laboratorio y las ejecuciones.",
+      },
       "/internal/qa/lab": {
         systems:
           "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda.",

@@ -1,3 +1,5 @@
+import { readdirSync, statSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   moduleExplanations,
@@ -161,5 +163,73 @@ describe("view-explanations · integridad de la configuración", () => {
     expect(names).toContain("Operaciones");
     expect(names).toContain("Administración");
     expect(new Set(names).size).toBe(names.length);
+  });
+});
+
+describe("view-explanations · cobertura de las pantallas del portal", () => {
+  /** Las dos pantallas públicas no montan el armazón y por eso no pintan explicación. */
+  const PUBLICAS = new Set(["/internal/login", "/internal/recuperar-acceso"]);
+
+  function rutasDelPortal(dir: string, base: string): string[] {
+    const rutas: string[] = [];
+    for (const entrada of readdirSync(dir)) {
+      const ruta = path.join(dir, entrada);
+      if (statSync(ruta).isDirectory()) {
+        rutas.push(...rutasDelPortal(ruta, base));
+      } else if (entrada === "page.tsx") {
+        const relativa = path.relative(base, path.dirname(ruta));
+        // Un segmento dinámico (`[caseId]`) se prueba con un valor cualquiera.
+        rutas.push(
+          `/${relativa.split(path.sep).join("/")}`.replace(/\[[^\]]+\]/g, "1"),
+        );
+      }
+    }
+    return rutas;
+  }
+
+  it("toda pantalla interna tiene explicación de su vista, no sólo del módulo", () => {
+    // T4.3 del plan de procesos (2026-09-26): 20 pantallas salían sin texto o con el del módulo
+    // a secas. Esta prueba impide que una pantalla nueva vuelva a nacer muda.
+    const appDir = path.resolve("src/app");
+    const sinTexto = rutasDelPortal(path.join(appDir, "internal"), appDir)
+      .filter((ruta) => !PUBLICAS.has(ruta))
+      .filter((ruta) => !resolveExplanation(ruta)?.view);
+
+    expect(sinTexto).toEqual([]);
+  });
+
+  it("la portada sólo explica la portada: su prefijo es la raíz y no se apropia de otras", () => {
+    expect(resolveExplanation("/internal")?.module.module).toBe("Inicio");
+    expect(resolveExplanation("/internal/no-existe")).toBeNull();
+  });
+
+  it("las campañas dicen que se crean en el ERP", () => {
+    const resolved = resolveExplanation("/internal/notifications/campaigns/12");
+
+    expect(resolved?.module.module).toBe("Operaciones");
+    expect(resolved?.view?.business).toContain("ERP");
+  });
+
+  it("los textos nuevos no hablan de «backend» ni de «endpoint»", () => {
+    const nuevas = [
+      "/internal",
+      "/internal/search",
+      "/internal/flows",
+      "/internal/support",
+      "/internal/views",
+      "/internal/merchant-users",
+      "/internal/events",
+      "/internal/external-data",
+      "/internal/operations/partners",
+      "/internal/operations/portfolio",
+      "/internal/qa/aprender",
+      "/internal/settings/partner-contracts",
+      "/internal/notifications/campaigns",
+    ];
+    for (const ruta of nuevas) {
+      const view = resolveExplanation(ruta)?.view;
+      const texto = `${view?.business ?? ""} ${view?.systems ?? ""}`;
+      expect(texto, ruta).not.toMatch(/backend|endpoint/i);
+    }
   });
 });

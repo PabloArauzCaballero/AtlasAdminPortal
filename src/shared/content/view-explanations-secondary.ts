@@ -1,107 +1,7 @@
 import type { ModuleExplanation } from "./view-explanations-types";
 
-/** Módulos del grupo secundario de navegación (operaciones, esquema, proveedores, seguridad, administración). */
+/** Módulos del grupo secundario de navegación (esquema, proveedores, seguridad, administración; Operaciones vive aparte). */
 export const secondaryModuleExplanations: ModuleExplanation[] = [
-  {
-    module: "Operaciones",
-    prefixes: [
-      "/internal/forms",
-      "/internal/operations",
-      "/internal/jobs",
-      "/internal/alerts",
-      "/internal/notifications",
-      "/internal/my-notifications",
-      "/internal/exports",
-      "/internal/files",
-    ],
-    systems:
-      "Herramientas del día a día del equipo interno: cola de trabajo de casos, jobs programados del backend, alertas operativas, mensajería interna (broadcasts, plantillas y preferencias) y exportaciones de datos con trazabilidad.",
-    business:
-      "Concentra la operación diaria: qué casos hay que atender, qué procesos automáticos corrieron, qué avisos llegaron y cómo se comunica el equipo — todo auditable.",
-    views: {
-      "/internal/operations/pending-contacts": {
-        systems:
-          "Lista de `customer_contact_methods` con status `unverified` (GET /operations/customers/pending-contact-verification). El botón dispara POST /customer-onboarding/:id/contact-verification/request con rol interno: el backend genera y manda el código, con cooldown por destino.",
-        business:
-          "Los usuarios de la app que se quedaron sin confirmar el correo o el teléfono, y un botón para reenviarles el código sin pedirles que vuelvan a empezar.",
-      },
-      "/internal/operations/work-queue": {
-        systems:
-          "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",
-        business:
-          "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
-      },
-      "/internal/files": {
-        systems:
-          "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
-        business:
-          "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
-      },
-      "/internal/operations/runtime-jobs": {
-        systems:
-          "Disparo manual de los 5 procesos de mantenimiento del backend (outbox, eventos, expiración de sesiones, retención y recálculo de calidad). Cada corrida arranca en dry-run y queda registrada con su jobRunId.",
-        business:
-          "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
-      },
-      // El matcher de vistas resuelve por prefijo (`startsWith`), así que las
-      // subrutas con `customerId` dinámico (`/investigation-summary`, `/audit`)
-      // no pueden tener clave propia y caen todas en esta entrada.
-      "/internal/operations/customers": {
-        systems:
-          "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend. La pestaña de Auditoría lee `/operations/audit/customer/:id/feed` — paginado por cursor real sobre la vista `audit_event_feed`, que unifica las 8 fuentes de auditoría — y ofrece como modo secundario la ruta `/operations/audit/customer/:id`, deprecada en el backend, que aporta un resumen por evento y filtros por tipo y fecha a cambio de un conteo aproximado.",
-        business:
-          "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas, incluida la auditoría completa: qué le pasó al cliente, cuándo y quién lo hizo — la evidencia que respalda una decisión de riesgo, fraude o compliance.",
-      },
-      "/internal/operations/risk-assessments": {
-        systems:
-          "Detalle de una evaluación de riesgo por `riskAssessmentRunId`: explicación legible (decisión, factores a favor/en contra, reglas disparadas) más la traza cruda — corrida, resultado con scores por dimensión, contribuciones de features y snapshot. No tiene listado: se llega por enlace desde la investigación del cliente.",
-        business:
-          "Responde 'por qué el sistema decidió esto' con evidencia: el analista puede sostener, revertir o auditar una decisión de riesgo sin pedirle el desglose al equipo técnico.",
-      },
-      "/internal/operations/sessions": {
-        systems:
-          "Resumen de investigación de una sesión (`OperationsSessionsController`): sesión, cliente y dispositivo, más la telemetría asociada — snapshots del dispositivo, reputación de IP, SIM, eventos de autenticación y permisos, GPS, acciones, observaciones y auditoría. Enlace directo por sessionId: no hay listado de sesiones.",
-        business:
-          "Responde '¿esta sesión es legítima?' en una pantalla: si la conexión venía por VPN/proxy/Tor, si el teléfono estaba rooteado o era un emulador, cuántos logins fallaron y qué permisos se denegaron. Por privacidad nunca muestra la ubicación exacta, solo si hubo captura de GPS.",
-      },
-      "/internal/jobs": {
-        systems:
-          "Ejecuciones de jobs internos (`system_job_runs`): estado, duración, errores y reintentos.",
-        business:
-          "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres); si uno falla, se ve aquí antes de que falten datos.",
-      },
-      "/internal/alerts": {
-        systems:
-          "Alertas operativas generadas por reglas del backend, con severidad, estado y asignación.",
-        business:
-          "Los avisos que requieren acción humana, separados del ruido, con responsable y seguimiento.",
-      },
-      "/internal/notifications": {
-        systems:
-          "Administración de mensajería: broadcasts a usuarios internos, plantillas versionadas y preferencias por canal.",
-        business:
-          "Cómo la plataforma comunica — desde un aviso de mantenimiento hasta la notificación de un incidente — con formato consistente.",
-      },
-      "/internal/my-notifications": {
-        systems:
-          "Bandeja personal alimentada por el mismo feed de la campana; marca leído por ítem o en bloque y se sincroniza con la salud de herramientas.",
-        business:
-          "El historial personal de avisos: qué me notificaron, cuándo, y qué sigue pendiente de atender.",
-      },
-      "/internal/exports": {
-        systems:
-          "Solicitudes de exportación con estado, alcance y descarga controlada; cada export queda auditado.",
-        business:
-          "Sacar datos de la plataforma de forma trazable: quién exportó qué y para qué, sin copias silenciosas.",
-      },
-      "/internal/forms": {
-        systems:
-          "Definiciones de formularios versionadas que consumen los flujos de captura del backend.",
-        business:
-          "Los formularios que ve el cliente, administrados y versionados para cambiar sin romper capturas históricas.",
-      },
-    },
-  },
   {
     module: "Esquema de datos",
     prefixes: ["/internal/schema"],
@@ -132,12 +32,18 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
   },
   {
     module: "Proveedores externos",
-    prefixes: ["/internal/external-providers"],
+    prefixes: ["/internal/external-providers", "/internal/external-data"],
     systems:
       "Catálogo y salud de los proveedores externos (buró, SEGIP, telco, WhatsApp…), con políticas de costo, auditorías de consumo y solicitudes registradas request a request.",
     business:
       "Controla la relación con terceros: si responden, cuánto cuestan y qué se les consultó — para negociar contratos y detectar abusos o caídas.",
     views: {
+      "/internal/external-data": {
+        systems:
+          "Para un cliente concreto: qué consentimientos dio, qué se le consultó a cada proveedor, qué se obtuvo y con qué evidencia se decidió, en el orden real del proceso. Incluye una vista previa del costo antes de pedir una consulta nueva.",
+        business:
+          "Responder a un cliente o a un auditor «qué sabemos de esta persona por terceros y con qué permiso». Sin consentimiento no se consulta. Los costos, cortes y acuerdos de servicio de cada proveedor no están aquí sino en «Proveedores externos».",
+      },
       "/internal/external-providers/audits": {
         systems:
           "Auditorías de consumo por proveedor: volúmenes, latencias y errores agregados por período.",
@@ -199,6 +105,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
           "Catálogo de decisiones delegadas al Decision Engine. Cada fila declara qué artefacto la resuelve, qué versión se ejecuta, qué endpoints del backend la disparan y en qué punto del recorrido ocurre. Las opciones del selector las publica el propio motor (GET /v1/artifacts), así que no se puede asignar un código que no exista.",
         business:
           "Cambiar la política que evalúa un crédito o una identidad deja de ser un despliegue: lo decide Riesgo desde aquí. Por ejemplo, si Riesgo publica una versión nueva del scoring BNPL, esta pantalla es donde se decide si entra en producción o se sigue con la anterior — y donde se ve, sin abrir el código, qué se rompe si se cambia.",
+      },
+      "/internal/settings/partner-contracts": {
+        systems:
+          "El contrato de afiliación estándar para comercios, publicado por versiones: al publicar una nueva, la anterior se archiva y se conserva tal cual.",
+        business:
+          "El texto bajo el que opera un comercio al que nadie le negoció un contrato propio, para no habilitar a cobrar a alguien sin comisión, plazos ni devoluciones pactados por escrito. Un contrato negociado con un comercio concreto no se fija aquí: se lleva en el ERP.",
       },
       "/internal/settings/consent-documents": {
         systems:

@@ -116,6 +116,14 @@ export const queryKeys = {
     ["notifications", "templates", params] as const,
   notificationPreferences: (customerId: string) =>
     ["notifications", "preferences", customerId] as const,
+  notificationCampaigns: (params: unknown) =>
+    ["notifications", "campaigns", params] as const,
+  notificationCampaign: (campaignId: string) =>
+    ["notifications", "campaign", campaignId] as const,
+  notificationCampaignMessages: (campaignId: string, params: unknown) =>
+    ["notifications", "campaign", campaignId, "messages", params] as const,
+  notificationSegments: (status: string) =>
+    ["notifications", "segments", status] as const,
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,

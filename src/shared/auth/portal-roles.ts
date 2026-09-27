@@ -48,9 +48,24 @@ export const PARTNER_OPERATIONS_ROLES = [
   "platform_admin",
 ] as const;
 
+/**
+ * `NotificationCampaignsController` y `NotificationAudienceSegmentsController`: leer campañas y
+ * segmentos lo puede `internal_operator`; pausar, reanudar y cancelar sólo `admin`/`platform_admin`.
+ * Crear, editar y programar también existen allí, pero son del ERP: este portal observa y frena.
+ */
+export const CAMPAIGN_READ_ROLES = [
+  "internal_operator",
+  "admin",
+  "platform_admin",
+  "system",
+] as const;
+export const CAMPAIGN_OPERATE_ROLES = ["admin", "platform_admin"] as const;
+
 export const INTERNAL_PORTAL_ROLE_LIST: string[] = [...INTERNAL_PORTAL_ROLES];
 export const PARTNER_OPERATIONS_ROLE_LIST: string[] = [
   ...PARTNER_OPERATIONS_ROLES,
 ];
 export const SUPPORT_ADMIN_ROLE_LIST: string[] = [...SUPPORT_ADMIN_ROLES];
 export const RUNTIME_JOB_ROLE_LIST: string[] = [...RUNTIME_JOB_ROLES];
+export const CAMPAIGN_READ_ROLE_LIST: string[] = [...CAMPAIGN_READ_ROLES];
+export const CAMPAIGN_OPERATE_ROLE_LIST: string[] = [...CAMPAIGN_OPERATE_ROLES];

@@ -10,6 +10,8 @@ export type ModuleExplanation = {
   module: string;
   /** Prefijos de ruta que pertenecen al módulo. */
   prefixes: string[];
+  /** Sus prefijos sólo valen para la ruta idéntica (la portada, cuyo prefijo es la raíz). */
+  exact?: boolean;
   systems: string;
   business: string;
   /** Explicaciones por vista, keyed por prefijo de ruta (gana el match más largo). */
