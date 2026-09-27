@@ -18,6 +18,8 @@ import {
   IdentidadYAgendaSection,
 } from "./investigation-summary-sections";
 import { ListCard } from "./list-card";
+import { CustomerDecisionsPanel } from "./customer-decisions-panel";
+import { RecalculateRiskAction } from "./recalculate-risk-action";
 import {
   useInvestigationSummary,
   useResendContactVerificationMutation,
@@ -40,8 +42,10 @@ export function InvestigationSummaryPage({
         description="Perfil, contactos, consentimientos, última evaluación de riesgo y casos abiertos — vista consolidada para revisión manual o de fraude."
       />
       <BusinessContextNote>
-        Esta vista solo lee. Para decidir un caso, volvé a la Cola de trabajo y
-        usá la acción &quot;Decidir&quot; sobre la fila correspondiente.
+        Aquí se investiga y se actúa sobre el cliente: cribado de listas
+        restrictivas, decisión de habilitación y recálculo del riesgo. Los casos
+        abiertos se deciden desde la Cola de trabajo o desde las colas de
+        revisión manual y de fraude.
       </BusinessContextNote>
       {summary.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {summary.error ? (
@@ -108,6 +112,12 @@ export function InvestigationSummaryPage({
 
           <UltimaEvaluacionDeRiesgo
             evaluacion={summary.data.latestRiskAssessment}
+          />
+          <RecalculateRiskAction customerId={customerId} />
+
+          <CustomerDecisionsPanel
+            customerId={customerId}
+            currentStatus={summary.data.customer.status}
           />
 
           {/*

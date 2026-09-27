@@ -143,6 +143,10 @@ export const queryKeys = {
     ["support", "channel", channelId, "transcript"] as const,
   investigationSummary: (customerId: string) =>
     ["operations", "investigation-summary", customerId] as const,
+  behaviorSummary: (customerId: string) =>
+    ["operations", "behavior-summary", customerId] as const,
+  caseQueue: (queue: string, params: unknown) =>
+    ["operations", "case-queue", queue, params] as const,
   sessionInvestigationSummary: (sessionId: string) =>
     ["operations", "session-investigation-summary", sessionId] as const,
   customerAuditFeed: (customerId: string) =>
