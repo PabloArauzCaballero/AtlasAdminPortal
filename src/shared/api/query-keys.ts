@@ -34,6 +34,13 @@ export const queryKeys = {
   flowReviewQueue: (params: unknown) =>
     ["systems", "flows-review-queue", params] as const,
   flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
+  processes: ["processes", "list"] as const,
+  process: (code: string) => ["processes", "detail", code] as const,
+  processWiring: (code: string) => ["processes", "wiring", code] as const,
+  processInstances: (code: string, params: unknown) =>
+    ["processes", "instances", code, params] as const,
+  processInstanceProgress: (code: string, instanceId: string) =>
+    ["processes", "instance-progress", code, instanceId] as const,
   flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
     ["systems", "flow-module-graph", systemCode, module, roles] as const,
   testSuite: (suiteId: string) => ["systems", "test-suite", suiteId] as const,
@@ -127,6 +134,13 @@ export const queryKeys = {
   myNotifications: (params: unknown) => ["my-notifications", params] as const,
   myNotificationsUnreadCount: ["my-notifications", "unread-count"] as const,
   workQueue: (params: unknown) => ["operations", "work-queue", params] as const,
+  creditProducts: ["credit", "products"] as const,
+  creditApplication: (applicationId: string) =>
+    ["credit", "application", applicationId] as const,
+  customerCreditLine: (customerId: string) =>
+    ["credit", "customer-line", customerId] as const,
+  customerCreditApplications: (customerId: string) =>
+    ["credit", "customer-applications", customerId] as const,
   pendingContactVerification: [
     "operations",
     "pending-contact-verification",
@@ -143,8 +157,18 @@ export const queryKeys = {
   supportAgents: ["support", "agents"] as const,
   supportTranscript: (channelId: string) =>
     ["support", "channel", channelId, "transcript"] as const,
+  supportKnowledgeArticles: (params: unknown) =>
+    ["support", "knowledge", "articles", params] as const,
+  supportKnowledgeVersions: (params: unknown) =>
+    ["support", "knowledge", "versions", params] as const,
+  supportKnowledgeVersion: (versionId: string) =>
+    ["support", "knowledge", "version", versionId] as const,
   investigationSummary: (customerId: string) =>
     ["operations", "investigation-summary", customerId] as const,
+  behaviorSummary: (customerId: string) =>
+    ["operations", "behavior-summary", customerId] as const,
+  caseQueue: (queue: string, params: unknown) =>
+    ["operations", "case-queue", queue, params] as const,
   sessionInvestigationSummary: (sessionId: string) =>
     ["operations", "session-investigation-summary", sessionId] as const,
   customerAuditFeed: (customerId: string) =>
@@ -201,4 +225,15 @@ export const queryKeys = {
     ["expedientes", "concesiones", expedienteId, nodoId] as const,
   expedienteVisibilidad: (expedienteId: string, nodoId: string) =>
     ["expedientes", "visibilidad", expedienteId, nodoId] as const,
+
+  // Cartera: préstamos, solicitudes y calificación. Todo cuelga de `cartera` para que un cobro,
+  // un reverso o un castigo invaliden de una vez la ficha, la lista del cliente y su calificación.
+  cartera: ["cartera"] as const,
+  carteraPrestamo: (loanId: string) => ["cartera", "prestamo", loanId] as const,
+  carteraCliente: (customerId: string, parte: string) =>
+    ["cartera", "cliente", customerId, parte] as const,
+  carteraCalificacionPrestamo: (loanId: string, parte: string) =>
+    ["cartera", "calificacion-prestamo", loanId, parte] as const,
+  carteraEscala: ["cartera", "escala"] as const,
+  carteraLista: (filters: unknown) => ["cartera", "lista", filters] as const,
 };

@@ -1,5 +1,7 @@
+import { creditModuleExplanations } from "./view-explanations-credit";
 import { operationsModuleExplanation } from "./view-explanations-operations";
 import { primaryModuleExplanations } from "./view-explanations-primary";
+import { processesModuleExplanations } from "./view-explanations-processes";
 import { secondaryModuleExplanations } from "./view-explanations-secondary";
 import {
   homeModuleExplanation,
@@ -20,6 +22,8 @@ export const moduleExplanations: ModuleExplanation[] = [
   operationsModuleExplanation,
   ...secondaryModuleExplanations,
   searchModuleExplanation,
+  ...processesModuleExplanations,
+  ...creditModuleExplanations,
 ];
 
 export type ResolvedExplanation = {
@@ -27,6 +31,23 @@ export type ResolvedExplanation = {
   /** Vista específica si hay match; null cuando solo aplica la explicación de módulo. */
   view: ViewExplanation | null;
 };
+
+/**
+ * ¿`pathname` cae bajo `prefix`? Un prefijo sin corchetes se compara con `startsWith`, como
+ * siempre. Uno con `[param]` se compara por segmentos y el corchete vale cualquier segmento: es
+ * lo que permite dar texto propio a `/internal/procesos/[code]/instancias`, cuyo código cambia.
+ */
+export function matchesPrefix(pathname: string, prefix: string): boolean {
+  if (!prefix.includes("[")) return pathname.startsWith(prefix);
+  const path = pathname.split("/");
+  const pattern = prefix.split("/");
+  if (path.length < pattern.length) return false;
+  return pattern.every((segment, index) =>
+    /^\[[^\]]+\]$/.test(segment)
+      ? Boolean(path[index])
+      : segment === path[index],
+  );
+}
 
 /**
  * Resuelve la explicación de módulo y vista para un pathname. Gana el prefijo
@@ -54,7 +75,10 @@ export function resolveExplanation(
   let bestView: ViewExplanation | null = null;
   let bestViewPrefix = "";
   for (const [prefix, view] of Object.entries(bestModule.views)) {
-    if (pathname.startsWith(prefix) && prefix.length > bestViewPrefix.length) {
+    if (
+      matchesPrefix(pathname, prefix) &&
+      prefix.length > bestViewPrefix.length
+    ) {
       bestView = view;
       bestViewPrefix = prefix;
     }

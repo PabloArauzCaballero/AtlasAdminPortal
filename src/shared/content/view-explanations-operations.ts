@@ -28,6 +28,12 @@ export const operationsModuleExplanation: ModuleExplanation = {
       business:
         "Seguir y, si hace falta, frenar lo que se le está mandando a los clientes: una campaña con un error en el texto o que sale a la audiencia equivocada se pausa o se cancela desde aquí. No crea, no edita, no programa ni duplica campañas, ni hace envíos de prueba: todo eso se hace en el ERP, que es donde nacen.",
     },
+    "/internal/support/knowledge": {
+      systems:
+        "Crea artículos y versiones con POST /admin/support/knowledge/articles y /articles/:id/versions, y las mueve con /versions/:id/submit-review, /approve y /publish. El servidor impide que el autor apruebe su propia versión y exige riesgo o cumplimiento para los equipos de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. La lista de artículos (GET /articles, cualquier estado y audiencia) y la cola de versiones por estado (GET /versions) son lecturas del personal; antes de cada paso se lee la versión completa con GET /versions/:id, y la versión propia en revisión no ofrece «Aprobar».",
+      business:
+        "Las respuestas oficiales que ven clientes, comercios y el equipo. Se redactan, las revisa y aprueba otra persona, y sólo entonces se publican; lo publicado no se edita, se reemplaza por otra versión y queda la historia de qué decía cada día.",
+    },
     "/internal/support/agents": {
       systems:
         "Quién tiene perfil de agente en la mesa de soporte, con su nivel, cola y capacidad. Sin ese perfil nadie puede atender casos, ni siquiera un administrador. Dar de baja apaga el perfil y conserva su historia.",
@@ -88,6 +94,18 @@ export const operationsModuleExplanation: ModuleExplanation = {
       business:
         "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
     },
+    "/internal/operations/manual-review-cases": {
+      systems:
+        "Cola de revisión manual sola, paginada por cursor (GET /operations/manual-review-cases). Mismas filas y misma acción de decidir que la cola combinada, sin su coste de paginar por posición.",
+      business:
+        "Las altas que esperan a una persona, sin mezclarlas con fraude, para recorrerlas enteras aunque sean muchas.",
+    },
+    "/internal/operations/fraud-cases": {
+      systems:
+        "Cola de casos de fraude sola, paginada por cursor (GET /operations/fraud-cases). La decisión sigue restringida a analistas de fraude y administración.",
+      business:
+        "Qué patrones de fraude hay abiertos y sobre qué clientes, para que el equipo de fraude los atienda por orden.",
+    },
     "/internal/files": {
       systems:
         "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
@@ -99,6 +117,12 @@ export const operationsModuleExplanation: ModuleExplanation = {
         "Disparo manual de los 5 procesos de mantenimiento del backend (outbox, eventos, expiración de sesiones, retención y recálculo de calidad). Cada corrida arranca en dry-run y queda registrada con su jobRunId.",
       business:
         "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
+    },
+    "/internal/operations/loans": {
+      systems:
+        "Cartera paginada con filtros de estado, tramo y código (GET /operations/loans) y ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
+      business:
+        "Lo que pasa después de aprobar: entregar el dinero, anotar lo que el cliente paga, deshacer un cobro mal aplicado y reconocer una deuda como pérdida — siempre con motivo y con tu usuario en el historial.",
     },
     // El matcher de vistas resuelve por prefijo (`startsWith`), así que las
     // subrutas con `customerId` dinámico (`/investigation-summary`, `/audit`)

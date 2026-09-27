@@ -62,6 +62,28 @@ const QUEUE_JOBS: readonly RuntimeJobDefinition[] = [
     ],
   },
   {
+    code: "sweep-loan-delinquency",
+    title: "Recalcular la mora",
+    systems:
+      "Recorre la cartera viva del inquilino de la sesión, actualiza días de atraso y tramo de cada préstamo, y encola una observación por cada ventana de cosecha (30, 90 y 180 días) ya cumplida. Es el job `sweep_loan_delinquency`.",
+    business:
+      "La mora corre sola cada hora; adelantarla sirve antes de un cierre o tras una incidencia, para que calificación, cobranza y el Motor lean el atraso de hoy y no el de la última pasada.",
+    destructive: false,
+    path: "/operations/loans/delinquency-sweep",
+    // El cuerpo se valida en modo estricto (sólo `limit`): un `dryRun` de más es un 400.
+    supportsDryRun: false,
+    fields: [
+      {
+        name: "limit",
+        label: "Límite de préstamos",
+        hint: "Entre 1 y 1000. Vacío usa el valor por defecto (200).",
+        placeholder: "200",
+        min: 1,
+        max: 1000,
+      },
+    ],
+  },
+  {
     code: "process-outbox",
     title: "Procesar outbox",
     systems:

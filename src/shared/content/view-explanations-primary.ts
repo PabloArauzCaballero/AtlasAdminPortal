@@ -186,7 +186,7 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/qa/lab": {
         systems:
-          "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda.",
+          "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda. En Journeys, cada corrida enseña su diario (`GET /systems/qa/runs/:runId/events`, sondeo por cursor) y su manifiesto de evidencia, y se listan las campañas precargadas.",
         business:
           "Reproducir un caso puntual en segundos — para soporte, debugging o validar un fix — sin herramientas externas.",
       },

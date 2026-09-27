@@ -140,6 +140,38 @@ export type SupportCaseDetail = SupportCase & {
 export type SupportCaseTimeline = {
   events: SupportCaseEvent[];
   assignments: SupportAssignment[];
+  /** Enlaces en los dos sentidos: los que salen de este caso y los que otros casos le apuntan. */
+  links?: SupportCaseLink[];
+};
+
+export type SupportCaseLinkType =
+  | "DUPLICATE_OF"
+  | "RELATED_TO"
+  | "CAUSED_BY"
+  | "PARENT_OF"
+  | "CHILD_OF"
+  | "FOLLOW_UP_OF"
+  | "PROBLEM_OF"
+  | "SECURITY_INCIDENT_OF";
+
+export type SupportCaseLink = {
+  caseId: string;
+  linkedCaseId: string;
+  linkType: SupportCaseLinkType;
+  note: string | null;
+};
+
+export type LinkCaseInput = {
+  linkedCaseId: string;
+  linkType: SupportCaseLinkType;
+  note?: string;
+};
+
+/** `brokenAt` son posiciones (desde 0) de los mensajes donde la cadena dejó de cuadrar. */
+export type ChannelIntegrity = {
+  valid: boolean;
+  checked: number;
+  brokenAt: number[];
 };
 
 /** El motivo tal como lo ve quien clasifica: con la cola y la sensibilidad a las que manda. */

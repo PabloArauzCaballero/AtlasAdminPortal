@@ -1,6 +1,7 @@
 export type RuntimeJobCode =
   | "dispatch-loan-outcomes"
   | "sweep-debt-ratings"
+  | "sweep-loan-delinquency"
   | "process-outbox"
   | "process-events"
   | "expire-stale-sessions"
@@ -43,7 +44,8 @@ export type RuntimeJobBody = {
  * job que el backend no garantiza.
  */
 export type RuntimeJobRun = {
-  jobRunId: string;
+  /** `null` en los jobs que no pasan por el registro de corridas (declaran su propia `path`). */
+  jobRunId: string | null;
   status: string;
   result: unknown;
 };

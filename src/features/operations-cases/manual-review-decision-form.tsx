@@ -22,6 +22,25 @@ import {
 import { useDecideManualReviewCaseMutation } from "./hooks";
 import { AvisoDeExpediente } from "@/features/files/expediente-notice";
 import type { WorkQueueItem } from "./types";
+import Link from "next/link";
+import { creditCaseHref } from "@/features/credit/credit-rules";
+
+/*
+ * Defensa: la cola ya no ofrece «Decidir» en un caso `CR-…`, pero si llega el 409 (una fila con
+ * otra forma, o el backend cambia el criterio) se dice dónde se decide en vez del código crudo.
+ */
+function isCreditCaseError(error: unknown): boolean {
+  return (
+    isAtlasApiError(error) &&
+    error.message.startsWith("MANUAL_REVIEW_ES_DE_CREDITO")
+  );
+}
+
+function creditCaseMessage(message: string): string {
+  return message.startsWith("MANUAL_REVIEW_ES_DE_CREDITO")
+    ? "Este caso es de una solicitud de crédito: se decide en la solicitud, que al resolverse cierra también el caso."
+    : message;
+}
 
 export function ManualReviewDecisionForm({
   item,
@@ -103,13 +122,21 @@ export function ManualReviewDecisionForm({
             title="No se pudo registrar la decisión"
             description={
               isAtlasApiError(decide.error)
-                ? decide.error.message
+                ? creditCaseMessage(decide.error.message)
                 : "Error inesperado."
             }
             requestId={
               isAtlasApiError(decide.error) ? decide.error.requestId : undefined
             }
           />
+        ) : null}
+        {isCreditCaseError(decide.error) && creditCaseHref(item) ? (
+          <Link
+            href={creditCaseHref(item) ?? "#"}
+            className="text-sm text-atlas-accent underline"
+          >
+            Abrir la solicitud de crédito para decidirla
+          </Link>
         ) : null}
         {decide.isSuccess ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">

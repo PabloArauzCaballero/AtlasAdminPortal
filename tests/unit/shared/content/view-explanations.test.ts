@@ -2,6 +2,7 @@ import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  matchesPrefix,
   moduleExplanations,
   resolveExplanation,
 } from "@/shared/content/view-explanations";
@@ -231,5 +232,35 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
       const texto = `${view?.business ?? ""} ${view?.systems ?? ""}`;
       expect(texto, ruta).not.toMatch(/backend|endpoint/i);
     }
+  });
+});
+
+describe("resolveExplanation · segmentos dinámicos", () => {
+  it("la ficha de un proceso y sus casos tienen texto propio aunque el código cambie", () => {
+    const lista = resolveExplanation("/internal/procesos");
+    const ficha = resolveExplanation(
+      "/internal/procesos/account_signup_to_login",
+    );
+    const casos = resolveExplanation(
+      "/internal/procesos/account_signup_to_login/instancias",
+    );
+
+    expect(lista?.module.module).toBe("Procesos");
+    expect(ficha?.module.module).toBe("Procesos");
+    expect(casos?.module.module).toBe("Procesos");
+    expect(new Set([lista?.view, ficha?.view, casos?.view]).size).toBe(3);
+    expect(casos?.view?.business).toContain("casos");
+  });
+
+  it("un corchete sólo cubre un segmento que existe", () => {
+    expect(
+      matchesPrefix("/internal/procesos", "/internal/procesos/[code]"),
+    ).toBe(false);
+    expect(
+      matchesPrefix("/internal/procesos/", "/internal/procesos/[code]"),
+    ).toBe(false);
+    expect(
+      matchesPrefix("/internal/procesos/x", "/internal/procesos/[code]"),
+    ).toBe(true);
   });
 });

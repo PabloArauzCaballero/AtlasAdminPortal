@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PersonaStepResults } from "./persona-step-results";
+import { RunEventsPanel, RunEvidencePanel } from "./run-audit-panels";
 import { RunStepCounts } from "./run-step-counts";
 import { useCancelQaRun, useQaRun } from "./run-hooks";
 import {
@@ -183,6 +184,8 @@ export function RunProgress({
         <RootCauses run={data} />
         <RunStepCounts run={data} />
         <PersonaStepResults runId={data.runId} live={!terminal} />
+        <RunEventsPanel runId={data.runId} live={!terminal} />
+        <RunEvidencePanel runId={data.runId} status={data.status} />
       </CardContent>
       <ConfirmDialog
         open={confirmCancel}

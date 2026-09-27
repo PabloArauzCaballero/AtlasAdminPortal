@@ -2,6 +2,7 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   ActionLog,
+  ActionLogFilterCatalog,
   ActionLogListResponse,
   MongoLogListResponse,
 } from "./types";
@@ -35,6 +36,18 @@ export async function getActionLogsByRequest(requestId: string) {
     `/systems/action-logs/by-request/${encodeURIComponent(requestId)}`,
   );
   return normalizePaginatedResponse<ActionLog>(response, ACTION_LOG_KEYS).items;
+}
+
+/**
+ * Los filtros que admite la bitácora, con sus valores. Los conjuntos cerrados (método, riesgo)
+ * salen del esquema de consulta del servidor y los abiertos (módulo, tipo de actor) de la propia
+ * bitácora: la pantalla no los copia a mano, así no ofrece un valor que respondería 400.
+ */
+export async function getActionLogFilterCatalog(): Promise<ActionLogFilterCatalog> {
+  const response = await apiRequest<Partial<ActionLogFilterCatalog> | null>(
+    "/systems/action-logs/filter-catalog",
+  );
+  return { fields: Array.isArray(response?.fields) ? response.fields : [] };
 }
 
 export function listMongoLogs(query: QueryParams) {
