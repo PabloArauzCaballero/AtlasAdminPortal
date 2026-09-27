@@ -12,6 +12,11 @@ const checks = [
       // Cliente del endpoint portal-owned de progreso de tutoriales (same-origin,
       // Next Route Handler): no pasa por el cliente de AtlasBackend a propósito.
       "src/features/qa-tutorials/progress-remote.ts",
+      // Generador de datos de prueba del QA Lab: el cliente va al reenvío del MISMO origen
+      // (`/api/qa-fakers`) y el reenvío, en el servidor, al mock de proveedores externos. Ninguno
+      // de los dos habla con AtlasBackend ni lleva credenciales.
+      "src/features/qa-lab/fakers/faker-client.ts",
+      "src/features/qa-lab/fakers/faker-proxy.ts",
       // El PUT de una subida al expediente va al almacén de objetos con una URL prefirmada, no a
       // AtlasBackend. El cliente de la API no sirve aquí y además rompería la firma: añade
       // `Authorization` y `credentials`, y S3 firma el conjunto de cabeceras. El backend sigue
@@ -32,7 +37,7 @@ const checks = [
     allowed: new Set([
       "src/shared/auth/session-storage.ts",
       "src/shared/lib/local-search-history.ts",
-      // Caché (no fuente de verdad) del progreso de tutoriales de QA LAB.
+      // Progreso de tutoriales de QA LAB (fuente: el navegador) y recorrido en curso.
       "src/features/qa-tutorials/progress-storage.ts",
     ]),
   },

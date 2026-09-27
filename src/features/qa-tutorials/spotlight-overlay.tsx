@@ -18,6 +18,7 @@ import {
   type Spotlight,
 } from "./spotlight-mask";
 import { TutorialCard } from "./tutorial-card";
+import type { NextInPath } from "./tutorial-card-parts";
 import type { EnginePhase } from "./tutorial-engine";
 import type { TutorialStep } from "./types";
 
@@ -217,6 +218,7 @@ export function SpotlightOverlay(props: Readonly<OverlayProps>) {
           onClose={props.onClose}
           onLocate={props.onLocate}
           canLocate={props.canLocate}
+          nextInPath={props.nextInPath}
         />
       </div>
     </div>,
@@ -259,4 +261,5 @@ type OverlayProps = {
   onLocate: () => void;
   canLocate: boolean;
   onMissingChange: (missing: boolean) => void;
+  nextInPath?: NextInPath;
 };

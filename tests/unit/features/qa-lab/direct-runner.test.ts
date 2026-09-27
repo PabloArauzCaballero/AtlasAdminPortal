@@ -44,7 +44,7 @@ describe("executeEndpointDirectly · allowlist de host", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("allowlist");
+    expect(result.error).toContain("lista de direcciones permitidas");
   });
 
   it("no filtra el token de sesión al bloquear: el preview del request va redactado", async () => {
@@ -70,7 +70,7 @@ describe("executeEndpointDirectly · allowlist de host", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("allowlist");
+    expect(result.error).toContain("lista de direcciones permitidas");
     expect(JSON.stringify(result)).not.toContain(REAL_ACCESS_TOKEN);
   });
 
@@ -81,7 +81,7 @@ describe("executeEndpointDirectly · allowlist de host", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("allowlist");
+    expect(result.error).toContain("lista de direcciones permitidas");
   });
 
   it("bloquea el host ajeno disfrazado de userinfo (https://api.atlas.internal@evil…)", async () => {
@@ -94,7 +94,7 @@ describe("executeEndpointDirectly · allowlist de host", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("allowlist");
+    expect(result.error).toContain("lista de direcciones permitidas");
   });
 
   it("ningún argumento de fetch contiene el token cuando el host está bloqueado", async () => {
@@ -220,7 +220,7 @@ describe("executeEndpointDirectly · respuestas del backend", () => {
       runInputFixture(),
     );
 
-    expect(result.error).toContain("Timeout");
+    expect(result.error).toContain("tiempo máximo de espera");
   });
 
   it("expone el request id que devuelve el backend", async () => {
@@ -257,7 +257,7 @@ describe("executeEndpointDirectly · puertas de seguridad operativa", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("permitir mutación real");
+    expect(result.error).toContain("Permitir cambios reales");
   });
 
   it("bloquea cualquier ejecución real contra producción readonly", async () => {
@@ -267,7 +267,7 @@ describe("executeEndpointDirectly · puertas de seguridad operativa", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("readonly");
+    expect(result.error).toContain("sólo deja previsualizar");
   });
 
   it("permite el dry-run contra producción readonly, sin fetch", async () => {
@@ -288,7 +288,7 @@ describe("executeEndpointDirectly · puertas de seguridad operativa", () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.error).toContain("local/testing");
+    expect(result.error).toContain("tu máquina o en un portal de pruebas");
   });
 
   it("no ejecuta si faltan path params: avisa en vez de pegarle a una URL con ':id'", async () => {

@@ -12,9 +12,9 @@ export function Funcional() {
       title="¿El endpoint responde lo que promete?"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Tarjeta <strong>&ldquo;2. Prueba funcional del endpoint&rdquo;</strong>.
-        Un solo disparo: configuras el request, defines qué esperas de vuelta y
-        el lab compara.
+        Pestaña <strong>&ldquo;Funcional&rdquo;</strong> de la prueba unitaria.
+        Un solo disparo desde tu navegador: configuras la petición, defines qué
+        esperas de vuelta y el lab compara. No se guarda en ningún historial.
       </p>
       <StepList
         items={[
@@ -22,20 +22,24 @@ export function Funcional() {
             title: "Elige el endpoint",
             body: (
               <>
-                Usa el buscador. Al seleccionarlo se autocompletan payload,
-                headers, query y path params desde el esquema del catálogo, y se
-                pintan sus badges: método, riesgo, si es{" "}
-                <strong>destructivo</strong> o contiene <strong>PII</strong>.
+                Usa el buscador. Al elegirla, los datos de entrada se rellenan
+                con el primer caso válido del generador de datos (semilla
+                elegida) según los campos obligatorios del catálogo, y se pintan
+                sus avisos: método, riesgo, si es <strong>destructiva</strong> o
+                lleva <strong>datos personales</strong>.
               </>
             ),
           },
           {
-            title: "Ajusta el request y aplica un preset",
+            title: "Genera datos o usa el ejemplo",
             body: (
               <>
-                Si el endpoint tiene un <strong>payload de ejemplo</strong>,
-                aparece el botón &ldquo;Usar payload de ejemplo&rdquo;. Retoca
-                el JSON de entrada, headers, query y path params a gusto.
+                &ldquo;Generar datos de prueba&rdquo; crea casos válidos, en el
+                límite o inválidos con personas del generador (semilla con
+                nombre = mismas personas; &ldquo;Personas nuevas&rdquo; = lote
+                nuevo). Si la operación tiene ejemplo, aparece &ldquo;Usar el
+                ejemplo: …&rdquo;, que se rellena con los mismos datos. Si el
+                generador no responde, el lab lo dice y no inventa nada.
               </>
             ),
           },
@@ -55,9 +59,9 @@ export function Funcional() {
             title: "Previsualiza, luego ejecuta",
             body: (
               <>
-                Con dry-run ves el request armado. Al destildarlo el botón pasa
-                a &ldquo;Ejecutar request real&rdquo;; endpoints mutantes o
-                destructivos fuera de <code>LOCAL</code> piden teclear{" "}
+                Con &ldquo;Sólo previsualizar&rdquo; ves la petición armada. Al
+                desmarcarlo el botón pasa a &ldquo;Enviar petición real&rdquo;;
+                un cambio real fuera de <code>LOCAL</code> pide teclear{" "}
                 <code className="font-mono text-atlas-accent">EJECUTAR</code>.
               </>
             ),
@@ -90,10 +94,12 @@ export function Stress() {
       title="¿Aguanta la carga — y a qué precio en latencia?"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Tarjeta <strong>&ldquo;3. Prueba de stress por endpoint&rdquo;</strong>.
-        Lanza una ráfaga de peticiones con pacing por RPS y rampa de subida, y
-        mide percentiles. Producción queda bloqueada; el techo duro es de{" "}
-        <strong>10.000</strong> requests.
+        Pestaña <strong>&ldquo;Carga&rdquo;</strong> de la prueba unitaria.
+        Lanza desde tu navegador una ráfaga de peticiones a un ritmo fijo, con
+        subida gradual, y mide percentiles. Producción queda bloqueada; el techo
+        duro es de <strong>10.000</strong> peticiones. Con &ldquo;Datos
+        distintos por petición&rdquo; cada una lleva una persona distinta del
+        generador.
       </p>
 
       <h3 className="text-base font-semibold text-atlas-text">
@@ -110,13 +116,13 @@ export function Stress() {
           </thead>
           <tbody>
             <DialRow
-              name="RPS objetivo"
-              ctrl="Requests por segundo que se intentan sostener."
+              name="Peticiones por segundo"
+              ctrl="Ritmo que se intenta sostener (RPS)."
               range="1 – 500"
             />
             <DialRow
-              name="Concurrencia"
-              ctrl="Requests en vuelo simultáneas."
+              name="Peticiones a la vez"
+              ctrl="Peticiones esperando respuesta al mismo tiempo."
               range="1 – 200"
             />
             <DialRow
@@ -125,12 +131,12 @@ export function Stress() {
               range="1 – 3600 s"
             />
             <DialRow
-              name="Ramp-up"
-              ctrl="Sube el RPS gradualmente en vez de arrancar a full."
+              name="Subida gradual"
+              ctrl="Sube el ritmo poco a poco en vez de arrancar a tope."
               range="0 – duración"
             />
             <DialRow
-              name="Max requests"
+              name="Tope de peticiones"
               ctrl="Techo duro. Si RPS × duración lo supera, la corrida se recorta aquí."
               range="1 – 10.000"
             />
@@ -142,10 +148,11 @@ export function Stress() {
         Umbrales de aprobación
       </h3>
       <p className="text-sm text-atlas-muted">
-        Cada umbral que pongas en &gt; 0 se evalúa como <em>threshold</em> (pasa
-        / revisar): <strong>max error %</strong>,{" "}
-        <strong>min throughput RPS</strong>, <strong>max avg</strong>,{" "}
-        <strong>max p95</strong>, <strong>max p99</strong> (ms). Así una corrida
+        Cada umbral que pongas en &gt; 0 se evalúa (pasa / revisar):{" "}
+        <strong>errores tolerados</strong>, <strong>rendimiento mínimo</strong>,{" "}
+        <strong>tiempo medio máximo</strong> y los topes del{" "}
+        <strong>p95</strong> y <strong>p99</strong> (el tiempo por debajo del
+        cual queda el 95 % o el 99 % de las peticiones). Así una corrida
         &ldquo;verde&rdquo; lo es contra criterios que tú fijaste, no a ojo.
       </p>
 
@@ -171,8 +178,8 @@ export function Stress() {
         El gráfico es de <strong>una</strong> corrida y se dibuja al terminar.
         No existe (todavía) una tendencia que compare{" "}
         <strong>totales entre corridas pasadas</strong> ni una barra de progreso{" "}
-        <strong>en vivo mientras corre</strong>. Para comparar históricos hoy
-        usas la lista de <strong>Carga QA</strong> (§07), corrida por corrida.
+        <strong>en vivo mientras corre</strong>, y la corrida no se guarda:
+        descarga el registro si necesitas compararla después.
       </Note>
     </Section>
   );

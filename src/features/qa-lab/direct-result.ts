@@ -73,7 +73,7 @@ export function buildMissingParamsDirectResult(
     dryRun: false,
     requestHeaders: redactedHeaders(built.headers),
     warnings,
-    error: `Faltan path params: ${built.unresolvedPathParams.join(", ")}`,
+    error: `Faltan datos de la ruta: ${built.unresolvedPathParams.join(", ")}. Escríbelos en «Datos de la ruta» antes de enviar.`,
   };
 }
 
@@ -124,7 +124,10 @@ export function findRequestId(headers: Headers): string | undefined {
 
 function normalizeNetworkError(error: unknown): string {
   if (error instanceof DOMException && error.name === "AbortError") {
-    return "Timeout de ejecución alcanzado.";
+    return "La operación no respondió dentro del tiempo máximo de espera.";
+  }
+  if (error instanceof TypeError) {
+    return `No se pudo conectar con la dirección destino (${error.message}): red caída, dirección inalcanzable o bloqueada por el navegador.`;
   }
   return error instanceof Error ? error.message : "Error de red";
 }

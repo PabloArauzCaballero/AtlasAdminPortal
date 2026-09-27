@@ -94,17 +94,17 @@ describe("parseEndpointRunForm · bloques JSON", () => {
   });
 
   it.each([
-    ["payload", "Payload"],
-    ["queryParams", "Query params"],
-    ["pathParams", "Path params"],
-    ["headers", "Headers"],
+    ["payload", "Datos de entrada"],
+    ["queryParams", "Datos de consulta"],
+    ["pathParams", "Datos de la ruta"],
+    ["headers", "Cabeceras extra"],
   ])("nombra el bloque %s cuando su JSON está roto", (field, label) => {
     expect(errorOfRun({ [field]: "{ roto" })).toContain(label);
   });
 
   it("rechaza un bloque que no es objeto", () => {
     expect(errorOfRun({ payload: "[1,2]" })).toBe(
-      "Payload debe ser un objeto JSON.",
+      "Datos de entrada debe ser un objeto JSON.",
     );
   });
 
@@ -141,7 +141,7 @@ describe("parseEndpointRunForm · host manual", () => {
   it("exige un host cuando la base es CUSTOM_HOST", () => {
     expect(
       errorOfRun({ baseRouteKey: "CUSTOM_HOST", customHostUrl: "  " }),
-    ).toBe("Host URL es requerido.");
+    ).toBe("Escribe la dirección manual.");
   });
 
   it("rechaza un host que no parsea como URL", () => {
@@ -150,7 +150,7 @@ describe("parseEndpointRunForm · host manual", () => {
         baseRouteKey: "CUSTOM_HOST",
         customHostUrl: "no-es-una-url",
       }),
-    ).toBe("Host URL no es valido.");
+    ).toBe("La dirección manual no es válida.");
   });
 
   it.each(["javascript:alert(1)", "file:///etc/passwd", "ftp://host/x"])(
@@ -158,7 +158,7 @@ describe("parseEndpointRunForm · host manual", () => {
     (url) => {
       expect(
         errorOfRun({ baseRouteKey: "CUSTOM_HOST", customHostUrl: url }),
-      ).toBe("Host URL debe usar http o https.");
+      ).toBe("La dirección manual tiene que empezar por http:// o https://.");
     },
   );
 
@@ -270,13 +270,13 @@ describe("parseEndpointRunForm · respuesta esperada", () => {
 
   it("reporta un JSON esperado malformado", () => {
     expect(errorOfRun({ expectedJsonSubset: "{ roto" })).toContain(
-      "JSON esperado",
+      "Fragmento esperado",
     );
   });
 
   it("reporta cabeceras esperadas malformadas", () => {
     expect(errorOfRun({ expectedHeaders: "{ roto" })).toContain(
-      "Headers esperados",
+      "Cabeceras esperadas",
     );
   });
 

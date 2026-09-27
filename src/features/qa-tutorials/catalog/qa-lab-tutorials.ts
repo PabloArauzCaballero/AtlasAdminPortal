@@ -1,5 +1,6 @@
 import type { TutorialDefinition } from "../types";
 import { decisionTreeTutorial } from "./qa-lab-tree-tutorial";
+import { functionalTutorial } from "./qa-lab-functional-tutorial";
 
 /**
  * Recorridos del Laboratorio de testing (`/internal/qa/lab`).
@@ -22,9 +23,9 @@ const overview: TutorialDefinition = {
   tool: "Panorama",
   title: "Primeros pasos en QA LAB",
   description:
-    "Qué es QA LAB y cómo se relacionan endpoints, pruebas funcionales, de carga y journeys.",
+    "Qué es QA LAB y cómo se relacionan las operaciones, las pruebas funcionales, las de carga y los recorridos.",
   level: "basic",
-  version: 2,
+  version: 3,
   route: LAB,
   estimatedMinutes: 4,
   goal: "Entender la plataforma desde cero",
@@ -33,7 +34,7 @@ const overview: TutorialDefinition = {
       id: "welcome",
       title: "Bienvenido a QA LAB",
       content:
-        "QA LAB te deja comprobar que la API del negocio funciona antes de publicar un cambio.\n\nSin escribir código puedes: probar un endpoint (¿responde bien?), medir cuánto aguanta bajo carga, y encadenar varios endpoints para simular un flujo real.",
+        "QA LAB te deja comprobar que la API del negocio funciona antes de publicar un cambio.\n\nSin escribir código puedes: probar una operación (¿responde bien?), medir cuánto aguanta bajo carga, y encadenar varias para simular un flujo real. Los datos de persona los inventa el generador de datos de prueba: no hace falta escribirlos.",
       example:
         "Piensa en QA LAB como el banco de pruebas del taller: enciendes el motor antes de sacar el coche a la calle.",
       nextRoute: UNIT,
@@ -43,9 +44,9 @@ const overview: TutorialDefinition = {
       target: "qa-lab-tabs",
       title: "Tres formas de mirar una prueba",
       content:
-        "«Prueba unitaria» comprueba UN endpoint. «Journey» encadena VARIOS simulando un caso de negocio. «Árbol de decisión» dibuja el recorrido real del cliente.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
+        "«Prueba unitaria» comprueba UNA operación. «Journey» encadena VARIAS simulando un caso de negocio. «Árbol de decisión» dibuja el recorrido real del cliente.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
       example:
-        "¿Se cae el login? → Prueba unitaria del endpoint de login. ¿Falla el alta completa de un cliente? → Journey que encadena crear cliente + sesión + riesgo.",
+        "¿Se cae el login? → Prueba unitaria de la operación de login. ¿Falla el alta completa de un cliente? → Journey que encadena crear cliente + sesión + riesgo.",
       position: "bottom",
     },
     {
@@ -53,103 +54,11 @@ const overview: TutorialDefinition = {
       target: "qa-lab-endpoint-picker",
       title: "Aquí eliges qué probar",
       content:
-        "Busca el endpoint por ruta, módulo o acción, y pulsa «Probar» en su fila. El catálogo viene del backend: sólo aparecen endpoints reales.",
+        "Busca la operación por ruta, módulo o acción, y pulsa «Probar» en su fila. El catálogo viene del backend: sólo aparecen operaciones reales.",
       example:
-        "Escribe «login» para filtrar los endpoints de autenticación, o «health» para el de salud del servicio.",
+        "Escribe «login» para filtrar las operaciones de autenticación, o «health» para la de salud del servicio.",
       position: "top",
       waitForElement: true,
-    },
-  ],
-};
-
-const functional: TutorialDefinition = {
-  id: "qa-lab-functional",
-  module: "Laboratorio",
-  tab: "Prueba unitaria",
-  tool: "Prueba funcional",
-  title: "Probar un endpoint (funcional)",
-  description: "Ejecuta un endpoint real y comprueba que responde lo esperado.",
-  level: "basic",
-  version: 2,
-  route: LAB,
-  estimatedMinutes: 5,
-  goal: "Probar una API",
-  steps: [
-    {
-      id: "what",
-      title: "¿Qué es una prueba funcional?",
-      content:
-        "Comprueba que un endpoint hace lo correcto: que responde, con el código de estado correcto y con los datos esperados.\n\nEs la pregunta más básica de QA: «¿esto funciona?».",
-      example:
-        'Probar GET /health espera un 200 con {status:"ok"}. Si devuelve 500, el servicio está caído.',
-      nextRoute: `${UNIT}&sub=funcional`,
-    },
-    {
-      id: "pick",
-      target: "qa-lab-endpoint-picker",
-      title: "Elige el endpoint",
-      content:
-        "Busca el endpoint en la tabla y pulsa «Probar» en su fila. Al elegirlo aparece abajo la tarjeta de prueba con su método, su nivel de riesgo y el cuerpo de ejemplo.",
-      example:
-        "Escribe «health» en el buscador: es el endpoint más inofensivo para practicar.",
-      position: "top",
-      requiredAction: {
-        type: "element-appears",
-        targetId: "qa-lab-functional-card",
-      },
-      validation: {
-        hint: "escribe «health» en el buscador y pulsa el botón «Probar» de la fila que aparezca.",
-      },
-    },
-    {
-      id: "review",
-      target: "qa-lab-functional-card",
-      title: "Revisa la configuración",
-      content:
-        "La tarjeta arma la petición por ti (ruta, método, cuerpo de ejemplo). Los datos sensibles se muestran enmascarados: nunca verás tokens ni contraseñas en claro.",
-      example:
-        "Para un POST, el «Payload de entrada» ya trae un cuerpo de ejemplo válido; puedes ajustarlo antes de ejecutar.",
-      position: "top",
-      waitForElement: true,
-    },
-    {
-      id: "run",
-      target: "qa-lab-run-functional",
-      title: "Ejecuta la prueba",
-      content:
-        "Pulsa el botón resaltado. Con «dry-run» marcado sólo previsualiza la petición; desmarcado, la envía de verdad contra el ambiente elegido y espera la respuesta.",
-      example:
-        "En modo dry-run previsualizas la petición sin ejecutarla; desmarca dry-run para lanzarla de verdad.",
-      position: "top",
-      requiredAction: {
-        type: "element-appears",
-        targetId: "qa-lab-functional-result",
-      },
-      validation: {
-        hint: "pulsa el botón resaltado («Previsualizar request» o «Ejecutar request real») y confirma en la ventana que aparece. Si prefieres no hacerlo ahora, pulsa «Omitir paso».",
-      },
-      optional: true,
-    },
-    {
-      id: "read",
-      target: "qa-lab-functional-result",
-      title: "Interpreta el resultado",
-      content:
-        "Mira el código de estado y el tiempo de respuesta:\n\n200 → salió bien.\n401 → falta autenticación o credenciales inválidas.\n404 → la ruta no existe.\n500 → error interno del servidor (el problema está en backend, no en tu prueba).",
-      example:
-        "Si esperabas 200 y ves 401: revisa que tu sesión tenga permisos, o que el endpoint no requiera un token que caducó.",
-      position: "top",
-      waitForElement: true,
-      optional: true,
-      relatedErrorCodes: ["HTTP_401", "HTTP_404", "HTTP_500"],
-    },
-    {
-      id: "next",
-      title: "¿Y ahora qué?",
-      content:
-        "Si pasó: prueba también la carga (pestaña «Carga») para saber si aguanta muchos usuarios.\n\nSi falló: usa la ayuda contextual del error para entender la causa y corregirla.",
-      example:
-        "Un endpoint que responde 200 con un usuario pero 503 con 300 en paralelo pasa la funcional y falla la de carga: ambas importan.",
     },
   ],
 };
@@ -161,9 +70,9 @@ const stress: TutorialDefinition = {
   tool: "Prueba de carga",
   title: "Medir la carga (stress)",
   description:
-    "Comprueba cuántos usuarios simultáneos aguanta un endpoint sin degradarse.",
+    "Comprueba cuántas peticiones seguidas aguanta una operación sin degradarse.",
   level: "intermediate",
-  version: 2,
+  version: 3,
   route: LAB,
   estimatedMinutes: 6,
   goal: "Probar rendimiento bajo carga",
@@ -172,18 +81,19 @@ const stress: TutorialDefinition = {
       id: "what",
       title: "¿Para qué sirve el stress?",
       content:
-        "Una API puede funcionar perfecta con un usuario y caerse con mil. La prueba de carga lanza muchas peticiones a la vez para ver si el endpoint se mantiene rápido y estable.",
+        "Una API puede funcionar perfecta con un usuario y caerse con mil. La prueba de carga lanza muchas peticiones desde tu navegador para ver si la operación se mantiene rápida y estable. No se guarda en ningún historial: descarga el registro si lo necesitas.",
       example:
-        "Útil antes de una campaña: si esperas 500 clientes entrando a la vez, comprueba que el login aguanta 500 peticiones concurrentes.",
+        "Útil antes de una campaña: si esperas muchos clientes entrando a la vez, comprueba que el login aguanta ese ritmo.",
       nextRoute: UNIT,
     },
     {
       id: "pick",
       target: "qa-lab-endpoint-picker",
-      title: "Primero, elige un endpoint",
+      title: "Primero, elige una operación",
       content:
-        "La prueba de carga se hace sobre un endpoint concreto. Elígelo en la tabla pulsando «Probar» en su fila.",
-      example: "Para practicar, «health»: es inofensivo y responde rápido.",
+        "La prueba de carga se hace sobre una operación concreta. Elígela en la tabla pulsando «Probar» en su fila.",
+      example:
+        "Para practicar, escribe «health» y elige GET /api/v1/health: es inofensiva y responde rápido.",
       position: "top",
       requiredAction: {
         type: "element-appears",
@@ -198,9 +108,9 @@ const stress: TutorialDefinition = {
       target: "qa-lab-stress-card",
       title: "Configura la carga",
       content:
-        "Esta es la pestaña «Carga». Los campos que importan, con el nombre que ves en pantalla:\n\n• RPS objetivo: cuántas peticiones por segundo se intentan sostener.\n• Concurrencia: cuántas pueden estar en vuelo a la vez.\n• Duración y Ramp-up: cuánto dura la corrida y cuánto tarda en llegar a la carga máxima.\n• Max error % y Max p95 ms: los umbrales para aprobar o reprobar la corrida.",
+        "Esta es la pestaña «Carga». Los campos que importan, con el nombre que ves en pantalla:\n\n• «Peticiones por segundo»: el ritmo que se intenta sostener.\n• «Peticiones a la vez»: cuántas pueden esperar respuesta al mismo tiempo.\n• «Duración (s)» y «Subida gradual (s)»: cuánto dura y cuánto tarda en llegar al ritmo pedido.\n• «Errores tolerados (%)» y «Tope del p95 (ms)»: los umbrales para aprobar. El p95 es el tiempo por debajo del cual queda el 95 % de las peticiones.\n• «Datos distintos por petición»: cada petición lleva una persona distinta del generador; úsalo en operaciones de alta.\n\nUna carga real que cambia datos fuera de tu máquina pide escribir «EJECUTAR».",
       example:
-        "5 RPS con concurrencia 5 durante 30 s y Max p95 de 2000 ms (los valores por defecto) es un sondeo seguro para empezar.",
+        "5 peticiones por segundo, 5 a la vez, durante 30 s y tope del p95 de 2000 ms (los valores por defecto) es un sondeo seguro para empezar.",
       position: "top",
       nextRoute: `${UNIT}&sub=carga`,
       waitForElement: true,
@@ -209,9 +119,9 @@ const stress: TutorialDefinition = {
       id: "read",
       title: "Cómo leer el resultado",
       content:
-        "A medida que la prueba procesa peticiones, la latencia se dibuja en tiempo real. Fíjate en el p95 y en el porcentaje de errores:\n\nSi el p95 supera tu umbral (línea roja) o aparecen errores 5xx bajo carga, el endpoint no aguanta ese volumen.",
+        "El gráfico de abajo es un EJEMPLO animado. El de tu prueba se dibuja cuando la carga TERMINA, no mientras corre: un punto por segundo, la línea sólida es el p95 de ese segundo y la punteada la media; un punto rojo es un segundo en el que hubo errores.\n\nNo hay línea de umbral: el resumen de arriba dice si el p95 y los errores quedaron dentro de tus topes.",
       example:
-        "En el gráfico, los puntos rojos son peticiones que superan el p95. Unos pocos picos aislados son normales; una nube de rojos significa degradación.",
+        "Unos pocos puntos altos aislados son normales; muchos puntos rojos seguidos significan que la operación no aguanta ese ritmo.",
       demo: "latency",
       relatedErrorCodes: ["STRESS_THRESHOLD_EXCEEDED"],
     },
@@ -227,7 +137,7 @@ const journey: TutorialDefinition = {
   description:
     "Simula un caso real encadenando varios endpoints y reutilizando datos entre pasos.",
   level: "advanced",
-  version: 2,
+  version: 3,
   route: LAB,
   estimatedMinutes: 7,
   goal: "Crear una prueba de interfaz/flujo",
@@ -236,7 +146,7 @@ const journey: TutorialDefinition = {
       id: "what",
       title: "¿Qué es un journey?",
       content:
-        "Un journey encadena varios endpoints en orden, pasando datos de una respuesta a la siguiente. Reproduce lo que hace un usuario o un proceso completo, no una sola llamada.",
+        "Un journey encadena varias operaciones en orden, pasando datos de una respuesta a la siguiente. Reproduce lo que hace un usuario o un proceso completo, no una sola llamada.",
       example:
         "Journey «Alta de cliente»: 1) crear cliente → 2) tomar su id de la respuesta → 3) abrir sesión con ese id → 4) consultar su riesgo.",
       nextRoute: `${LAB}?tab=journey`,
@@ -246,7 +156,7 @@ const journey: TutorialDefinition = {
       target: "qa-lab-journey-panel",
       title: "Recorridos precargados y editor de pasos",
       content:
-        "Esta es la pestaña «Journey». Arriba están los recorridos listos: «Ejecutar» lanza N personas en el servidor, cada una con su cuenta. Abajo, plegado, el editor de pasos arma a mano UN recorrido para diagnosticarlo: eliges endpoint, defines el cuerpo y tomas valores de un paso anterior para el siguiente.",
+        "Esta es la pestaña «Journey». Arriba están los recorridos listos: «Ejecutar» lanza N personas en el servidor, cada una con su cuenta. Abajo, plegado, el editor de pasos arma a mano UN recorrido para diagnosticarlo: eliges la operación, defines los datos y tomas valores de un paso anterior para el siguiente. Las personas del editor salen del generador de datos con la semilla elegida.",
       example:
         "El paso 1 crea un cliente y guarda `customerId` de la respuesta; el paso 2 lo reutiliza como `{{customerId}}` en la ruta de la sesión.",
       position: "top",
@@ -265,7 +175,7 @@ const journey: TutorialDefinition = {
 
 export const qaLabTutorials: readonly TutorialDefinition[] = [
   overview,
-  functional,
+  functionalTutorial,
   stress,
   journey,
   decisionTreeTutorial,

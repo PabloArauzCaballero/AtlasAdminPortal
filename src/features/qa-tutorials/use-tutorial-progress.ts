@@ -8,10 +8,10 @@ import { readProgressCache, writeProgressCache } from "./progress-storage";
 import type { TutorialProgress, TutorialStatus } from "./types";
 
 /**
- * Progreso del usuario con backend como fuente de verdad y una caché local del
- * navegador como aceleración: se pinta la caché al instante (`initialData`) y
- * se reconcilia con el servidor; si el servidor falla, se sigue mostrando la
- * caché.
+ * Progreso del usuario. La fuente es el NAVEGADOR (almacenamiento local): la copia del servidor vive en
+ * el `/tmp` del contenedor del portal y se pierde en cada despliegue, así que no puede mandar. Al
+ * leer se fusionan las dos quedándose, por tutorial, con la actividad más reciente; al guardar se
+ * escribe primero aquí y el servidor es un respaldo que puede fallar sin deshacer nada.
  */
 export function useTutorialProgress() {
   const { user } = useAuth();
@@ -25,7 +25,9 @@ export function useTutorialProgress() {
     enabled: Boolean(user),
     initialData: () => readProgressCache(userId),
     queryFn: async () => {
-      const items = await fetchRemoteProgress(userId);
+      const local = readProgressCache(userId);
+      const remote = await fetchRemoteProgress(userId).catch(() => []);
+      const items = mergeProgress(local, remote);
       writeProgressCache(userId, items);
       return items;
     },
@@ -43,15 +45,14 @@ export function useTutorialProgress() {
       writeProgressCache(userId, next);
       return { previous };
     },
-    onError: (_error, _progress, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(queryKey, context.previous);
-        writeProgressCache(userId, context.previous);
-      }
-    },
+    // Si el respaldo del servidor falla, lo guardado en el navegador se queda: es la fuente.
     onSuccess: (items) => {
-      queryClient.setQueryData(queryKey, items);
-      writeProgressCache(userId, items);
+      const merged = mergeProgress(
+        queryClient.getQueryData<TutorialProgress[]>(queryKey) ?? [],
+        items,
+      );
+      queryClient.setQueryData(queryKey, merged);
+      writeProgressCache(userId, merged);
     },
   });
 
@@ -87,6 +88,31 @@ export function useTutorialProgress() {
     statusFor,
     saveProgress,
   };
+}
+
+function activityOf(item: TutorialProgress): string {
+  return (
+    item.lastActivityAt ??
+    item.completedAt ??
+    item.skippedAt ??
+    item.startedAt ??
+    ""
+  );
+}
+
+/** Por tutorial, gana el registro con la actividad más reciente. */
+export function mergeProgress(
+  local: readonly TutorialProgress[],
+  remote: readonly TutorialProgress[],
+): TutorialProgress[] {
+  const byId = new Map<string, TutorialProgress>();
+  for (const item of [...remote, ...local]) {
+    const current = byId.get(item.tutorialId);
+    if (!current || activityOf(item) >= activityOf(current)) {
+      byId.set(item.tutorialId, item);
+    }
+  }
+  return [...byId.values()];
 }
 
 function mergeOne(

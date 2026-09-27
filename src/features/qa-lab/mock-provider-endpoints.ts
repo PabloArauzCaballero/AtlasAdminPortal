@@ -11,7 +11,9 @@ import { getQaMockProvidersBaseUrl } from "./base-routes";
  * inventados. Los payloads de ejemplo usan los nombres de campo que
  * `AtlasExternalProvidersMock/src/domain/derive.mjs` (`identityOf`, `requestedAmount`,
  * `requestedCurrency`, `requestedReference`) efectivamente lee para derivar una respuesta estable
- * por persona; los valores en sí son sintéticos y se marcan como tales (QA-...).
+ * por persona. Los valores son PLANTILLAS `{{faker.…}}` que el formulario resuelve contra el
+ * generador de datos con la semilla elegida (`fakers/faker-template.ts`): aquí no hay datos de
+ * persona escritos a mano.
  *
  * `fullPath`/`routePath` son la URL ABSOLUTA del mock (`getQaMockProvidersBaseUrl()` +
  * `/segip/identity/verify`, no un path relativo). Es deliberado: `buildUrl()` en
@@ -49,7 +51,9 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
       "Registro estatal de identidad boliviano. Confirma que la cédula existe y que los datos coinciden.",
     method: "POST",
     path: "/segip/identity/verify",
-    examplePayload: { input: { documentNumber: "QA-00000001" } },
+    examplePayload: {
+      input: { documentNumber: "{{faker.caso.persona.documentNumber}}" },
+    },
   },
   {
     id: "infocenter-credit-report",
@@ -60,7 +64,9 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
       "Central de riesgo crediticio. Devuelve score, deudas vigentes y peor mora de los últimos 12 meses.",
     method: "POST",
     path: "/infocenter/credit-report",
-    examplePayload: { input: { documentNumber: "QA-00000001" } },
+    examplePayload: {
+      input: { documentNumber: "{{faker.caso.persona.documentNumber}}" },
+    },
   },
   {
     id: "qr-payment-verify",
@@ -72,7 +78,11 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
     method: "POST",
     path: "/qr/payment/verify",
     examplePayload: {
-      input: { reference: "QA-REF-0001", amount: 150.5, currency: "BOB" },
+      input: {
+        reference: "QA-REF-0001",
+        amount: "{{faker.monto.amount}}",
+        currency: "{{faker.monto.currency}}",
+      },
     },
   },
   {
@@ -84,7 +94,11 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
     method: "POST",
     path: "/banking/qr/generate",
     examplePayload: {
-      input: { amount: 150.5, currency: "BOB", reference: "QA-REF-0001" },
+      input: {
+        amount: "{{faker.monto.amount}}",
+        currency: "{{faker.monto.currency}}",
+        reference: "QA-REF-0001",
+      },
     },
   },
   {
@@ -97,7 +111,11 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
     method: "POST",
     path: "/banking/transfer/verify",
     examplePayload: {
-      input: { reference: "QA-REF-0001", amount: 150.5, currency: "BOB" },
+      input: {
+        reference: "QA-REF-0001",
+        amount: "{{faker.monto.amount}}",
+        currency: "{{faker.monto.currency}}",
+      },
     },
   },
   {
@@ -109,7 +127,7 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
       "Da antigüedad y señales de riesgo de un número de teléfono.",
     method: "POST",
     path: "/telco/phone-trust/check",
-    examplePayload: { input: { phoneNumber: "+59170000001" } },
+    examplePayload: { input: { phoneNumber: "{{faker.caso.persona.phone}}" } },
   },
   {
     id: "facebook-me",
@@ -120,7 +138,7 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
       "Simula el intercambio OAuth de Meta para verificación social.",
     method: "POST",
     path: "/facebook/me",
-    examplePayload: { input: { email: "qa.lab@atlas.test" } },
+    examplePayload: { input: { email: "{{faker.caso.persona.email}}" } },
   },
   {
     id: "whatsapp-verification-confirm",
@@ -130,7 +148,7 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
     businessPurpose: "Confirma que un número de WhatsApp es contactable.",
     method: "POST",
     path: "/whatsapp/verification/confirm",
-    examplePayload: { input: { phoneNumber: "+59170000001" } },
+    examplePayload: { input: { phoneNumber: "{{faker.caso.persona.phone}}" } },
   },
   {
     id: "digital-trust-check",
@@ -141,7 +159,9 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
       "Da una señal agregada de confianza digital de la persona.",
     method: "POST",
     path: "/digital-trust/check",
-    examplePayload: { input: { documentNumber: "QA-00000001" } },
+    examplePayload: {
+      input: { documentNumber: "{{faker.caso.persona.documentNumber}}" },
+    },
   },
 ];
 

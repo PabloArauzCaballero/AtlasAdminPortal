@@ -16,7 +16,7 @@ function stressForm(overrides: Partial<StressFormState> = {}): StressFormState {
   return { ...DEFAULT_STRESS_FORM, ...overrides };
 }
 
-const MUTATION_GUARD = "Permitir mutacion en stress";
+const MUTATION_GUARD = "Permitir cambios reales en la carga";
 
 describe("DEFAULT_STRESS_FORM · valores por defecto seguros", () => {
   it("arranca en dry-run y en LOCAL", () => {
@@ -46,7 +46,7 @@ describe("StressControls · plan de carga", () => {
       />,
     );
 
-    expect(screen.getByText(/600 planeadas/)).toBeInTheDocument();
+    expect(screen.getByText(/600 previstas/)).toBeInTheDocument();
   });
 
   /**
@@ -55,17 +55,17 @@ describe("StressControls · plan de carga", () => {
    * el RPS donde va la concurrencia. Se recorren todos por eso.
    */
   it.each([
-    ["RPS objetivo", "targetRps", 5],
-    ["Concurrencia", "concurrency", 5],
-    ["Duracion segundos", "durationSeconds", 30],
-    ["Ramp-up segundos", "rampUpSeconds", 5],
-    ["Max requests", "maxRequests", 1000],
-    ["Timeout ms", "timeoutMs", 20000],
-    ["Max error %", "maxErrorRatePercent", 5],
-    ["Min throughput RPS", "minThroughputRps", 0],
-    ["Max avg ms", "maxAvgMs", 0],
-    ["Max p95 ms", "maxP95Ms", 2000],
-    ["Max p99 ms", "maxP99Ms", 0],
+    ["Peticiones por segundo", "targetRps", 5],
+    ["Peticiones a la vez", "concurrency", 5],
+    ["Duración (s)", "durationSeconds", 30],
+    ["Subida gradual (s)", "rampUpSeconds", 5],
+    ["Tope de peticiones", "maxRequests", 1000],
+    ["Espera máxima por petición (ms)", "timeoutMs", 20000],
+    ["Errores tolerados (%)", "maxErrorRatePercent", 5],
+    ["Rendimiento mínimo (peticiones/s)", "minThroughputRps", 0],
+    ["Tiempo medio máximo (ms)", "maxAvgMs", 0],
+    ["Tope del p95 (ms)", "maxP95Ms", 2000],
+    ["Tope del p99 (ms)", "maxP99Ms", 0],
   ])(
     "'%s' escribe en la clave %s y en ninguna otra",
     async (label, key, current) => {
@@ -73,7 +73,9 @@ describe("StressControls · plan de carga", () => {
       render(<StressControls form={stressForm()} onChange={onChange} />);
 
       await userEvent.type(
-        screen.getByRole("spinbutton", { name: new RegExp(label) }),
+        screen.getByRole("spinbutton", {
+          name: new RegExp(label.replace(/[()%/]/g, "\\$&")),
+        }),
         "7",
       );
 
@@ -87,7 +89,7 @@ describe("StressControls · plan de carga", () => {
     render(<StressControls form={stressForm()} onChange={vi.fn()} />);
 
     expect(
-      screen.getByRole("spinbutton", { name: /Max requests/ }),
+      screen.getByRole("spinbutton", { name: /Tope de peticiones/ }),
     ).toHaveAttribute("max", String(HARD_MAX_STRESS_REQUESTS));
   });
 
@@ -163,7 +165,7 @@ describe("StressControls · guarda de mutación", () => {
     render(<StressControls form={stressForm()} onChange={vi.fn()} />);
 
     expect(screen.queryByText("Escenario de prueba")).toBeNull();
-    expect(screen.queryByText("Auth mode efectivo")).toBeNull();
+    expect(screen.queryByText("Credencial de la petición")).toBeNull();
   });
 });
 
@@ -177,7 +179,7 @@ describe("StressSafetyHints · avisos previos", () => {
   it("anuncia el techo duro de requests del runner", () => {
     render(<StressSafetyHints endpoint={endpointFixture()} />);
 
-    expect(screen.getByText(/limite duro:/)).toBeInTheDocument();
+    expect(screen.getByText(/tope firme:/)).toBeInTheDocument();
   });
 
   it("distingue un endpoint que exige stress de uno donde es opcional", () => {
@@ -186,7 +188,7 @@ describe("StressSafetyHints · avisos previos", () => {
         endpoint={endpointFixture({ requiresStressTest: true })}
       />,
     );
-    expect(screen.getByText("stress requerido")).toBeInTheDocument();
+    expect(screen.getByText("carga requerida")).toBeInTheDocument();
     unmount();
 
     render(
@@ -194,7 +196,7 @@ describe("StressSafetyHints · avisos previos", () => {
         endpoint={endpointFixture({ requiresStressTest: false })}
       />,
     );
-    expect(screen.getByText("stress opcional")).toBeInTheDocument();
+    expect(screen.getByText("carga opcional")).toBeInTheDocument();
   });
 
   it("marca destructivo y PII solo cuando el catálogo lo dice", () => {
@@ -204,11 +206,11 @@ describe("StressSafetyHints · avisos previos", () => {
       />,
     );
     expect(screen.getByText("destructivo")).toBeInTheDocument();
-    expect(screen.getByText("contiene PII")).toBeInTheDocument();
+    expect(screen.getByText("datos personales")).toBeInTheDocument();
     unmount();
 
     render(<StressSafetyHints endpoint={endpointFixture()} />);
     expect(screen.queryByText("destructivo")).toBeNull();
-    expect(screen.queryByText("contiene PII")).toBeNull();
+    expect(screen.queryByText("datos personales")).toBeNull();
   });
 });

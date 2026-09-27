@@ -61,6 +61,8 @@ export type EndpointStressRunInput = {
   /** Latencia exacta a forzar en el mock (x-mock-latency-ms), en ms. Ignorado fuera de ese host. */
   mockLatencyMs?: number;
   payload: JsonRecord;
+  /** Lote del generador: cada petición lleva el siguiente cuerpo (rotando). Vacío = `payload`. */
+  payloadRotation?: JsonRecord[];
   queryParams: JsonRecord;
   pathParams: JsonRecord;
   headers: Record<string, string>;

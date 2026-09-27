@@ -127,6 +127,21 @@ jobs:
           cat "$RUNNER_TEMP/qa-catalog.log"
           exit 1
 
+      # El QA Lab pide sus datos de prueba al mock de proveedores (`/api/qa-fakers` → :4010). El
+      # mock es un repo privado que este runner no puede clonar, así que se sirven respuestas
+      # GRABADAS del mock real (`scripts/record-qa-fakers-fixtures.mjs`) en su mismo puerto.
+      - name: Servir el generador de datos de prueba (respuestas grabadas del mock)
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup node scripts/qa-fakers-fixture-server.mjs > "$RUNNER_TEMP/qa-fakers.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4010/mock/fakers > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/qa-fakers.log"
+          exit 1
+
       - name: Compilar backend real
         run: yarn build
         working-directory: ${{ runner.temp }}/qa-backend
