@@ -161,6 +161,21 @@ describe("AppSidebar · grupos", () => {
     expect(verEnlace("Sync catálogo")).toBe(false);
   });
 
+  it("Procesos es un grupo propio, visible sólo con workflows.read", () => {
+    renderSidebar({ permissions: ["workflows.read"] });
+
+    expect(verGrupo("Procesos")).toBe(true);
+    expect(verEnlace("Catálogo de procesos")).toBe(true);
+    // No cuelga de Systems Ops: quien sólo lee procesos no ve ese grupo.
+    expect(verGrupo("Systems Ops")).toBe(false);
+  });
+
+  it("sin workflows.read el grupo Procesos no aparece", () => {
+    renderSidebar({ permissions: ["systems.flows.read"] });
+
+    expect(verGrupo("Procesos")).toBe(false);
+  });
+
   it("el grupo se puede plegar y desplegar desde su cabecera", async () => {
     const user = userEvent.setup();
     renderSidebar({ permissions: ["audit.events.read"] });

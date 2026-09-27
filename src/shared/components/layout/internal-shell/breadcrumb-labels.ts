@@ -57,6 +57,8 @@ export const breadcrumbLabels: Record<string, string> = {
   pii: "PII",
   permissions: "Permisos",
   policies: "Políticas",
+  procesos: "Procesos",
+  instancias: "Casos en curso",
   profile: "Perfil",
   qa: "QA",
   readiness: "Readiness Release",

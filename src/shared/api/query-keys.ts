@@ -34,6 +34,13 @@ export const queryKeys = {
   flowReviewQueue: (params: unknown) =>
     ["systems", "flows-review-queue", params] as const,
   flowGraph: (flowId: string) => ["systems", "flow-graph", flowId] as const,
+  processes: ["processes", "list"] as const,
+  process: (code: string) => ["processes", "detail", code] as const,
+  processWiring: (code: string) => ["processes", "wiring", code] as const,
+  processInstances: (code: string, params: unknown) =>
+    ["processes", "instances", code, params] as const,
+  processInstanceProgress: (code: string, instanceId: string) =>
+    ["processes", "instance-progress", code, instanceId] as const,
   flowModuleGraph: (systemCode: string, module: string, roles: boolean) =>
     ["systems", "flow-module-graph", systemCode, module, roles] as const,
   testSuite: (suiteId: string) => ["systems", "test-suite", suiteId] as const,
