@@ -3,6 +3,7 @@ import {
   Download,
   FolderTree,
   Gauge,
+  Landmark,
   LifeBuoy,
   ListChecks,
   MailCheck,
@@ -20,6 +21,7 @@ import type { InternalNavGroup } from "./nav-config";
 import {
   CAMPAIGN_READ_ROLE_LIST,
   INTERNAL_PORTAL_ROLE_LIST,
+  LOAN_PORTFOLIO_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
   SUPPORT_ADMIN_ROLE_LIST,
@@ -122,6 +124,13 @@ export const navGroupOperations: InternalNavGroup = {
       // El backend gatea por @Roles (risk_analyst/internal_operator/admin/platform_admin).
       permissions: [],
       roles: INTERNAL_PORTAL_ROLE_LIST,
+    },
+    {
+      label: "Préstamos",
+      href: "/internal/operations/loans",
+      icon: Landmark,
+      permissions: [],
+      roles: LOAN_PORTFOLIO_ROLE_LIST,
     },
     {
       label: "Eventos de dominio",
