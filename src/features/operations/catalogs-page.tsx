@@ -44,7 +44,7 @@ function AuthorizedOperationCatalogsPage() {
   const [status, setStatus] = useState("all");
   const [active, setActive] = useState("all");
   const [creatingFor, setCreatingFor] = useState<string | null>(null);
-  const [ingestingFor, setIngestingFor] = useState<string | null>(null);
+  const [ingestingFor, setIngestingFor] = useState<ContextCatalog | null>(null);
   const router = useRouter();
   const catalogs = useOperationCatalogs({ domain, status, active });
   const items = catalogs.data?.items ?? [];
@@ -124,7 +124,7 @@ function AuthorizedOperationCatalogsPage() {
             </Button>
             <Button
               className="h-7 px-2 text-xs"
-              onClick={() => setIngestingFor(row.original.catalogCode)}
+              onClick={() => setIngestingFor(row.original)}
             >
               Ingerir
             </Button>
@@ -258,7 +258,8 @@ function AuthorizedOperationCatalogsPage() {
 
       {ingestingFor ? (
         <CatalogIngestionForm
-          catalogCode={ingestingFor}
+          catalogCode={ingestingFor.catalogCode}
+          currentVersion={ingestingFor.currentVersion}
           onClose={() => setIngestingFor(null)}
         />
       ) : null}

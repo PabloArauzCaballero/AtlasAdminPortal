@@ -12,6 +12,7 @@ const api = vi.hoisted(() => ({
   getQaTemplate: vi.fn(),
   preflightQaRun: vi.fn(),
   launchQaRun: vi.fn(),
+  listQaCampaigns: vi.fn(),
 }));
 vi.mock("@/features/qa-runs/run-api", () => api);
 
@@ -20,6 +21,17 @@ const { JourneysTab } = await import("@/features/qa-runs/journeys-tab");
 beforeEach(() => {
   Object.values(api).forEach((fn) => fn.mockReset());
   api.getQaCapabilities.mockResolvedValue(capabilitiesFixture());
+  api.listQaCampaigns.mockResolvedValue([
+    {
+      code: "regression_normal",
+      name: "Regresión normal",
+      description: "Recorridos del cliente con datos normales.",
+      templates: [
+        { code: "account_signup_to_login", version: "1.0.0", share: 1 },
+        { code: "customer_credit_decision", version: "1.1.0", share: 3 },
+      ],
+    },
+  ]);
   api.listQaTemplates.mockResolvedValue([
     templateFixture(),
     templateFixture({
@@ -45,8 +57,12 @@ describe("JourneysTab · UI/contrato con respuestas simuladas del contrato QA", 
   it("abre con el catálogo precargado y el editor manual plegado", async () => {
     render_();
 
+    // El nombre sale también en la campaña que lo agrupa: se busca dentro de su tarjeta.
+    const card = await screen.findByTestId(
+      "qa-template-account_signup_to_login",
+    );
     expect(
-      await screen.findByText("Alta de cuenta hasta el login"),
+      within(card).getByText("Alta de cuenta hasta el login"),
     ).toBeInTheDocument();
     expect(screen.queryByText("EDITOR MANUAL")).not.toBeInTheDocument();
 
@@ -54,6 +70,23 @@ describe("JourneysTab · UI/contrato con respuestas simuladas del contrato QA", 
       screen.getByRole("button", { name: /Editor avanzado de pasos/ }),
     );
     expect(screen.getByText("EDITOR MANUAL")).toBeInTheDocument();
+  });
+
+  it("enseña las campañas con el nombre del recorrido y su reparto de personas", async () => {
+    render_();
+    const campaign = await screen.findByTestId("qa-campaign-regression_normal");
+
+    expect(within(campaign).getByText("Regresión normal")).toBeInTheDocument();
+    expect(
+      await within(campaign).findByText(/Alta de cuenta hasta el login/),
+    ).toBeInTheDocument();
+    expect(
+      within(campaign).getByText("25 % de las personas"),
+    ).toBeInTheDocument();
+    expect(
+      within(campaign).getByText("75 % de las personas"),
+    ).toBeInTheDocument();
+    expect(api.listQaCampaigns).toHaveBeenCalledTimes(1);
   });
 
   it("una plantilla bloqueada enseña su motivo y no ofrece ejecutar", async () => {

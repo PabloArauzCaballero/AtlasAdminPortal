@@ -20,16 +20,20 @@ import {
   listSupportCases,
   listSupportCategories,
   listSupportQueues,
+  linkCase,
   resolveCase,
   setPresence,
+  sweepSupportSla,
   transferCase,
   triageCase,
+  verifyChannelIntegrity,
 } from "./services";
 import type {
   AssignInput,
   CloseInput,
   CreateAgentInput,
   EscalateInput,
+  LinkCaseInput,
   ResolveInput,
   TriageInput,
 } from "./types";
@@ -230,4 +234,28 @@ export function useCloseCaseMutation(caseId: string) {
   return useCaseActionMutation(caseId, (body: CloseInput) =>
     closeCase(caseId, body),
   );
+}
+
+export function useLinkCaseMutation(caseId: string) {
+  return useCaseActionMutation(caseId, (body: LinkCaseInput) =>
+    linkCase(caseId, body),
+  );
+}
+
+/**
+ * La integridad se pide a mano y no al abrir la ficha: recalcula el hash de TODOS los mensajes del
+ * canal, y hacerlo en cada visita cargaría al servidor con una comprobación que sólo se necesita
+ * cuando alguien disputa lo que se dijo.
+ */
+export function useChannelIntegrityMutation() {
+  return useMutation({ mutationFn: verifyChannelIntegrity });
+}
+
+/** Tras el barrido cambian los relojes de muchos casos: se refresca toda la sección. */
+export function useSweepSlaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: sweepSupportSla,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["support"] }),
+  });
 }

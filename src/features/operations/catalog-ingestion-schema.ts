@@ -9,11 +9,8 @@ import {
  * Replica `catalogIngestionSchema` del backend. Igual que el resto de los
  * esquemas del módulo vive fuera del componente para poder probarlo suelto.
  *
- * Ojo con el alcance: ingerir deja los valores en *staging*, y hoy el backend
- * no expone ningún GET que liste esos items (`decision-batch` pide
- * `stagingItemId`s que la respuesta de ingesta no devuelve — solo un conteo).
- * Por eso el formulario avisa que la revisión posterior todavía no se puede
- * hacer desde el portal.
+ * Ingerir deja los valores pendientes de revisión en staging; la revisión (listado y decisión en
+ * lote) vive en `catalog-staging-panel.tsx`.
  */
 
 const OPTIONAL_CODE = optionalPattern(

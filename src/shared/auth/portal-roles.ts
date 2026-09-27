@@ -37,6 +37,18 @@ export const RUNTIME_JOB_ROLES = ["admin", "platform_admin", "system"] as const;
 export const SUPPORT_ADMIN_ROLES = ["admin", "platform_admin"] as const;
 
 /**
+ * `SupportKnowledgeAdminController`: leer, redactar, revisar, aprobar y publicar la ayuda. Ni
+ * `readonly_auditor` ni `fraud_analyst` entran.
+ */
+export const SUPPORT_KNOWLEDGE_ROLES = [
+  "internal_operator",
+  "compliance_analyst",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+
+/**
  * `PartnerOperationsController` (expedientes de comercio): la cola, la decisión degradada y
  * volver a pedir la verificación. Más estrecho que el portal operacional: ni `compliance_analyst`
  * ni `readonly_auditor` entran, y el ítem del menú no debe prometerles una pantalla que da 403.
@@ -48,9 +60,81 @@ export const PARTNER_OPERATIONS_ROLES = [
   "platform_admin",
 ] as const;
 
+/**
+ * `NotificationCampaignsController` y `NotificationAudienceSegmentsController`: leer campañas y
+ * segmentos lo puede `internal_operator`; pausar, reanudar y cancelar sólo `admin`/`platform_admin`.
+ * Crear, editar y programar también existen allí, pero son del ERP: este portal observa y frena.
+ */
+export const CAMPAIGN_READ_ROLES = [
+  "internal_operator",
+  "admin",
+  "platform_admin",
+  "system",
+] as const;
+export const CAMPAIGN_OPERATE_ROLES = ["admin", "platform_admin"] as const;
+
+/**
+ * `CreditOperationsController` (`operations/credit/*`): catálogo, decisión humana, aceptación del
+ * negocio y recálculo de la línea. Misma lista que los expedientes de comercio, pero se declara
+ * aparte porque es otro controlador y puede cambiar por su cuenta.
+ */
+export const CREDIT_OPERATIONS_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+
+/**
+ * El libro de préstamos (`LoansController`, `LoanPaymentsController`, `CreditRatingController`).
+ * Se gatea por `@Roles(...)` y no hay todavía permiso granular `loans.*` en el catálogo RBAC: estas
+ * listas son copia declarada de las del backend, ruta por ruta.
+ *
+ * - Leer préstamos y solicitudes del cliente, y su informe de gasto: operación y riesgo.
+ * - Calificación y escala: además cumplimiento.
+ * - Desembolsar, cobrar y reversar mueven dinero: sólo operación y administración.
+ * - Castigar reconoce una pérdida: sólo administración.
+ */
+export const LOAN_READ_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_RATING_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "compliance_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_MONEY_ROLES = [
+  "internal_operator",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_WRITE_OFF_ROLES = ["admin", "platform_admin"] as const;
+
+export const LOAN_READ_ROLE_LIST: string[] = [...LOAN_READ_ROLES];
+export const LOAN_RATING_ROLE_LIST: string[] = [...LOAN_RATING_ROLES];
+export const LOAN_MONEY_ROLE_LIST: string[] = [...LOAN_MONEY_ROLES];
+export const LOAN_WRITE_OFF_ROLE_LIST: string[] = [...LOAN_WRITE_OFF_ROLES];
+/** Quien entra a «Préstamos»: lee préstamos o, al menos, la escala de calificación. */
+export const LOAN_PORTFOLIO_ROLE_LIST: string[] = [
+  ...new Set<string>([...LOAN_READ_ROLES, ...LOAN_RATING_ROLES]),
+];
+
 export const INTERNAL_PORTAL_ROLE_LIST: string[] = [...INTERNAL_PORTAL_ROLES];
 export const PARTNER_OPERATIONS_ROLE_LIST: string[] = [
   ...PARTNER_OPERATIONS_ROLES,
 ];
 export const SUPPORT_ADMIN_ROLE_LIST: string[] = [...SUPPORT_ADMIN_ROLES];
+export const SUPPORT_KNOWLEDGE_ROLE_LIST: string[] = [
+  ...SUPPORT_KNOWLEDGE_ROLES,
+];
 export const RUNTIME_JOB_ROLE_LIST: string[] = [...RUNTIME_JOB_ROLES];
+export const CAMPAIGN_READ_ROLE_LIST: string[] = [...CAMPAIGN_READ_ROLES];
+export const CAMPAIGN_OPERATE_ROLE_LIST: string[] = [...CAMPAIGN_OPERATE_ROLES];
+export const CREDIT_OPERATIONS_ROLE_LIST: string[] = [
+  ...CREDIT_OPERATIONS_ROLES,
+];

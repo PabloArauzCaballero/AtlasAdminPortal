@@ -12,6 +12,10 @@ import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { engineExecutionUrl } from "@/shared/decision-engine/engine-links";
 import { ExternalLink } from "lucide-react";
+import {
+  creditCaseHref,
+  isCreditReviewCase,
+} from "@/features/credit/credit-rules";
 import type { WorkQueueItem } from "./types";
 
 function WorkItemTypeBadge({
@@ -126,6 +130,27 @@ function AccionDeFila({
   item: WorkQueueItem;
   onDecide: (item: WorkQueueItem) => void;
 }>) {
+  /*
+   * Un caso `CR-…` es el caso propio de una solicitud de crédito: el backend rechaza cerrarlo aquí
+   * (`409 MANUAL_REVIEW_ES_DE_CREDITO`) porque dejaría la solicitud en revisión sin nadie que la
+   * resuelva. Se decide sobre la SOLICITUD, que al decidirse cierra también este caso.
+   */
+  if (isCreditReviewCase(item)) {
+    const href = creditCaseHref(item);
+    return href ? (
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-2 py-1 text-xs text-atlas-text hover:bg-atlas-soft"
+      >
+        Decidir la solicitud
+      </Link>
+    ) : (
+      <span className="text-xs text-atlas-muted">
+        Se decide en la solicitud de crédito
+      </span>
+    );
+  }
+
   const enlace = engineExecutionUrl(item.decisionExecutionId);
   if (item.decisionExecutionId) {
     return enlace ? (

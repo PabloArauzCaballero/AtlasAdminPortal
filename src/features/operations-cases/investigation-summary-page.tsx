@@ -11,6 +11,8 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
+import { CustomerCreditSection } from "@/features/credit/customer-credit-section";
+import { CustomerPortfolioSection } from "@/features/loans/customer-portfolio-section";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import {
@@ -18,6 +20,8 @@ import {
   IdentidadYAgendaSection,
 } from "./investigation-summary-sections";
 import { ListCard } from "./list-card";
+import { CustomerDecisionsPanel } from "./customer-decisions-panel";
+import { RecalculateRiskAction } from "./recalculate-risk-action";
 import {
   useInvestigationSummary,
   useResendContactVerificationMutation,
@@ -40,8 +44,11 @@ export function InvestigationSummaryPage({
         description="Perfil, contactos, consentimientos, última evaluación de riesgo y casos abiertos — vista consolidada para revisión manual o de fraude."
       />
       <BusinessContextNote>
-        Esta vista solo lee. Para decidir un caso, volvé a la Cola de trabajo y
-        usá la acción &quot;Decidir&quot; sobre la fila correspondiente.
+        Aquí se investiga y se actúa sobre el cliente: cribado de listas
+        restrictivas, decisión de habilitación y recálculo del riesgo. Los casos
+        de alta o de fraude se deciden desde la Cola de trabajo o desde las
+        colas de revisión manual y de fraude; las solicitudes de crédito, desde
+        la sección Crédito, abriendo cada solicitud.
       </BusinessContextNote>
       {summary.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {summary.error ? (
@@ -109,6 +116,14 @@ export function InvestigationSummaryPage({
           <UltimaEvaluacionDeRiesgo
             evaluacion={summary.data.latestRiskAssessment}
           />
+          <RecalculateRiskAction customerId={customerId} />
+
+          <CustomerDecisionsPanel
+            customerId={customerId}
+            currentStatus={summary.data.customer.status}
+          />
+
+          <CustomerCreditSection customerId={customerId} />
 
           {/*
             Identidad y agenda: la mitad del expediente que esta pantalla no enseñaba.
@@ -202,6 +217,8 @@ export function InvestigationSummaryPage({
           </section>
 
           <CasosAbiertosSection data={summary.data} />
+
+          <CustomerPortfolioSection customerId={customerId} />
         </div>
       ) : null}
     </>

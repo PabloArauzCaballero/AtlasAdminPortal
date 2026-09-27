@@ -9,7 +9,6 @@ import {
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
@@ -23,8 +22,11 @@ import {
   buildFieldImpactColumns,
   buildToolColumns,
 } from "./review-columns";
+import { buildColumnReviewColumns } from "./review-column-columns";
+import { ReviewDecisionDialog } from "./review-decision-dialog";
 import { reviewOptions, typeOptions } from "./review-options";
 import { ReviewTableCard } from "./review-table-card";
+import type { ReviewDecisionInput } from "@/features/systems/types";
 import type { PendingReview } from "./types";
 
 export function ReviewQueuePage() {
@@ -58,26 +60,23 @@ function AuthorizedReviewQueuePage() {
       dataImpacts: buildDataImpactColumns(setPendingReview, canReview),
       fieldImpacts: buildFieldImpactColumns(setPendingReview, canReview),
       tools: buildToolColumns(setPendingReview, canReview),
+      dataColumns: buildColumnReviewColumns(setPendingReview, canReview),
     }),
     [canReview],
   );
 
-  function confirmReview() {
+  function confirmReview(body: ReviewDecisionInput) {
     if (!pendingReview) return;
     reviewMutation.mutate(
       {
         targetType: pendingReview.targetType,
         targetId: pendingReview.targetId,
-        body: {
-          reviewStatus: pendingReview.decision,
-          confidenceLevel:
-            pendingReview.decision === "APPROVED" ? "HIGH" : "MEDIUM",
-          notes: "Actualizado desde portal interno fase 5.",
-        },
+        body,
       },
       { onSuccess: () => setPendingReview(null) },
     );
   }
+  const dataColumns = queue.data?.dataColumnImpacts ?? { items: [], total: 0 };
 
   return (
     <>
@@ -85,7 +84,7 @@ function AuthorizedReviewQueuePage() {
         icon={ClipboardCheck}
         eyebrow="Cola de revisión"
         title="Cola de revisión"
-        description="Revisión controlada de endpoints, tablas, impactos y herramientas detectadas por Systems Ops. Cada sección está separada para evitar componentes gigantes."
+        description="Confirma o descarta lo que el escáner detectó: rutas, tablas, columnas, impactos y herramientas. Cada decisión guarda su motivo."
         actions={
           <Button
             onClick={() => void queue.refetch()}
@@ -148,9 +147,10 @@ function AuthorizedReviewQueuePage() {
       ) : null}
       {queue.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-3 xl:grid-cols-6">
             <MetricCard label="Endpoints" value={queue.data.endpoints.total} />
             <MetricCard label="Tablas" value={queue.data.dataEntities.total} />
+            <MetricCard label="Columnas" value={dataColumns.total} />
             <MetricCard
               label="Impactos tabla"
               value={queue.data.dataEntityImpacts.total}
@@ -177,6 +177,12 @@ function AuthorizedReviewQueuePage() {
             onPageChange={setPage}
           />
           <ReviewTableCard
+            title="Columnas de datos"
+            data={dataColumns.items}
+            columns={columns.dataColumns}
+            onPageChange={setPage}
+          />
+          <ReviewTableCard
             title="Impactos endpoint-tabla"
             data={queue.data.dataEntityImpacts.items}
             columns={columns.dataImpacts}
@@ -196,11 +202,8 @@ function AuthorizedReviewQueuePage() {
           />
         </div>
       ) : null}
-      <ConfirmDialog
-        open={Boolean(pendingReview)}
-        title="Confirmar revisión"
-        description={`Se aplicará ${pendingReview?.decision ?? ""} sobre ${pendingReview?.title ?? ""}. Esta acción modifica metadata de Systems Ops y debe quedar auditada.`}
-        confirmText="Aplicar revisión"
+      <ReviewDecisionDialog
+        pending={pendingReview}
         isLoading={reviewMutation.isPending}
         onCancel={() => setPendingReview(null)}
         onConfirm={confirmReview}

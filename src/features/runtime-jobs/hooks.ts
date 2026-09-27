@@ -20,6 +20,8 @@ const AFFECTED_QUERY_ROOTS: Record<RuntimeJobCode, readonly string[][]> = {
   // Los dos mueven la pantalla de calificación de cartera (cola de desenlaces y categorías).
   "dispatch-loan-outcomes": [["operations", "portfolio"]],
   "sweep-debt-ratings": [["operations", "portfolio"]],
+  // La mora cambia días de atraso y tramo de cada préstamo: fichas y listas de la cartera.
+  "sweep-loan-delinquency": [["operations", "portfolio"], ["cartera"]],
   "process-outbox": [["notifications"]],
   "process-events": [["notifications"], ["operations"]],
   "expire-stale-sessions": [["operations"]],
