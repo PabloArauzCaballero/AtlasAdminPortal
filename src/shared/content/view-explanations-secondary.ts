@@ -55,6 +55,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
       },
+      "/internal/operations/loans": {
+        systems:
+          "Cartera paginada con filtros de estado, tramo y código (GET /operations/loans) y ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
+        business:
+          "Lo que pasa después de aprobar: entregar el dinero, anotar lo que el cliente paga, deshacer un cobro mal aplicado y reconocer una deuda como pérdida — siempre con motivo y con tu usuario en el historial.",
+      },
       // El matcher de vistas resuelve por prefijo (`startsWith`), así que las
       // subrutas con `customerId` dinámico (`/investigation-summary`, `/audit`)
       // no pueden tener clave propia y caen todas en esta entrada.

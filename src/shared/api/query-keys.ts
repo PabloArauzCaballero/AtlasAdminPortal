@@ -210,4 +210,15 @@ export const queryKeys = {
     ["expedientes", "concesiones", expedienteId, nodoId] as const,
   expedienteVisibilidad: (expedienteId: string, nodoId: string) =>
     ["expedientes", "visibilidad", expedienteId, nodoId] as const,
+
+  // Cartera: préstamos, solicitudes y calificación. Todo cuelga de `cartera` para que un cobro,
+  // un reverso o un castigo invaliden de una vez la ficha, la lista del cliente y su calificación.
+  cartera: ["cartera"] as const,
+  carteraPrestamo: (loanId: string) => ["cartera", "prestamo", loanId] as const,
+  carteraCliente: (customerId: string, parte: string) =>
+    ["cartera", "cliente", customerId, parte] as const,
+  carteraCalificacionPrestamo: (loanId: string, parte: string) =>
+    ["cartera", "calificacion-prestamo", loanId, parte] as const,
+  carteraEscala: ["cartera", "escala"] as const,
+  carteraLista: (filters: unknown) => ["cartera", "lista", filters] as const,
 };

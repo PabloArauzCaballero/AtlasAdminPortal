@@ -28,6 +28,12 @@ vi.mock("@/features/credit/customer-credit-section", () => ({
   CustomerCreditSection: () => null,
 }));
 
+// La cartera del cliente (préstamos, solicitudes, calificación) tiene sus propias pruebas
+// (`tests/unit/features/loans`) y se gatea por rol; aquí sólo interesa la identidad.
+vi.mock("@/features/loans/customer-portfolio-section", () => ({
+  CustomerPortfolioSection: () => null,
+}));
+
 const { getInvestigationSummary } =
   await import("@/features/operations-cases/services");
 

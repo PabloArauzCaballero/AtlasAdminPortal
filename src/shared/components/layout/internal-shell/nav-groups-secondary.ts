@@ -5,6 +5,7 @@ import {
   Download,
   FolderTree,
   Gauge,
+  Landmark,
   History,
   LifeBuoy,
   ListChecks,
@@ -29,6 +30,7 @@ import type { InternalNavGroup } from "./nav-config";
 import { CASE_QUEUE_NAV_ITEMS } from "./nav-items-case-queues";
 import {
   INTERNAL_PORTAL_ROLE_LIST,
+  LOAN_PORTFOLIO_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
   SUPPORT_ADMIN_ROLE_LIST,
@@ -58,9 +60,8 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         label: "Cola de trabajo",
         href: "/internal/operations/work-queue",
         icon: ShieldAlert,
-        // El backend gatea por rol (@Roles internal_operator/risk_analyst/compliance_analyst/
-        // fraud_analyst/admin/platform_admin), no por permiso granular: no existe "operations.
-        // workQueue.read" en el catálogo. Visible; el backend responde 403 claro si no alcanza.
+        // El backend gatea por @Roles, no por permiso granular (no existe "operations.workQueue.read");
+        // se deja visible y el backend responde 403 con mensaje claro si el rol no alcanza.
         permissions: [],
       },
       ...CASE_QUEUE_NAV_ITEMS,
@@ -68,17 +69,15 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         label: "Soporte",
         href: "/internal/support",
         icon: LifeBuoy,
-        // Mismo criterio que "Cola de trabajo": el backend gatea por @Roles y, además, exige un
-        // perfil de agente vivo que no vive en el catálogo de permisos. Se deja visible porque un
-        // ítem oculto no explica nada; la pantalla sí dice qué falta y dónde habilitarlo.
+        // Como "Cola de trabajo" (@Roles) y además exige perfil de agente vivo; visible porque un
+        // ítem oculto no explica nada, y la pantalla sí dice qué falta y dónde habilitarlo.
         permissions: [],
       },
       {
         label: "Agentes de soporte",
         href: "/internal/support/agents",
         icon: UserCog,
-        // Habilitar agentes decide quién puede leer expedientes de soporte —con la conversación
-        // completa dentro—, así que el backend lo restringe a admin y platform_admin.
+        // Decide quién lee expedientes de soporte (con la conversación): sólo admin y platform_admin.
         permissions: [],
         roles: SUPPORT_ADMIN_ROLE_LIST,
       },
@@ -126,11 +125,16 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         label: "Calificación de cartera",
         href: "/internal/operations/portfolio",
         icon: Gauge,
-        // Calificación contable (de Atlas) y salud de la entrega de desenlaces al Motor. Los
-        // desenlaces se MIDEN en el Motor; entregarlos es un job, no un botón.
-        // El backend gatea por @Roles (risk_analyst/internal_operator/admin/platform_admin).
+        // Calificación (de Atlas) y salud de la entrega de desenlaces al Motor; entregarlos es un job.
         permissions: [],
         roles: INTERNAL_PORTAL_ROLE_LIST,
+      },
+      {
+        label: "Préstamos",
+        href: "/internal/operations/loans",
+        icon: Landmark,
+        permissions: [],
+        roles: LOAN_PORTFOLIO_ROLE_LIST,
       },
       {
         label: "Eventos de dominio",

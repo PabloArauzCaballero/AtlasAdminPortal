@@ -60,6 +60,45 @@ export const CREDIT_OPERATIONS_ROLES = [
   "platform_admin",
 ] as const;
 
+/**
+ * El libro de préstamos (`LoansController`, `LoanPaymentsController`, `CreditRatingController`).
+ * Se gatea por `@Roles(...)` y no hay todavía permiso granular `loans.*` en el catálogo RBAC: estas
+ * listas son copia declarada de las del backend, ruta por ruta.
+ *
+ * - Leer préstamos y solicitudes del cliente, y su informe de gasto: operación y riesgo.
+ * - Calificación y escala: además cumplimiento.
+ * - Desembolsar, cobrar y reversar mueven dinero: sólo operación y administración.
+ * - Castigar reconoce una pérdida: sólo administración.
+ */
+export const LOAN_READ_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_RATING_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "compliance_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_MONEY_ROLES = [
+  "internal_operator",
+  "admin",
+  "platform_admin",
+] as const;
+export const LOAN_WRITE_OFF_ROLES = ["admin", "platform_admin"] as const;
+
+export const LOAN_READ_ROLE_LIST: string[] = [...LOAN_READ_ROLES];
+export const LOAN_RATING_ROLE_LIST: string[] = [...LOAN_RATING_ROLES];
+export const LOAN_MONEY_ROLE_LIST: string[] = [...LOAN_MONEY_ROLES];
+export const LOAN_WRITE_OFF_ROLE_LIST: string[] = [...LOAN_WRITE_OFF_ROLES];
+/** Quien entra a «Préstamos»: lee préstamos o, al menos, la escala de calificación. */
+export const LOAN_PORTFOLIO_ROLE_LIST: string[] = [
+  ...new Set<string>([...LOAN_READ_ROLES, ...LOAN_RATING_ROLES]),
+];
+
 export const INTERNAL_PORTAL_ROLE_LIST: string[] = [...INTERNAL_PORTAL_ROLES];
 export const PARTNER_OPERATIONS_ROLE_LIST: string[] = [
   ...PARTNER_OPERATIONS_ROLES,

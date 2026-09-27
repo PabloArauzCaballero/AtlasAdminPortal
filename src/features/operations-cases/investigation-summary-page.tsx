@@ -12,6 +12,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { TarjetaDeExpediente } from "@/features/files/expediente-summary-card";
 import { CustomerCreditSection } from "@/features/credit/customer-credit-section";
+import { CustomerPortfolioSection } from "@/features/loans/customer-portfolio-section";
 import { UltimaEvaluacionDeRiesgo } from "./latest-risk-section";
 import { IdentityEvidencePanel } from "./identity-evidence-panel";
 import {
@@ -216,6 +217,8 @@ export function InvestigationSummaryPage({
           </section>
 
           <CasosAbiertosSection data={summary.data} />
+
+          <CustomerPortfolioSection customerId={customerId} />
         </div>
       ) : null}
     </>
