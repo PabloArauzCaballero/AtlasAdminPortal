@@ -1,5 +1,7 @@
 "use client";
 
+import { defaultQaEnvironment } from "./environment";
+import { DEFAULT_QA_BASE_ROUTE } from "./base-routes";
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLabEndpointsByIds as useEndpointsByIds } from "./endpoint-lookup";
@@ -22,8 +24,8 @@ import { JOURNEY_EXAMPLE_SPEC } from "./journey-types";
 const DEFAULT_STEPS_TEXT = JSON.stringify(JOURNEY_EXAMPLE_SPEC, null, 2);
 
 const DEFAULT_CONFIG: JourneyRunnerConfig = {
-  environment: "LOCAL",
-  baseRouteKey: "ENVIRONMENT_DEFAULT",
+  environment: defaultQaEnvironment(),
+  baseRouteKey: DEFAULT_QA_BASE_ROUTE,
   customHostUrl: "",
   dryRun: true,
   timeoutMs: 20000,
@@ -43,7 +45,11 @@ export function JourneyRunnerPanel() {
   const [stepsText, setStepsText] = useState(DEFAULT_STEPS_TEXT);
   const [parseError, setParseError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [config, setConfig] = useState<JourneyRunnerConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<JourneyRunnerConfig>(() => ({
+    ...DEFAULT_CONFIG,
+    // Se lee al montar, no al importar: el despliegue decide el ambiente.
+    environment: defaultQaEnvironment(),
+  }));
 
   function patchConfig(value: Partial<JourneyRunnerConfig>) {
     setConfig((current) => ({ ...current, ...value }));

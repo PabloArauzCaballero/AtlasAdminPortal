@@ -18,6 +18,7 @@ import type {
   QaRunEventPage,
   QaRunEvidence,
 } from "./run-extras-types";
+import type { QaRunTimeline } from "./timeline-types";
 
 /**
  * Cliente de la API de control QA. Usa el MISMO `apiRequest` que el resto del portal: sesión
@@ -155,5 +156,11 @@ export async function listQaRunEvents(
 export function getQaRunEvidence(runId: string) {
   return apiRequest<QaRunEvidence>(
     `${BASE}/runs/${encodeURIComponent(runId)}/evidence`,
+  );
+}
+
+export function getQaRunTimeline(runId: string) {
+  return apiRequest<QaRunTimeline>(
+    `${BASE}/runs/${encodeURIComponent(runId)}/timeline`,
   );
 }
