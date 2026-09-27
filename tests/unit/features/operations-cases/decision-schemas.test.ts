@@ -82,9 +82,9 @@ describe("toManualReviewInput", () => {
     const input = toManualReviewInput({
       ...manualReviewDefaults,
       reasonCode: "ok",
-      nextCustomerStatus: "approved_for_next_step",
+      nextCustomerStatus: "active",
     });
-    expect(input.nextCustomerStatus).toBe("approved_for_next_step");
+    expect(input.nextCustomerStatus).toBe("active");
   });
 });
 
@@ -146,5 +146,34 @@ describe("toFraudInput", () => {
       reasonCode: "  ",
     });
     expect(input.reasonCode).toBeUndefined();
+  });
+});
+
+describe("estados del cliente en las decisiones", () => {
+  it("sólo ofrece los estados canónicos que acepta el backend (los antiguos daban 400)", () => {
+    const antiguos = [
+      "approved_for_next_step",
+      "pending_more_information",
+      "pending_fraud_review",
+      "registered",
+    ];
+    for (const valor of antiguos) {
+      expect(
+        manualReviewSchema.safeParse({
+          decision: "approved",
+          reasonCode: "x",
+          notes: "",
+          nextCustomerStatus: valor,
+        }).success,
+      ).toBe(false);
+    }
+    expect(
+      manualReviewSchema.safeParse({
+        decision: "approved",
+        reasonCode: "x",
+        notes: "",
+        nextCustomerStatus: "active",
+      }).success,
+    ).toBe(true);
   });
 });
