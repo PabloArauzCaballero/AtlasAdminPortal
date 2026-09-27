@@ -155,7 +155,7 @@ export const QA_PAYLOAD_PRESETS: QaPayloadPreset[] = [
       decision: "approved",
       reasonCode: "documents_verified",
       notes: "Documentación verificada manualmente por QA.",
-      nextCustomerStatus: "approved_for_next_step",
+      nextCustomerStatus: "active",
     },
     notes:
       "decision admite approved/rejected/request_more_information/escalated_to_fraud/no_action.",
