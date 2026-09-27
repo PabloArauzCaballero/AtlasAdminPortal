@@ -37,9 +37,8 @@ export const RUNTIME_JOB_ROLES = ["admin", "platform_admin", "system"] as const;
 export const SUPPORT_ADMIN_ROLES = ["admin", "platform_admin"] as const;
 
 /**
- * `SupportKnowledgeAdminController`: redactar, revisar, aprobar y publicar la ayuda. Ni
- * `readonly_auditor` ni `fraud_analyst` entran. La búsqueda de lo publicado que usa la misma
- * pantalla va por la ruta de la app, que admite `internal_operator`, `admin` y `platform_admin`.
+ * `SupportKnowledgeAdminController`: leer, redactar, revisar, aprobar y publicar la ayuda. Ni
+ * `readonly_auditor` ni `fraud_analyst` entran.
  */
 export const SUPPORT_KNOWLEDGE_ROLES = [
   "internal_operator",

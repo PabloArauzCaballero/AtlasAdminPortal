@@ -8,9 +8,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { KnowledgeArticleForm } from "./knowledge-article-form";
-import { useTrackedVersions } from "./knowledge-hooks";
-import { KnowledgePublishedSection } from "./knowledge-published-section";
-import type { KnowledgeVersion } from "./knowledge-types";
+import { KnowledgeArticlesSection } from "./knowledge-articles-section";
 import { KnowledgeVersionForm } from "./knowledge-version-form";
 import { KnowledgeVersionsPanel } from "./knowledge-versions-panel";
 
@@ -32,21 +30,8 @@ export function SupportKnowledgePage() {
 }
 
 function BaseDeConocimiento() {
-  const { versiones, registrar, olvidar } = useTrackedVersions();
   const [creando, setCreando] = useState(false);
   const [redactando, setRedactando] = useState<ArticuloElegido | null>(null);
-
-  const alRedactar = (version: KnowledgeVersion) => {
-    registrar({
-      versionId: version.versionId,
-      articleId: version.articleId,
-      articleKey: version.articleKey,
-      title: version.title,
-      status: version.status,
-      updatedAt: new Date().toISOString(),
-    });
-    setRedactando(null);
-  };
 
   return (
     <>
@@ -72,12 +57,8 @@ function BaseDeConocimiento() {
       </BusinessContextNote>
 
       <div className="space-y-8">
-        <KnowledgeVersionsPanel
-          versiones={versiones}
-          onRegistrar={registrar}
-          onOlvidar={olvidar}
-        />
-        <KnowledgePublishedSection onNuevaVersion={setRedactando} />
+        <KnowledgeVersionsPanel />
+        <KnowledgeArticlesSection onNuevaVersion={setRedactando} />
       </div>
 
       {creando ? (
@@ -97,7 +78,7 @@ function BaseDeConocimiento() {
         <KnowledgeVersionForm
           article={redactando}
           onClose={() => setRedactando(null)}
-          onCreated={alRedactar}
+          onCreated={() => setRedactando(null)}
         />
       ) : null}
     </>

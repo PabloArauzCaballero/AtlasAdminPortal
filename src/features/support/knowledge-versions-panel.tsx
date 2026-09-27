@@ -2,15 +2,22 @@
 
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useAuth } from "@/shared/auth/auth-context";
 import {
   DataTable,
   type AtlasColumnMeta,
 } from "@/shared/components/data-table/data-table";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input } from "@/shared/components/ui/input";
+import { Field, Select } from "@/shared/components/ui/input";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import type { Option } from "@/shared/lib/options";
 import { formatDateTime } from "@/shared/lib/format";
-import type { VersionAction } from "./knowledge-services";
+import { useKnowledgeVersions } from "./knowledge-hooks";
+import {
+  knowledgeErrorMessage,
+  type VersionAction,
+} from "./knowledge-services";
 import {
   ACCIONES,
   KnowledgeTransitionDialog,
@@ -18,34 +25,53 @@ import {
 } from "./knowledge-transition-dialog";
 import {
   ESTADO_VERSION,
-  type TrackedVersion,
-  type VersionTransition,
+  isOwnVersion,
+  type KnowledgeVersionRow,
 } from "./knowledge-types";
+
+const POR_PAGINA = 20;
+
+export const COLA_OPTIONS: Option[] = [
+  {
+    value: "IN_REVIEW",
+    label: "Esperan aprobación",
+    description:
+      "Enviadas a revisión: las aprueba alguien distinto de quien las redactó.",
+  },
+  {
+    value: "APPROVED",
+    label: "Listas para publicar",
+    description:
+      "Ya aprobadas; al publicarlas pasan a ser la respuesta oficial.",
+  },
+  {
+    value: "DRAFT",
+    label: "Borradores",
+    description: "Todavía en redacción; su autor las envía a revisión.",
+  },
+];
 
 type Pendiente = { versionId: string; action: VersionAction };
 
 /**
- * Las versiones en curso: redactar, enviar a revisión, aprobar y publicar.
+ * La cola de trabajo de la base de conocimiento: borradores, revisiones y aprobadas.
  *
- * La lista es LOCAL (este navegador) porque el servidor no expone borradores ni revisiones
- * pendientes. Quien aprueba no tiene la versión en su lista: la abre por el número que le pasa
- * quien la redactó. El servidor sigue siendo el que decide: si el estado guardado aquí quedó viejo,
- * la acción responde con el motivo y la pantalla lo enseña.
+ * Viene del servidor, así que quien redacta y quien aprueba ven la MISMA cola. Una versión propia en
+ * revisión se marca «la redactaste tú» y no ofrece aprobar: el servidor la rechazaría, y ofrecer un
+ * botón que siempre falla enseña a desconfiar de los botones.
  */
-export function KnowledgeVersionsPanel({
-  versiones,
-  onRegistrar,
-  onOlvidar,
-}: Readonly<{
-  versiones: TrackedVersion[];
-  onRegistrar: (version: TrackedVersion) => void;
-  onOlvidar: (versionId: string) => void;
-}>) {
+export function KnowledgeVersionsPanel() {
+  const { user } = useAuth();
+  const [status, setStatus] = useState("IN_REVIEW");
+  const [page, setPage] = useState(1);
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
-  const [numero, setNumero] = useState("");
-  const numeroOk = /^[1-9][0-9]*$/.test(numero.trim());
+  const versiones = useKnowledgeVersions({
+    status,
+    page,
+    pageSize: POR_PAGINA,
+  });
 
-  const columnas = useMemo<ColumnDef<TrackedVersion>[]>(
+  const columnas = useMemo<ColumnDef<KnowledgeVersionRow>[]>(
     () => [
       {
         header: "Versión",
@@ -56,7 +82,8 @@ export function KnowledgeVersionsPanel({
               {row.original.title}
             </p>
             <p className="font-mono text-[0.6875rem] text-atlas-muted">
-              #{row.original.versionId} · {row.original.articleKey}
+              #{row.original.versionId} · artículo #{row.original.articleId} · v
+              {row.original.versionNumber}
             </p>
           </div>
         ),
@@ -74,7 +101,19 @@ export function KnowledgeVersionsPanel({
         },
       },
       {
-        header: "Último cambio aquí",
+        header: "Redactada por",
+        id: "autor",
+        cell: ({ row }) =>
+          isOwnVersion(row.original, user?.id) ? (
+            <Badge tone="info">La redactaste tú</Badge>
+          ) : (
+            <span className="font-mono text-xs">
+              #{row.original.createdByInternalUserId ?? "—"}
+            </span>
+          ),
+      },
+      {
+        header: "Último cambio",
         accessorKey: "updatedAt",
         cell: ({ row }) => formatDateTime(row.original.updatedAt),
       },
@@ -84,100 +123,88 @@ export function KnowledgeVersionsPanel({
         meta: { pinRight: true } satisfies AtlasColumnMeta,
         cell: ({ row }) => {
           const accion = siguienteAccion(row.original.status);
+          if (!accion) return null;
+          if (accion === "approve" && isOwnVersion(row.original, user?.id))
+            return (
+              <span className="text-xs text-atlas-muted">
+                La aprueba otra persona
+              </span>
+            );
           return (
-            <div className="flex justify-end gap-2">
-              {accion ? (
-                <Button
-                  className="h-8 px-2 text-xs"
-                  onClick={() =>
-                    setPendiente({
-                      versionId: row.original.versionId,
-                      action: accion,
-                    })
-                  }
-                >
-                  {ACCIONES[accion].boton}
-                </Button>
-              ) : null}
-              <Button
-                variant="ghost"
-                className="h-8 px-2 text-xs"
-                onClick={() => onOlvidar(row.original.versionId)}
-              >
-                Quitar de la lista
-              </Button>
-            </div>
-          );
-        },
-      },
-    ],
-    [onOlvidar],
-  );
-
-  const alTerminar = (resultado: VersionTransition) => {
-    const previa = versiones.find((v) => v.versionId === resultado.versionId);
-    onRegistrar({
-      versionId: resultado.versionId,
-      articleId: resultado.articleId ?? previa?.articleId ?? "",
-      articleKey: previa?.articleKey ?? "—",
-      title: previa?.title ?? `Versión #${resultado.versionId}`,
-      status: resultado.status,
-      updatedAt: new Date().toISOString(),
-    });
-    setPendiente(null);
-  };
-
-  return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-atlas-text">
-        Versiones en curso
-      </h2>
-      <DataTable
-        data={versiones}
-        columns={columnas}
-        emptyTitle="No hay versiones en curso en este navegador."
-        emptyDescription="Aparecen aquí las que redactes o muevas desde esta pantalla. Si te pidieron aprobar una, ábrela por su número aquí debajo."
-      />
-
-      <form
-        noValidate
-        className="grid gap-3 rounded-xl border border-atlas-border bg-white p-4 shadow-subtle sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-end"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <Field
-          label="Número de versión"
-          tooltip="El número que te pasó quien redactó la versión, para revisarla, aprobarla o publicarla."
-          hint="Sólo dígitos, por ejemplo 42."
-        >
-          <Input
-            inputMode="numeric"
-            value={numero}
-            onChange={(event) => setNumero(event.target.value)}
-          />
-        </Field>
-        <div className="flex flex-wrap gap-2">
-          {(Object.keys(ACCIONES) as VersionAction[]).map((accion) => (
             <Button
-              key={accion}
-              type="button"
-              variant="secondary"
-              disabled={!numeroOk}
+              className="h-8 px-2 text-xs"
               onClick={() =>
-                setPendiente({ versionId: numero.trim(), action: accion })
+                setPendiente({
+                  versionId: row.original.versionId,
+                  action: accion,
+                })
               }
             >
               {ACCIONES[accion].boton}
             </Button>
-          ))}
+          );
+        },
+      },
+    ],
+    [user?.id],
+  );
+
+  const datos = versiones.data;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-sm font-semibold text-atlas-text">
+          Versiones en curso
+        </h2>
+        <div className="w-full sm:w-72">
+          <Field
+            label="Cola"
+            tooltip="Qué versiones ver según el paso en que están: por aprobar, por publicar o en borrador."
+          >
+            <Select
+              name="cola-versiones"
+              options={COLA_OPTIONS}
+              value={status}
+              onChange={(valor) => {
+                setStatus(valor);
+                setPage(1);
+              }}
+            />
+          </Field>
         </div>
-      </form>
+      </div>
+
+      {versiones.isLoading ? <LoadingSkeleton rows={4} /> : null}
+      {versiones.error ? (
+        <ErrorState
+          title="No se pudo cargar la cola de versiones."
+          description={knowledgeErrorMessage(versiones.error)}
+          onRetry={() => void versiones.refetch()}
+        />
+      ) : null}
+      {datos ? (
+        <DataTable
+          data={datos.items}
+          columns={columnas}
+          meta={{
+            page: datos.page,
+            limit: datos.pageSize,
+            total: datos.total,
+            totalPages: Math.max(1, Math.ceil(datos.total / datos.pageSize)),
+          }}
+          onPageChange={setPage}
+          emptyTitle="No hay versiones en esta cola."
+          emptyDescription="Cuando alguien redacte, envíe a revisión o apruebe una versión, aparecerá en la cola que corresponda."
+        />
+      ) : null}
 
       {pendiente ? (
         <KnowledgeTransitionDialog
           versionId={pendiente.versionId}
           action={pendiente.action}
           onClose={() => setPendiente(null)}
-          onDone={alTerminar}
+          onDone={() => setPendiente(null)}
         />
       ) : null}
     </section>

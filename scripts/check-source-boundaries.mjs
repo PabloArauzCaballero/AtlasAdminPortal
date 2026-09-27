@@ -34,8 +34,6 @@ const checks = [
       "src/shared/lib/local-search-history.ts",
       // Caché (no fuente de verdad) del progreso de tutoriales de QA LAB.
       "src/features/qa-tutorials/progress-storage.ts",
-      // Lista local (no fuente de verdad) de versiones de ayuda en curso: el servidor no la expone.
-      "src/features/support/knowledge-tracked-storage.ts",
     ]),
   },
   {

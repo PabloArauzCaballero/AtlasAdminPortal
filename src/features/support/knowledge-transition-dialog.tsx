@@ -5,12 +5,17 @@ import { Button } from "@/shared/components/ui/button";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Field, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
-import { useVersionTransitionMutation } from "./knowledge-hooks";
+import { useAuth } from "@/shared/auth/auth-context";
+import {
+  useKnowledgeVersion,
+  useVersionTransitionMutation,
+} from "./knowledge-hooks";
 import {
   knowledgeErrorMessage,
   type VersionAction,
 } from "./knowledge-services";
-import type { VersionTransition } from "./knowledge-types";
+import { isOwnVersion, type VersionTransition } from "./knowledge-types";
+import { KnowledgeVersionPreview } from "./knowledge-version-preview";
 
 export const ACCIONES: Record<
   VersionAction,
@@ -45,10 +50,11 @@ export function siguienteAccion(status: string): VersionAction | null {
 }
 
 /**
- * Confirmar una transición, con una nota opcional que queda en la respuesta del servidor.
+ * Confirmar una transición, con el texto completo de la versión delante.
  *
  * Es un panel y no un clic directo porque aprobar y publicar son las dos acciones que cambian lo que
- * lee la gente: pedir una confirmación con la explicación delante evita publicar por error.
+ * lee la gente. El botón no se habilita hasta que la versión se leyó del servidor, y aprobar la
+ * propia no se ofrece: el servidor la rechazaría igual (`KNOWLEDGE_SELF_APPROVAL_FORBIDDEN`).
  */
 export function KnowledgeTransitionDialog({
   versionId,
@@ -61,9 +67,16 @@ export function KnowledgeTransitionDialog({
   onClose: () => void;
   onDone: (result: VersionTransition) => void;
 }>) {
+  const { user } = useAuth();
+  const version = useKnowledgeVersion(versionId);
   const mover = useVersionTransitionMutation();
   const [note, setNote] = useState("");
   const accion = ACCIONES[action];
+  const propia =
+    action === "approve" && version.data
+      ? isOwnVersion(version.data, user?.id)
+      : false;
+  const listo = Boolean(version.data) && !propia && !mover.isPending;
 
   return (
     <DrawerPanel
@@ -76,7 +89,7 @@ export function KnowledgeTransitionDialog({
         className="space-y-4"
         onSubmit={(event) => {
           event.preventDefault();
-          if (mover.isPending) return;
+          if (!listo) return;
           mover.mutate(
             { versionId, action, note: note.trim() || undefined },
             { onSuccess: onDone },
@@ -86,6 +99,12 @@ export function KnowledgeTransitionDialog({
         <p className="text-sm leading-6 text-atlas-text">
           {accion.explicacion}
         </p>
+        <KnowledgeVersionPreview versionId={versionId} />
+        {propia ? (
+          <p role="alert" className="text-sm text-amber-800">
+            La redactaste tú: otra persona tiene que aprobarla.
+          </p>
+        ) : null}
         <Field
           label="Nota"
           tooltip="Comentario opcional para quien siga el proceso, por ejemplo qué revisaste antes de aprobar."
@@ -108,7 +127,12 @@ export function KnowledgeTransitionDialog({
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" isLoading={mover.isPending}>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!listo}
+            isLoading={mover.isPending}
+          >
             {accion.boton}
           </Button>
         </div>

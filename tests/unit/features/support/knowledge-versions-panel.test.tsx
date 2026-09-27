@@ -5,92 +5,114 @@ const apiRequest = vi.fn();
 vi.mock("@/shared/api/client", () => ({
   apiRequest: (...args: unknown[]) => apiRequest(...args),
 }));
+vi.mock("@/shared/auth/auth-context", () => ({
+  useAuth: () => ({ user: { id: "5" } }),
+}));
 
 import { KnowledgeVersionsPanel } from "@/features/support/knowledge-versions-panel";
-import { AtlasApiError } from "@/shared/api/errors";
+import { isOwnVersion } from "@/features/support/knowledge-types";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
+
+function version(versionId: string, autor: number | string) {
+  return {
+    versionId,
+    articleId: "7",
+    versionNumber: 2,
+    locale: "es-BO",
+    status: "IN_REVIEW",
+    title: `Versión ${versionId}`,
+    question: null,
+    shortAnswer: null,
+    createdByInternalUserId: autor,
+    reviewedByInternalUserId: null,
+    approvedByInternalUserId: null,
+    approvedAt: null,
+    publishedAt: null,
+    retiredAt: null,
+    changeReason: "Aclarar el plazo",
+    updatedAt: "2026-09-26T10:00:00.000Z",
+  };
+}
+
+/** Responde por ruta, como el servidor: la cola y la ficha con el texto completo. */
+function servidor(cola: unknown[]) {
+  apiRequest.mockImplementation((ruta: string) => {
+    if (ruta === "/admin/support/knowledge/versions")
+      return Promise.resolve({
+        items: cola,
+        total: cola.length,
+        page: 1,
+        pageSize: 20,
+      });
+    if (ruta === "/admin/support/knowledge/versions/42")
+      return Promise.resolve({
+        ...version("42", 9),
+        bodyMarkdown: "Paso 1: revisa que el número esté bien escrito.",
+        tags: [],
+        escalateWhen: "Si tras tres intentos no llega.",
+      });
+    if (ruta.endsWith("/approve"))
+      return Promise.resolve({ versionId: "42", status: "APPROVED" });
+    return Promise.reject(new Error(`ruta inesperada ${ruta}`));
+  });
+}
 
 beforeEach(() => {
   apiRequest.mockReset();
 });
 
-const borrador = {
-  versionId: "42",
-  articleId: "7",
-  articleKey: "no-me-llega-el-codigo",
-  title: "No me llega el código",
-  status: "DRAFT" as const,
-  updatedAt: "2026-09-26T10:00:00.000Z",
-};
-
 describe("KnowledgeVersionsPanel", () => {
-  it("un borrador ofrece enviarlo a revisión y registra el estado que devuelve el servidor", async () => {
-    apiRequest.mockResolvedValue({ versionId: "42", status: "IN_REVIEW" });
-    const onRegistrar = vi.fn();
-    renderWithProviders(
-      <KnowledgeVersionsPanel
-        versiones={[borrador]}
-        onRegistrar={onRegistrar}
-        onOlvidar={vi.fn()}
-      />,
+  it("pide al servidor la cola de las que esperan aprobación", async () => {
+    servidor([]);
+    renderWithProviders(<KnowledgeVersionsPanel />);
+    expect(
+      await screen.findByText("No hay versiones en esta cola."),
+    ).toBeInTheDocument();
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/admin/support/knowledge/versions",
+      { query: { status: "IN_REVIEW", page: 1, pageSize: 20 } },
     );
-
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Enviar a revisión" })[0],
-    );
-    const panel = await screen.findByRole("dialog");
-    fireEvent.click(
-      within(panel).getByRole("button", { name: "Enviar a revisión" }),
-    );
-
-    await waitFor(() => expect(onRegistrar).toHaveBeenCalled());
-    expect(apiRequest.mock.calls[0][0]).toBe(
-      "/admin/support/knowledge/versions/42/submit-review",
-    );
-    expect(onRegistrar.mock.calls[0][0]).toMatchObject({
-      versionId: "42",
-      status: "IN_REVIEW",
-      articleKey: "no-me-llega-el-codigo",
-    });
   });
 
-  /** Quien aprueba no tiene la versión en su lista: la abre por el número que le pasaron. */
-  it("aprobar por número explica el rechazo por autoaprobación", async () => {
-    apiRequest.mockRejectedValue(
-      new AtlasApiError({
-        status: 403,
-        code: "KNOWLEDGE_SELF_APPROVAL_FORBIDDEN",
-        message: "Quien redactó una versión no puede aprobarla.",
-      }),
-    );
-    renderWithProviders(
-      <KnowledgeVersionsPanel
-        versiones={[]}
-        onRegistrar={vi.fn()}
-        onOlvidar={vi.fn()}
-      />,
-    );
-
+  it("no ofrece aprobar la versión que redactó quien mira", async () => {
+    servidor([version("41", 5)]);
+    renderWithProviders(<KnowledgeVersionsPanel />);
     expect(
-      screen.getByText("No hay versiones en curso en este navegador."),
-    ).toBeInTheDocument();
-    const aprobar = screen.getAllByRole("button", { name: "Aprobar" })[0];
-    expect(aprobar).toBeDisabled();
+      (await screen.findAllByText("La redactaste tú")).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Aprobar" })).toBeNull();
+  });
 
-    fireEvent.change(screen.getByLabelText("Número de versión"), {
-      target: { value: "42" },
-    });
-    fireEvent.click(aprobar);
+  it("quien aprueba lee el texto completo antes de aprobar", async () => {
+    servidor([version("42", 9)]);
+    renderWithProviders(<KnowledgeVersionsPanel />);
+
+    fireEvent.click(
+      (await screen.findAllByRole("button", { name: "Aprobar" }))[0],
+    );
     const panel = await screen.findByRole("dialog");
-    fireEvent.click(within(panel).getByRole("button", { name: "Aprobar" }));
-
     expect(
-      await within(panel).findByText(
-        /Pásale el número de versión a otra persona/,
-      ),
+      await within(panel).findByText(/Paso 1: revisa que el número/),
     ).toBeInTheDocument();
-    expect(apiRequest.mock.calls[0][0]).toBe(
-      "/admin/support/knowledge/versions/42/approve",
+    expect(within(panel).getByText(/tres intentos/)).toBeInTheDocument();
+
+    const aprobar = within(panel).getByRole("button", { name: "Aprobar" });
+    await waitFor(() => expect(aprobar).toBeEnabled());
+    fireEvent.click(aprobar);
+    await waitFor(() =>
+      expect(apiRequest).toHaveBeenCalledWith(
+        "/admin/support/knowledge/versions/42/approve",
+        expect.objectContaining({ method: "POST" }),
+      ),
     );
+  });
+});
+
+describe("isOwnVersion", () => {
+  it("compara el autor como texto: el servidor puede mandarlo como número", () => {
+    expect(isOwnVersion({ createdByInternalUserId: 5 }, "5")).toBe(true);
+    expect(isOwnVersion({ createdByInternalUserId: "6" }, "5")).toBe(false);
+    expect(isOwnVersion({ createdByInternalUserId: null }, "5")).toBe(false);
+    expect(isOwnVersion({ createdByInternalUserId: 5 }, undefined)).toBe(false);
   });
 });

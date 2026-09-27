@@ -28,7 +28,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/support/knowledge": {
         systems:
-          "Crea artículos y versiones con POST /admin/support/knowledge/articles y /articles/:id/versions, y las mueve con /versions/:id/submit-review, /approve y /publish. El servidor impide que el autor apruebe su propia versión y exige riesgo o cumplimiento para los equipos de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. Lo publicado se lee por la búsqueda de la app; no hay lista de borradores, así que las versiones en curso se recuerdan en este navegador.",
+          "Crea artículos y versiones con POST /admin/support/knowledge/articles y /articles/:id/versions, y las mueve con /versions/:id/submit-review, /approve y /publish. El servidor impide que el autor apruebe su propia versión y exige riesgo o cumplimiento para los equipos de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. La lista de artículos (GET /articles, cualquier estado y audiencia) y la cola de versiones por estado (GET /versions) son lecturas del personal; antes de cada paso se lee la versión completa con GET /versions/:id, y la versión propia en revisión no ofrece «Aprobar».",
         business:
           "Las respuestas oficiales que ven clientes, comercios y el equipo. Se redactan, las revisa y aprueba otra persona, y sólo entonces se publican; lo publicado no se edita, se reemplaza por otra versión y queda la historia de qué decía cada día.",
       },

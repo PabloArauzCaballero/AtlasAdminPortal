@@ -4,8 +4,14 @@ import type {
   CreateArticleInput,
   CreatedArticle,
   CreateVersionInput,
-  KnowledgeSearchHit,
+  KnowledgeArticleDetail,
+  KnowledgeArticleRow,
+  KnowledgeArticlesQuery,
+  KnowledgePage,
   KnowledgeVersion,
+  KnowledgeVersionDetail,
+  KnowledgeVersionRow,
+  KnowledgeVersionsQuery,
   VersionTransition,
 } from "./knowledge-types";
 
@@ -69,21 +75,43 @@ export function transitionKnowledgeVersion(
   );
 }
 
+/** Sin filtros vacíos: el servidor valida con Zod y `status=""` sería un 400, no «todos». */
+function compact<T extends Record<string, unknown>>(query: T) {
+  return Object.fromEntries(
+    Object.entries(query).filter(
+      ([, valor]) => valor !== undefined && valor !== null && valor !== "",
+    ),
+  ) as Record<string, string | number>;
+}
+
 /**
- * Buscar en lo PUBLICADO. No hay una ruta de administración que liste borradores: el personal usa
- * la misma búsqueda que la app, y el servidor le abre todas las audiencias —guías internas
- * incluidas— porque las deriva del rol, nunca de la petición.
+ * Las lecturas del personal: TODOS los estados y TODAS las audiencias, guías internas incluidas.
+ * Son las mismas rutas y los mismos roles que las escrituras, así que quien puede aprobar también
+ * puede leer lo que aprueba.
  */
-export function searchKnowledge(q: string) {
-  return apiRequest<{ query: string; results: KnowledgeSearchHit[] }>(
-    "/mobile/support/knowledge/search",
-    { query: { q, limit: 25 } },
+export function listKnowledgeArticles(query: KnowledgeArticlesQuery) {
+  return apiRequest<KnowledgePage<KnowledgeArticleRow>>(`${BASE}/articles`, {
+    query: compact(query),
+  });
+}
+
+export function getKnowledgeArticle(articleId: string) {
+  return apiRequest<KnowledgeArticleDetail>(
+    `${BASE}/articles/${encodeURIComponent(articleId)}`,
   );
 }
 
-/** Las preguntas frecuentes publicadas: lo que se enseña antes de escribir nada. */
-export function listKnowledgeFaq() {
-  return apiRequest<{ faq: KnowledgeVersion[] }>("/mobile/support/faq");
+export function listKnowledgeVersions(query: KnowledgeVersionsQuery) {
+  return apiRequest<KnowledgePage<KnowledgeVersionRow>>(`${BASE}/versions`, {
+    query: compact(query),
+  });
+}
+
+/** La ficha con el texto completo: es lo que lee quien aprueba antes de aprobar. */
+export function getKnowledgeVersion(versionId: string) {
+  return apiRequest<KnowledgeVersionDetail>(
+    `${BASE}/versions/${encodeURIComponent(versionId)}`,
+  );
 }
 
 const MENSAJES: Record<string, string> = {

@@ -9,8 +9,10 @@ import {
   createKnowledgeArticle,
   createKnowledgeVersion,
   knowledgeErrorMessage,
-  listKnowledgeFaq,
-  searchKnowledge,
+  getKnowledgeArticle,
+  getKnowledgeVersion,
+  listKnowledgeArticles,
+  listKnowledgeVersions,
   transitionKnowledgeVersion,
 } from "@/features/support/knowledge-services";
 import {
@@ -99,14 +101,43 @@ describe("base de conocimiento", () => {
     expect(llamada().options.body).toEqual({});
   });
 
-  it("lee lo publicado por la búsqueda y las preguntas frecuentes de la app", async () => {
-    await searchKnowledge("codigo");
+  it("lista artículos por las lecturas del personal, sin mandar filtros vacíos", async () => {
+    await listKnowledgeArticles({
+      status: "",
+      audience: "INTERNAL_SUPPORT",
+      search: "",
+      page: 2,
+      pageSize: 20,
+    });
     expect(apiRequest).toHaveBeenCalledWith(
-      "/mobile/support/knowledge/search",
-      { query: { q: "codigo", limit: 25 } },
+      "/admin/support/knowledge/articles",
+      { query: { audience: "INTERNAL_SUPPORT", page: 2, pageSize: 20 } },
     );
-    await listKnowledgeFaq();
-    expect(apiRequest).toHaveBeenLastCalledWith("/mobile/support/faq");
+  });
+
+  it("la cola de versiones filtra por estado en el servidor", async () => {
+    await listKnowledgeVersions({ status: "IN_REVIEW", page: 1, pageSize: 20 });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/admin/support/knowledge/versions",
+      { query: { status: "IN_REVIEW", page: 1, pageSize: 20 } },
+    );
+  });
+
+  it("lee la ficha del artículo y la de la versión", async () => {
+    await getKnowledgeArticle("7");
+    expect(apiRequest).toHaveBeenLastCalledWith(
+      "/admin/support/knowledge/articles/7",
+    );
+    await getKnowledgeVersion("42");
+    expect(apiRequest).toHaveBeenLastCalledWith(
+      "/admin/support/knowledge/versions/42",
+    );
+  });
+
+  it("ya no usa las rutas de ayuda de la app", async () => {
+    await listKnowledgeArticles({ page: 1, pageSize: 20 });
+    const rutas = apiRequest.mock.calls.map((call) => String(call[0]));
+    expect(rutas.some((ruta) => ruta.startsWith("/mobile/"))).toBe(false);
   });
 });
 
