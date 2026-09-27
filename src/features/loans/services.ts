@@ -8,6 +8,8 @@ import type {
   DisburseInput,
   DisburseResult,
   LoanDetail,
+  LoanPortfolioFilters,
+  LoanPortfolioPage,
   LoanRating,
   LoanRatingHistory,
   RatingScale,
@@ -25,6 +27,14 @@ const id = (value: string) => encodeURIComponent(value);
 
 export function getLoan(loanId: string) {
   return apiRequest<LoanDetail>(`/loans/${id(loanId)}`);
+}
+
+/** La cartera entera, paginada y filtrada en el servidor. Los filtros vacíos no viajan. */
+export function listPortfolioLoans(filters: LoanPortfolioFilters) {
+  const query = Object.fromEntries(
+    Object.entries(filters).filter(([, v]) => v !== undefined && v !== ""),
+  ) as Record<string, string | number>;
+  return apiRequest<LoanPortfolioPage>("/operations/loans", { query });
 }
 
 export function listCustomerLoans(customerId: string) {

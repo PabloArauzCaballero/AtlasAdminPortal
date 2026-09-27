@@ -13,12 +13,14 @@ import {
   getRatingScale,
   listCustomerApplications,
   listCustomerLoans,
+  listPortfolioLoans,
   registerPayment,
   reversePayment,
   writeOffLoan,
 } from "./services";
 import type {
   DisburseInput,
+  LoanPortfolioFilters,
   RegisterPaymentInput,
   ReversePaymentInput,
   WriteOffInput,
@@ -43,6 +45,32 @@ export function useLoan(loanId: string) {
     queryKey: queryKeys.carteraPrestamo(loanId),
     queryFn: () => getLoan(loanId),
     enabled: Boolean(loanId),
+  });
+}
+
+export function usePortfolioLoans(filters: LoanPortfolioFilters) {
+  return useQuery({
+    queryKey: queryKeys.carteraLista(filters),
+    queryFn: () => listPortfolioLoans(filters),
+    placeholderData: (previous) => previous,
+  });
+}
+
+/**
+ * El préstamo que nació de una solicitud. Sólo se pide para las aprobadas: el resto no pudo
+ * originar ninguno, y preguntar por cada fila multiplicaría las llamadas sin respuesta posible.
+ */
+export function useLoanOfApplication(applicationId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.carteraLista({ creditApplicationId: applicationId }),
+    queryFn: () =>
+      listPortfolioLoans({
+        creditApplicationId: applicationId,
+        page: 1,
+        pageSize: 1,
+      }),
+    enabled,
+    select: (data) => data.items[0] ?? null,
   });
 }
 

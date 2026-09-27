@@ -27,6 +27,7 @@ import {
   buildScheduleColumns,
   pendienteDeCuota,
 } from "./loan-detail-columns";
+import { tramoDeMora } from "./loan-labels";
 import { EstadoCartera } from "./loan-ui";
 import { PaymentDrawer } from "./payment-drawer";
 import { LoanRatingCard } from "./rating-panels";
@@ -237,7 +238,7 @@ function Cabecera({ loan }: Readonly<{ loan: LoanDetail }>) {
         { label: "Desembolsado", value: formatDateTime(loan.disbursedAt) },
         { label: "Primera cuota", value: safeText(loan.firstDueDate) },
         { label: "Vencimiento final", value: safeText(loan.maturityDate) },
-        { label: "Tramo de mora", value: safeText(loan.delinquencyBucket) },
+        { label: "Tramo de mora", value: tramoDeMora(loan.delinquencyBucket) },
         ...(loan.writtenOffAt
           ? [
               { label: "Castigado", value: formatDateTime(loan.writtenOffAt) },

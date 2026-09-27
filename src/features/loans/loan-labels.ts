@@ -152,3 +152,71 @@ export function explicarErrorDeCartera(error: unknown, generico: string) {
     return "Tu rol no permite esta operación sobre la cartera.";
   return error.message || generico;
 }
+
+/** Filtro de estado de la cartera: los cinco que acepta `GET /operations/loans`. */
+export const LOAN_STATUS_OPTIONS: Option[] = [
+  {
+    value: "active",
+    label: "Vigente",
+    description:
+      "Desembolsado y con saldo por cobrar; admite cobros y castigo.",
+  },
+  {
+    value: "pending_disbursement",
+    label: "Por desembolsar",
+    description: "Creado pero el dinero todavía no salió hacia el cliente.",
+  },
+  {
+    value: "paid_off",
+    label: "Pagado",
+    description: "El cliente pagó todas las cuotas; ya no debe nada.",
+  },
+  {
+    value: "written_off",
+    label: "Castigado",
+    description: "Se reconoció como pérdida; ya no admite cobros.",
+  },
+  {
+    value: "cancelled",
+    label: "Anulado",
+    description: "Se dio de baja antes de producir deuda.",
+  },
+];
+
+/** Tramos de mora del backend (`bucketForDaysPastDue`), de menor a mayor atraso. */
+export const DELINQUENCY_BUCKET_OPTIONS: Option[] = [
+  {
+    value: "current",
+    label: "Al día",
+    description:
+      "Ninguna cuota vencida sin pagar a la fecha del último barrido.",
+  },
+  {
+    value: "dpd_1_29",
+    label: "1 a 29 días",
+    description: "Atraso temprano: suele resolverse con un recordatorio.",
+  },
+  {
+    value: "dpd_30_59",
+    label: "30 a 59 días",
+    description: "Atraso que ya pesa en la calificación y pide gestión activa.",
+  },
+  {
+    value: "dpd_60_89",
+    label: "60 a 89 días",
+    description: "Atraso serio: cobranza intensiva antes de llegar a 90.",
+  },
+  {
+    value: "dpd_90_plus",
+    label: "90 días o más",
+    description:
+      "Deuda deteriorada; candidata a castigo si la gestión se agota.",
+  },
+];
+
+export function tramoDeMora(value: string | null | undefined): string {
+  if (!value) return "—";
+  return (
+    DELINQUENCY_BUCKET_OPTIONS.find((o) => o.value === value)?.label ?? value
+  );
+}

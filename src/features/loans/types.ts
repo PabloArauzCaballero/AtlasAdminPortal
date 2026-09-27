@@ -88,6 +88,24 @@ export type LoanDetail = LoanSummary & {
 
 export type CustomerLoans = { items: LoanSummary[] };
 
+/** Filtros de `GET /operations/loans` (la cartera para el personal). */
+export type LoanPortfolioFilters = {
+  status?: string;
+  delinquencyBucket?: string;
+  customerId?: string;
+  creditApplicationId?: string;
+  loanCode?: string;
+  page: number;
+  pageSize: number;
+};
+
+export type LoanPortfolioPage = {
+  items: LoanSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 /** Una solicitud de crédito del cliente (`GET /customers/:id/credit-applications`). */
 export type CreditApplicationSummary = {
   applicationId: string;

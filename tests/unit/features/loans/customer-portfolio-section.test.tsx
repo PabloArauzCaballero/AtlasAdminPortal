@@ -50,6 +50,11 @@ const solicitud = (over: Record<string, unknown>) => ({
   ...over,
 });
 
+const prestamoDeSolicitud: {
+  applicationId: string | null;
+  loan: { loanId: string; loanCode: string };
+} = { applicationId: null, loan: { loanId: "77", loanCode: "LOAN-77" } };
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "bypass" });
   server.events.on("request:start", ({ request }) => {
@@ -61,6 +66,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   desembolsos.length = 0;
+  prestamoDeSolicitud.applicationId = null;
   peticiones.length = 0;
   vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", API_BASE);
   comoRoles(["internal_operator"]);
@@ -107,6 +113,17 @@ beforeEach(() => {
         },
       }),
     ),
+    // La solicitud 5 todavía no tiene préstamo: por eso se ofrece «Desembolsar».
+    http.get(`${API_BASE}/operations/loans`, ({ request }) => {
+      const id = new URL(request.url).searchParams.get("creditApplicationId");
+      const items =
+        id === prestamoDeSolicitud.applicationId
+          ? [prestamoDeSolicitud.loan]
+          : [];
+      return HttpResponse.json({
+        data: { items, total: items.length, page: 1, pageSize: 1 },
+      });
+    }),
     http.get(`${API_BASE}/customers/12/loans`, () =>
       HttpResponse.json({ data: { items: [] } }),
     ),
@@ -152,9 +169,9 @@ describe("CustomerPortfolioSection — la cartera en la ficha del cliente", () =
   it("ofrece desembolsar sólo la solicitud aprobada y aceptada por el comercio", async () => {
     renderWithProviders(<CustomerPortfolioSection customerId="12" />);
     await waitFor(() => expect(screen.getByText("APP-7")).toBeInTheDocument());
-    expect(screen.getAllByRole("button", { name: "Desembolsar" })).toHaveLength(
-      1,
-    );
+    expect(
+      await screen.findAllByRole("button", { name: "Desembolsar" }),
+    ).toHaveLength(1);
     expect(screen.getByText("B · Con atraso leve")).toBeInTheDocument();
   });
 
@@ -178,6 +195,20 @@ describe("CustomerPortfolioSection — la cartera en la ficha del cliente", () =
     expect(desembolsos).toHaveLength(1);
     expect(desembolsos[0].cuerpo).toEqual({});
     expect(desembolsos[0].llave).toBeTruthy();
+  });
+
+  it("la solicitud ya desembolsada enlaza a su préstamo y deja de ofrecer «Desembolsar»", async () => {
+    prestamoDeSolicitud.applicationId = "5";
+    renderWithProviders(<CustomerPortfolioSection customerId="12" />);
+    const enlace = await screen.findByRole("link", {
+      name: "Ver préstamo LOAN-77",
+    });
+    expect(enlace).toHaveAttribute("href", "/internal/operations/loans/77");
+    expect(screen.queryByRole("button", { name: "Desembolsar" })).toBeNull();
+    // Sólo se pregunta por las aprobadas: la rechazada no pudo originar préstamo.
+    expect(
+      peticiones.filter((p) => p.startsWith("GET /operations/loans")),
+    ).toHaveLength(2);
   });
 
   it("un analista de riesgo ve la cartera pero no el botón de desembolso", async () => {

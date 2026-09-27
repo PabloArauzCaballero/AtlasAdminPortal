@@ -17,6 +17,7 @@ import {
   useLoanRating,
   useLoanRatingHistory,
 } from "./hooks";
+import { tramoDeMora } from "./loan-labels";
 import { Importe, formatRate } from "./loan-ui";
 import type { CustomerRating, LoanRating } from "./types";
 
@@ -191,7 +192,10 @@ export function LoanRatingCard({ loanId }: Readonly<{ loanId: string }>) {
         <KeyValueGrid
           items={[
             { label: "Días de atraso", value: data.daysPastDue },
-            { label: "Tramo de mora", value: safeText(data.delinquencyBucket) },
+            {
+              label: "Tramo de mora",
+              value: tramoDeMora(data.delinquencyBucket),
+            },
             {
               label: "Exposición",
               value: <Importe value={data.exposureAmount} />,

@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+import { useLoanOfApplication } from "./hooks";
 import { aceptacionDelComercio, motivoParaNoDesembolsar } from "./loan-labels";
 import { EstadoCartera, Importe } from "./loan-ui";
 import type { CreditApplicationSummary, LoanSummary } from "./types";
@@ -58,7 +59,6 @@ export function buildApplicationColumns(opciones: {
       cell: ({ row }) => aceptacionDelComercio(row.original.businessAcceptance),
     },
   ];
-  if (!opciones.puedeDesembolsar) return columnas;
   return [
     ...columnas,
     {
@@ -66,27 +66,64 @@ export function buildApplicationColumns(opciones: {
       header: "",
       enableSorting: false,
       meta: { pinRight: true } satisfies AtlasColumnMeta,
-      cell: ({ row }) => {
-        const motivo = motivoParaNoDesembolsar(row.original);
-        // Sólo se ofrece donde el servidor lo aceptaría: un botón que siempre responde 409
-        // enseña a ignorar los botones.
-        if (motivo) return null;
-        return (
-          <Button
-            variant="primary"
-            className="h-8"
-            onClick={() => opciones.onDesembolsar(row.original)}
-          >
-            Desembolsar
-          </Button>
-        );
-      },
+      cell: ({ row }) => (
+        <AccionDeSolicitud
+          solicitud={row.original}
+          puedeDesembolsar={opciones.puedeDesembolsar}
+          onDesembolsar={opciones.onDesembolsar}
+        />
+      ),
     },
   ];
 }
 
-export function buildLoanColumns(): ColumnDef<LoanSummary>[] {
-  return [
+/**
+ * Una solicitud aprobada o ya tiene préstamo —y entonces se enlaza a él— o todavía se puede
+ * desembolsar. Se pregunta a la cartera por `creditApplicationId` antes de ofrecer el botón: sin
+ * eso, una solicitud ya desembolsada seguía enseñando «Desembolsar» y respondía 409.
+ */
+function AccionDeSolicitud({
+  solicitud,
+  puedeDesembolsar,
+  onDesembolsar,
+}: Readonly<{
+  solicitud: CreditApplicationSummary;
+  puedeDesembolsar: boolean;
+  onDesembolsar: (solicitud: CreditApplicationSummary) => void;
+}>) {
+  const aprobada = solicitud.status === "approved";
+  const prestamo = useLoanOfApplication(solicitud.applicationId, aprobada);
+  if (!aprobada || prestamo.isLoading) return null;
+  if (prestamo.data) {
+    return (
+      <Link
+        className="whitespace-nowrap text-sm font-medium text-atlas-text underline"
+        href={`/internal/operations/loans/${prestamo.data.loanId}`}
+      >
+        Ver préstamo {prestamo.data.loanCode}
+      </Link>
+    );
+  }
+  // Sólo se ofrece donde el servidor lo aceptaría (y si la consulta falló, no se adivina): un
+  // botón que siempre responde 409 enseña a ignorar los botones.
+  if (!puedeDesembolsar || prestamo.error || motivoParaNoDesembolsar(solicitud))
+    return null;
+  return (
+    <Button
+      variant="primary"
+      className="h-8"
+      onClick={() => onDesembolsar(solicitud)}
+    >
+      Desembolsar
+    </Button>
+  );
+}
+
+export function buildLoanColumns(
+  opciones: { conCliente?: boolean; conAbrir?: boolean } = {},
+): ColumnDef<LoanSummary>[] {
+  const { conCliente = false, conAbrir = true } = opciones;
+  const columnas: ColumnDef<LoanSummary>[] = [
     {
       accessorKey: "loanCode",
       header: "Préstamo",
@@ -136,6 +173,24 @@ export function buildLoanColumns(): ColumnDef<LoanSummary>[] {
       header: "Desembolsado",
       cell: ({ row }) => formatDateTime(row.original.disbursedAt),
     },
+  ];
+  if (conCliente) {
+    columnas.splice(1, 0, {
+      accessorKey: "customerId",
+      header: "Cliente",
+      cell: ({ row }) => (
+        <Link
+          className="font-mono text-xs underline"
+          href={`/internal/operations/customers/${row.original.customerId}/investigation-summary`}
+        >
+          #{row.original.customerId}
+        </Link>
+      ),
+    });
+  }
+  if (!conAbrir) return columnas;
+  return [
+    ...columnas,
     {
       id: "abrir",
       header: "",

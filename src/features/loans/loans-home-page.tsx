@@ -21,17 +21,18 @@ import { LoadingSkeleton } from "@/shared/components/ui/states";
 import { CarteraError } from "./cartera-error";
 import { useRatingScale } from "./hooks";
 import { formatRate } from "./loan-ui";
+import { LoansPortfolioTable } from "./loans-portfolio-table";
 import type { RatingScaleGrade } from "./types";
 
 /** Un identificador de la base: entero positivo, como lo valida el servidor. */
 const ES_ID = /^[1-9][0-9]*$/;
 
 /**
- * Entrada a la cartera: abrir un préstamo o la ficha de un cliente, y la escala de calificación.
+ * Entrada a la cartera: la tabla paginada de todos los préstamos (`GET /operations/loans`), abrir
+ * uno por su número o la ficha de un cliente, y la escala de calificación.
  *
- * No hay lista global de préstamos porque el servidor no la ofrece al personal: los préstamos se
- * leen por cliente (`GET /customers/:id/loans`) o uno a uno. Por eso se entra por identificador;
- * desde la ficha del cliente se llega a todos los suyos.
+ * La lista la puede leer también cumplimiento; abrir la ficha, no. Por eso el acceso por número
+ * va con el gate de lectura del préstamo y la tabla con el de la cartera.
  */
 export function LoansHomePage() {
   return (
@@ -40,7 +41,7 @@ export function LoansHomePage() {
         icon={Landmark}
         eyebrow="Cartera"
         title="Préstamos"
-        description="Abre un préstamo por su número o la cartera de un cliente desde su ficha. Debajo, la escala con la que se califica cada deuda."
+        description="Toda la cartera, filtrable por estado, tramo de mora y código. Abre un préstamo por su número o la cartera de un cliente desde su ficha. Debajo, la escala con la que se califica cada deuda."
       />
       <BusinessContextNote>
         Desembolsar se hace desde la ficha del cliente, sobre su solicitud
@@ -50,6 +51,7 @@ export function LoansHomePage() {
         <RoleGate roles={LOAN_READ_ROLE_LIST} fallback={null}>
           <Buscar />
         </RoleGate>
+        <LoansPortfolioTable />
         <RoleGate roles={LOAN_RATING_ROLE_LIST} fallback={null}>
           <Escala />
         </RoleGate>

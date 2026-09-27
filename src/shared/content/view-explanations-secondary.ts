@@ -45,7 +45,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/operations/loans": {
         systems:
-          "Ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
+          "Cartera paginada con filtros de estado, tramo y código (GET /operations/loans) y ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
         business:
           "Lo que pasa después de aprobar: entregar el dinero, anotar lo que el cliente paga, deshacer un cobro mal aplicado y reconocer una deuda como pérdida — siempre con motivo y con tu usuario en el historial.",
       },

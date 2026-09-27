@@ -202,4 +202,5 @@ export const queryKeys = {
   carteraCalificacionPrestamo: (loanId: string, parte: string) =>
     ["cartera", "calificacion-prestamo", loanId, parte] as const,
   carteraEscala: ["cartera", "escala"] as const,
+  carteraLista: (filters: unknown) => ["cartera", "lista", filters] as const,
 };
