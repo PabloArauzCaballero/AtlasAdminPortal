@@ -15,22 +15,26 @@ import {
   emptyIngestionItemForm,
   type CatalogIngestionForm as IngestionFormValues,
 } from "./catalog-ingestion-schema";
+import { CatalogStagingPanel } from "./catalog-staging-panel";
 import { useIngestCatalogMutation } from "./hooks";
+import type { ContextCatalog } from "./types";
 
 /**
- * Ingesta de valores crudos a staging para un catálogo.
+ * Ingesta de valores crudos a staging para un catálogo, y su revisión.
  *
- * Aviso importante que la pantalla hace explícito: la ingesta deja los items en
- * staging, y hoy el backend NO expone ningún endpoint para listarlos
- * (`catalog-staging-items/decision-batch` pide `stagingItemId`s que la
- * respuesta de ingesta no devuelve — solo `stagingItemsCreated`). Es decir: se
- * puede ingerir, pero la revisión posterior todavía no se puede hacer desde el
- * portal. Se dice acá en vez de simular un flujo que no existe.
+ * Ingerir deja los ítems en staging; debajo del formulario se listan los pendientes
+ * (`GET /operations/catalog-staging-items`) —los de la ingesta recién hecha o, al abrir, todos los
+ * del catálogo— y se aprueban o rechazan en lote (`catalog-staging-items/decision-batch`).
  */
 export function CatalogIngestionForm({
   catalogCode,
+  currentVersion,
   onClose,
-}: Readonly<{ catalogCode: string; onClose: () => void }>) {
+}: Readonly<{
+  catalogCode: string;
+  currentVersion?: ContextCatalog["currentVersion"];
+  onClose: () => void;
+}>) {
   const ingest = useIngestCatalogMutation();
   const {
     control,
@@ -55,11 +59,9 @@ export function CatalogIngestionForm({
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          Los valores quedan en <strong>staging</strong>, no entran al catálogo
-          directamente. La revisión de items en staging todavía no está
-          disponible en el portal: el backend no expone un listado de items
-          staged, así que hoy no hay forma de aprobarlos o rechazarlos desde
-          acá.
+          Los valores quedan <strong>pendientes de revisión</strong>, no entran
+          al catálogo directamente. Debajo del formulario puedes revisarlos y
+          aprobarlos o rechazarlos en lote.
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -218,9 +220,8 @@ export function CatalogIngestionForm({
             Lote ingerido (job{" "}
             <span className="font-mono">{ingest.data.ingestionJobId}</span>,
             estado <span className="font-mono">{ingest.data.status}</span>):{" "}
-            {formatNumber(ingest.data.stagingItemsCreated)} items en staging. El
-            backend no devuelve los IDs de esos items ni los expone en un
-            listado, así que su revisión queda fuera del portal por ahora.
+            {formatNumber(ingest.data.stagingItemsCreated)} ítems pendientes de
+            revisión. Abajo aparecen para aprobarlos o rechazarlos.
           </div>
         ) : null}
 
@@ -239,6 +240,13 @@ export function CatalogIngestionForm({
           </Button>
         </div>
       </form>
+      <div className="mt-6">
+        <CatalogStagingPanel
+          catalogCode={catalogCode}
+          ingestionJobId={ingest.data?.ingestionJobId}
+          currentVersion={currentVersion}
+        />
+      </div>
     </DrawerPanel>
   );
 }
