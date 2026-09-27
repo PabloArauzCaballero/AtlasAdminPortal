@@ -47,7 +47,7 @@ function runForm(
   };
 }
 
-const MUTATION_GUARD = "Permitir mutacion real";
+const MUTATION_GUARD = "Permitir cambios reales";
 
 describe("requiresDoubleConfirmation · cuándo hay que teclear EJECUTAR", () => {
   it("exige doble confirmación solo si se muta de verdad fuera de LOCAL", () => {
@@ -163,7 +163,9 @@ describe("RunControls · guarda de mutación", () => {
     render(<RunControls form={runForm()} onChange={onChange} />);
 
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Dry-run / modo seguro" }),
+      screen.getByRole("checkbox", {
+        name: "Sólo previsualizar (no envía nada)",
+      }),
     );
 
     expect(onChange).toHaveBeenCalledWith({ dryRun: false });
@@ -179,7 +181,7 @@ describe("RunControls · destino", () => {
         onChange={vi.fn()}
       />,
     );
-    const field = screen.getByRole("textbox", { name: /Metodo/ });
+    const field = screen.getByRole("textbox", { name: /Método/ });
 
     expect(field).toHaveValue("DELETE");
     expect(field).toHaveAttribute("readonly");
@@ -215,13 +217,13 @@ describe("EndpointSafetyHints · avisos del catálogo", () => {
     const { unmount } = render(
       <EndpointSafetyHints endpoint={endpointFixture({ isReadonly: true })} />,
     );
-    expect(screen.getByText("readonly")).toBeInTheDocument();
+    expect(screen.getByText("sólo lectura")).toBeInTheDocument();
     unmount();
 
     render(
       <EndpointSafetyHints endpoint={endpointFixture({ isReadonly: false })} />,
     );
-    expect(screen.getByText("cambia estado")).toBeInTheDocument();
+    expect(screen.getByText("cambia datos")).toBeInTheDocument();
   });
 
   it("dice si requiere sesión o no", () => {
@@ -230,7 +232,7 @@ describe("EndpointSafetyHints · avisos del catálogo", () => {
         endpoint={endpointFixture({ requiresAuth: true })}
       />,
     );
-    expect(screen.getByText("requiere sesion")).toBeInTheDocument();
+    expect(screen.getByText("requiere sesión")).toBeInTheDocument();
     unmount();
 
     render(
@@ -238,7 +240,7 @@ describe("EndpointSafetyHints · avisos del catálogo", () => {
         endpoint={endpointFixture({ requiresAuth: false })}
       />,
     );
-    expect(screen.getByText("sin auth")).toBeInTheDocument();
+    expect(screen.getByText("sin sesión")).toBeInTheDocument();
   });
 
   it("un endpoint destructivo se avisa; uno normal no lleva el cartel", () => {
@@ -261,7 +263,7 @@ describe("EndpointSafetyHints · avisos del catálogo", () => {
       />,
     );
 
-    expect(screen.getByText("solo testing")).toBeInTheDocument();
+    expect(screen.getByText("sólo pruebas")).toBeInTheDocument();
   });
 });
 
@@ -290,7 +292,7 @@ describe("MutationError · fallo de la ejecución", () => {
     render(<MutationError error={new TypeError("Failed to fetch")} />);
 
     expect(
-      screen.getByText("No se pudo ejecutar el endpoint."),
+      screen.getByText("No se pudo ejecutar la operación."),
     ).toBeInTheDocument();
   });
 });

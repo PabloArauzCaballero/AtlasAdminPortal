@@ -16,8 +16,10 @@ import {
   getBodyForMethod,
 } from "./request-builder";
 import {
+  assertAuthModeUsable,
   assertHostAllowed,
   assertRequestAllowed,
+  credentialsForAuthMode,
   redactedHeaders,
 } from "./qa-safety";
 import {
@@ -32,12 +34,41 @@ export async function executeEndpointDirectly(
   input: DirectRunInput,
 ): Promise<DirectRunResult> {
   const logger = createQaPinoLogger(endpoint.endpointId || endpoint.code);
-  const built = buildQaRequest(endpoint, input);
+  let built: BuiltRequest;
+  try {
+    built = buildQaRequest(endpoint, input);
+  } catch (error) {
+    // Una base mal configurada hacía que `new URL()` lanzara FUERA del try y el operador sólo
+    // veía «No se pudo ejecutar el endpoint». Ahora el motivo llega al resultado.
+    logger
+      .child("builder")
+      .error("request.invalid", "Dirección inválida", error);
+    return withLogs(
+      buildBlockedDirectResult(
+        {
+          url:
+            input.routeOverride ||
+            endpoint.fullPath ||
+            endpoint.routePath ||
+            "",
+          method: (endpoint.method || "GET").toUpperCase(),
+          headers: {},
+        },
+        input.dryRun,
+        [],
+        new Error(
+          `No se pudo armar la dirección de la petición (${error instanceof Error ? error.message : "dirección inválida"}). Revisa el ambiente y la ruta base elegidos.`,
+        ),
+      ),
+      logger,
+    );
+  }
   const warnings = buildWarnings(built.unresolvedPathParams);
   const timeoutMs = effectiveTimeoutMs(input.timeoutMs);
   logBuildLayer(logger, endpoint, input, built, warnings);
 
   try {
+    assertAuthModeUsable(input);
     assertHostAllowed(built.url);
     assertRequestAllowed({
       endpoint,
@@ -88,7 +119,7 @@ async function executeFetch(
   try {
     const response = await rawFetch(
       built.url,
-      buildInit(built, body),
+      buildInit(built, body, input.authMode),
       timeoutMs,
     );
     const latencyMs = Math.round(performance.now() - startedAt);
@@ -122,18 +153,22 @@ async function executeFetch(
   }
 }
 
-function buildInit(built: BuiltRequest, body: string | undefined): RequestInit {
+function buildInit(
+  built: BuiltRequest,
+  body: string | undefined,
+  authMode?: string,
+): RequestInit {
   return {
     method: built.method,
     headers: built.headers,
     body,
-    credentials: "include",
+    credentials: credentialsForAuthMode(authMode),
   };
 }
 
 function buildWarnings(unresolvedPathParams: string[]): string[] {
   return unresolvedPathParams.length > 0
-    ? [`Path params pendientes: ${unresolvedPathParams.join(", ")}.`]
+    ? [`Faltan datos de la ruta: ${unresolvedPathParams.join(", ")}.`]
     : [];
 }
 

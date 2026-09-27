@@ -31,20 +31,21 @@ test.describe("laboratorio de QA", () => {
 
     // El selector debe haber quedado colapsado en una barra.
     await expect(
-      page.getByRole("button", { name: /cambiar endpoint/i }),
+      page.getByRole("button", { name: /cambiar operación/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /seleccionar endpoint/i }),
+      page.getByRole("heading", { name: /seleccionar operación/i }),
     ).toHaveCount(0);
 
     await expect(page.getByText(/campos en el contrato/i)).toBeVisible();
 
-    const payload = page.getByLabel("Payload de entrada");
+    const payload = page.getByLabel("Datos de entrada");
     // Abre con un caso generado, no con el contrato: `string|required` en la caja del payload
     // significaba enviar la DESCRIPCIÓN del campo como su valor. El contrato de `/auth/login` lo
     // publica ahora el propio backend desde su esquema Zod, y declara `identifier`, no `email`.
     await expect(payload).not.toContainText("string|required");
-    await expect(payload).toContainText("@atlas.test");
+    // El correo sale del generador de datos del mock (dominio qa.atlas.test por defecto).
+    await expect(payload).toContainText("atlas.test");
     await expect(payload).toContainText("identifier");
 
     // Clase inválida: debe faltar un campo obligatorio, que es lo que el endpoint tiene que
@@ -74,7 +75,7 @@ test.describe("laboratorio de QA", () => {
     await page.getByRole("button", { name: /generar \d+ casos?/i }).click();
     await expect(payload).toContainText('"identifier"');
 
-    await page.getByRole("button", { name: /previsualizar request/i }).click();
+    await page.getByRole("button", { name: /previsualizar petición/i }).click();
     await page.getByRole("button", { name: /^previsualizar$/i }).click();
     await expect(page.getByText("Resultado completo")).toBeVisible({
       timeout: 20_000,

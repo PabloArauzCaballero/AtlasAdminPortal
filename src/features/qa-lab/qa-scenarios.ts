@@ -20,94 +20,92 @@ export type QaScenarioDefinition = {
   description: string;
   expectedOutcome: string;
   patch?: QaAuthOverridePatch;
+  /**
+   * Qué códigos dan la prueba por buena en este escenario. `"contract"` = los que declara el
+   * catálogo para la operación. Sin esto el escenario cambiaba la credencial pero dejaba «200»
+   * como esperado, y una prueba «Sin identificarse» que respondía 401 —lo correcto— salía roja.
+   */
+  expectedStatusCodes?: string;
+  /** El escenario necesita datos inválidos del generador. */
+  loadsInvalidCase?: boolean;
 };
+
+const NORMAL = {
+  authMode: "session",
+  includeTenantHeader: true,
+  includeIdempotencyKey: true,
+} as const;
 
 export const QA_SCENARIOS: QaScenarioDefinition[] = [
   {
     key: "valid_payload",
-    label: "Payload valido",
-    description: "Usa la sesion actual, tenant e idempotency-key normales.",
-    expectedOutcome: "Respuesta exitosa segun el contrato del endpoint.",
-    patch: {
-      authMode: "session",
-      includeTenantHeader: true,
-      includeIdempotencyKey: true,
-    },
+    label: "Datos válidos",
+    description:
+      "Tu sesión, con la cabecera de empresa y la clave anti-duplicados normales.",
+    expectedOutcome: "Respuesta correcta según lo que declara el catálogo.",
+    patch: { ...NORMAL },
+    expectedStatusCodes: "contract",
   },
   {
     key: "without_auth",
-    label: "Sin autenticacion",
-    description: "Elimina el header Authorization antes de enviar el request.",
-    expectedOutcome: "401 si el endpoint requiere sesion.",
-    patch: {
-      authMode: "none",
-      includeTenantHeader: true,
-      includeIdempotencyKey: true,
-    },
+    label: "Sin identificarse",
+    description: "La petición sale sin token y sin la cookie de tu sesión.",
+    expectedOutcome: "401 si la operación exige sesión.",
+    patch: { ...NORMAL, authMode: "none" },
+    expectedStatusCodes: "401",
   },
   {
     key: "invalid_token",
-    label: "Token invalido",
-    description: "Envia un Bearer token corrupto/expirado a proposito.",
-    expectedOutcome: "401 por token invalido o expirado.",
-    patch: {
-      authMode: "invalid",
-      includeTenantHeader: true,
-      includeIdempotencyKey: true,
-    },
+    label: "Credencial falsa",
+    description:
+      "Envía un token corrupto a propósito, sin la cookie de tu sesión.",
+    expectedOutcome: "401 por credencial inválida o vencida.",
+    patch: { ...NORMAL, authMode: "invalid" },
+    expectedStatusCodes: "401",
   },
   {
     key: "wrong_role_token",
     label: "Token de otro rol",
     description:
-      "Pega manualmente un token de un actor sin permiso (customer, merchant, etc.) en 'Token manual'.",
-    expectedOutcome: "403 por rol/permiso insuficiente.",
-    patch: {
-      authMode: "custom",
-      includeTenantHeader: true,
-      includeIdempotencyKey: true,
-    },
+      "Pega en «Token de otro actor» el token de alguien sin permiso (cliente, comercio…). Sin token, el laboratorio no envía.",
+    expectedOutcome: "403 por rol o permiso insuficiente.",
+    patch: { ...NORMAL, authMode: "custom" },
+    expectedStatusCodes: "403",
   },
   {
     key: "missing_tenant",
-    label: "Sin x-tenant-id",
-    description: "Omite el header x-tenant-id en endpoints de negocio.",
-    expectedOutcome: "400/422 si el endpoint exige tenant.",
-    patch: {
-      authMode: "session",
-      includeTenantHeader: false,
-      includeIdempotencyKey: true,
-    },
+    label: "Sin cabecera de empresa",
+    description:
+      "Omite x-tenant-id, la cabecera que dice a qué empresa pertenece la petición.",
+    expectedOutcome: "400, 403 o 422 si la operación exige empresa.",
+    patch: { ...NORMAL, includeTenantHeader: false },
+    expectedStatusCodes: "400, 403, 422",
   },
   {
     key: "missing_idempotency_key",
-    label: "Sin x-idempotency-key",
-    description: "Omite x-idempotency-key en metodos mutables.",
+    label: "Sin clave anti-duplicados",
+    description:
+      "Omite x-idempotency-key en operaciones que cambian datos. Las que la exigen deben rechazar.",
     expectedOutcome:
-      "Depende del endpoint; util para probar reintentos duplicados.",
-    patch: {
-      authMode: "session",
-      includeTenantHeader: true,
-      includeIdempotencyKey: false,
-    },
+      "400 si la operación la exige (p. ej. el alta de cliente).",
+    patch: { ...NORMAL, includeIdempotencyKey: false },
+    expectedStatusCodes: "400",
   },
   {
     key: "invalid_payload",
-    label: "Payload invalido",
+    label: "Datos inválidos",
     description:
-      "Mantiene auth normal; edita manualmente el JSON de payload para romper la validacion.",
-    expectedOutcome: "400/422 VALIDATION_ERROR.",
-    patch: {
-      authMode: "session",
-      includeTenantHeader: true,
-      includeIdempotencyKey: true,
-    },
+      "Carga un caso inválido del generador (un dato que rompe una regla o un obligatorio que falta).",
+    expectedOutcome: "400 o 422: error de validación.",
+    patch: { ...NORMAL },
+    expectedStatusCodes: "400, 422",
+    loadsInvalidCase: true,
   },
   {
     key: "custom",
     label: "Personalizado",
-    description: "No aplica ningun preset; controla cada opcion manualmente.",
-    expectedOutcome: "Depende de la configuracion manual.",
+    description: "No toca nada: controlas cada opción a mano.",
+    expectedOutcome: "Depende de lo que configures.",
   },
 ];
 

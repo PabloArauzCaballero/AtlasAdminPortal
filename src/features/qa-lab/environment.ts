@@ -31,3 +31,16 @@ export function defaultQaEnvironment(): QaEnvironment {
     .toLowerCase();
   return deployment === "production" ? "PRODUCTION_READONLY" : "LOCAL";
 }
+
+/** ¿El destino es producción? Producción sólo admite previsualizar. */
+export function isProductionTarget(environment: string): boolean {
+  return environment.trim().toUpperCase() === "PRODUCTION_READONLY";
+}
+
+/**
+ * Ambientes donde vale correr lo marcado «sólo para pruebas»: LOCAL, que es también el ambiente que
+ * `defaultQaEnvironment` da a los portales de DEV y TEST. STAGING compartido y producción, no.
+ */
+export function isTestingTarget(environment: string): boolean {
+  return environment.trim().toUpperCase() === "LOCAL";
+}

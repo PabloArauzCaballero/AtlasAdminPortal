@@ -1,7 +1,7 @@
 /**
- * Caché de progreso en `localStorage`. NO es la fuente de verdad (lo es el
- * backend vía `/api/qa-tutorials/progress`): sólo evita el parpadeo mientras
- * llega la respuesta del servidor y permite mostrar progreso offline.
+ * Progreso en `localStorage`: es la FUENTE del progreso. La copia de
+ * `/api/qa-tutorials/progress` vive en el `/tmp` del contenedor y se pierde en
+ * cada despliegue, así que sólo es un respaldo que se fusiona al leer.
  *
  * Fichero allowlisted en check-source-boundaries.mjs (uso de localStorage).
  */
@@ -70,6 +70,49 @@ export function writeActiveRun(run: ActiveRun | null): void {
   try {
     if (run) window.sessionStorage.setItem(ACTIVE_KEY, JSON.stringify(run));
     else window.sessionStorage.removeItem(ACTIVE_KEY);
+  } catch {
+    // best-effort
+  }
+}
+
+/**
+ * Recorrido en curso (Centro de aprendizaje → «Empezar recorrido»): qué tutoriales quedan por
+ * delante. En `sessionStorage` por la misma razón que la corrida activa: sobrevive a un F5.
+ */
+const PATH_KEY = "qa-tutorials-path-queue";
+
+export type PathQueue = Readonly<{
+  pathId: string;
+  title: string;
+  remaining: readonly string[];
+}>;
+
+export function readPathQueue(): PathQueue | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(PATH_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PathQueue>;
+    if (typeof parsed.pathId !== "string" || !Array.isArray(parsed.remaining)) {
+      return null;
+    }
+    return {
+      pathId: parsed.pathId,
+      title: typeof parsed.title === "string" ? parsed.title : "",
+      remaining: parsed.remaining.filter(
+        (id): id is string => typeof id === "string",
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function writePathQueue(queue: PathQueue | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (queue) window.sessionStorage.setItem(PATH_KEY, JSON.stringify(queue));
+    else window.sessionStorage.removeItem(PATH_KEY);
   } catch {
     // best-effort
   }

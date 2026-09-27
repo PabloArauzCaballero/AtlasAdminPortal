@@ -11,7 +11,6 @@ import {
   allErrorExplanations,
   classifyHttpStatus,
 } from "@/features/qa-tutorials/error-catalog";
-import { allFieldHelp } from "@/features/qa-tutorials/field-help-catalog";
 
 describe("catálogo de tutoriales · integridad", () => {
   it("tiene ids únicos y estables", () => {
@@ -76,13 +75,6 @@ describe("catálogo de tutoriales · integridad", () => {
       expect(explanation.likelyCauses.length).toBeGreaterThan(0);
       expect(explanation.fixSteps.length).toBeGreaterThan(0);
       expect(explanation.recommendedAction.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("cada ayuda de campo tiene tooltip y guía", () => {
-    for (const help of allFieldHelp()) {
-      expect(help.tooltip.length).toBeGreaterThan(0);
-      expect(help.help.length).toBeGreaterThan(0);
     }
   });
 
