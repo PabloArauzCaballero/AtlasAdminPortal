@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useDataEntities, useEndpoints } from "@/features/systems/hooks";
+import { useWholeCatalog } from "./hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import {
   PageHeader,
@@ -11,7 +11,6 @@ import {
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -29,13 +28,12 @@ export function GovernanceOverviewPage() {
 }
 
 function AuthorizedGovernanceOverviewPage() {
-  const entities = useDataEntities({ page: 1, limit: 100 });
-  const endpoints = useEndpoints({ page: 1, limit: 100 });
-  const error = entities.error ?? endpoints.error;
+  const catalog = useWholeCatalog();
+  const error = catalog.error;
 
   const stats = useMemo(() => {
-    const tables = entities.data?.items ?? [];
-    const routes = endpoints.data?.items ?? [];
+    const tables = catalog.data?.entities.items ?? [];
+    const routes = catalog.data?.endpoints.items ?? [];
     return {
       piiTables: tables.filter((item) => item.containsPii).length,
       financialTables: tables.filter((item) => item.containsFinancialData)
@@ -63,7 +61,7 @@ function AuthorizedGovernanceOverviewPage() {
             item.reviewStatus === "AUTO_DETECTED",
         ).length,
     };
-  }, [endpoints.data?.items, entities.data?.items]);
+  }, [catalog.data]);
 
   return (
     <>
@@ -71,7 +69,7 @@ function AuthorizedGovernanceOverviewPage() {
         icon={Scale}
         eyebrow="Gobierno de datos"
         title="Gobierno de datos"
-        description="Resumen dinámico de sensibilidad, PII, criticidad y revisión. Esta fase no inventa políticas; expone lo disponible en catálogo real."
+        description="Cuántas tablas y rutas manejan datos personales, financieros o de riesgo, y cuántas siguen sin revisar. Sale del catálogo real, entero."
       />
       <BusinessContextNote>
         Manejar datos de clientes (identidad, finanzas, ubicación) conlleva
@@ -80,9 +78,7 @@ function AuthorizedGovernanceOverviewPage() {
         sensible maneja Atlas y qué tan revisada/documentada está esa
         exposición.
       </BusinessContextNote>
-      {entities.isLoading || endpoints.isLoading ? (
-        <LoadingSkeleton rows={6} />
-      ) : null}
+      {catalog.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {error ? (
         <ErrorState
           description={
@@ -91,14 +87,18 @@ function AuthorizedGovernanceOverviewPage() {
               : "No se pudo cargar gobierno de datos."
           }
           requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => {
-            void entities.refetch();
-            void endpoints.refetch();
-          }}
+          onRetry={() => void catalog.refetch()}
         />
       ) : null}
-      {entities.data && endpoints.data ? (
+      {catalog.data ? (
         <div className="space-y-6">
+          <p className="text-sm text-atlas-muted">
+            Contado sobre {formatNumber(catalog.data.entities.total)} tablas y{" "}
+            {formatNumber(catalog.data.endpoints.total)} rutas del catálogo.
+            {catalog.data.entities.truncated || catalog.data.endpoints.truncated
+              ? " El catálogo es más grande de lo que esta pantalla lee de una vez: los números son un mínimo."
+              : ""}
+          </p>
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Tablas con PII"
@@ -123,7 +123,7 @@ function AuthorizedGovernanceOverviewPage() {
               <CardHeader>
                 <SectionHeader
                   title="Clasificación de tablas"
-                  description="Controles derivados de flags de catálogo."
+                  description="Cuántas tablas del catálogo llevan cada marca."
                   className="mb-0"
                 />
               </CardHeader>
@@ -142,9 +142,9 @@ function AuthorizedGovernanceOverviewPage() {
                     <span className="text-sm font-medium text-atlas-text">
                       {label}
                     </span>
-                    <StatusBadge
-                      value={Number(value) > 0 ? "ACTIVE" : "EMPTY"}
-                    />
+                    <span className="text-sm font-semibold tabular-nums text-atlas-text">
+                      {formatNumber(Number(value))}
+                    </span>
                   </div>
                 ))}
               </CardContent>
@@ -153,8 +153,8 @@ function AuthorizedGovernanceOverviewPage() {
             <Card>
               <CardHeader>
                 <SectionHeader
-                  title="Riesgo operativo por endpoint"
-                  description="Endpoints con PII, destructivos o riesgo alto/crítico."
+                  title="Riesgo operativo por ruta"
+                  description="Rutas que tocan datos personales, que borran o que tienen riesgo alto o crítico."
                   className="mb-0"
                 />
               </CardHeader>
@@ -188,7 +188,7 @@ function AuthorizedGovernanceOverviewPage() {
                 className="rounded-md border border-atlas-border p-4 text-sm font-medium hover:bg-atlas-soft"
                 href="/internal/governance/pii"
               >
-                PII registry
+                Registro de datos personales
               </Link>
               <Link
                 className="rounded-md border border-atlas-border p-4 text-sm font-medium hover:bg-atlas-soft"

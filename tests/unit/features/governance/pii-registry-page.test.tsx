@@ -79,7 +79,9 @@ describe("PiiRegistryPage — autorización antes de la query (FASE 6)", () => {
 
     renderWithProviders(<PiiRegistryPage />);
 
-    expect(screen.queryByText("PII registry")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Registro de datos personales"),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("Tablas sensibles")).not.toBeInTheDocument();
   });
 
@@ -98,6 +100,8 @@ describe("PiiRegistryPage — autorización antes de la query (FASE 6)", () => {
     renderWithProviders(<PiiRegistryPage />);
     await vi.waitFor(() => expect(peticiones.length).toBeGreaterThan(0));
 
-    expect(screen.getByText("PII registry")).toBeInTheDocument();
+    expect(
+      screen.getByText("Registro de datos personales"),
+    ).toBeInTheDocument();
   });
 });

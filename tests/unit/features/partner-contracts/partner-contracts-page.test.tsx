@@ -138,4 +138,27 @@ describe("PartnerContractsPage — el contrato se versiona, no se edita", () => 
       screen.getAllByRole("button", { name: "Marcar como vigente" }),
     ).toHaveLength(1);
   });
+
+  it("sin governance.policies.manage no ofrece publicar ni marcar: el servidor lo rechazaría", async () => {
+    mockUseAuth.mockReturnValue({
+      permissions: ["governance.policies.read"],
+      roles: ["admin"],
+      hasAnyRole: () => true,
+      hasPermission: (permiso: string) =>
+        permiso === "governance.policies.read",
+    });
+    conPlantillas([VIGENTE, { ...ARCHIVADA, status: "active" }]);
+
+    renderWithProviders(<PartnerContractsPage />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("contrato-1")).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByRole("button", { name: "Publicar una versión" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Marcar como vigente" }),
+    ).not.toBeInTheDocument();
+  });
 });

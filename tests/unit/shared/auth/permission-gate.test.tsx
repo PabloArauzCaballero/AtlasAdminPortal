@@ -136,7 +136,7 @@ describe("PermissionGate · fallback", () => {
 
   it("fallback={null} no renderiza nada (es el modo 'oculta la acción')", () => {
     // Convención documentada y usada en ~15 sitios (p. ej.
-    // data-exports/export-download-action.tsx) para esconder un botón dentro de
+    // la acción de una fila de tabla) para esconder un botón dentro de
     // una fila. Colar ahí la tarjeta de "Acceso restringido" rompe el layout.
     const { container } = renderGate(
       <PermissionGate permissions={["informes.leer"]} fallback={null}>

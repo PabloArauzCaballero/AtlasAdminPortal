@@ -21,7 +21,7 @@ import type { PartnerContractTemplate } from "./types";
 export function TarjetaContrato({
   plantilla,
   onMarcar,
-}: Readonly<{ plantilla: PartnerContractTemplate; onMarcar: () => void }>) {
+}: Readonly<{ plantilla: PartnerContractTemplate; onMarcar?: () => void }>) {
   const archivada = plantilla.status !== "active";
   return (
     <Card className="p-5" testId={`contrato-${plantilla.templateId}`}>
@@ -41,7 +41,7 @@ export function TarjetaContrato({
             <StatusBadge value={plantilla.status} />
           )}
           {/* Revivir un texto archivado desharía la retirada de quien tuvo un motivo para retirarlo. */}
-          {!plantilla.isDefault && !archivada ? (
+          {onMarcar && !plantilla.isDefault && !archivada ? (
             <Button className="h-8 px-2 text-xs" onClick={onMarcar}>
               Marcar como vigente
             </Button>

@@ -7,6 +7,14 @@ import { renderWithProviders } from "../../helpers/render-with-providers";
 
 vi.mock("@/shared/api/client", () => ({ apiRequest: vi.fn() }));
 
+let permisos: string[] = ["governance.policies.manage"];
+vi.mock("@/shared/auth/auth-context", () => ({
+  useAuth: () => ({
+    permissions: permisos,
+    hasPermission: (permiso: string) => permisos.includes(permiso),
+  }),
+}));
+
 const request = vi.mocked(apiRequest);
 const document: ConsentDocument = {
   id: "document-1",
@@ -33,7 +41,27 @@ async function openEditor() {
 }
 
 describe("ConsentDocumentsPage", () => {
-  beforeEach(() => request.mockReset());
+  beforeEach(() => {
+    request.mockReset();
+    permisos = ["governance.policies.manage"];
+  });
+
+  it("muestra el estado en palabras, no el código de la base", async () => {
+    request.mockResolvedValue({ items: [document] });
+    renderWithProviders(<ConsentDocumentsPage />);
+
+    expect(await screen.findByText("Vigente")).toBeInTheDocument();
+    expect(screen.queryByText("published")).not.toBeInTheDocument();
+  });
+
+  it("sin governance.policies.manage no ofrece corregir un texto que el servidor rechazaría", async () => {
+    permisos = ["governance.policies.read"];
+    request.mockResolvedValue({ items: [document] });
+    renderWithProviders(<ConsentDocumentsPage />);
+
+    await screen.findByText("Política de privacidad");
+    expect(screen.queryByTestId("edit-privacy_policy")).not.toBeInTheDocument();
+  });
 
   it("conserva el borrador y el texto vigente si el servidor rechaza la edición", async () => {
     request.mockImplementation((path, options) =>

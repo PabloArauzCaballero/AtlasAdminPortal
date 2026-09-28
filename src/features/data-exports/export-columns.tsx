@@ -1,50 +1,40 @@
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { formatDateTime } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import type { DataExportSummary } from "./types";
 
 export function buildDataExportColumns(): ColumnDef<DataExportSummary>[] {
   return [
     {
       accessorKey: "name",
-      header: "Exportación",
+      header: "Catálogo",
       cell: ({ row }) => (
-        <div>
-          <p className="font-medium text-atlas-text">{row.original.name}</p>
-          <p className="text-xs text-atlas-muted">
-            {row.original.resourceType} · {row.original.format}
-          </p>
-        </div>
+        <p className="font-medium text-atlas-text">{row.original.name}</p>
       ),
     },
     {
-      accessorKey: "status",
-      header: "Estado",
-      cell: ({ row }) => <StatusBadge value={row.original.status} />,
-    },
-    { accessorKey: "requestedBy", header: "Solicitado por" },
-    {
-      accessorKey: "requestedAt",
-      header: "Solicitado",
-      cell: ({ row }) => formatDateTime(row.original.requestedAt),
+      id: "rows",
+      header: "Filas",
+      cell: ({ row }) => (
+        <span className="tabular-nums">
+          {formatNumber(row.original.metadata?.rows ?? 0)}
+        </span>
+      ),
     },
     {
-      accessorKey: "finishedAt",
-      header: "Finalizado",
-      cell: ({ row }) => formatDateTime(row.original.finishedAt),
+      id: "reason",
+      header: "Para qué sirve",
+      cell: ({ row }) => row.original.metadata?.reason ?? "—",
     },
-    {
-      accessorKey: "expiresAt",
-      header: "Expira",
-      cell: ({ row }) => formatDateTime(row.original.expiresAt),
-    },
+    { accessorKey: "format", header: "Formato" },
     {
       id: "actions",
       header: "Acciones",
       cell: ({ row }) => (
-        <Link href={`/internal/exports/${row.original.exportId}`}>
+        <Link
+          href={`/internal/exports/${encodeURIComponent(row.original.exportId)}`}
+        >
           <Button>Ver</Button>
         </Link>
       ),

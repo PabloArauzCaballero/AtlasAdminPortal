@@ -14,6 +14,8 @@ import {
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { useAuth } from "@/shared/auth/auth-context";
+import { isAtlasApiError } from "@/shared/api/errors";
 
 /**
  * El texto que el cliente acepta, editable sin desplegar.
@@ -85,6 +87,14 @@ export function ConsentDocumentsPage() {
  * describe algo que ya no se ofrece y se apaga en gris; cualquier otro estado —un borrador— avisa
  * en ámbar de que hay texto escrito que todavía no rige.
  */
+/** El estado en palabras: «published» o «retired» es el código de la base, no lo que se lee. */
+export function statusLabel(status: string | null): string {
+  if (status === "published") return "Vigente";
+  if (status === "retired") return "Retirado";
+  if (status === "draft") return "Borrador";
+  return "Sin estado";
+}
+
 function statusTone(status: string | null): "success" | "muted" | "warning" {
   if (status === "published") return "success";
   if (status === "retired") return "muted";
@@ -103,6 +113,10 @@ function DocumentCard({
   onClose: () => void;
 }>) {
   const mutation = useUpdateConsentDocument();
+  // Corregir un texto legal es `governance.policies.manage`; el backend lo exige. Sin él, el botón
+  // sólo llevaba a un «No pudimos guardar» sin explicación.
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission("governance.policies.manage");
   const [title, setTitle] = useState(document.title ?? "");
   const [summary, setSummary] = useState(document.summary ?? "");
   const [body, setBody] = useState(document.bodyMarkdown ?? "");
@@ -132,9 +146,9 @@ function DocumentCard({
           </div>
           <div className="flex items-center gap-2">
             <Badge tone={statusTone(document.status)}>
-              {document.status ?? "sin estado"}
+              {statusLabel(document.status)}
             </Badge>
-            {!editing ? (
+            {!editing && canEdit ? (
               <Button
                 variant="secondary"
                 onClick={onEdit}
@@ -224,7 +238,9 @@ function DocumentCard({
 
             {mutation.error ? (
               <p className="text-xs font-medium text-red-600">
-                No pudimos guardar. Revisa el texto e intenta otra vez.
+                {isAtlasApiError(mutation.error)
+                  ? mutation.error.message
+                  : "No pudimos guardar. Revisa el texto e intenta otra vez."}
               </p>
             ) : null}
           </div>

@@ -10,7 +10,6 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildDataExportColumns } from "./export-columns";
 import { useDataExports } from "./hooks";
 import { Download } from "lucide-react";
@@ -29,27 +28,15 @@ export function ExportsPage() {
 function AuthorizedExportsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("");
-  const [resourceType, setResourceType] = useState("");
-  const exportsQuery = useDataExports({
-    page,
-    limit: 20,
-    q,
-    status,
-    resourceType,
-  });
+  const exportsQuery = useDataExports({ page, limit: 20, q });
   const items = useMemo(
     () => exportsQuery.data?.items ?? [],
     [exportsQuery.data],
   );
   const columns = useMemo(() => buildDataExportColumns(), []);
-  const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
-    [items],
-  );
-  const resourceOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.resourceType)),
-    [items],
+  const rows = items.reduce(
+    (total, item) => total + (item.metadata?.rows ?? 0),
+    0,
   );
 
   return (
@@ -58,38 +45,17 @@ function AuthorizedExportsPage() {
         icon={Download}
         eyebrow="Exportaciones"
         title="Exportaciones"
-        description="Solicitudes de exportación controladas por políticas, auditoría y vencimiento de acceso."
+        description="Catálogos que se pueden descargar enteros en JSON. Atlas no guarda un historial de exportaciones: cada descarga se genera al momento, con tu sesión."
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar exportación, recurso o solicitante…"
-        filters={[
-          {
-            name: "status",
-            label: "Estado",
-            value: status,
-            options: statusOptions,
-          },
-          {
-            name: "resourceType",
-            label: "Recurso",
-            value: resourceType,
-            options: resourceOptions,
-          },
-        ]}
+        searchPlaceholder="Buscar catálogo…"
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
         }}
-        onFilterChange={(name, value) => {
-          if (name === "status") setStatus(value);
-          if (name === "resourceType") setResourceType(value);
-          setPage(1);
-        }}
         onClear={() => {
           setQ("");
-          setStatus("");
-          setResourceType("");
           setPage(1);
         }}
       />
@@ -99,7 +65,7 @@ function AuthorizedExportsPage() {
           description={
             isAtlasApiError(exportsQuery.error)
               ? exportsQuery.error.message
-              : "No se pudieron cargar exportaciones."
+              : "No se pudieron cargar los catálogos descargables."
           }
           requestId={
             isAtlasApiError(exportsQuery.error)
@@ -111,32 +77,19 @@ function AuthorizedExportsPage() {
       ) : null}
       {exportsQuery.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <MetricCard
-              label="Exportaciones"
+              label="Catálogos descargables"
               value={formatNumber(exportsQuery.data.meta.total)}
             />
-            <MetricCard label="Visibles" value={formatNumber(items.length)} />
-            <MetricCard
-              label="Disponibles"
-              value={formatNumber(
-                items.filter((item) => Boolean(item.downloadUrl)).length,
-              )}
-            />
-            <MetricCard
-              label="Fallidas"
-              value={formatNumber(
-                items.filter((item) => item.status?.toUpperCase() === "FAILED")
-                  .length,
-              )}
-            />
+            <MetricCard label="Filas en total" value={formatNumber(rows)} />
           </section>
           <DataTable
             data={items}
             columns={columns}
             meta={exportsQuery.data.meta}
             onPageChange={setPage}
-            emptyTitle="No hay exportaciones para los filtros actuales."
+            emptyTitle="Ningún catálogo coincide con la búsqueda."
           />
         </div>
       ) : null}
