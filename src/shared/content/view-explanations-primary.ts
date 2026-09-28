@@ -98,6 +98,12 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Las reglas del juego sobre los datos, versionadas y auditables: qué política aplica a qué información.",
       },
+      "/internal/governance/privacy-requests": {
+        systems:
+          "Cola de `privacy.data_subject_requests` servida por `/operations/privacy/data-subject-requests`: plazo calculado a 15 días naturales desde la recepción, vencidas marcadas, detalle con historial leído de la auditoría y transiciones received → in_progress → completed | rejected (cerrar exige motivo). Leer pide `privacy.requests.read`; mover, `privacy.requests.manage`.",
+        business:
+          "Donde cumplimiento atiende los pedidos de los clientes sobre sus datos antes de que venza el plazo legal. Marcar una solicitud como atendida deja constancia; no borra datos: la supresión se hace a mano respetando lo que la ley obliga a conservar.",
+      },
       "/internal/governance/pii": {
         systems:
           "Inventario de columnas marcadas como PII en el catálogo, con su clasificación y las políticas que las cubren.",

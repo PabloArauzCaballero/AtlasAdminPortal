@@ -27,6 +27,7 @@ export const breadcrumbLabels: Record<string, string> = {
   "partner-contracts": "Contrato de comercios",
   endpoints: "Endpoints",
   governance: "Gobierno de datos",
+  "privacy-requests": "Solicitudes de privacidad",
   glossary: "Glosario",
   guia: "Guía",
   official: "Oficial",

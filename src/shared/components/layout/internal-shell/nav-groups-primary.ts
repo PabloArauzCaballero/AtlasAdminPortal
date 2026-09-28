@@ -149,6 +149,16 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["governance.data.read"],
       },
       {
+        /*
+         * La cola de pedidos de los clientes sobre sus datos (hallazgo A5). Va junto al gobierno de
+         * datos y no en operaciones: la atiende cumplimiento y el plazo es legal, no operativo.
+         */
+        label: "Solicitudes de privacidad",
+        href: "/internal/governance/privacy-requests",
+        icon: ShieldCheck,
+        permissions: ["privacy.requests.read"],
+      },
+      {
         label: "Políticas gobierno",
         href: "/internal/governance/policies",
         icon: ShieldCheck,
