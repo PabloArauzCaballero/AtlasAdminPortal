@@ -23,6 +23,7 @@ export function toAtlasApiError(
   payload: unknown,
 ): AtlasApiError {
   const headerRequestId = getHeaderRequestId(response);
+  const retryAfterMs = getRetryAfterMs(response);
   if (isApiErrorPayload(payload)) {
     return new AtlasApiError({
       status: response.status,
@@ -30,6 +31,7 @@ export function toAtlasApiError(
       message: payload.error.message,
       requestId: payload.requestId ?? headerRequestId,
       payload,
+      retryAfterMs,
     });
   }
 
@@ -38,7 +40,15 @@ export function toAtlasApiError(
     code: `HTTP_${response.status}`,
     message: "No se pudo completar la operación.",
     requestId: headerRequestId,
+    retryAfterMs,
   });
+}
+
+/** `Retry-After` en segundos (la forma que usa Core). La forma de fecha no se interpreta. */
+function getRetryAfterMs(response: Response): number | undefined {
+  const raw = response.headers.get("retry-after")?.trim();
+  if (!raw || !/^\d{1,4}$/.test(raw)) return undefined;
+  return Number(raw) * 1000;
 }
 
 function normalizeResponseData<T>(data: T): T {
