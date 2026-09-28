@@ -21,6 +21,7 @@ import type {
   FlowReviewItem,
   FlowReviewStatus,
 } from "./types";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 const ESTADOS: FlowReviewStatus[] = [
   "NEEDS_REVIEW",
@@ -186,6 +187,7 @@ function AuthorizedFlowReviewPage() {
           />
         }
       />
+      <FlowCatalogNotLoaded />
       {!puedeRevisar ? (
         <p className="mb-4 text-xs text-atlas-muted">
           Puedes ver la cola, pero decidir exige el permiso

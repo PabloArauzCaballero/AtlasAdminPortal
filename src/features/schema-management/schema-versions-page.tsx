@@ -14,6 +14,7 @@ import { useSchemaVersions } from "./hooks";
 import { ProposeTableForm } from "./propose-table-form";
 import { buildSchemaVersionColumns } from "./schema-version-columns";
 import { SchemaChangeLogTable } from "./schema-change-log-table";
+import { SchemaInventoryMissingNote } from "./schema-inventory-missing-note";
 import { Database } from "lucide-react";
 import { useAuth } from "@/shared/auth/auth-context";
 import { SCHEMA_PROPOSE_PERMISSION } from "./change-actor";
@@ -72,6 +73,13 @@ export function SchemaVersionsPage() {
               : undefined
           }
           onRetry={() => void versions.refetch()}
+        />
+      ) : null}
+      {versions.data ? (
+        <SchemaInventoryMissingNote
+          versionCodes={versions.data.items
+            .filter((version) => version.tablesCount === 0)
+            .map((version) => version.versionCode)}
         />
       ) : null}
       {versions.data ? (

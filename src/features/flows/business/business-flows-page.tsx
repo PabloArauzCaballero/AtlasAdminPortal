@@ -17,6 +17,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { FlowDetailDrawer } from "../flow-detail-drawer";
 import { useBusinessFlows } from "../hooks";
 import { BusinessProcessCard } from "./business-process-card";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 /**
  * Los procesos de negocio (`workflow-catalog`) leídos como historias funcionales: qué pasos
@@ -64,6 +65,7 @@ function AuthorizedBusinessFlowsPage() {
           </Link>
         }
       />
+      <FlowCatalogNotLoaded />
       <div className="mb-6 grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Procesos activos"

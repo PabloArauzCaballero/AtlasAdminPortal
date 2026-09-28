@@ -46,7 +46,9 @@ export function CatalogSyncPage() {
 
   function runDiscover() {
     discoverMutation.mutate(
-      { mode: "SOURCE_SCAN", persist: true },
+      // Del contrato OpenAPI del propio backend: la imagen desplegada no trae código fuente y el
+      // escaneo (SOURCE_SCAN) respondía 503 en TEST. Con AtlasBackend#108 no pisa lo ya revisado.
+      { mode: "OPENAPI_CONTRACT", persist: true },
       { onSuccess: () => setAction(null) },
     );
   }
@@ -93,7 +95,7 @@ export function CatalogSyncPage() {
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         <SyncActionCard
           title="Descubrir endpoints"
-          description="Ejecuta `/systems/endpoints/discover` en modo SOURCE_SCAN."
+          description="Añade las rutas nuevas desde el contrato OpenAPI del backend y refresca método, ruta y contrato de las existentes, sin tocar su revisión ni su dueño. También corre sola al arrancar la API."
           disabled={!hasPermission("systems.endpoints.discover")}
           onClick={() => setAction("discover")}
         />

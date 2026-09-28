@@ -81,7 +81,8 @@ export type CatalogSeedRefreshInput = {
 };
 
 export type EndpointDiscoveryInput = {
-  mode: "SOURCE_SCAN";
+  /** `SOURCE_SCAN` sólo funciona con el código fuente al lado (máquina de desarrollo). */
+  mode: "OPENAPI_CONTRACT" | "SOURCE_SCAN";
   persist: boolean;
 };
 

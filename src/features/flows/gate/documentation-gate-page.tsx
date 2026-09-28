@@ -9,7 +9,9 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { fecha } from "../async/labels";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 import { useDocumentationGate } from "./hooks";
+import type { DocumentationGateCheck } from "./types";
 
 /**
  * La compuerta de antes de certificar, calculada por el backend sobre el estado VIVO del catálogo.
@@ -28,7 +30,12 @@ export function DocumentationGatePage() {
 function AuthorizedDocumentationGatePage() {
   const query = useDocumentationGate();
   const gate = query.data;
-  const fallan = gate?.checks.filter((check) => !check.passed).length;
+  const fallan = gate?.checks.filter(
+    (check) => !check.passed && check.measured !== false,
+  ).length;
+  const sinMedir = gate?.checks.filter(
+    (check) => check.measured === false,
+  ).length;
 
   return (
     <>
@@ -38,14 +45,17 @@ function AuthorizedDocumentationGatePage() {
         title="Compuerta de documentación"
         description="Antes de certificar: flujos CRITICAL verificados sobre su código actual, sin escrituras desprotegidas ni deriva de permisos grave abiertas, cola de revisión sin pendientes de riesgo alto y el artefacto de cada bloque cargado."
       />
-      <div className="mb-6 grid gap-4 md:grid-cols-3">
+      <FlowCatalogNotLoaded />
+      <div className="mb-6 grid gap-4 md:grid-cols-4">
         <MetricCard
           label="Resultado"
           value={
             gate
               ? gate.passed
                 ? "Se puede certificar"
-                : "No se puede certificar"
+                : gate.artifactsLoaded === false
+                  ? "Nada cargado que evaluar"
+                  : "No se puede certificar"
               : "—"
           }
           icon={BadgeCheck}
@@ -57,6 +67,11 @@ function AuthorizedDocumentationGatePage() {
           tone={
             fallan === undefined ? "default" : fallan ? "warning" : "success"
           }
+        />
+        <MetricCard
+          label="Sin medir"
+          value={sinMedir ?? "—"}
+          tone={sinMedir ? "warning" : "default"}
         />
         <MetricCard
           label="Evaluada"
@@ -86,15 +101,30 @@ function AuthorizedDocumentationGatePage() {
                 <span className="text-sm">{check.detail}</span>
               </span>
               <span className="flex items-center gap-3">
-                <span className="text-lg font-semibold">{check.count}</span>
-                <Badge tone={check.passed ? "success" : "critical"} dot>
-                  {check.passed ? "Pasa" : "Falla"}
-                </Badge>
+                <span className="text-lg font-semibold">
+                  {check.measured === false && !check.count ? "—" : check.count}
+                </span>
+                <CheckBadge check={check} />
               </span>
             </CardContent>
           </Card>
         ))}
       </div>
     </>
+  );
+}
+
+/** Tres estados, no dos: una comprobación que no se pudo medir no «falla» ni «pasa». */
+function CheckBadge({ check }: Readonly<{ check: DocumentationGateCheck }>) {
+  if (check.measured === false)
+    return (
+      <Badge tone="muted" dot>
+        Sin medir
+      </Badge>
+    );
+  return (
+    <Badge tone={check.passed ? "success" : "critical"} dot>
+      {check.passed ? "Pasa" : "Falla"}
+    </Badge>
   );
 }
