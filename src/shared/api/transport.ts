@@ -4,6 +4,7 @@ import { AtlasApiError } from "./errors";
 export async function fetchWithTimeout(
   url: string,
   init: RequestInit,
+  timeoutMs: number = getApiTimeoutMs(),
 ): Promise<Response> {
   const controller = new AbortController();
   const upstreamSignal = init.signal;
@@ -25,7 +26,7 @@ export async function fetchWithTimeout(
   const timeout = setTimeout(() => {
     timedOut = true;
     controller.abort();
-  }, getApiTimeoutMs());
+  }, timeoutMs);
 
   try {
     return await fetch(url, { ...init, signal: controller.signal });

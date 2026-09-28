@@ -17,6 +17,13 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "headers"> & {
   idempotencyKey?: string;
   /** Slug del flujo de Flujos que origina la llamada; viaja como `x-atlas-flow` para la correlación. */
   flow?: string;
+  /**
+   * Plazo propio de ESTA llamada, en milisegundos. Sin él vale `NEXT_PUBLIC_API_TIMEOUT_MS`. Existe
+   * para las pocas rutas que esperan a otro servicio más de lo normal —el asistente espera al
+   * modelo de IA, que Core deja correr hasta ~28 s—: con el plazo general la pregunta se cortaba
+   * antes de que la respuesta llegara.
+   */
+  timeoutMs?: number;
 };
 
 export function isMutatingMethod(method?: string): boolean {
