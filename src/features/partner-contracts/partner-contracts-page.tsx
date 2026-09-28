@@ -5,6 +5,7 @@ import { FileSignature } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
+import { useAuth } from "@/shared/auth/auth-context";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -55,6 +56,8 @@ function AuthorizedPartnerContractsPage() {
 
   const plantillas = useContractTemplates();
   const marcar = useSetDefaultContractTemplate();
+  // Publicar o cambiar el vigente exige `governance.policies.manage` en el backend.
+  const puedeGestionar = useAuth().hasPermission("governance.policies.manage");
 
   const items = useMemo(() => plantillas.data?.items ?? [], [plantillas.data]);
   const vigente = useMemo(
@@ -126,11 +129,13 @@ function AuthorizedPartnerContractsPage() {
             </p>
           ) : null}
 
-          <div className="flex justify-end">
-            <Button variant="primary" onClick={() => setPublicando(true)}>
-              Publicar una versión
-            </Button>
-          </div>
+          {puedeGestionar ? (
+            <div className="flex justify-end">
+              <Button variant="primary" onClick={() => setPublicando(true)}>
+                Publicar una versión
+              </Button>
+            </div>
+          ) : null}
 
           {items.length === 0 ? (
             <Card className="p-5">
@@ -144,7 +149,9 @@ function AuthorizedPartnerContractsPage() {
             <TarjetaContrato
               key={plantilla.templateId}
               plantilla={plantilla}
-              onMarcar={() => setPorDefecto(plantilla)}
+              onMarcar={
+                puedeGestionar ? () => setPorDefecto(plantilla) : undefined
+              }
             />
           ))}
         </div>

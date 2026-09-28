@@ -4,14 +4,12 @@ import { RoleGate } from "@/shared/auth/role-gate";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime } from "@/shared/lib/format";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { formatNumber } from "@/shared/lib/format";
 import { useDataExport } from "./hooks";
-import { ExportDownloadAction } from "./export-download-action";
+import { ExportDownloadButton } from "./export-download-button";
 import { Download } from "lucide-react";
 
 export function ExportDetailPage(props: Readonly<{ exportId: string }>) {
@@ -54,65 +52,35 @@ function AuthorizedExportDetailPage({
             icon={Download}
             eyebrow="Exportación"
             title={exportQuery.data.name}
-            description="Detalle de política aplicada, filtros, vencimiento y auditoría de la exportación."
+            description="Se descarga entero, en JSON, en el momento y con tu sesión. No queda guardado en Atlas."
             actions={
-              <ExportDownloadAction
+              <ExportDownloadButton
                 downloadUrl={exportQuery.data.downloadUrl}
-                expiresAt={exportQuery.data.expiresAt}
-                status={exportQuery.data.status}
+                fileName={exportQuery.data.exportId}
               />
             }
           />
           <Card>
-            <CardHeader>
-              <StatusBadge value={exportQuery.data.status} />
-            </CardHeader>
             <CardContent>
               <KeyValueGrid
                 items={[
-                  { label: "Recurso", value: exportQuery.data.resourceType },
                   {
-                    label: "ID recurso",
-                    value: exportQuery.data.resourceId,
-                    mono: true,
+                    label: "Filas",
+                    value: formatNumber(exportQuery.data.metadata?.rows ?? 0),
                   },
                   { label: "Formato", value: exportQuery.data.format },
+                  { label: "Para qué sirve", value: exportQuery.data.reason },
                   {
-                    label: "Solicitado por",
-                    value: exportQuery.data.requestedBy,
+                    label: "Datos personales",
+                    value:
+                      exportQuery.data.policySnapshot?.masking === "no_raw_pii"
+                        ? "No incluye datos personales en claro"
+                        : "Sin política de enmascarado declarada",
                   },
-                  {
-                    label: "Solicitado",
-                    value: formatDateTime(exportQuery.data.requestedAt),
-                  },
-                  {
-                    label: "Finalizado",
-                    value: formatDateTime(exportQuery.data.finishedAt),
-                  },
-                  {
-                    label: "Expira",
-                    value: formatDateTime(exportQuery.data.expiresAt),
-                  },
-                  {
-                    label: "Request ID",
-                    value: exportQuery.data.auditRequestId,
-                    mono: true,
-                  },
-                  { label: "Motivo", value: exportQuery.data.reason },
                 ]}
               />
             </CardContent>
           </Card>
-          <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
-            <JsonViewer
-              title="Filtros aplicados"
-              value={exportQuery.data.filters}
-            />
-            <JsonViewer
-              title="Política aplicada"
-              value={exportQuery.data.policySnapshot}
-            />
-          </div>
         </div>
       ) : null}
     </>

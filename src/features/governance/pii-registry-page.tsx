@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { useDataEntities, useEndpoints } from "@/features/systems/hooks";
+import { useWholeCatalog } from "./hooks";
 import type { DataEntity, EndpointItem } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -39,17 +39,16 @@ export function PiiRegistryPage() {
 
 function AuthorizedPiiRegistryPage() {
   const [q, setQ] = useState("");
-  const entities = useDataEntities({ page: 1, limit: 100, q });
-  const endpoints = useEndpoints({ page: 1, limit: 100, q });
-  const error = entities.error ?? endpoints.error;
-  const piiEntities = (entities.data?.items ?? []).filter(
+  const catalog = useWholeCatalog(q);
+  const error = catalog.error;
+  const piiEntities = (catalog.data?.entities.items ?? []).filter(
     (item) =>
       item.containsPii ||
       item.containsLegalData ||
       item.containsLocationData ||
       item.containsDeviceData,
   );
-  const piiEndpoints = (endpoints.data?.items ?? []).filter(
+  const piiEndpoints = (catalog.data?.endpoints.items ?? []).filter(
     (item) => item.containsPii || item.piiFields.length > 0,
   );
 
@@ -73,7 +72,7 @@ function AuthorizedPiiRegistryPage() {
         cell: ({ row }) => <ModuleBadge value={row.original.module} />,
       },
       {
-        header: "PII",
+        header: "Datos personales",
         accessorKey: "containsPii",
         cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
       },
@@ -85,14 +84,14 @@ function AuthorizedPiiRegistryPage() {
         ),
       },
       {
-        header: "Device",
+        header: "Dispositivo",
         accessorKey: "containsDeviceData",
         cell: ({ row }) => (
           <BooleanBadge value={row.original.containsDeviceData} />
         ),
       },
       {
-        header: "Location",
+        header: "Ubicación",
         accessorKey: "containsLocationData",
         cell: ({ row }) => (
           <BooleanBadge value={row.original.containsLocationData} />
@@ -119,7 +118,7 @@ function AuthorizedPiiRegistryPage() {
   const endpointColumns = useMemo<ColumnDef<EndpointItem>[]>(
     () => [
       {
-        header: "Endpoint",
+        header: "Ruta",
         accessorKey: "fullPath",
         cell: ({ row }) => (
           <Link
@@ -141,12 +140,12 @@ function AuthorizedPiiRegistryPage() {
         cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
       },
       {
-        header: "PII",
+        header: "Datos personales",
         accessorKey: "containsPii",
         cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
       },
       {
-        header: "Campos PII",
+        header: "Campos personales",
         accessorKey: "piiFields",
         cell: ({ row }) => (
           <span className="text-xs">
@@ -175,39 +174,34 @@ function AuthorizedPiiRegistryPage() {
       <PageHeader
         icon={ShieldAlert}
         eyebrow="Gobierno"
-        title="PII registry"
-        description="Registro dinámico de tablas y endpoints que contienen o exponen datos personales/sensibles según catálogo real."
+        title="Registro de datos personales"
+        description="Las tablas que guardan y las rutas que exponen datos personales o sensibles, según el catálogo real completo."
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar tabla, endpoint, dominio o campo…"
+        searchPlaceholder="Buscar tabla, ruta, dominio o campo…"
         onSearchChange={setQ}
         onClear={() => setQ("")}
       />
-      {entities.isLoading || endpoints.isLoading ? (
-        <LoadingSkeleton rows={6} />
-      ) : null}
+      {catalog.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {error ? (
         <ErrorState
           description={
             isAtlasApiError(error)
               ? error.message
-              : "No se pudo cargar PII registry."
+              : "No se pudo cargar el registro de datos personales."
           }
           requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => {
-            void entities.refetch();
-            void endpoints.refetch();
-          }}
+          onRetry={() => void catalog.refetch()}
         />
       ) : null}
-      {entities.data && endpoints.data ? (
+      {catalog.data ? (
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <SectionHeader
                 title="Tablas sensibles"
-                description="Incluye PII, legal, dispositivo y ubicación."
+                description="Con datos personales, legales, de dispositivo o de ubicación."
                 className="mb-0"
               />
             </CardHeader>
@@ -215,15 +209,15 @@ function AuthorizedPiiRegistryPage() {
               <DataTable
                 data={piiEntities}
                 columns={entityColumns}
-                emptyTitle="No hay tablas sensibles para el filtro aplicado."
+                emptyTitle="No hay tablas sensibles para esta búsqueda."
               />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <SectionHeader
-                title="Endpoints con PII"
-                description="Endpoints que declaran PII o campos PII en el catálogo."
+                title="Rutas con datos personales"
+                description="Rutas que el catálogo marca con datos personales o con campos personales."
                 className="mb-0"
               />
             </CardHeader>
@@ -231,7 +225,7 @@ function AuthorizedPiiRegistryPage() {
               <DataTable
                 data={piiEndpoints}
                 columns={endpointColumns}
-                emptyTitle="No hay endpoints con PII para el filtro aplicado."
+                emptyTitle="No hay rutas con datos personales para esta búsqueda."
               />
             </CardContent>
           </Card>
