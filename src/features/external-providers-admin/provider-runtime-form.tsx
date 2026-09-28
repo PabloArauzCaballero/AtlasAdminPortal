@@ -67,7 +67,6 @@ export function ProviderRuntimeForm({
         <Field
           tooltip="Si Atlas simula al proveedor, usa su sandbox, producción o no lo llama."
           label="Cómo se le llama"
-          hint={AYUDA_MODO[defaultMode ?? ""]}
         >
           <Select
             name="defaultMode"
@@ -107,7 +106,6 @@ export function ProviderRuntimeForm({
         <Field
           tooltip="Papel del proveedor en el catálogo: oficial, de prueba, sólo sandbox o retirado."
           label="Tipo de proveedor"
-          hint={AYUDA_ESTADO[providerStatus ?? ""]}
         >
           <Select
             name="providerStatus"

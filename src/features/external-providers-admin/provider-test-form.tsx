@@ -12,7 +12,8 @@ import { RequestResultCard } from "./request-result-card";
 export function ProviderTestForm({
   providerCode,
 }: Readonly<{ providerCode: string }>) {
-  const [customerId, setCustomerId] = useState("1");
+  // Vacío a propósito: un cliente inventado («1») rompía la prueba en toda base donde no existe.
+  const [customerId, setCustomerId] = useState("");
   const [queryType, setQueryType] = useState("IDENTITY_VERIFICATION");
   const [purpose, setPurpose] = useState("MANUAL_REVIEW");
   const [decisionStage, setDecisionStage] = useState("MANUAL_REVIEW");
@@ -48,8 +49,9 @@ export function ProviderTestForm({
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
-          tooltip="Cliente sobre el que se lanza la consulta de prueba."
+          tooltip="Cliente sobre el que se lanza la consulta de prueba. Vacío: prueba sin cliente, con datos sintéticos."
           label="Customer ID"
+          hint="Opcional. Si pones uno, debe existir y tener consentimiento."
         >
           <Input
             value={customerId}
