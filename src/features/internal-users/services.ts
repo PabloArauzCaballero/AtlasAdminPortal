@@ -77,13 +77,19 @@ export function updateInternalUser(
   });
 }
 
+/**
+ * `replaceInternalUserRolesSchema` exige `reason` (8+ caracteres), como el resto de acciones sobre
+ * una cuenta interna: queda en la auditoría. El portal mandaba sólo `{ roles }` y el backend
+ * respondía SIEMPRE 400 «Entrada inválida en body.»: cambiar los roles de alguien desde la ficha
+ * no funcionaba en ningún caso.
+ */
 export function updateInternalUserRoles(
   internalUserId: string,
-  roles: string[],
+  input: { roles: string[]; reason: string },
 ) {
   return apiRequest<InternalUserProfile>(
     `/internal/users/${internalUserId}/roles`,
-    { method: "PATCH", body: { roles } },
+    { method: "PATCH", body: { roles: input.roles, reason: input.reason } },
   );
 }
 

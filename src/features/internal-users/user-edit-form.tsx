@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useUpdateInternalUserMutation } from "./hooks";
 import type { InternalUserListItem } from "./types";
+import { DEPARTMENT_LABELS, STATUS_LABELS } from "./labels";
 import {
   buildUpdatePayload,
   editUserDefaults,
@@ -87,7 +88,7 @@ export function UserEditForm({
                 name="department"
                 options={EDIT_DEPARTMENTS.map((value) => ({
                   value,
-                  label: value,
+                  label: DEPARTMENT_LABELS[value],
                 }))}
               />
             </Field>
@@ -99,7 +100,7 @@ export function UserEditForm({
                 isSelf
                   ? "No puedes suspender/bloquear tu propia cuenta."
                   : statusChanged
-                    ? "Cambiar el estado revoca tokens activos si deja de ser 'active'."
+                    ? "Si la cuenta deja de estar activa, sus sesiones abiertas se cierran."
                     : undefined
               }
             >
@@ -109,7 +110,7 @@ export function UserEditForm({
                 disabled={isSelf}
                 options={EDIT_STATUSES.map((value) => ({
                   value,
-                  label: value,
+                  label: STATUS_LABELS[value],
                 }))}
               />
             </Field>

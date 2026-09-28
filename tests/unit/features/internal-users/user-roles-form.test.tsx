@@ -124,9 +124,42 @@ describe("UserRolesForm sobre la cuenta de otra persona", () => {
     await userEvent.click(qa);
     expect(qa).toBeChecked();
 
+    await userEvent.type(
+      screen.getByLabelText(/motivo/i),
+      "Pasa al equipo de QA por pedido de gerencia",
+    );
     await userEvent.click(
       screen.getByRole("button", { name: /guardar roles/i }),
     );
-    expect(mutate).toHaveBeenCalledWith(["SUPER_ADMIN", "QA_ENGINEER"]);
+    expect(mutate).toHaveBeenCalledWith(
+      {
+        roles: ["SUPER_ADMIN", "QA_ENGINEER"],
+        reason: "Pasa al equipo de QA por pedido de gerencia",
+      },
+      expect.anything(),
+    );
+  });
+
+  /**
+   * `replaceInternalUserRolesSchema` exige `reason` de 8+ caracteres. Sin él, el backend respondía
+   * 400 «Entrada inválida en body.» a TODO cambio de roles hecho desde la ficha.
+   */
+  it("no envía sin motivo y dice por qué", async () => {
+    render(<UserRolesForm user={userFixture("9")} />);
+
+    await userEvent.click(screen.getAllByRole("checkbox")[1]);
+    await userEvent.type(screen.getByLabelText(/motivo/i), "corto");
+    await userEvent.click(
+      screen.getByRole("button", { name: /guardar roles/i }),
+    );
+
+    expect(mutate).not.toHaveBeenCalled();
+    expect(screen.getByText(/al menos 8 caracteres/i)).toBeInTheDocument();
+  });
+
+  it("sobre la propia cuenta no pide motivo", () => {
+    useAuth.mockReturnValue({ user: { id: "9" } });
+    render(<UserRolesForm user={userFixture("9")} />);
+    expect(screen.queryByLabelText(/motivo/i)).toBeNull();
   });
 });

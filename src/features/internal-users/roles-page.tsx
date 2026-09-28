@@ -6,7 +6,6 @@ import { useInternalRoles } from "./hooks";
 import type { InternalRole } from "./types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -48,11 +47,11 @@ function AuthorizedRolesPage() {
         accessorKey: "status",
         cell: ({ row }) => <StatusBadge value={row.original.status} />,
       },
-      {
-        header: "Usuarios",
-        accessorKey: "userCount",
-        cell: ({ row }) => formatNumber(row.original.userCount ?? 0),
-      },
+      /*
+       * No hay columna «Usuarios»: `GET /internal/roles` no devuelve cuántas cuentas tienen cada
+       * rol, y la columna pintaba 0 en TODOS —también en SUPER_ADMIN, que en TEST tiene tres—.
+       * Una cifra que siempre es cero no informa: afirma que nadie tiene el rol.
+       */
       {
         header: "Permisos",
         cell: ({ row }) => formatNumber(row.original.permissions.length),
@@ -71,16 +70,8 @@ function AuthorizedRolesPage() {
         icon={ShieldCheck}
         eyebrow="RBAC"
         title="Roles internos"
-        description="Catálogo real de roles internos devuelto por el servicio. Ya no se deriva desde usuarios."
+        description="Los roles que se pueden asignar a una cuenta interna y cuántos permisos da cada uno. Para ver quién tiene un rol, abre Usuarios internos."
       />
-      <Card className="mb-4">
-        <CardContent>
-          <p className="text-sm text-atlas-muted">
-            Esta pantalla usa `/internal/roles` como contrato oficial. Si un rol
-            no aparece aquí, no debe asumirse en el portal.
-          </p>
-        </CardContent>
-      </Card>
       {roles.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {roles.error ? (
         <ErrorState
