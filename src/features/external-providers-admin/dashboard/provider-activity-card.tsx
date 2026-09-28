@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { ProviderHealthBadge, ProviderModeBadge } from "../provider-badges";
+import { explainStatus } from "../finding-codes";
 import type { DashboardProvider } from "../types";
 import { HealthSparkline } from "./health-sparkline";
 
@@ -32,7 +33,10 @@ export function isMeasured(mode: string, latencyMs?: number | null): boolean {
 function toneForHealth(
   provider: DashboardProvider,
 ): "success" | "warning" | "critical" | "muted" {
-  if (!provider.health || !isMeasured(provider.mode)) return "muted";
+  // Con la latencia, igual que la insignia de la tarjeta: sin ella, un proveedor que sí midió
+  // fuera de `mock_server` quedaba en gris mientras su insignia decía «Responde».
+  if (!provider.health || !isMeasured(provider.mode, provider.health.latencyMs))
+    return "muted";
   if (provider.health.status === "UP") return "success";
   if (provider.health.status === "DEGRADED") return "warning";
   return "critical";
@@ -126,7 +130,8 @@ export function ProviderActivityCard({
 
       {activity.lastErrorStatus ? (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800">
-          Último error: {activity.lastErrorMessage ?? activity.lastErrorStatus}
+          Último error: {explainStatus(activity.lastErrorStatus).label}
+          {activity.lastErrorMessage ? ` · ${activity.lastErrorMessage}` : ""}
         </p>
       ) : null}
 

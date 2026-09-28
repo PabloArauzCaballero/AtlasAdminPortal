@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Textarea } from "@/shared/components/ui/input";
+import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { useTestProviderMutation } from "./hooks";
+import { useProviderCostPolicies, useTestProviderMutation } from "./hooks";
+import {
+  leerJsonObjeto,
+  opcionesDeTipoDeConsulta,
+  tipoDeConsultaDePrueba,
+} from "./provider-display";
 import { RequestResultCard } from "./request-result-card";
 
 export function ProviderTestForm({
@@ -14,7 +19,11 @@ export function ProviderTestForm({
 }: Readonly<{ providerCode: string }>) {
   // Vacío a propósito: un cliente inventado («1») rompía la prueba en toda base donde no existe.
   const [customerId, setCustomerId] = useState("");
-  const [queryType, setQueryType] = useState("IDENTITY_VERIFICATION");
+  // El tipo sale de las políticas del proveedor: con un tipo sin política la prueba no ejercita la
+  // política que se aplica de verdad. `null` = el usuario no eligió todavía.
+  const politicas = useProviderCostPolicies(providerCode);
+  const [queryTypeElegido, setQueryType] = useState<string | null>(null);
+  const queryType = queryTypeElegido ?? tipoDeConsultaDePrueba(politicas.data);
   const [purpose, setPurpose] = useState("MANUAL_REVIEW");
   const [decisionStage, setDecisionStage] = useState("MANUAL_REVIEW");
   const [scenario, setScenario] = useState("");
@@ -23,14 +32,13 @@ export function ProviderTestForm({
   const test = useTestProviderMutation(providerCode);
 
   function submit() {
-    let input: Record<string, unknown> = {};
-    try {
-      input = inputJson.trim() ? JSON.parse(inputJson) : {};
-    } catch {
-      setJsonError("El input debe ser JSON válido.");
+    const lectura = leerJsonObjeto(inputJson);
+    if (!lectura.ok) {
+      setJsonError(lectura.error);
       return;
     }
     setJsonError(null);
+    const input = lectura.value;
     test.mutate({
       customerId: customerId.trim() || undefined,
       queryType: queryType.trim() || undefined,
@@ -45,12 +53,13 @@ export function ProviderTestForm({
     <div className="space-y-4">
       <p className="text-sm text-atlas-muted">
         Ejecuta una solicitud real de prueba contra el proveedor (útil para
-        QA/debug). Usa valores por defecto razonables si dejás campos vacíos.
+        revisar o depurar). Usa valores por defecto razonables si dejas campos
+        vacíos.
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           tooltip="Cliente sobre el que se lanza la consulta de prueba. Vacío: prueba sin cliente, con datos sintéticos."
-          label="Customer ID"
+          label="Cliente (número)"
           hint="Opcional. Si pones uno, debe existir y tener consentimiento."
         >
           <Input
@@ -59,12 +68,14 @@ export function ProviderTestForm({
           />
         </Field>
         <Field
-          tooltip="Tipo de consulta de prueba, p. ej. IDENTITY_VERIFICATION."
-          label="Query type"
+          tooltip="Qué se le pide al proveedor. Sale de sus políticas de costo, para probar la que se aplica de verdad."
+          label="Tipo de consulta"
         >
-          <Input
+          <Select
+            name="queryType"
             value={queryType}
-            onChange={(event) => setQueryType(event.target.value)}
+            onChange={setQueryType}
+            options={opcionesDeTipoDeConsulta(politicas.data, queryType)}
           />
         </Field>
         <Field
@@ -87,8 +98,8 @@ export function ProviderTestForm({
         </Field>
       </div>
       <Field
-        tooltip="Caso que fuerza un adapter simulado, p. ej. happy_path o provider_down."
-        label="Escenario (opcional, adapters mock)"
+        tooltip="Caso que fuerza el simulador del proveedor, p. ej. provider_down para verlo caído."
+        label="Escenario (opcional, sólo en simulado)"
       >
         <Input
           value={scenario}
@@ -96,8 +107,8 @@ export function ProviderTestForm({
         />
       </Field>
       <Field
-        tooltip="Datos de entrada de la consulta de prueba en JSON."
-        label="Input (JSON)"
+        tooltip="Los datos que se envían al proveedor, como objeto JSON entre llaves."
+        label="Datos de la consulta (JSON)"
       >
         <Textarea
           value={inputJson}
@@ -125,6 +136,7 @@ export function ProviderTestForm({
         variant="primary"
         isLoading={test.isPending}
         loadingText="Ejecutando…"
+        disabled={politicas.isLoading}
         onClick={submit}
       >
         <Play className="h-4 w-4" aria-hidden />

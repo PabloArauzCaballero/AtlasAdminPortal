@@ -17,6 +17,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { explainStatus } from "../finding-codes";
 import { useProvidersDashboard } from "../hooks";
+import { etiquetaTipoConsulta } from "../provider-display";
 import type { DashboardProvider, ProviderRequestRow } from "../types";
 import { ProviderActivityCard } from "./provider-activity-card";
 import { SimulateDialog } from "./simulate-dialog";
@@ -68,7 +69,7 @@ function RecentRequests({
                   {request.providerCode ?? "—"}
                 </td>
                 <td className="px-3 py-2 text-atlas-muted">
-                  {request.requestType ?? "—"}
+                  {etiquetaTipoConsulta(request.requestType)}
                 </td>
                 <td className="px-3 py-2">
                   <Badge tone={explicacion?.tone ?? "default"}>

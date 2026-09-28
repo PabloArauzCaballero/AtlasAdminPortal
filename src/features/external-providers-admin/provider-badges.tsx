@@ -109,6 +109,12 @@ const MODOS: Record<string, Descriptor> = {
   disabled: { label: "Deshabilitado", tone: "critical", icon: Ban },
 };
 
+/** Nombre legible de un modo, para frases (el aviso del entorno, el simulador). */
+export function etiquetaDeModo(value?: string | null): string {
+  if (!value) return "—";
+  return MODOS[value.toLowerCase()]?.label ?? value;
+}
+
 /**
  * Modo de ejecución del adaptador.
  *

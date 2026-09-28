@@ -11,6 +11,7 @@ import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { SimpleTable, Td, Tr } from "./audit/report-shell";
 import { explainStatus } from "./finding-codes";
 import { useProviderRequests } from "./hooks";
+import { etiquetaTipoConsulta } from "./provider-display";
 import { ReportFilters } from "./report-view";
 
 const PAGINA = 25;
@@ -163,7 +164,7 @@ export function RequestsListTab() {
                     </Td>
                     <Td muted>{formatDateTime(request.requestedAt)}</Td>
                     <Td>{request.providerCode ?? "—"}</Td>
-                    <Td muted>{request.requestType ?? "—"}</Td>
+                    <Td muted>{etiquetaTipoConsulta(request.requestType)}</Td>
                     <Td muted>{request.customerId ?? "—"}</Td>
                     <Td>
                       <Badge tone={explicacion?.tone ?? "default"}>

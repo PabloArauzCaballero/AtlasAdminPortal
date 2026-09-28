@@ -7,7 +7,12 @@ import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Field, Select } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { useTestProviderMutation } from "../hooks";
+import { useProviderCostPolicies, useTestProviderMutation } from "../hooks";
+import { etiquetaDeModo } from "../provider-badges";
+import {
+  etiquetaTipoConsulta,
+  tipoDeConsultaDePrueba,
+} from "../provider-display";
 import { RequestResultCard } from "../request-result-card";
 import type { DashboardProvider } from "../types";
 
@@ -77,6 +82,10 @@ export function SimulateDialog({
   const titleId = useId();
   const [scenario, setScenario] = useState("");
   const test = useTestProviderMutation(provider.providerCode);
+  // El endpoint de prueba admite `queryType`; sin él, el backend usa IDENTITY_VERIFICATION, que
+  // sólo tiene política en SEGIP: la simulación de los demás no pasaba por su política real.
+  const politicas = useProviderCostPolicies(provider.providerCode);
+  const queryType = tipoDeConsultaDePrueba(politicas.data);
 
   return (
     <DialogShell
@@ -94,7 +103,7 @@ export function SimulateDialog({
             <p className="mt-1 text-sm text-atlas-muted">
               Ejecuta una llamada de prueba de verdad y la registra como
               cualquier otra. Aparecerá en el tablero y en el listado de
-              solicitudes.
+              solicitudes. Se pide: {etiquetaTipoConsulta(queryType)}.
             </p>
           </div>
           <Button variant="ghost" onClick={onClose} aria-label="Cerrar">
@@ -123,10 +132,11 @@ export function SimulateDialog({
 
         {provider.mode !== "mock_server" ? (
           <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            Este proveedor está en modo <strong>{provider.mode}</strong>. Los
-            escenarios los aplica el emulador, que sólo interviene en «simulado
-            servidor»: en cualquier otro modo la respuesta la fabrica el propio
-            backend y el escenario se ignora en su mayor parte.
+            Este proveedor está en modo{" "}
+            <strong>{etiquetaDeModo(provider.mode)}</strong>. Los escenarios los
+            aplica el emulador, que sólo interviene en «simulado servidor»: en
+            cualquier otro modo la respuesta la fabrica el propio backend y el
+            escenario se ignora en su mayor parte.
           </p>
         ) : null}
 
@@ -152,8 +162,13 @@ export function SimulateDialog({
             variant="primary"
             isLoading={test.isPending}
             loadingText="Llamando…"
+            disabled={politicas.isLoading}
             onClick={() =>
-              test.mutate({ scenario: scenario || undefined, input: {} })
+              test.mutate({
+                scenario: scenario || undefined,
+                queryType,
+                input: {},
+              })
             }
           >
             <Play className="h-4 w-4" aria-hidden />

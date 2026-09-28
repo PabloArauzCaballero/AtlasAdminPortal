@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
+import { Badge } from "@/shared/components/ui/badges";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { ProviderAuthSection } from "./provider-auth-section";
 import {
@@ -15,18 +16,28 @@ import {
 import { ProviderCostPoliciesSection } from "./provider-cost-policies-section";
 import { ProviderRuntimeForm } from "./provider-runtime-form";
 import { ProviderTestForm } from "./provider-test-form";
-import type { ProviderRow } from "./provider-columns";
+import { esMedido, type ProviderRow } from "./provider-columns";
+import { modoEfectivo, modoFijadoPorEntorno } from "./provider-display";
 
-// "Autenticación" va justo después de "Runtime": ambas responden a "¿por qué este proveedor no
+// "Autenticación" va justo después de "Modo y tipo": ambas responden a "¿por qué este proveedor no
 // está respondiendo?", y separarlas del bloque de costos evita confundir un fallo de credencial
 // con un bloqueo por política de gasto.
-const tabs = ["Resumen", "Runtime", "Autenticación", "Costos", "Probar"];
+const tabs = ["Resumen", "Modo y tipo", "Autenticación", "Costos", "Probar"];
 
 export function ProviderDetailDrawer({
   provider,
   onClose,
 }: Readonly<{ provider: ProviderRow; onClose: () => void }>) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
+  const modo = modoEfectivo(provider);
+  // La misma guarda que la tabla: sin medición, «Responde · 0 ms» afirma una sonda que no ocurrió.
+  const medido = provider.health
+    ? esMedido(modo, provider.health.latencyMs)
+    : false;
+  const fijado = modoFijadoPorEntorno(
+    provider.defaultMode,
+    provider.health?.mode,
+  );
 
   return (
     <DrawerPanel
@@ -51,9 +62,18 @@ export function ProviderDetailDrawer({
               value: <ProviderStatusBadge value={provider.status} />,
             },
             {
-              label: "Modo por defecto",
-              value: <ProviderModeBadge value={provider.defaultMode} />,
+              label: "Cómo se le llama",
+              value: <ProviderModeBadge value={modo} />,
             },
+            // Sólo si difiere: es el modo guardado, que el entorno está pisando.
+            ...(fijado
+              ? [
+                  {
+                    label: "Modo guardado (no se aplica)",
+                    value: <ProviderModeBadge value={provider.defaultMode} />,
+                  },
+                ]
+              : []),
             {
               label: "Requiere consentimiento",
               value: provider.requiresConsent,
@@ -66,13 +86,18 @@ export function ProviderDetailDrawer({
             { label: "Descripción", value: provider.description },
             {
               label: "Salud",
-              value: <ProviderHealthBadge value={provider.health?.status} />,
+              value: !provider.health ? null : medido ? (
+                <ProviderHealthBadge value={provider.health.status} />
+              ) : (
+                <Badge tone="muted">Sin llamada</Badge>
+              ),
             },
             {
               label: "Latencia",
-              value: provider.health
-                ? `${formatNumber(provider.health.latencyMs)} ms`
-                : null,
+              value:
+                provider.health && medido
+                  ? `${formatNumber(provider.health.latencyMs)} ms`
+                  : null,
             },
             // La fecha, en el formato del portal y no en ISO crudo: «2026-09-06T10:02:00.000Z»
             // obliga a hacer la cuenta del huso mentalmente para saber si la sonda es de hace un
@@ -86,8 +111,8 @@ export function ProviderDetailDrawer({
           ]}
         />
       ) : null}
-      {activeTab === "Runtime" ? (
-        <ProviderRuntimeForm provider={provider} />
+      {activeTab === "Modo y tipo" ? (
+        <ProviderRuntimeForm provider={provider} modoDelEntorno={fijado} />
       ) : null}
       {activeTab === "Autenticación" ? (
         <ProviderAuthSection providerCode={provider.code} />

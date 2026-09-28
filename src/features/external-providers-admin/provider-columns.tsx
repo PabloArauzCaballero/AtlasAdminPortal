@@ -16,6 +16,7 @@ import {
   ProviderModeBadge,
   ProviderStatusBadge,
 } from "./provider-badges";
+import { modoEfectivo } from "./provider-display";
 import type { Provider, ProviderAuthState, ProviderHealth } from "./types";
 
 /**
@@ -83,9 +84,13 @@ export function buildProviderColumns(
     {
       // CÓMO SE LE LLAMA hoy. Es ortogonal a lo anterior: un proveedor oficial sin credenciales
       // todavía se llama en simulado, y las dos cosas son ciertas a la vez.
+      // El modo EFECTIVO, no el guardado: si el entorno fija otro, la API ejecuta con ése.
       header: "Cómo se le llama",
-      accessorKey: "defaultMode",
-      cell: ({ row }) => <ProviderModeBadge value={row.original.defaultMode} />,
+      id: "mode",
+      accessorFn: (row) => modoEfectivo(row),
+      cell: ({ row }) => (
+        <ProviderModeBadge value={modoEfectivo(row.original)} />
+      ),
     },
     {
       /*
@@ -99,9 +104,9 @@ export function buildProviderColumns(
       header: "Salud",
       accessorKey: "health",
       cell: ({ row }) => {
-        const { health, defaultMode } = row.original;
+        const { health } = row.original;
         if (!health) return <span className="text-atlas-muted">—</span>;
-        if (!esMedido(defaultMode, health.latencyMs))
+        if (!esMedido(modoEfectivo(row.original), health.latencyMs))
           return <Badge tone="muted">Sin llamada</Badge>;
         return (
           <div className="space-y-1">
