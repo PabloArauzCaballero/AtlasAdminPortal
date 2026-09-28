@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
+import { apiErrorText } from "@/shared/api/errors";
+import { PermissionGate } from "@/shared/auth/permission-gate";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Button } from "@/shared/components/ui/button";
 import {
   EmptyState,
   ErrorState,
@@ -10,6 +13,8 @@ import {
 } from "@/shared/components/ui/states";
 import { useAppContent } from "./hooks";
 import { EntryCard } from "./entry-card";
+import { NewEntryForm } from "./new-entry-form";
+import { APP_CONTENT_MANAGE, SURFACES, surfaceOption } from "./surfaces";
 import type { ContentSurface } from "./types";
 
 /**
@@ -30,49 +35,12 @@ import type { ContentSurface } from "./types";
  * interpretar texto libre para maquetar — y acabaría maquetando mal en cuanto alguien usara un
  * guion para otra cosa.
  */
-const SURFACES: Array<{ value: ContentSurface; label: string; hint: string }> =
-  [
-    {
-      value: "onboarding",
-      label: "Bienvenida",
-      hint: "Eslogan y pasos que se ven antes de registrarse",
-    },
-    {
-      value: "faq",
-      label: "Preguntas frecuentes",
-      hint: "Las respuestas largas de la pantalla de ayuda",
-    },
-    {
-      value: "help",
-      label: "Ayuda y contacto",
-      hint: "WhatsApp de soporte y acceso al recorrido guiado",
-    },
-    {
-      value: "home",
-      label: "Inicio",
-      hint: "Avisos y mensajes de la pantalla principal",
-    },
-    {
-      value: "legal",
-      label: "Legal",
-      hint: "Términos, privacidad y el texto con el que la app pide los permisos de ubicación y contactos",
-    },
-    {
-      value: "profile",
-      label: "Perfil",
-      hint: "Textos de la pantalla de perfil",
-    },
-    {
-      value: "credit",
-      label: "Crédito",
-      hint: "Explicaciones de la línea y el puntaje",
-    },
-  ];
-
 export function AppContentPage() {
   const [surface, setSurface] = useState<ContentSurface>("faq");
   const content = useAppContent(surface);
   const [editing, setEditing] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const current = surfaceOption(surface);
 
   return (
     <>
@@ -91,7 +59,10 @@ export function AppContentPage() {
           <button
             key={option.value}
             type="button"
-            onClick={() => setSurface(option.value)}
+            onClick={() => {
+              setSurface(option.value);
+              setCreating(false);
+            }}
             title={option.hint}
             data-testid={`surface-${option.value}`}
             aria-pressed={surface === option.value}
@@ -106,12 +77,47 @@ export function AppContentPage() {
         ))}
       </div>
 
+      {!current.readByApp ? (
+        <p
+          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+          data-testid="surface-not-read"
+        >
+          {current.whenEmpty}
+        </p>
+      ) : null}
+
+      <PermissionGate permissions={APP_CONTENT_MANAGE} fallback={null}>
+        {creating ? (
+          <div className="mb-4">
+            <NewEntryForm
+              key={surface}
+              surface={surface}
+              onClose={() => setCreating(false)}
+            />
+          </div>
+        ) : (
+          <div className="mb-4">
+            <Button
+              variant="secondary"
+              onClick={() => setCreating(true)}
+              data-testid="app-content-new-button"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Nueva pieza en {current.label}
+            </Button>
+          </div>
+        )}
+      </PermissionGate>
+
       {content.isLoading ? <LoadingSkeleton rows={4} /> : null}
 
       {content.error ? (
         <ErrorState
           title="No pudimos cargar el contenido"
-          description="Reintenta en unos segundos."
+          description={apiErrorText(
+            content.error,
+            "Reintenta en unos segundos.",
+          )}
         />
       ) : null}
 
@@ -126,10 +132,10 @@ export function AppContentPage() {
               onClose={() => setEditing(null)}
             />
           ))}
-          {content.data.items.length === 0 ? (
+          {content.data.items.length === 0 && current.readByApp ? (
             <EmptyState
               title="Todavía no hay contenido para esta pantalla"
-              description="La app usará sus textos por defecto hasta que se escriba aquí el primero."
+              description={current.whenEmpty}
             />
           ) : null}
         </div>

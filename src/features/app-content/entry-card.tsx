@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { apiErrorText } from "@/shared/api/errors";
+import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { BulletsEditor } from "./bullets-editor";
 import { useSaveAppContent } from "./hooks";
+import { APP_CONTENT_MANAGE } from "./surfaces";
 import type { AppContentEntry, ContentBullet } from "./types";
 
 /**
@@ -78,13 +81,15 @@ export function EntryCard({
               {entry.isActive ? "visible" : "oculto"}
             </Badge>
             {!editing ? (
-              <Button
-                variant="secondary"
-                onClick={onEdit}
-                data-testid={`edit-${entry.contentKey}`}
-              >
-                Editar
-              </Button>
+              <PermissionGate permissions={APP_CONTENT_MANAGE} fallback={null}>
+                <Button
+                  variant="secondary"
+                  onClick={onEdit}
+                  data-testid={`edit-${entry.contentKey}`}
+                >
+                  Editar
+                </Button>
+              </PermissionGate>
             ) : null}
           </div>
         </div>
@@ -242,8 +247,11 @@ export function EntryCard({
             </div>
 
             {mutation.error ? (
-              <p className="text-xs font-medium text-red-600">
-                No pudimos guardar. Revisa el texto e intenta otra vez.
+              <p role="alert" className="text-xs font-medium text-red-600">
+                {apiErrorText(
+                  mutation.error,
+                  "No pudimos guardar. Revisa el texto e intenta otra vez.",
+                )}
               </p>
             ) : null}
           </div>

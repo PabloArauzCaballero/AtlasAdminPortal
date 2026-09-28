@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BellRing } from "lucide-react";
+import { apiErrorText } from "@/shared/api/errors";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import {
   EmptyState,
@@ -65,7 +66,10 @@ export function NotificationPoliciesPage() {
       {policies.error ? (
         <ErrorState
           title="No pudimos cargar las políticas"
-          description="Reintenta en unos segundos."
+          description={apiErrorText(
+            policies.error,
+            "Reintenta en unos segundos.",
+          )}
         />
       ) : null}
 
@@ -93,7 +97,7 @@ export function NotificationPoliciesPage() {
           {policies.data.data.length === 0 ? (
             <EmptyState
               title="No hay políticas configuradas"
-              description="La pantalla de avisos de la app saldrá vacía hasta que se defina al menos una."
+              description="La pantalla de avisos de la app sale vacía. Aquí sólo se editan las políticas que ya existen: las de fábrica se cargan al desplegar, así que un catálogo vacío es un despliegue incompleto que hay que revisar."
             />
           ) : null}
         </div>
