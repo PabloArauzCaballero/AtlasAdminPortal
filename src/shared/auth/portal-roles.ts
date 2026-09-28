@@ -138,3 +138,17 @@ export const CAMPAIGN_OPERATE_ROLE_LIST: string[] = [...CAMPAIGN_OPERATE_ROLES];
 export const CREDIT_OPERATIONS_ROLE_LIST: string[] = [
   ...CREDIT_OPERATIONS_ROLES,
 ];
+
+/**
+ * `OperationsPaymentClaimsController` (`GET /operations/payment-claims`): la cola de avisos de pago
+ * de todo el tenant, sólo lectura. Los mismos roles que el estado de la cartera
+ * (`GET /operations/loans/outcome-status`); el rol `merchant` no entra, tiene su propia cola en el ERP.
+ */
+export const PAYMENT_CLAIMS_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "compliance_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const PAYMENT_CLAIMS_ROLE_LIST: string[] = [...PAYMENT_CLAIMS_ROLES];

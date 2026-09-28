@@ -87,6 +87,14 @@ export function updateInternalUserRoles(
   );
 }
 
+/** Levanta el bloqueo por intentos fallidos. 409 `INTERNAL_USER_NOT_LOCKED` si ya no lo estaba. */
+export function unlockInternalUser(internalUserId: string, reason: string) {
+  return apiRequest<InternalUserProfile>(
+    `/internal/users/${internalUserId}/unlock`,
+    { method: "POST", body: { reason } },
+  );
+}
+
 export async function listInternalRoles(query?: QueryParams) {
   const payload = await apiRequest<unknown>("/internal/roles", { query });
   return normalizeRolesPayload(payload);
