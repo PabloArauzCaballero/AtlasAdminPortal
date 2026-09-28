@@ -13,6 +13,7 @@ import {
   useSupportQueues,
   useTransferCaseMutation,
 } from "./hooks";
+import { accionesPermitidas, type Permiso } from "./case-rules";
 import { ResolveDialog } from "./resolve-dialog";
 import { TriageDialog } from "./triage-dialog";
 import type { SupportCase } from "./types";
@@ -20,7 +21,7 @@ import type { SupportCase } from "./types";
 /**
  * Reclamar no pregunta la razón: la razón es el propio gesto.
  *
- * El backend exige `reason` en toda asignación porque transferir SÍ necesita explicación, pero
+ * El servidor exige `reason` en toda asignación porque transferir SÍ necesita explicación, pero
  * obligar a escribir «lo tomo yo» antes de tomar un caso añade un paso a la acción más frecuente de
  * la mesa sin añadir información a la historia. Transferir y escalar sí la piden.
  */
@@ -31,8 +32,9 @@ const RAZON_RECLAMO = "El agente toma el caso desde la bandeja";
  *
  * Cada acción exige una razón porque cada una escribe un evento en la cadena de hash del caso: la
  * historia se audita, y un movimiento sin motivo es exactamente lo que después nadie sabe explicar.
- * El backend pide mínimo 4 caracteres —10 en el escalado— y aquí se refleja para no gastar un viaje
- * en descubrirlo.
+ * El servidor pide mínimo 4 caracteres —10 en el escalado— y aquí se refleja para no gastar un viaje
+ * en descubrirlo. Qué acción admite cada estado lo decide `accionesPermitidas`: una acción que el
+ * servidor rechazaría sale apagada y con el motivo en una línea.
  */
 export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
   const [abierto, setAbierto] = useState<"triage" | "resolve" | null>(null);
@@ -54,6 +56,7 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
 
   const resuelto = caso.internalStatus === "RESOLVED";
   const cerrado = caso.internalStatus === "CLOSED";
+  const permisos = accionesPermitidas(caso.internalStatus);
 
   return (
     <div className="space-y-4">
@@ -74,17 +77,18 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
         </Button>
         <Button
           variant="primary"
-          disabled={cerrado || resuelto}
+          disabled={!permisos.resolver.permitida}
           onClick={() => setAbierto("resolve")}
         >
           Resolver
         </Button>
       </div>
+      <PorQueNo permiso={permisos.resolver} />
 
       <Bloque
         titulo="Transferir a otra cola"
         error={transferir.error}
-        deshabilitado={cerrado}
+        permiso={permisos.transferir}
         listo={razonTransferencia.trim().length >= 4 && Boolean(colaDestino)}
         cargando={transferir.isPending}
         etiquetaAccion="Transferir"
@@ -123,7 +127,7 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       <Bloque
         titulo="Escalar"
         error={escalar.error}
-        deshabilitado={cerrado}
+        permiso={permisos.escalar}
         listo={razonEscalado.trim().length >= 10}
         cargando={escalar.isPending}
         etiquetaAccion="Escalar"
@@ -161,7 +165,11 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       <Bloque
         titulo="Nota interna"
         error={nota.error}
-        deshabilitado={cerrado}
+        permiso={
+          cerrado
+            ? { permitida: false, motivo: "El caso está cerrado." }
+            : { permitida: true }
+        }
         listo={textoNota.trim().length >= 2}
         cargando={nota.isPending}
         etiquetaAccion="Añadir nota"
@@ -185,7 +193,7 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       <Bloque
         titulo="Cerrar"
         error={cerrar.error}
-        deshabilitado={cerrado}
+        permiso={permisos.cerrar}
         listo={razonCierre.trim().length >= 4}
         cargando={cerrar.isPending}
         etiquetaAccion="Cerrar caso"
@@ -193,8 +201,8 @@ export function CaseActions({ caso }: Readonly<{ caso: SupportCase }>) {
       >
         <Field
           label="Razón del cierre"
-          tooltip="Por qué se cierra sin resolver, p. ej. el cliente dejó de responder."
-          hint="Cerrar no sustituye a resolver: un caso cerrado sin resolución queda sin causa ni respuesta comunicada."
+          tooltip="Por qué das el caso por terminado, p. ej. el cliente confirmó que la solución le sirvió."
+          hint="Sólo se cierra un caso ya resuelto o marcado como duplicado: cerrar no sustituye a resolver."
         >
           <Textarea
             className="min-h-16"
@@ -220,7 +228,7 @@ function Bloque({
   error,
   listo,
   cargando,
-  deshabilitado,
+  permiso,
   etiquetaAccion,
   onAceptar,
 }: Readonly<{
@@ -229,7 +237,7 @@ function Bloque({
   error: unknown;
   listo: boolean;
   cargando: boolean;
-  deshabilitado: boolean;
+  permiso: Permiso;
   etiquetaAccion: string;
   onAceptar: () => void;
 }>) {
@@ -238,13 +246,14 @@ function Bloque({
       <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-atlas-muted">
         {titulo}
       </h3>
+      <PorQueNo permiso={permiso} />
       {children}
       {error && isAtlasApiError(error) ? (
         <p className="text-xs text-red-700">{error.message}</p>
       ) : null}
       <Button
         className="w-full"
-        disabled={deshabilitado || !listo}
+        disabled={!permiso.permitida || !listo}
         isLoading={cargando}
         onClick={onAceptar}
       >
@@ -252,4 +261,10 @@ function Bloque({
       </Button>
     </section>
   );
+}
+
+/** La línea que explica por qué una acción está apagada. Nada si está permitida. */
+function PorQueNo({ permiso }: Readonly<{ permiso: Permiso }>) {
+  if (permiso.permitida) return null;
+  return <p className="text-xs text-atlas-muted">{permiso.motivo}</p>;
 }

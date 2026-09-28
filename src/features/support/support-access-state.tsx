@@ -9,8 +9,9 @@ import { UserPlus } from "lucide-react";
  * El 403 que hacía parecer rota la pantalla.
  *
  * `internal/support/*` exige DOS cosas: rol interno y perfil de agente vivo en
- * `support.support_agent_profiles`. Un administrador con todos los permisos, sin perfil, recibe
- * `SUPPORT_AGENT_PROFILE_REQUIRED` en cada ruta de esta sección. Sin este bloque, la consola
+ * `support.support_agent_profiles`. Desde el autoalta del servidor, los roles de soporte y de
+ * administración reciben el perfil solos al entrar; `SUPPORT_AGENT_PROFILE_REQUIRED` queda para
+ * quien fue dado de baja (el autoalta no lo recrea) o tiene un rol que no atiende. Sin este bloque, la consola
  * enseñaría una tabla vacía o un «no se pudo cargar» genérico, y quien lo viera buscaría el fallo
  * en los datos o en la red — no en un alta que se hace dos pantallas más allá.
  *
@@ -42,13 +43,15 @@ export function AccesoASoporte({
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-semibold">
-              Tu usuario todavía no es agente de soporte
+              Tu usuario no está habilitado en la mesa de soporte
             </h3>
             <p className="mt-1 text-sm leading-6 text-amber-800">
-              Tener rol interno abre estas rutas, pero atender casos exige
-              además un perfil de agente habilitado. No es un fallo de la
-              pantalla ni de los datos: la cola existe y no se te muestra hasta
-              que alguien te habilite.
+              Quien tiene rol de soporte o de administración entra en la mesa
+              solo, la primera vez que abre esta sección. Si ves este aviso es
+              porque tu perfil de agente fue dado de baja o porque tu rol no es
+              de los que atienden. No es un fallo de la pantalla ni de los
+              datos: la bandeja existe y no se te muestra hasta que alguien te
+              habilite.
             </p>
             <p className="mt-3 text-sm">
               <Link
@@ -57,7 +60,8 @@ export function AccesoASoporte({
               >
                 Ir a Soporte · Agentes
               </Link>{" "}
-              — un administrador puede habilitarte allí en un paso.
+              — un administrador puede habilitarte o reactivarte allí en un
+              paso.
             </p>
             {error.requestId ? (
               <p className="mt-3 font-mono text-xs text-amber-700">

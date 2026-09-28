@@ -15,6 +15,7 @@ import {
   sendChannelMessage,
   subscribeToChannel,
 } from "./services";
+import { actor } from "./labels";
 import type { SupportCaseChannelRef, SupportMessage } from "./types";
 import { UnirseALaConversacion } from "./chat-join";
 import { MessagesSquare, WifiOff } from "lucide-react";
@@ -262,7 +263,7 @@ function Mensaje({ mensaje }: Readonly<{ mensaje: SupportMessage }>) {
           </p>
         ) : null}
         <p className="mt-1 text-[0.6875rem] text-atlas-muted">
-          {mensaje.senderActorType} · {formatDateTime(mensaje.createdAt)}
+          {actor(mensaje.senderActorType)} · {formatDateTime(mensaje.createdAt)}
         </p>
       </div>
     </div>

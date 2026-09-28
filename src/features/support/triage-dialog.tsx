@@ -1,6 +1,7 @@
 "use client";
 
 import { codeOptions, queueOptions, SIN_CAMBIAR } from "./support-options";
+import { impacto, prioridad, sensibilidad, urgencia } from "./labels";
 import { useMemo, useState } from "react";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { Button } from "@/shared/components/ui/button";
@@ -20,8 +21,8 @@ import type { SupportCategory } from "./types";
  *
  * El motivo sale del catálogo sembrado y NO se escribe a mano: «no me reconocen el pago» escrito de
  * veinte maneras no se puede contar ni enrutar. Si la lista llega vacía es porque el catálogo no
- * está sembrado en esta base —las migraciones crean las tablas vacías—, y la pantalla lo dice en
- * vez de ofrecer un desplegable sin opciones.
+ * está sembrado en esta base —las migraciones crean las tablas vacías—, y la pantalla lo dice (en
+ * palabras de quien opera) en vez de ofrecer un desplegable sin opciones.
  *
  * La razón del movimiento es obligatoria (mínimo 4 caracteres en el backend) porque reclasificar
  * cambia cola, prioridad y el reloj de SLA: sin ella la historia del caso registra el cambio y no
@@ -66,8 +67,8 @@ export function TriageDialog({
 
       {categorias.data && planas.length === 0 ? (
         <ErrorState
-          title="No hay motivos en el catálogo de esta base."
-          description="Las migraciones crean las tablas de soporte vacías y las categorías llegan de la rama de semillas. Sin ellas no se puede clasificar aquí, y abrir un caso falla con SUPPORT_CATEGORY_NOT_FOUND."
+          title="Todavía no hay motivos para clasificar."
+          description="La lista de motivos de soporte de este entorno está vacía, así que aquí no se puede clasificar ni los clientes pueden abrir casos nuevos. Pide a un administrador que cargue el catálogo de motivos."
         />
       ) : null}
 
@@ -105,7 +106,7 @@ export function TriageDialog({
                 ...planas.map((categoria) => ({
                   value: categoria.categoryCode,
                   label: `${categoria.sangria}${categoria.label}`,
-                  description: `${categoria.categoryCode} · sensibilidad ${categoria.sensitivity} · impacto ${categoria.defaultImpact} · urgencia ${categoria.defaultUrgency}`,
+                  description: descripcionMotivo(categoria),
                 })),
               ]}
               value={categoryCode}
@@ -121,7 +122,10 @@ export function TriageDialog({
               name="prioridad"
               options={[
                 SIN_CAMBIAR,
-                ...codeOptions(codigos.data?.priorities ?? []),
+                ...codeOptions(
+                  codigos.data?.priorities ?? [],
+                  (codigo) => prioridad(codigo).label,
+                ),
               ]}
               value={priority}
               onChange={setPriority}
@@ -198,4 +202,17 @@ function aplanar(categorias: readonly SupportCategory[]): CategoriaPlana[] {
       sangria: "    ",
     })),
   ]);
+}
+
+/** «Sensible · afecta a una persona · urgencia alta», y si pide especialista, también. */
+function descripcionMotivo(categoria: SupportCategory): string {
+  const partes = [
+    `Sensibilidad ${sensibilidad(categoria.sensitivity).toLowerCase()}`,
+    `afecta a ${impacto(categoria.defaultImpact)}`,
+    `urgencia ${urgencia(categoria.defaultUrgency)}`,
+  ];
+  if (categoria.requiresSpecialist) partes.push("lo atiende un especialista");
+  return categoria.description
+    ? `${categoria.description} · ${partes.join(" · ")}`
+    : partes.join(" · ");
 }

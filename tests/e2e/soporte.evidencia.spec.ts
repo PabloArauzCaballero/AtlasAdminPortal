@@ -41,8 +41,7 @@ const CASOS = {
       title: "No me reconocen el pago de la cuota 3",
       caseType: "PAYMENT_EVIDENCE",
       domain: "PAYMENT",
-      status: "IN_PROGRESS",
-      customerStatus: "Estamos trabajando",
+      status: "Estamos trabajando",
       openedAt: "2026-09-05T14:12:00.000Z",
       lastActivityAt: "2026-09-07T09:02:00.000Z",
       resolvedAt: null,
@@ -72,8 +71,7 @@ const CASOS = {
       title: "No recibo el código de acceso",
       caseType: "ACCOUNT_ACCESS",
       domain: "AUTH",
-      status: "TRIAGED",
-      customerStatus: "En revisión",
+      status: "En revisión",
       openedAt: "2026-09-06T08:40:00.000Z",
       lastActivityAt: "2026-09-06T08:41:00.000Z",
       resolvedAt: null,
@@ -196,28 +194,28 @@ const TRANSCRIPCION = {
 const HISTORIA = {
   events: [
     {
-      eventId: "1",
+      sequence: "1",
       eventType: "CASE_CREATED",
       actorType: "CUSTOMER",
-      actorId: "9001",
       occurredAt: "2026-09-05T14:12:00.000Z",
       payload: null,
+      eventHash: "h1",
     },
     {
-      eventId: "2",
+      sequence: "2",
       eventType: "CASE_TRIAGED",
       actorType: "AGENT",
-      actorId: "4",
       occurredAt: "2026-09-05T14:20:00.000Z",
       payload: null,
+      eventHash: "h2",
     },
     {
-      eventId: "3",
+      sequence: "3",
       eventType: "CASE_TRANSFERRED",
       actorType: "AGENT",
-      actorId: "4",
       occurredAt: "2026-09-06T10:00:00.000Z",
       payload: null,
+      eventHash: "h3",
     },
   ],
   assignments: [],
@@ -342,7 +340,7 @@ test("Soporte — ficha del caso con su historia", async ({ page }) => {
     "SUP-2026-000481",
     { timeout: 20_000 },
   );
-  await expect(page.getByText("CASE_TRIAGED")).toBeVisible();
+  await expect(page.getByText("Caso clasificado")).toBeVisible();
   await expect(page.getByRole("button", { name: "Resolver" })).toBeVisible();
 
   /*
@@ -403,7 +401,7 @@ test("Soporte — sin perfil de agente, la pantalla explica qué falta", async (
   await page.goto("/internal/support", { waitUntil: "domcontentloaded" });
 
   await expect(
-    page.getByText("Tu usuario todavía no es agente de soporte"),
+    page.getByText("Tu usuario no está habilitado en la mesa de soporte"),
   ).toBeVisible({ timeout: 20_000 });
   await expect(
     page.getByRole("link", { name: "Ir a Soporte · Agentes" }),

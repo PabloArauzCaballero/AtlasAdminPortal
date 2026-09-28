@@ -15,6 +15,7 @@ import {
   getSupportCaseTimeline,
   getSupportCodes,
   getMyDesk,
+  listInternalUsersForDesk,
   listQueuedChannels,
   listSupportAgents,
   listSupportCases,
@@ -115,6 +116,14 @@ export function useSupportAgents() {
   return useQuery({
     queryKey: queryKeys.supportAgents,
     queryFn: listSupportAgents,
+    retry: false,
+  });
+}
+
+export function useInternalUsersForDesk() {
+  return useQuery({
+    queryKey: ["support", "internal-users"],
+    queryFn: listInternalUsersForDesk,
     retry: false,
   });
 }

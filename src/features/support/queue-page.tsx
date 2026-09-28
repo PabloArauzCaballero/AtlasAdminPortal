@@ -3,7 +3,7 @@
 import type { Option } from "@/shared/lib/options";
 import {
   ASIGNACION_OPTIONS,
-  CAUSA_RAIZ_FILTRO_OPTIONS,
+  causaRaizFiltroOptions,
   PRIORIDAD_FILTRO_OPTIONS,
   queueOptions,
 } from "./support-options";
@@ -20,12 +20,16 @@ import { AccesoASoporte } from "./support-access-state";
 import { buildSupportCaseColumns } from "./case-columns";
 import { ChatsEnEspera } from "./desk-panel";
 import { SlaSweepButton } from "./sla-sweep-button";
-import { useSupportCases, useSupportQueues } from "./hooks";
+import { useSupportCases, useSupportCodes, useSupportQueues } from "./hooks";
 import type { SupportCursor } from "./types";
 import { LifeBuoy } from "lucide-react";
 
-const ESTADOS_ABIERTOS =
-  "NEW,TRIAGED,ASSIGNED,IN_PROGRESS,WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER,ESCALATED";
+/**
+ * Todo lo que sigue vivo. `ON_HOLD` y `REOPENED` también: sin ellos un caso en pausa o reabierto
+ * no salía en ninguna vista y desaparecía de la bandeja justo cuando alguien tenía que retomarlo.
+ */
+export const ESTADOS_ABIERTOS =
+  "NEW,TRIAGED,ASSIGNED,IN_PROGRESS,WAITING_CUSTOMER,WAITING_INTERNAL,WAITING_PARTNER,ESCALATED,ON_HOLD,REOPENED";
 
 const VISTAS: Option[] = [
   {
@@ -55,9 +59,27 @@ const VISTAS: Option[] = [
     description: "Pasados a otro equipo o a un supervisor para decidir.",
   },
   {
+    label: "Reabiertos",
+    value: "REOPENED",
+    description:
+      "Se dieron por resueltos y el problema volvió: hay que retomarlos.",
+  },
+  {
+    label: "En pausa",
+    value: "ON_HOLD",
+    description:
+      "Detenidos a propósito hasta que algo cambie; nadie los atiende ahora.",
+  },
+  {
     label: "Resueltos y cerrados",
     value: "RESOLVED,CLOSED",
     description: "Terminados; aquí sirve el filtro de causa raíz.",
+  },
+  {
+    label: "Duplicados y cancelados",
+    value: "DUPLICATE,CANCELLED",
+    description:
+      "Unidos a otro caso por ser el mismo problema, o anulados sin atender.",
   },
 ];
 
@@ -69,7 +91,7 @@ export function SupportQueuePage() {
   const [rootCauseCode, setRootCauseCode] = useState("");
   /*
    * La paginación es por cursor y hacia adelante: se guarda la PILA de cursores visitados para
-   * poder volver. El backend no devuelve total ni número de página —el backlog crece sin techo y
+   * poder volver. El servidor no devuelve total ni número de página —el backlog crece sin techo y
    * con OFFSET un caso nuevo desplazaría todo lo que el agente está mirando—, así que aquí no hay
    * «página 7 de 12» que enseñar, y fingirla sería mentir sobre lo que el servidor sabe.
    */
@@ -77,6 +99,7 @@ export function SupportQueuePage() {
   const cursorActual = cursores[cursores.length - 1] ?? null;
 
   const colas = useSupportQueues();
+  const codigos = useSupportCodes();
   const casos = useSupportCases({
     status,
     priority: priority || undefined,
@@ -102,13 +125,12 @@ export function SupportQueuePage() {
         actions={<SlaSweepButton />}
       />
       <BusinessContextNote>
-        Cada fila es un expediente real de <code>support.support_cases</code>.
-        Atender exige, además del rol interno, un perfil de agente habilitado:
-        sin él el backend responde 403 y esta pantalla lo dice explícitamente en
-        vez de enseñar una tabla vacía. Los casos marcados como restringidos
-        sólo los ve un supervisor o el agente que los tiene asignados, así que
-        dos personas del mismo equipo pueden ver cuentas distintas aquí, y es
-        correcto.
+        Cada fila es un caso real abierto por un cliente o un comercio. Para
+        atenderlos hace falta estar en la mesa de soporte: si tu usuario no
+        tiene acceso, esta pantalla te lo dice en vez de enseñar una tabla
+        vacía. Los casos restringidos sólo los ve un supervisor o el agente que
+        los tiene asignados, así que dos personas del mismo equipo pueden ver
+        listas distintas aquí, y es correcto.
       </BusinessContextNote>
 
       <section className="mb-4 grid gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle sm:grid-cols-2 xl:grid-cols-5">
@@ -168,7 +190,7 @@ export function SupportQueuePage() {
         >
           <Select
             name="causa-raiz"
-            options={CAUSA_RAIZ_FILTRO_OPTIONS}
+            options={causaRaizFiltroOptions(codigos.data?.rootCauseCodes ?? [])}
             value={rootCauseCode}
             onChange={(valor) => {
               setRootCauseCode(valor);
@@ -206,7 +228,7 @@ export function SupportQueuePage() {
             <MetricCard
               label="Casos en esta página"
               value={formatNumber(items.length)}
-              hint="La cola se pagina por cursor: el backend no devuelve un total."
+              hint="Se muestran de 20 en 20; el total de la bandeja no se calcula."
             />
             <MetricCard
               label="P1 y P2 visibles"
@@ -228,7 +250,7 @@ export function SupportQueuePage() {
             data={items}
             columns={columns}
             emptyTitle="No hay casos para estos filtros."
-            emptyDescription="La respuesta llegó bien y sin casos: esta cola está vacía para el filtro elegido, no es un problema de permisos."
+            emptyDescription="No hay casos que cumplan estos filtros. No es un problema de acceso: prueba con otra vista u otra cola."
           />
 
           <div className="flex items-center justify-between">

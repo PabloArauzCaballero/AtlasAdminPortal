@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import {
-  Badge,
-  SeverityBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
+import { Badge } from "@/shared/components/ui/badges";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { AccesoASoporte } from "./support-access-state";
@@ -15,6 +11,15 @@ import { CaseLinksPanel } from "./case-links-panel";
 import { ChannelIntegrityPanel } from "./channel-integrity-panel";
 import { ChatPanel } from "./chat-panel";
 import { useSupportCase, useSupportCaseTimeline } from "./hooks";
+import {
+  actor,
+  dominio,
+  estadoCaso,
+  evento as nombreEvento,
+  sensibilidad,
+  tipoCaso,
+} from "./labels";
+import { EstadoCasoBadge, PrioridadBadge } from "./support-badges";
 import type { SupportCaseEvent } from "./types";
 import { LifeBuoy } from "lucide-react";
 
@@ -54,13 +59,13 @@ export function SupportCaseDetailPage({
           <div className="space-y-6">
             <section className="grid gap-3 rounded-xl border border-atlas-border bg-white p-4 shadow-subtle sm:grid-cols-2 lg:grid-cols-3">
               <Dato label="Estado interno">
-                <StatusBadge value={caso.data.internalStatus} />
+                <EstadoCasoBadge value={caso.data.internalStatus} />
               </Dato>
               <Dato label="Lo que ve el cliente">
-                {safeText(caso.data.customerStatus)}
+                {safeText(caso.data.status)}
               </Dato>
               <Dato label="Prioridad">
-                <SeverityBadge value={caso.data.priority} />
+                <PrioridadBadge value={caso.data.priority} />
               </Dato>
               <Dato label="Sensibilidad">
                 <Badge
@@ -72,11 +77,11 @@ export function SupportCaseDetailPage({
                         : "muted"
                   }
                 >
-                  {caso.data.sensitivity}
+                  {sensibilidad(caso.data.sensitivity)}
                 </Badge>
               </Dato>
-              <Dato label="Tipo">{safeText(caso.data.caseType)}</Dato>
-              <Dato label="Dominio">{safeText(caso.data.domain)}</Dato>
+              <Dato label="Tipo">{tipoCaso(caso.data.caseType)}</Dato>
+              <Dato label="Área">{dominio(caso.data.domain)}</Dato>
               <Dato label="Abierto">{formatDateTime(caso.data.openedAt)}</Dato>
               <Dato label="Última actividad">
                 {formatDateTime(caso.data.lastActivityAt)}
@@ -187,17 +192,29 @@ function Historia({
       <ol className="space-y-3">
         {eventos.map((evento) => (
           <li
-            key={evento.eventId}
+            key={evento.sequence}
             className="border-l-2 border-atlas-border pl-3 text-sm"
           >
-            <p className="font-medium text-atlas-text">{evento.eventType}</p>
+            <p className="font-medium text-atlas-text">
+              {nombreEvento(evento.eventType)}
+              {evento.eventType === "CASE_STATUS_CHANGED"
+                ? cambioDeEstado(evento.payload)
+                : ""}
+            </p>
             <p className="text-xs text-atlas-muted">
-              {formatDateTime(evento.occurredAt)} · {evento.actorType}
-              {evento.actorId ? ` #${evento.actorId}` : ""}
+              {formatDateTime(evento.occurredAt)} · {actor(evento.actorType)}
             </p>
           </li>
         ))}
       </ol>
     </section>
   );
+}
+
+/** «de Asignado a En curso», si el evento trae los dos estados. */
+function cambioDeEstado(payload: Record<string, unknown> | null): string {
+  const desde = typeof payload?.from === "string" ? payload.from : null;
+  const hacia = typeof payload?.to === "string" ? payload.to : null;
+  if (!desde || !hacia) return "";
+  return `: de ${estadoCaso(desde).label} a ${estadoCaso(hacia).label}`;
 }

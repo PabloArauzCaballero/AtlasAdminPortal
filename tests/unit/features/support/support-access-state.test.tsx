@@ -34,7 +34,7 @@ describe("AccesoASoporte", () => {
     );
 
     expect(
-      screen.getByText("Tu usuario todavía no es agente de soporte"),
+      screen.getByText("Tu usuario no está habilitado en la mesa de soporte"),
     ).toBeInTheDocument();
     const enlace = screen.getByRole("link", { name: /Soporte · Agentes/ });
     expect(enlace).toHaveAttribute("href", "/internal/support/agents");
@@ -89,7 +89,7 @@ describe("AccesoASoporte", () => {
       screen.getByText("No se pudo cargar la información de soporte."),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText("Tu usuario todavía no es agente de soporte"),
+      screen.queryByText("Tu usuario no está habilitado en la mesa de soporte"),
     ).toBeNull();
   });
 
