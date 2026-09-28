@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { queryKeys } from "@/shared/api/query-keys";
+import { explicarError } from "./errores";
 import * as api from "./services";
 import { conTipo, tipoEfectivo } from "./tipo-de-archivo";
 import type { Nivel, Nodo } from "./types";
@@ -55,7 +56,12 @@ export function useNodos(
   } = {},
 ) {
   return useQuery({
-    queryKey: queryKeys.expedienteNodos(expedienteId, parentId, opciones.q),
+    queryKey: queryKeys.expedienteNodos(
+      expedienteId,
+      parentId,
+      opciones.q,
+      opciones.incluirPapelera ?? false,
+    ),
     queryFn: () =>
       api.listarNodos(expedienteId, {
         ...(opciones.q
@@ -184,19 +190,34 @@ function useRefrescarArbol(expedienteId: string) {
   };
 }
 
+/**
+ * Las mutaciones del árbol, con su error ya explicado.
+ *
+ * Antes ninguna tenía `onError`: renombrar a un nombre ocupado o purgar con un motivo corto
+ * fallaba en silencio y la pantalla seguía como si nada. Ahora el último fallo queda en `error`,
+ * en español, hasta que otra acción salga bien o quien opera lo cierre.
+ */
 export function useMutacionesDelArbol(expedienteId: string) {
   const refrescar = useRefrescarArbol(expedienteId);
+  const [error, setError] = useState<string | null>(null);
+  const al = (porDefecto: string) => ({
+    onSuccess: () => {
+      setError(null);
+      refrescar();
+    },
+    onError: (causa: unknown) => setError(explicarError(causa, porDefecto)),
+  });
 
   const crearCarpeta = useMutation({
     mutationFn: (input: { parentId: string | null; nombre: string }) =>
       api.crearCarpeta(expedienteId, input),
-    onSuccess: refrescar,
+    ...al("No se pudo crear la carpeta."),
   });
 
   const renombrar = useMutation({
     mutationFn: (input: { nodoId: string; nombre: string }) =>
       api.actualizarNodo(expedienteId, input.nodoId, { nombre: input.nombre }),
-    onSuccess: refrescar,
+    ...al("No se pudo cambiar el nombre."),
   });
 
   const mover = useMutation({
@@ -204,27 +225,35 @@ export function useMutacionesDelArbol(expedienteId: string) {
       api.actualizarNodo(expedienteId, input.nodoId, {
         parentId: input.parentId,
       }),
-    onSuccess: refrescar,
+    ...al("No se pudo mover."),
   });
 
   const borrar = useMutation({
     mutationFn: (nodoId: string) => api.borrarNodo(expedienteId, nodoId),
-    onSuccess: refrescar,
+    ...al("No se pudo mover a la papelera."),
   });
 
   const restaurar = useMutation({
     mutationFn: (nodoId: string) => api.restaurarNodo(expedienteId, nodoId),
-    onSuccess: refrescar,
+    ...al("No se pudo sacar de la papelera."),
   });
 
-  // Vaciar la papelera es el único borrado DEFINITIVO del expediente: existía en el backend y no
-  // había forma de llegar a él desde la pantalla.
+  // Vaciar la papelera es el único borrado DEFINITIVO del expediente.
   const purgar = useMutation({
     mutationFn: (motivo: string) => api.purgarPapelera(expedienteId, motivo),
-    onSuccess: refrescar,
+    ...al("No se pudo vaciar la papelera."),
   });
 
-  return { crearCarpeta, renombrar, mover, borrar, restaurar, purgar };
+  return {
+    crearCarpeta,
+    renombrar,
+    mover,
+    borrar,
+    restaurar,
+    purgar,
+    error,
+    limpiarError: () => setError(null),
+  };
 }
 
 export function useCompartir(expedienteId: string, nodoId: string | null) {

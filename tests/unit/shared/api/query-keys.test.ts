@@ -309,3 +309,15 @@ describe("queryKeys · invalidación por prefijo", () => {
     );
   });
 });
+
+describe("queryKeys.expedienteNodos", () => {
+  it("la papelera es parte de la clave: con y sin ella son consultas distintas", () => {
+    const sin = queryKeys.expedienteNodos("42", null, "");
+    const con = queryKeys.expedienteNodos("42", null, "", true);
+    expect(JSON.stringify(sin)).not.toBe(JSON.stringify(con));
+    // Sin el argumento se comporta como antes: lo borrado no entra.
+    expect(sin).toEqual(queryKeys.expedienteNodos("42", null, "", false));
+    // Y sigue colgando del prefijo que invalida el árbol tras una mutación.
+    expect(con.slice(0, 3)).toEqual(["expedientes", "nodos", "42"]);
+  });
+});

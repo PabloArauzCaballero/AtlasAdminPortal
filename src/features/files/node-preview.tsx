@@ -5,6 +5,7 @@ import { Download, ExternalLink, TriangleAlert } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { CopyButton } from "@/shared/components/ui/copy-button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { explicarError } from "./errores";
 import { useContactos, useContenido } from "./hooks";
 import { esTexto } from "./tipo-de-archivo";
 import type { Nodo } from "./types";
@@ -72,7 +73,12 @@ export function VistaPreviaDeNodo({
     return (
       <EmptyState
         title="No se pudo abrir el archivo."
-        description="Puede ser un problema del almacén. Vuelve a intentarlo antes de decidir sobre el caso."
+        description={`${explicarError(contenido.error, "No sabemos todavía por qué.")} Vuelve a intentarlo antes de decidir sobre el caso.`}
+        action={
+          <Button variant="secondary" onClick={() => void contenido.refetch()}>
+            Reintentar
+          </Button>
+        }
       />
     );
   }

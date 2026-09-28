@@ -6,6 +6,7 @@ import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { Badge } from "@/shared/components/ui/badges";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
+import { explicarError } from "./errores";
 import { useActividad } from "./hooks";
 import { descargarNodo } from "./services";
 import { VistaPreviaDeNodo } from "./node-preview";
@@ -41,6 +42,8 @@ export function PanelDeNodo({
   onCompartir: (nodo: Nodo) => void;
 }>) {
   const [pestana, setPestana] = useState<string>(PESTANAS[0]);
+  // Se guarda con el nodo al que pertenece: al abrir otro archivo el aviso anterior no le aplica.
+  const [fallo, setFallo] = useState<{ nodoId: string; mensaje: string }>();
 
   if (!nodo) return null;
 
@@ -52,9 +55,23 @@ export function PanelDeNodo({
           expedienteId={expedienteId}
           nodo={nodo}
           onDescargar={() => {
-            void guardarEnDisco(expedienteId, nodo);
+            setFallo(undefined);
+            guardarEnDisco(expedienteId, nodo).catch((error: unknown) =>
+              setFallo({
+                nodoId: nodo.nodoId,
+                mensaje: explicarError(
+                  error,
+                  "No se pudo descargar el archivo. Inténtalo de nuevo.",
+                ),
+              }),
+            );
           }}
         />
+      ) : null}
+      {pestana === "Vista previa" && fallo?.nodoId === nodo.nodoId ? (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {fallo.mensaje}
+        </p>
       ) : null}
       {pestana === "Detalles" ? <Detalles nodo={nodo} /> : null}
       {pestana === "Quién lo ve" ? (
@@ -83,7 +100,9 @@ export function PanelDeNodo({
  * navegador haya empezado a leerla cancela la descarga en silencio.
  */
 async function guardarEnDisco(expedienteId: string, nodo: Nodo): Promise<void> {
-  const archivo = await descargarNodo(expedienteId, nodo);
+  // «attachment» y no la opción por defecto: el backend registra en la actividad si el archivo se
+  // VIO o se DESCARGÓ, y guardarlo en disco contaba como una simple vista.
+  const archivo = await descargarNodo(expedienteId, nodo, "attachment");
   const url = URL.createObjectURL(
     conTipo(archivo.blob, tipoEfectivo(archivo.contentType, nodo)),
   );

@@ -7,12 +7,24 @@ import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badges";
 import { AtlasApiError } from "@/shared/api/errors";
-import { MOTIVO_DE_RECHAZO, subirArchivo } from "./upload";
+import { explicarError } from "./errores";
+import {
+  ErrorDelAlmacen,
+  LIMITES_DE_SUBIDA,
+  TIPOS_ADMITIDOS,
+  subirArchivo,
+} from "./upload";
 
 type Estado =
   "pendiente" | "hash" | "subida" | "verificacion" | "listo" | "error";
 
-type EnCurso = { archivo: File; estado: Estado; mensaje?: string };
+type EnCurso = {
+  archivo: File;
+  estado: Estado;
+  mensaje?: string;
+  /** Dónde quedó guardado, tal como lo devolvió el servidor. */
+  ruta?: string;
+};
 
 const TEXTO_DE_ESTADO: Record<Estado, string> = {
   pendiente: "En espera",
@@ -63,7 +75,7 @@ export function DialogoDeSubida({
     setSubiendo(true);
     for (const [indice, archivo] of archivos.entries()) {
       try {
-        await subirArchivo({
+        const nodo = await subirArchivo({
           expedienteId,
           parentId,
           archivo,
@@ -71,9 +83,12 @@ export function DialogoDeSubida({
             actualizar(indice, { estado: fase });
           },
         });
-        actualizar(indice, { estado: "listo" });
+        actualizar(indice, { estado: "listo", ruta: nodo.ruta });
       } catch (error) {
-        actualizar(indice, { estado: "error", mensaje: explicar(error) });
+        actualizar(indice, {
+          estado: "error",
+          mensaje: explicarRechazo(error),
+        });
       }
     }
     setSubiendo(false);
@@ -101,11 +116,19 @@ export function DialogoDeSubida({
           Se comprueba en el servidor que lo guardado sea exactamente lo que
           elegiste, y queda registrado quién lo subió.
         </p>
+        <p className="text-sm text-atlas-text">
+          {LIMITES_DE_SUBIDA}
+          {parentId === null
+            ? " Desde la raíz del expediente, lo que subas se guarda en la carpeta «otros»."
+            : null}
+        </p>
 
         <input
           ref={entrada}
           type="file"
           multiple
+          accept={TIPOS_ADMITIDOS}
+          aria-label="Archivos para añadir"
           className="hidden"
           onChange={(evento) => {
             const archivos = Array.from(evento.target.files ?? []);
@@ -142,7 +165,9 @@ export function DialogoDeSubida({
                         : "info"
                   }
                 >
-                  {TEXTO_DE_ESTADO[item.estado]}
+                  {item.estado === "listo" && item.ruta
+                    ? `Guardado en ${carpetaDe(item.ruta)}`
+                    : TEXTO_DE_ESTADO[item.estado]}
                 </Badge>
               </li>
             ))}
@@ -167,12 +192,23 @@ export function DialogoDeSubida({
   );
 }
 
-/** El código del backend en palabras; si no lo reconoce, se enseña lo que dijo el servidor. */
-function explicar(error: unknown): string {
-  if (error instanceof AtlasApiError) {
-    return MOTIVO_DE_RECHAZO[error.code] ?? error.message;
-  }
-  return error instanceof Error
+/** La carpeta que contiene esta ruta, para decir dónde quedó el archivo. */
+export function carpetaDe(ruta: string): string {
+  const corte = ruta.lastIndexOf("/");
+  return corte > 0 ? ruta.slice(0, corte) : "la raíz";
+}
+
+/**
+ * El rechazo en palabras de quien opera. Nunca el código en mayúsculas del backend: ver
+ * `explicarError`, que busca el motivo tanto en `code` como en `message`.
+ */
+export function explicarRechazo(error: unknown): string {
+  if (error instanceof AtlasApiError)
+    return explicarError(
+      error,
+      "No se pudo subir el archivo. Inténtalo de nuevo.",
+    );
+  return error instanceof ErrorDelAlmacen
     ? error.message
-    : "No se pudo subir el archivo.";
+    : "No se pudo subir el archivo. Inténtalo de nuevo.";
 }

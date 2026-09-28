@@ -84,7 +84,7 @@ describe("subida al expediente", () => {
 
     await expect(
       subirArchivo({ expedienteId: "42", parentId: null, archivo }),
-    ).rejects.toThrow(/403/);
+    ).rejects.toThrow(/El almacén no aceptó el archivo/);
     expect(confirmarSubida).not.toHaveBeenCalled();
   });
 
