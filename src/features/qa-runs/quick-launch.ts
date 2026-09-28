@@ -50,19 +50,18 @@ export function planQuickLaunch(input: {
       problem: "El servidor no ofrece ningún entorno aislado de QA.",
     };
   }
-  const template = templates.find(
-    (item) =>
-      item.workflowCode === input.workflowCode && item.status === "READY",
-  );
+  const template = pickTemplate(templates, input.workflowCode);
   if (!template) {
     const blocked = templates.find(
-      (item) => item.workflowCode === input.workflowCode,
+      (item) =>
+        item.workflowCode === input.workflowCode ||
+        (item.matchedStepCodes?.length ?? 0) > 0,
     );
     return {
       ok: false,
       problem: blocked
         ? `El recorrido de este flujo no se puede ejecutar: ${blocked.blockedReasons.join("; ") || "está en borrador"}.`
-        : "Este flujo todavía no tiene un recorrido de prueba publicado.",
+        : "Ningún recorrido de prueba pasa por los pasos de este flujo.",
     };
   }
   if (!Number.isInteger(persons) || persons < 1) {
@@ -94,6 +93,30 @@ export function planQuickLaunch(input: {
       scenarioCode: template.defaultScenario,
     },
   };
+}
+
+/**
+ * La plantilla que recorre este flujo. El servidor ya filtra por flujo casando ENDPOINTS
+ * (`matchedStepCodes`): una receta escrita para el ciclo completo del cliente pasa por los pasos
+ * del recorrido de crédito aunque su `workflowCode` sea otro. Antes se exigía `workflowCode`
+ * idéntico, y como sólo dos flujos tienen recetas propias, en todos los demás «Generar y cargar»
+ * decía «todavía no tiene un recorrido de prueba publicado» con recetas listas que sí lo recorrían.
+ *
+ * Primero la escrita para este flujo; si no hay, la que más pasos suyos recorre.
+ */
+export function pickTemplate(
+  templates: readonly QaTemplateSummary[],
+  workflowCode: string,
+): QaTemplateSummary | undefined {
+  const ready = templates.filter((item) => item.status === "READY");
+  const own = ready.find((item) => item.workflowCode === workflowCode);
+  if (own) return own;
+  return ready
+    .filter((item) => (item.matchedStepCodes?.length ?? 0) > 0)
+    .sort(
+      (a, b) =>
+        (b.matchedStepCodes?.length ?? 0) - (a.matchedStepCodes?.length ?? 0),
+    )[0];
 }
 
 export function newLoadSeed(now: Date = new Date()): string {
