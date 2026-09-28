@@ -12,6 +12,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { FlowDetailDrawer } from "../flow-detail-drawer";
 import { useFlowGraph, useModuleGraph } from "../hooks";
 import { FlowGraphView } from "./flow-graph-view";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 /**
  * `/internal/flows/graph?flow=flow_…` dibuja un flujo; `?systemCode=…&module=…` dibuja el módulo
@@ -87,6 +88,7 @@ function AuthorizedFlowGraphPage() {
           </div>
         }
       />
+      <FlowCatalogNotLoaded />
       {query.isLoading ? <LoadingSkeleton rows={10} /> : null}
       {query.error ? (
         <ErrorState

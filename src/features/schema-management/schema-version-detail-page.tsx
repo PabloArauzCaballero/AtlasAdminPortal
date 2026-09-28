@@ -22,6 +22,7 @@ import { formatDateTime, safeText } from "@/shared/lib/format";
 import { useSchemaNames, useSchemaTables, useSchemaVersion } from "./hooks";
 import { buildSchemaTableColumns } from "./schema-table-columns";
 import { SchemaPicker } from "./schema-picker";
+import { SchemaInventoryMissingNote } from "./schema-inventory-missing-note";
 
 const PAGE_SIZE = 50;
 
@@ -114,6 +115,11 @@ export function SchemaVersionDetailPage({
               Creada {formatDateTime(version.data.createdAt)}
             </span>
           </div>
+          <SchemaInventoryMissingNote
+            versionCodes={
+              version.data.tablesCount === 0 ? [version.data.versionCode] : []
+            }
+          />
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Esquemas"

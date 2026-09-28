@@ -15,6 +15,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { useRbacDrift } from "./hooks";
 import { DRIFT } from "./labels";
 import type { RbacDriftResponse } from "./types";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 /**
  * Pantallas cuyo menú pide un permiso que la API no aplica, medido sobre las llamadas que DE VERDAD
@@ -51,6 +52,7 @@ function AuthorizedRbacDriftPage() {
         title="Deriva de permisos"
         description="Pantallas cuyo menú exige un permiso que la API no aplica en las llamadas que se hicieron desde ellas. Sólo «Sin guarda» es una avería; «Sólo rol» y «Pública» son otra conversación."
       />
+      <FlowCatalogNotLoaded />
       <div className="mb-6 grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Pantallas con llamadas observadas"

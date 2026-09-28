@@ -31,6 +31,7 @@ import { groupCount } from "./services";
 import { FLOW_CLIENTS, FLOW_RISKS, FLOW_SYSTEMS, type Flow } from "./types";
 import { buildFlowColumns } from "./flows-columns";
 import { FlowsSummaryTiles } from "./flows-summary-tiles";
+import { FlowCatalogNotLoaded } from "./flow-catalog-not-loaded";
 
 const option = (value: string) => ({ label: value, value });
 
@@ -171,6 +172,7 @@ function AuthorizedFlowsPage() {
           </div>
         }
       />
+      <FlowCatalogNotLoaded />
       <FlowsSummaryTiles
         summary={summary.data}
         critical={critical}

@@ -16,6 +16,7 @@ import { DomainEventsTable } from "./domain-events-table";
 import { usePendingWork } from "./hooks";
 import { DIAGNOSIS, fecha } from "./labels";
 import type { PendingWorkFlow } from "./types";
+import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 const VENTANAS = [7, 30, 90];
 
@@ -103,6 +104,7 @@ function AuthorizedPendingWorkPage() {
           />
         }
       />
+      <FlowCatalogNotLoaded />
       <div className="mb-6 grid gap-4 md:grid-cols-4">
         <MetricCard
           label="Diagnóstico"
