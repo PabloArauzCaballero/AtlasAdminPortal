@@ -15,12 +15,16 @@ import { ProposeTableForm } from "./propose-table-form";
 import { buildSchemaVersionColumns } from "./schema-version-columns";
 import { SchemaChangeLogTable } from "./schema-change-log-table";
 import { Database } from "lucide-react";
+import { useAuth } from "@/shared/auth/auth-context";
+import { SCHEMA_PROPOSE_PERMISSION } from "./change-actor";
 
 export function SchemaVersionsPage() {
   const [page, setPage] = useState(1);
   const [proposing, setProposing] = useState(false);
   const versions = useSchemaVersions({ limit: 20, offset: (page - 1) * 20 });
   const columns = useMemo(() => buildSchemaVersionColumns(), []);
+  const { hasPermission } = useAuth();
+  const canPropose = hasPermission(SCHEMA_PROPOSE_PERMISSION);
 
   return (
     <>
@@ -34,7 +38,14 @@ export function SchemaVersionsPage() {
             <Link href="/internal/schema/change-log">
               <Button>Change log</Button>
             </Link>
-            <Button variant="primary" onClick={() => setProposing(true)}>
+            <Button
+              variant="primary"
+              disabled={!canPropose}
+              title={
+                canPropose ? undefined : "Requiere governance.schema.propose"
+              }
+              onClick={() => setProposing(true)}
+            >
               Proponer tabla
             </Button>
           </>
@@ -42,9 +53,10 @@ export function SchemaVersionsPage() {
       />
       <BusinessContextNote>
         El DDL real sigue saliendo por migraciones revisadas en PR. Proponer una
-        tabla acá solo registra la propuesta en el change log; requiere
-        aprobación de un <span className="font-mono">platform_admin</span>{" "}
-        distinto de quien la propuso (4 ojos).
+        tabla acá solo registra la propuesta en el change log (permiso{" "}
+        <span className="font-mono">governance.schema.propose</span>); la
+        aprueba otra persona con{" "}
+        <span className="font-mono">governance.schema.approve</span> (4 ojos).
       </BusinessContextNote>
       {versions.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {versions.error ? (

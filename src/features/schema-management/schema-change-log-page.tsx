@@ -15,10 +15,10 @@ export function SchemaChangeLogPage() {
         description="Propuestas de cambio de esquema (crear tabla) pendientes o resueltas, con el segundo par de ojos de aprobación."
       />
       <BusinessContextNote>
-        Aprobar/rechazar es exclusivo de{" "}
-        <span className="font-mono">platform_admin</span> y el backend impide
-        que el mismo usuario que propuso apruebe su propio cambio (4 ojos) — si
-        tu rol no alcanza, la acción devuelve un error claro.
+        Aprobar/rechazar exige el permiso{" "}
+        <span className="font-mono">governance.schema.approve</span> (lo tienen
+        Gobierno de datos, Administración de sistemas y Superadministración) y
+        el backend impide que quien propuso apruebe su propio cambio (4 ojos).
       </BusinessContextNote>
       <SchemaChangeLogTable />
     </>
