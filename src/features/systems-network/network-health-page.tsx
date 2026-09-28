@@ -13,6 +13,12 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { NetworkBlockCard } from "./network-block-card";
+import {
+  blockDisplayName,
+  catalogStatusCopy,
+  isCatalogUpToDate,
+  pluralSystems,
+} from "./network-status-copy";
 
 export function NetworkHealthPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -31,25 +37,32 @@ function AuthorizedNetworkHealthPage() {
   const report = network.data;
   const blocks = report?.blocks ?? [];
   const downBlocks = blocks.filter((block) => block.liveState === "DOWN");
+  // El propio núcleo también cuenta: si no ha leído sus rutas, su «0» no es un dato.
   const staleBlocks = blocks.filter(
-    (block) => block.kind !== "SELF" && block.catalog.federationStatus !== "OK",
+    (block) => !isCatalogUpToDate(block.catalog.federationStatus),
   );
+  const nameOf = (systemCode: string) => {
+    const block = blocks.find((item) => item.systemCode === systemCode);
+    return block ? blockDisplayName(block) : systemCode;
+  };
+  const kindOf = (systemCode: string) =>
+    blocks.find((item) => item.systemCode === systemCode)?.kind ?? "FEDERATED";
 
   return (
     <>
       <PageHeader
         icon={Network}
         title="Salud de la red"
-        description="Estado de LOS TRES bloques del ecosistema desde `/systems/health/network`: si responden, qué aportan al catálogo y qué se pierde cuando falta uno. Se actualiza cada 30s."
+        description="Si los tres sistemas de Atlas —el núcleo, el motor de decisiones y el ERP— están respondiendo, si cada uno ha entregado su lista de rutas y tablas, y qué se pierde cuando falta uno. Se actualiza cada 30 segundos."
         actions={
           <div className="flex gap-2">
             <Button
               onClick={() => void federate.mutateAsync().catch(() => undefined)}
               isLoading={federate.isPending}
-              loadingText="Federando…"
+              loadingText="Pidiendo catálogos…"
             >
               <Share2 className="h-4 w-4" />
-              Refederar catálogo
+              Actualizar catálogos
             </Button>
             <Button
               onClick={() => void network.refetch()}
@@ -65,10 +78,10 @@ function AuthorizedNetworkHealthPage() {
       <BusinessContextNote>
         «Salud de herramientas» contesta si responde cada pieza suelta —una
         librería, una tabla, un proveedor—. Esta pestaña contesta otra pregunta:
-        si el <strong>ecosistema está completo</strong>. Un bloque en pie que
-        lleva días sin federar su catálogo se veía antes exactamente igual que
-        uno sano, porque nadie preguntaba de dónde salían las tablas que el
-        portal enseñaba.
+        si <strong>Atlas está completo</strong>. Un sistema puede estar en pie y
+        aun así no haber entregado su lista de rutas y tablas; entonces el
+        catálogo de datos se queda corto sin que nada lo avise. Las listas se
+        piden solas al arrancar y cada pocas horas.
       </BusinessContextNote>
 
       {report ? (
@@ -82,9 +95,9 @@ function AuthorizedNetworkHealthPage() {
       {downBlocks.length > 0 ? (
         <NetworkAlert
           tone="down"
-          title={`${downBlocks.length} bloque(s) del ecosistema no responden`}
+          title={`${pluralSystems(downBlocks.length)} no ${downBlocks.length === 1 ? "responde" : "responden"}`}
           detail={downBlocks
-            .map((block) => `${block.name}: ${block.degradation}`)
+            .map((block) => `${blockDisplayName(block)}: ${block.degradation}`)
             .join(" · ")}
         />
       ) : null}
@@ -92,11 +105,11 @@ function AuthorizedNetworkHealthPage() {
       {staleBlocks.length > 0 ? (
         <NetworkAlert
           tone="stale"
-          title={`${staleBlocks.length} bloque(s) no están aportando su catálogo`}
+          title={`El catálogo de ${pluralSystems(staleBlocks.length)} no está al día`}
           detail={staleBlocks
             .map(
               (block) =>
-                `${block.name}: ${block.catalog.federationMessage ?? block.catalog.federationStatus}`,
+                `${blockDisplayName(block)}: ${catalogStatusCopy(block.kind, block.catalog.federationStatus).label.toLowerCase()}`,
             )
             .join(" · ")}
         />
@@ -119,15 +132,25 @@ function AuthorizedNetworkHealthPage() {
 
       {federate.data ? (
         <div className="animate-fade-in rounded-xl border border-atlas-border bg-atlas-soft p-4 text-xs">
-          <p className="font-semibold">Resultado de la última federación</p>
+          <p className="font-semibold">Resultado de la actualización</p>
           <ul className="mt-2 space-y-1">
-            {federate.data.map((outcome) => (
-              <li key={outcome.systemCode}>
-                <span className="font-mono">{outcome.systemCode}</span> ·{" "}
-                <span className="font-semibold">{outcome.status}</span> —{" "}
-                {outcome.message}
-              </li>
-            ))}
+            {federate.data.map((outcome) => {
+              const copy = catalogStatusCopy(
+                kindOf(outcome.systemCode),
+                outcome.status,
+              );
+              return (
+                <li key={outcome.systemCode}>
+                  <span className="font-semibold">
+                    {nameOf(outcome.systemCode)}
+                  </span>{" "}
+                  · {copy.label}
+                  {outcome.status === "OK"
+                    ? ` — ${outcome.endpointsImported} endpoints y ${outcome.dataEntitiesImported} tablas.`
+                    : ` — ${copy.explanation}`}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : null}
