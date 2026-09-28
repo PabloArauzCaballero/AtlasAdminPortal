@@ -77,7 +77,6 @@ export function SimulateDialog({
   const titleId = useId();
   const [scenario, setScenario] = useState("");
   const test = useTestProviderMutation(provider.providerCode);
-  const elegido = ESCENARIOS.find((item) => item.value === scenario);
 
   return (
     <DialogShell
@@ -106,12 +105,14 @@ export function SimulateDialog({
         <Field
           tooltip="Escenario que simulará el emulador del proveedor en esta llamada."
           label="Qué quieres que pase"
-          hint={elegido?.hint}
         >
           <Select
             name="scenario"
             value={scenario}
-            onChange={setScenario}
+            onChange={(valor) => {
+              setScenario(valor);
+              test.reset();
+            }}
             options={ESCENARIOS.map((item) => ({
               value: item.value,
               label: item.label,

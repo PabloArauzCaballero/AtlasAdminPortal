@@ -39,11 +39,6 @@ export function ResolveDialog({
     internalResolution.trim().length < MINIMO;
   const listo = Boolean(resolutionCode) && !faltaTexto;
 
-  const descripcion = (
-    lista: { code: string; label: string }[] | undefined,
-    code: string,
-  ) => lista?.find((opcion) => opcion.code === code)?.label ?? null;
-
   return (
     <DrawerPanel open title={`Resolver el caso #${caseId}`} onClose={onClose}>
       {codigos.isLoading ? <LoadingSkeleton rows={4} /> : null}
@@ -79,10 +74,6 @@ export function ResolveDialog({
           <Field
             label="Cómo se resolvió"
             tooltip="Qué se hizo para solucionarlo; alimenta los informes de resolución de la mesa."
-            hint={
-              descripcion(codigos.data.resolutionCodes, resolutionCode) ??
-              undefined
-            }
           >
             <Select
               name="resolucion"
@@ -96,10 +87,6 @@ export function ResolveDialog({
           <Field
             label="Por qué pasó (causa raíz)"
             tooltip="Origen del problema; separa defectos propios de fallos de terceros o malentendidos."
-            hint={
-              descripcion(codigos.data.rootCauseCodes, rootCauseCode) ??
-              undefined
-            }
           >
             <Select
               name="causa-raiz"

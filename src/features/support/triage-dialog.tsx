@@ -94,7 +94,7 @@ export function TriageDialog({
             tooltip="De qué trata el caso; el motivo trae su cola, sensibilidad e impacto por defecto."
             hint={
               elegida
-                ? `Sensibilidad ${elegida.sensitivity} · impacto ${elegida.defaultImpact} · urgencia ${elegida.defaultUrgency}`
+                ? undefined
                 : "El motivo trae consigo cola, sensibilidad e impacto por defecto."
             }
           >
