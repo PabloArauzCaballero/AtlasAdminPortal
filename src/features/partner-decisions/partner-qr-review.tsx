@@ -18,6 +18,11 @@ import {
   useQrPendingReview,
   useReviewPartnerQrMutation,
 } from "./hooks";
+import {
+  onboardingStatusLabel,
+  partnerActionErrorMessage,
+  qrKindLabel,
+} from "./labels";
 import type { PartnerQrPending } from "./types";
 
 /**
@@ -30,7 +35,8 @@ import type { PartnerQrPending } from "./types";
  * cuenta de cobro mirando sólo el hash es firmar sin haber visto.
  *
  * Los botones sólo aparecen con `partner.qr.review` (MERCHANT_OPERATIONS): el backend responde 403
- * sin él, y una promesa que termina en 403 no es una promesa.
+ * sin él, y una promesa que termina en 403 no es una promesa. El aviso para quien no lo tiene va
+ * en palabras, sin el código del permiso.
  */
 export function PartnerQrReviewQueue() {
   const cola = useQrPendingReview();
@@ -89,7 +95,7 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
     null,
   );
   const nombre = safeText(qr.partner?.tradeName ?? qr.partner?.legalName);
-  const tipo = qr.qrKind === "bank" ? "QR bancario (cobro)" : "QR del negocio";
+  const tipo = qrKindLabel(qr.qrKind);
 
   return (
     <article
@@ -100,8 +106,10 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
         <div>
           <h3 className="text-sm font-semibold text-atlas-text">{nombre}</h3>
           <p className="text-xs text-atlas-muted">
-            {tipo} · expediente {qr.partnerId}
-            {qr.partner ? ` · ${qr.partner.onboardingStatus}` : ""}
+            {tipo}
+            {qr.partner
+              ? ` · comercio ${onboardingStatusLabel(qr.partner.onboardingStatus).toLowerCase()}`
+              : ""}
           </p>
         </div>
         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
@@ -135,6 +143,8 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
         <dd className="font-mono">{qr.fingerprint}</dd>
         <dt className="text-atlas-muted">Subido</dt>
         <dd>{formatDateTime(qr.createdAt)}</dd>
+        <dt className="text-atlas-muted">N.º de comercio</dt>
+        <dd className="select-all font-mono">{qr.partnerId}</dd>
       </dl>
 
       {puedeRevisar ? (
@@ -164,16 +174,17 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
           </div>
           {revisar.error ? (
             <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {isAtlasApiError(revisar.error)
-                ? revisar.error.message
-                : "No se pudo revisar el QR."}
+              {partnerActionErrorMessage(
+                revisar.error,
+                "No se pudo revisar el QR.",
+              )}
             </p>
           ) : null}
         </div>
       ) : (
         <p className="text-xs text-atlas-muted">
-          Revisar un QR exige el permiso «partner.qr.review»
-          (MERCHANT_OPERATIONS). Tu sesión no lo tiene.
+          Tu usuario no puede aprobar ni rechazar QR de cobro: lo hace el equipo
+          de Operaciones de comercios.
         </p>
       )}
 
@@ -197,7 +208,9 @@ function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
               approved: aprobado,
               ...(nota.trim() ? { note: nota.trim() } : {}),
             })
-            .finally(() => setPendiente(null));
+            .then(() => setPendiente(null))
+            // En error el diálogo se cierra y el motivo queda pintado bajo los botones.
+            .catch(() => setPendiente(null));
         }}
       />
     </article>

@@ -15,7 +15,10 @@ import type {
  * Decidir sobre una petición encolada por el ERP.
  *
  * El diálogo enseña la petición y NO deja editarla: el correo y el nombre son los que el ERP
- * mandó. Si están mal, se corrigen allí y se vuelve a encolar. Poder retocarlos aquí devolvería la
+ * mandó. Si están mal, se corrigen allí y se vuelve a encolar.
+ *
+ * Si conceder o rechazar falla, el diálogo sigue abierto con el motivo (`error`) y la promesa se
+ * atrapa aquí: antes quedaba rechazada sin manejar. Poder retocarlos aquí devolvería la
  * avería que la cola resuelve —la identidad diciendo una cosa y el CRM otra—, y encima dejaría la
  * petición mintiendo sobre lo que se concedió.
  */
@@ -57,7 +60,7 @@ export function ProvisioningDecisionDialog({
       </h2>
       <p className="mb-4 text-sm text-atlas-muted">
         {aprobar
-          ? "Se creará la identidad con los datos que mandó el ERP y nacerá en «invited». La contraseña provisional se envía por correo a la persona; este portal no la muestra."
+          ? "Se creará la identidad con los datos que mandó el ERP, ya activa. Atlas genera una contraseña provisional y pide que se le envíe por correo a la persona; ninguna pantalla la muestra."
           : "El motivo viaja al ERP: es lo que le dice al ejecutivo comercial qué corregir antes de volver a pedirlo."}
       </p>
 
@@ -118,9 +121,11 @@ export function ProvisioningDecisionDialog({
           isLoading={isPending}
           disabled={!aprobar && motivo.trim().length < 8}
           onClick={() =>
-            void (aprobar
-              ? onAprobar(userCode.trim() || undefined)
-              : onRechazar(motivo.trim()))
+            void (
+              aprobar
+                ? onAprobar(userCode.trim() || undefined)
+                : onRechazar(motivo.trim())
+            ).catch(() => undefined)
           }
         >
           {aprobar ? "Conceder" : "Rechazar"}
@@ -132,6 +137,11 @@ export function ProvisioningDecisionDialog({
 
 /**
  * Aviso de acceso concedido. NO enseña la contraseña provisional, y no es una omisión.
+ *
+ * Tampoco dice «se envió»: el backend PIDE el envío del correo y, si falla, sólo lo apunta en su
+ * registro (`CredentialsNotifierService` nunca lanza). La respuesta no informa de la entrega, así
+ * que la pantalla dice lo que sabe: que se pidió. Cuando el backend devuelva si se entregó
+ * (`credentialsDelivered`), este texto puede afirmarlo o avisar del fallo.
  *
  * Hasta el 2026-09-17 este diálogo la pintaba una vez para que el operador se la «entregara» al
  * comercio. Eso la dejaba en pantalla, en el portapapeles y en cualquier captura. Atlas ya se la
@@ -160,7 +170,7 @@ export function CredencialEntregadaDialog({
         Acceso concedido
       </h2>
       <p className="mb-3 text-sm text-atlas-muted">
-        {`${fullName} ya tiene identidad en Atlas. La contraseña provisional se envió a ${email}; este portal no la muestra.`}
+        {`${fullName} ya tiene identidad en Atlas. Se pidió el envío de su contraseña provisional a ${email}; este portal no la muestra y no puede confirmar que el correo llegó.`}
       </p>
       <ul className="list-disc space-y-1 pl-5 text-sm text-atlas-text">
         <li>En su primer acceso deberá cambiarla por una contraseña propia.</li>
@@ -169,8 +179,8 @@ export function CredencialEntregadaDialog({
           escribirlo: es el segundo factor de acceso, no un error.
         </li>
         <li>
-          Si el correo no llega, el ERP debe corregir la dirección y volver a
-          pedir el acceso: aquí no se edita.
+          Si el correo no llega, puede que el envío haya fallado o que la
+          dirección esté mal. La dirección se corrige en el ERP, no aquí.
         </li>
       </ul>
       <div className="mt-4 flex justify-end">

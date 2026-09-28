@@ -26,15 +26,19 @@ export function useOutcomeDeliveryStatus() {
   });
 }
 
-export function useExhaustedOutcomes(limit: number) {
+/** `enabled: false` para quien el backend no deja leer la lista: no se pide para recibir un 403. */
+export function useExhaustedOutcomes(limit: number, enabled = true) {
   return useQuery({
     queryKey: [...RAIZ, "backlog", limit],
     queryFn: () => listExhaustedOutcomes(limit),
+    enabled,
   });
 }
 
 /** Toda recalificación invalida la misma raíz: las tres mueven los mismos números. */
-function useOperacion<TInput>(accion: (input: TInput) => Promise<unknown>) {
+function useOperacion<TInput, TOutput>(
+  accion: (input: TInput) => Promise<TOutput>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: accion,

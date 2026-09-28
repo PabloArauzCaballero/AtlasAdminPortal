@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Gauge } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
@@ -11,19 +11,16 @@ import { EnlaceMotor, EstadoEntrega } from "./portfolio-delivery";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatAmount, formatNumber } from "@/shared/lib/format";
+import { useAuth } from "@/shared/auth/auth-context";
+import { OUTCOME_BACKLOG_ROLES } from "./access";
 import {
   useExhaustedOutcomes,
   useOutcomeDeliveryStatus,
   usePortfolioSummary,
-  useRateCustomerMutation,
-  useRateLoanMutation,
-  useSweepRatingsMutation,
 } from "./hooks";
+import { PortfolioRerate } from "./portfolio-rerate";
 
 /**
  * Calificación de cartera.
@@ -34,7 +31,8 @@ import {
  *
  * - La **calificación** (categoría de riesgo y previsión de cada deuda y su titular) es contable y
  *   es de Atlas. Se queda, y además corre sola cada seis horas (`sweep_debt_ratings`); el botón
- *   sirve para adelantarse a un cierre.
+ *   sirve para adelantarse a un cierre. Los nombres de las tareas se quedan en este comentario:
+ *   en pantalla se dice qué hacen, no cómo se llaman por dentro.
  * - Los **desenlaces** son la medida del acierto del Motor. Entregarlos es integración
  *   (`dispatch_loan_outcomes`, cada 15 minutos) y medirlos es del Motor (`/decision-quality`).
  *   Aquí sólo se enseña si la entrega va al día y se enlaza a donde se mide.
@@ -48,16 +46,11 @@ export function PortfolioOperationsPage() {
 }
 
 function AuthorizedPortfolioPage() {
-  const [confirmarBarrido, setConfirmarBarrido] = useState(false);
-  const [loanId, setLoanId] = useState("");
-  const [customerId, setCustomerId] = useState("");
-
+  const { hasAnyRole } = useAuth();
+  const veBacklog = hasAnyRole(OUTCOME_BACKLOG_ROLES);
   const resumen = usePortfolioSummary();
   const entrega = useOutcomeDeliveryStatus();
-  const backlog = useExhaustedOutcomes(100);
-  const sweepRatings = useSweepRatingsMutation();
-  const calificarCredito = useRateLoanMutation();
-  const calificarCliente = useRateCustomerMutation();
+  const backlog = useExhaustedOutcomes(100, veBacklog);
 
   const grades = useMemo(() => resumen.data?.grades ?? [], [resumen.data]);
   const pendientes = useMemo(() => backlog.data?.items ?? [], [backlog.data]);
@@ -122,68 +115,11 @@ function AuthorizedPortfolioPage() {
               data={grades}
               columns={columnasGrado}
               emptyTitle="Sin deudas calificadas todavía."
-              emptyDescription="El job sweep_debt_ratings las califica con la política vigente; «Recalificar la cartera» lo adelanta."
+              emptyDescription="La calificación automática las califica cada seis horas con la política vigente; «Recalificar la cartera» la adelanta."
             />
           </Card>
 
-          <Card className="p-5">
-            <h2 className="mb-1 text-base font-semibold text-atlas-text">
-              Recalificar
-            </h2>
-            <p className="mb-4 text-sm text-atlas-muted">
-              Calificar un crédito recalifica también a su titular: su categoría
-              se deriva por arrastre de todas sus operaciones, y hacerlo a
-              medias dejaría la ficha mintiendo.
-            </p>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <div>
-                <Button
-                  disabled={sweepRatings.isPending}
-                  onClick={() => setConfirmarBarrido(true)}
-                >
-                  Recalificar la cartera
-                </Button>
-              </div>
-              <Field
-                tooltip="Identificador del crédito cuya calificación se recalcula ahora."
-                label="Recalificar un crédito"
-                hint="Identificador del crédito."
-              >
-                <div className="flex gap-2">
-                  <Input
-                    value={loanId}
-                    onChange={(e) => setLoanId(e.target.value)}
-                  />
-                  <Button
-                    disabled={!loanId || calificarCredito.isPending}
-                    onClick={() => void calificarCredito.mutateAsync(loanId)}
-                  >
-                    Calificar
-                  </Button>
-                </div>
-              </Field>
-              <Field
-                tooltip="Identificador del cliente cuya calificación se recalcula ahora."
-                label="Recalificar un cliente"
-                hint="Identificador del cliente."
-              >
-                <div className="flex gap-2">
-                  <Input
-                    value={customerId}
-                    onChange={(e) => setCustomerId(e.target.value)}
-                  />
-                  <Button
-                    disabled={!customerId || calificarCliente.isPending}
-                    onClick={() =>
-                      void calificarCliente.mutateAsync(customerId)
-                    }
-                  >
-                    Calificar
-                  </Button>
-                </div>
-              </Field>
-            </div>
-          </Card>
+          <PortfolioRerate />
         </div>
       ) : null}
 
@@ -197,10 +133,9 @@ function AuthorizedPortfolioPage() {
           </div>
           <p className="mb-4 text-sm text-atlas-muted">
             Cada crédito le cuenta al Motor cómo acabó a los 30, 90 y 180 días
-            de la decisión. La mora los observa cada hora
-            (sweep_loan_delinquency) y la entrega los manda cada quince minutos
-            (dispatch_loan_outcomes). Lo que se mide con ellos —acierto,
-            estabilidad, cosechas— vive en el Motor, no aquí.
+            de la decisión. Una tarea automática revisa la mora cada hora y otra
+            se los manda al Motor cada quince minutos. Lo que se mide con ellos
+            —acierto, estabilidad, cosechas— vive en el Motor, no aquí.
           </p>
           {entrega.isLoading ? <LoadingSkeleton rows={2} /> : null}
           {entrega.error ? (
@@ -230,29 +165,38 @@ function AuthorizedPortfolioPage() {
             resultado. No se reintentan solos: hay que arreglar la causa y
             volver a entregar desde «Jobs de runtime».
           </p>
-          {backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
-          <DataTable
-            data={pendientes}
-            columns={columnasBacklog}
-            emptyTitle="Ningún desenlace agotó sus reintentos."
-            emptyDescription="El Motor está recibiendo las observaciones de cosecha."
-          />
+          {!veBacklog ? (
+            <p className="text-sm text-atlas-muted">
+              Esta lista sólo la ven Análisis de riesgo y Administración. El
+              número de agotados de arriba sí es el de toda la cartera.
+            </p>
+          ) : null}
+          {veBacklog && backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
+          {backlog.error ? (
+            <ErrorState
+              description={
+                isAtlasApiError(backlog.error)
+                  ? backlog.error.message
+                  : "No se pudo leer la lista de desenlaces agotados."
+              }
+              requestId={
+                isAtlasApiError(backlog.error)
+                  ? backlog.error.requestId
+                  : undefined
+              }
+              onRetry={() => void backlog.refetch()}
+            />
+          ) : null}
+          {backlog.data ? (
+            <DataTable
+              data={pendientes}
+              columns={columnasBacklog}
+              emptyTitle="Ningún desenlace agotó sus reintentos."
+              emptyDescription="El Motor está recibiendo las observaciones de cosecha."
+            />
+          ) : null}
         </Card>
       </section>
-
-      <ConfirmDialog
-        open={confirmarBarrido}
-        title="Recalificar toda la cartera"
-        description="Recorre los clientes con deuda viva y recalifica cada operación y su ficha. Devuelve cuántos se calificaron y cuáles fallaron."
-        confirmText="Ejecutar"
-        isLoading={sweepRatings.isPending}
-        onCancel={() => setConfirmarBarrido(false)}
-        onConfirm={() =>
-          void sweepRatings
-            .mutateAsync(500)
-            .finally(() => setConfirmarBarrido(false))
-        }
-      />
     </>
   );
 }

@@ -26,9 +26,10 @@ import type {
  * de una tabla paginada de consulta la escondía tras el desplazamiento en cuanto hubiera una
  * veintena de identidades.
  *
- * La consulta se recibe por props en vez de pedirla aquí porque la cabecera de la pantalla cuenta
- * las pendientes: con dos consultas separadas, el contador y la tabla podían enseñar cifras
- * distintas durante un refresco.
+ * La consulta se recibe por props. El contador «Por atender» de la cabecera ya NO sale de ella:
+ * contaba las pendientes entre las 50 primeras peticiones sin filtrar, y con más de 50 mentía. Lo
+ * pide aparte, filtrado por estado, y las dos consultas cuelgan de la misma clave, así que decidir
+ * invalida ambas a la vez.
  */
 export function ProvisioningQueue({
   query,

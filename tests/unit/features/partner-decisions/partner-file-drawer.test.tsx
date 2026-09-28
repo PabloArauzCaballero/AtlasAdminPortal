@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -99,7 +100,7 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     ).toBeInTheDocument();
   });
 
-  it("sin `partner.kyb.request` no ofrece volver a pedir la verificación, y dice qué permiso falta", async () => {
+  it("sin `partner.kyb.request` no ofrece volver a pedir la verificación, y dice quién puede", async () => {
     server.use(
       http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
         HttpResponse.json(
@@ -122,7 +123,10 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     expect(
       screen.queryByRole("button", { name: /volver a pedir la verificación/i }),
     ).toBeNull();
-    expect(screen.getByText(/partner\.kyb\.request/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no puede pedir la verificación al Motor/),
+    ).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("partner.kyb.request");
   });
 
   it("sin caso del Motor la decisión manual sigue disponible: es la degradación", async () => {
@@ -164,5 +168,167 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
       expect(screen.getByText(/Sin veredicto del Motor/)).toBeInTheDocument(),
     );
     expect(screen.getByRole("button", { name: "Aprobar" })).toBeInTheDocument();
+  });
+});
+
+const SIN_CASO = {
+  executionId: "exec-2",
+  outcome: "REVISION_MANUAL",
+  reason: "KYB_SENALES_OPERATIVAS",
+  artifactVersionId: "9",
+  manualReviewCaseCode: null,
+  evaluatedAt: "2026-09-08T00:00:00.000Z",
+};
+
+describe("PartnerFileDrawer — lo que falla se dice, y en palabras", () => {
+  it("enseña el estado en español, no el código", async () => {
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(estadoCon(SIN_CASO)),
+      ),
+    );
+    renderCajon();
+    await waitFor(() =>
+      expect(screen.getAllByText("En revisión").length).toBeGreaterThan(0),
+    );
+    expect(screen.getAllByText("Revisión manual").length).toBeGreaterThan(0);
+    expect(screen.queryByText("under_review")).toBeNull();
+    expect(screen.queryByText("REVISION_MANUAL")).toBeNull();
+  });
+
+  it("un 409 al decidir deja el diálogo abierto y dice por qué", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(estadoCon(SIN_CASO)),
+      ),
+      http.post(`${API_BASE}/operations/partners/10/decision`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: "CONFLICT",
+              message:
+                "PARTNER_NOT_UNDER_REVIEW: el expediente está en approved.",
+            },
+          },
+          { status: 409 },
+        ),
+      ),
+    );
+    renderCajon();
+    await user.click(await screen.findByRole("button", { name: "Aprobar" }));
+    const dialogo = await screen.findByRole("dialog", {
+      name: "Aprobar el expediente",
+    });
+    await user.click(within(dialogo).getByRole("button", { name: "Aprobar" }));
+
+    await waitFor(() =>
+      expect(
+        within(dialogo).getByText(/ya no está en revisión/),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Aprobar el expediente" }),
+    ).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("PARTNER_NOT_UNDER_REVIEW");
+  });
+
+  it("el texto de aprobar no promete que los QR se aprueben", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(estadoCon(SIN_CASO)),
+      ),
+    );
+    renderCajon();
+    await user.click(await screen.findByRole("button", { name: "Aprobar" }));
+    const dialogo = await screen.findByRole("dialog", {
+      name: "Aprobar el expediente",
+    });
+    expect(
+      within(dialogo).getByText(/Sus QR de cobro no cambian/),
+    ).toBeInTheDocument();
+  });
+
+  it("sin `partner.kyb.request` tampoco ofrece «Pedir la verificación al Motor»", async () => {
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(estadoCon(SIN_CASO)),
+      ),
+    );
+    renderCajon([]);
+    await screen.findByRole("button", { name: "Aprobar" });
+    expect(
+      screen.queryByRole("button", { name: /pedir la verificación al motor/i }),
+    ).toBeNull();
+  });
+
+  it("con el Motor caído, pedir la verificación lo dice", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json(estadoCon(SIN_CASO)),
+      ),
+      http.post(`${API_BASE}/operations/partners/10/kyb-review`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: "SERVICE_UNAVAILABLE",
+              message: "DECISION_ENGINE_UNAVAILABLE",
+            },
+          },
+          { status: 503 },
+        ),
+      ),
+    );
+    renderCajon();
+    await user.click(
+      await screen.findByRole("button", {
+        name: /pedir la verificación al motor/i,
+      }),
+    );
+    expect(
+      await screen.findByText(/El Motor no respondió/),
+    ).toBeInTheDocument();
+  });
+
+  it("enlaza a los documentos en Archivos y enseña sucursales y QR legibles", async () => {
+    server.use(
+      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
+        HttpResponse.json({
+          data: {
+            ...estadoCon(SIN_CASO).data,
+            branches: [
+              {
+                branchId: "3",
+                name: "Casa matriz",
+                city: "La Paz",
+                status: "active",
+              },
+            ],
+            qrCodes: [
+              {
+                qrId: "8",
+                qrKind: "bank",
+                branchId: "3",
+                status: "pending_review",
+                accountNumberMasked: "****1234",
+              },
+            ],
+          },
+        }),
+      ),
+      http.get(`${API_BASE}/expedientes/por-sujeto/partner/10`, () =>
+        HttpResponse.json({ data: { expedienteId: "55" } }),
+      ),
+    );
+    renderCajon();
+    const enlace = await screen.findByRole("link", {
+      name: /ver documentos en archivos/i,
+    });
+    expect(enlace).toHaveAttribute("href", "/internal/files/55");
+    expect(screen.getByText("Casa matriz")).toBeInTheDocument();
+    expect(screen.getByText("Pendiente de revisión")).toBeInTheDocument();
+    expect(screen.queryByText("Expediente completo")).toBeNull();
   });
 });

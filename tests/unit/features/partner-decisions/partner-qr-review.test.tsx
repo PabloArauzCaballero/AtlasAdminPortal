@@ -139,11 +139,14 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona", () => {
     expect(screen.getByRole("button", { name: "Rechazar QR" })).toBeEnabled();
   });
 
-  it("sin `partner.qr.review` no ofrece aprobar ni rechazar, y dice qué permiso falta", async () => {
+  it("sin `partner.qr.review` no ofrece aprobar ni rechazar, y dice quién puede, sin el código del permiso", async () => {
     render([]);
     await waitFor(() => expect(screen.getByText("CPA")).toBeInTheDocument());
 
     expect(screen.queryByRole("button", { name: "Aprobar QR" })).toBeNull();
-    expect(screen.getByText(/partner\.qr\.review/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/lo hace el equipo de Operaciones de comercios/),
+    ).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("partner.qr.review");
   });
 });

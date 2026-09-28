@@ -100,3 +100,16 @@ export function downloadPartnerQrImage(partnerId: string, qrId: string) {
     `qr-${qrId}.png`,
   );
 }
+
+/**
+ * La carpeta del comercio en Archivos, si la tiene.
+ *
+ * Los documentos del expediente (poder, matrícula, carnet del representante) NO vienen en
+ * `/status`: viven en Archivos, en la carpeta que se abre al dar de alta el comercio. `null` es
+ * una respuesta legítima —sin carpeta, o sin acceso a ella— y no un error.
+ */
+export function getPartnerFolder(partnerId: string) {
+  return apiRequest<{ expedienteId: string } | null>(
+    `/expedientes/por-sujeto/partner/${encodeURIComponent(partnerId)}`,
+  );
+}

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Store } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { useAuth } from "@/shared/auth/auth-context";
 import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -13,15 +14,21 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatNumber } from "@/shared/lib/format";
 import {
+  useMerchantUserCount,
   useMerchantUsers,
+  usePendingProvisioningCount,
   useProvisioningRequests,
   useSetMerchantUserStatusMutation,
 } from "./hooks";
+import {
+  MERCHANT_USER_STATUS_OPTIONS,
+  formatCount,
+  merchantUserStatusLabel,
+} from "./labels";
 import { buildIdentityColumns } from "./merchant-user-columns";
 import { ProvisioningQueue } from "./provisioning-queue";
-import { MERCHANT_USER_STATUSES, type MerchantUserProfile } from "./types";
+import type { MerchantUserProfile } from "./types";
 
 /**
  * Identidades del canal del comercio.
@@ -68,22 +75,29 @@ function AuthorizedMerchantUsersPage() {
   // que pedí?» se pregunta tanto como «¿qué me falta por atender?».
   const peticiones = useProvisioningRequests({ page: 1, limit: 50 });
   const cambiarEstado = useSetMerchantUserStatusMutation();
+  const pendientes = usePendingProvisioningCount();
+  const activas = useMerchantUserCount("active");
+  const suspendidas = useMerchantUserCount("suspended");
+  const dadasDeBaja = useMerchantUserCount("disabled");
+  // `PATCH :id/status` exige `merchant.users.manage`: sin él no se ofrece el selector.
+  const { hasPermission } = useAuth();
+  const puedeCambiar = hasPermission("merchant.users.manage");
 
   const items = useMemo(() => usuarios.data?.items ?? [], [usuarios.data]);
-  const pendientes = useMemo(
-    () =>
-      (peticiones.data?.items ?? []).filter(
-        (peticion) => peticion.status === "pending",
-      ).length,
-    [peticiones.data],
-  );
   const columns = useMemo(
     () =>
-      buildIdentityColumns((usuario, destino) =>
-        setCambio({ usuario, destino }),
+      buildIdentityColumns(
+        (usuario, destino) => setCambio({ usuario, destino }),
+        puedeCambiar,
       ),
-    [],
+    [puedeCambiar],
   );
+  const errorDeCambio = cambiarEstado.error
+    ? isAtlasApiError(cambiarEstado.error)
+      ? cambiarEstado.error.message
+      : "No se pudo cambiar el estado del acceso."
+    : null;
+  const destino = cambio ? merchantUserStatusLabel(cambio.destino) : "";
 
   return (
     <>
@@ -97,29 +111,37 @@ function AuthorizedMerchantUsersPage() {
         El ERP registra a la persona en el CRM del comercio y pide su acceso;
         esta consola lo concede. Los datos son los que mandó el ERP y no se
         pueden editar al aprobar: si el correo está mal, se corrige allí y se
-        vuelve a pedir. La contraseña provisional la genera Atlas y se enseña
-        una sola vez.
+        vuelve a pedir. La contraseña provisional la genera Atlas y se pide su
+        envío por correo a la persona; ninguna pantalla la muestra.
       </BusinessContextNote>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Por atender" value={formatNumber(pendientes)} />
+        <MetricCard
+          label="Por atender"
+          value={formatCount({ ...pendientes, total: pendientes.data })}
+          hint="Peticiones pendientes de todo el ERP."
+        />
         <MetricCard
           label="Identidades"
-          value={formatNumber(usuarios.data?.total ?? 0)}
+          value={formatCount({ ...usuarios, total: usuarios.data?.total })}
+          hint={status || email ? "Con los filtros de la tabla." : "Todas."}
         />
         <MetricCard
           label="Activas"
-          value={formatNumber(
-            items.filter((u) => u.status === "active").length,
-          )}
+          value={formatCount({ ...activas, total: activas.data })}
+          hint="Todas las activas, sin filtros."
         />
         <MetricCard
-          label="Suspendidas"
-          value={formatNumber(
-            items.filter(
-              (u) => u.status === "suspended" || u.status === "disabled",
-            ).length,
-          )}
+          label="Suspendidas o dadas de baja"
+          value={formatCount({
+            isLoading: suspendidas.isLoading || dadasDeBaja.isLoading,
+            error: suspendidas.error ?? dadasDeBaja.error,
+            total:
+              suspendidas.data === undefined || dadasDeBaja.data === undefined
+                ? undefined
+                : suspendidas.data + dadasDeBaja.data,
+          })}
+          hint="Todas, sin filtros."
         />
       </section>
 
@@ -141,10 +163,9 @@ function AuthorizedMerchantUsersPage() {
               name: "status",
               label: "Estado",
               value: status,
-              options: MERCHANT_USER_STATUSES.map((valor) => ({
-                value: valor,
-                label: valor,
-              })),
+              options: MERCHANT_USER_STATUS_OPTIONS,
+              tooltip:
+                "Deja sólo las identidades que están en ese estado de acceso.",
             },
           ]}
           onSearchChange={(valor) => {
@@ -199,19 +220,24 @@ function AuthorizedMerchantUsersPage() {
 
       <ConfirmDialog
         open={cambio !== null}
-        title={`Cambiar el acceso a «${cambio?.destino ?? ""}»`}
-        description={`${cambio?.usuario.fullName ?? ""} pasará a ${cambio?.destino ?? ""}. Suspender corta su acceso al portal del comercio; su historial se conserva.`}
+        title={`Cambiar el acceso a «${destino}»`}
+        description={`${cambio?.usuario.fullName ?? ""} pasará a «${destino.toLowerCase()}». Suspender o dar de baja corta su acceso al portal del comercio; su historial se conserva.${errorDeCambio ? ` · No se cambió: ${errorDeCambio}` : ""}`}
         confirmText="Cambiar"
         isLoading={cambiarEstado.isPending}
-        onCancel={() => setCambio(null)}
+        onCancel={() => {
+          cambiarEstado.reset();
+          setCambio(null);
+        }}
         onConfirm={() => {
           if (!cambio) return;
-          void cambiarEstado
+          // En error el diálogo sigue abierto con el motivo; sólo el éxito lo cierra.
+          cambiarEstado
             .mutateAsync({
               merchantUserId: cambio.usuario.id,
               status: cambio.destino,
             })
-            .finally(() => setCambio(null));
+            .then(() => setCambio(null))
+            .catch(() => undefined);
         }}
       />
     </>
