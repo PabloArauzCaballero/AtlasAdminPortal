@@ -5,14 +5,16 @@ name: CI
 # y auditoría de dependencias no se ejecutaban nunca sobre lo que se estaba sirviendo.
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, test]
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, test]
 
 # Un solo run por rama: cancela el anterior si llega un push nuevo.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancelar sólo en PR: un push a dev/test es una promoción y su corrida es la evidencia; que una
+  # corrida posterior la cancele deja al SHA anterior sin veredicto (2026-09-28: tres «cancelled»).
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -182,16 +184,29 @@ jobs:
     uses: ./.github/workflows/e2e.yml
     secrets: inherit
 
+  # ÚNICO trabajo que se exige como check requerido en dev/test/main. Corre siempre y sólo es
+  # verde si TODOS los anteriores lo son: `skipped` o `cancelled` en cualquiera es rojo aquí. Sin
+  # esto, un fragmento E2E cancelado dejaba la corrida sin veredicto y GitHub la mostraba gris.
+  release-gate:
+    name: release-gate
+    if: always()
+    needs: [quality, test, build, secrets, audit, auth-worker, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Todos los trabajos obligatorios en success
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.value.result)\t\(.key)"'
+          if echo "$RESULTS" | jq -e '[.[] | .result] | all(. == "success")' >/dev/null; then
+            echo "release-gate: success"
+          else
+            echo "::error::Algún trabajo obligatorio no terminó en success"; exit 1
+          fi
+
   deploy-dev:
     name: Desplegar DEV sólo después de CI y E2E
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-    needs:
-      - quality
-      - test
-      - build
-      - secrets
-      - audit
-      - auth-worker
-      - e2e
+    needs: [release-gate]
     uses: ./.github/workflows/deploy-dev.yml
     secrets: inherit
