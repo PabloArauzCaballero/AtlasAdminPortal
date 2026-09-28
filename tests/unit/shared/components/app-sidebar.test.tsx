@@ -134,7 +134,8 @@ describe("AppSidebar · filtrado por rol", () => {
   it("un ítem sin roles declarados no exige rol alguno", () => {
     renderSidebar({ permissions: [], roles: [] });
 
-    expect(verEnlace("Cola de trabajo")).toBe(true);
+    // «Cola de trabajo» ya declara los roles de OperationsController; «Soporte» sigue sin roles.
+    expect(verEnlace("Soporte")).toBe(true);
   });
 });
 

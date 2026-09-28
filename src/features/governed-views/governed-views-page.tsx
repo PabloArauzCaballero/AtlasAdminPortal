@@ -15,6 +15,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildGovernedColumns } from "./governed-columns";
 import { useGovernedView } from "./hooks";
+import { facetValues } from "./facets";
 import { GOVERNED_VIEWS, type GovernedViewKey } from "./types";
 
 /**
@@ -115,14 +116,7 @@ function AuthorizedGovernedViewsPage() {
             /* Los valores salen de la página cargada: el backend no publica un catálogo de
              * valores por filtro, y ofrecer una lista inventada enseñaría opciones que no
              * devuelven nada. */
-            options: uniqueTextOptions(
-              items.map((row) => {
-                const valor = row[filtro.name];
-                return valor === null || valor === undefined
-                  ? null
-                  : String(valor);
-              }),
-            ),
+            options: uniqueTextOptions(facetValues(items, filtro)),
           }))}
         onSearchChange={(value) => {
           if (!admiteBusqueda) return;

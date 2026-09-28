@@ -5,6 +5,11 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import {
+  ENGINE_PRESENCE_LABEL,
+  catalogErrorText,
+  enginePresence,
+} from "./engine-presence";
 import { useDecisionArtifacts } from "./hooks";
 import type { BindingSource } from "./types";
 
@@ -57,7 +62,7 @@ export function DecisionArtifactsPage() {
       {artifacts.error ? (
         <ErrorState
           title="No pudimos leer el catálogo"
-          description="El servicio interno no respondió. Vuelve a intentarlo en unos segundos."
+          description={catalogErrorText(artifacts.error)}
         />
       ) : null}
 
@@ -65,11 +70,12 @@ export function DecisionArtifactsPage() {
         <Card testId="decision-catalog">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[56rem] border-collapse text-sm">
+              <table className="w-full min-w-[64rem] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-atlas-border">
                     <th className={TH}>Decisión</th>
                     <th className={TH}>Artefacto que la resuelve</th>
+                    <th className={TH}>En el motor</th>
                     <th className={TH}>Versión</th>
                     <th className={TH}>Flujo de trabajo</th>
                     <th className={TH}>Origen</th>
@@ -78,6 +84,10 @@ export function DecisionArtifactsPage() {
                 <tbody>
                   {data.bindings.map((binding) => {
                     const origen = SOURCE_LABEL[binding.source];
+                    const presencia =
+                      ENGINE_PRESENCE_LABEL[
+                        enginePresence(binding, data.availableArtifacts)
+                      ];
                     return (
                       <tr
                         key={binding.decisionType}
@@ -103,6 +113,15 @@ export function DecisionArtifactsPage() {
                         </td>
                         <td className="px-4 py-3 font-mono text-xs text-atlas-text">
                           {binding.artifactCode ?? "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {binding.artifactCode ? (
+                            <Badge tone={presencia.tone}>
+                              {presencia.text}
+                            </Badge>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td className="px-4 py-3 text-xs text-atlas-muted">
                           {binding.pinnedVersion

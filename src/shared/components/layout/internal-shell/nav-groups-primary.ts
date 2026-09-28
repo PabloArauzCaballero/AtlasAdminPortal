@@ -12,7 +12,10 @@ import {
   ShieldCheck,
   TestTube2,
 } from "lucide-react";
-import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
+import {
+  DECISION_ARTIFACT_ROLE_LIST,
+  INTERNAL_PORTAL_ROLE_LIST,
+} from "@/shared/auth/portal-roles";
 import type { InternalNavGroup } from "./nav-config";
 import { processesGroup } from "./nav-groups-processes";
 import { systemsOpsGroup } from "./nav-groups-systems-ops";
@@ -140,7 +143,9 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         label: "Motor de decisiones",
         href: "/internal/settings/decision-artifacts",
         icon: ShieldCheck,
-        permissions: ["governance.policies.read"],
+        // El backend gatea por @Roles, no por permiso: la lista es copia declarada de la suya.
+        permissions: [],
+        roles: DECISION_ARTIFACT_ROLE_LIST,
       },
       {
         label: "Gobierno de datos",

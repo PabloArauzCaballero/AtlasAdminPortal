@@ -50,12 +50,12 @@ function AuthorizedGlobalSearchPage() {
         icon={Search}
         eyebrow="Búsqueda"
         title="Búsqueda global"
-        description="Busca en el índice oficial del servicio interno. No se agregan consultas paralelas ni cálculos client-side para alto volumen."
+        description="Busca en el catálogo técnico del portal: endpoints, tablas, reglas de calidad y reportes. No busca clientes ni préstamos."
       />
       {!q ? (
         <EmptyState
           title="Escribe una búsqueda desde la barra superior."
-          description="Puedes buscar por ruta, módulo, tabla, propósito, política, reporte o dominio."
+          description="Busca endpoints, tablas, reglas de calidad y reportes. Un cliente se abre desde la cola de trabajo o las vistas del negocio."
         />
       ) : null}
       {q && search.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -90,13 +90,16 @@ function SearchResults({
 }>) {
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard label="Resultados" value={formatNumber(results.length)} />
-        {Object.entries(totals)
-          .slice(0, 3)
-          .map(([key, value]) => (
-            <MetricCard key={key} label={key} value={formatNumber(value)} />
-          ))}
+        {/* Los cuatro totales del backend, con nombre: `.slice(0, 3)` perdía siempre los reportes. */}
+        {Object.entries(totals).map(([key, value]) => (
+          <MetricCard
+            key={key}
+            label={TOTAL_LABELS[key] ?? key}
+            value={formatNumber(value)}
+          />
+        ))}
       </section>
       <Card>
         <CardHeader>
@@ -110,7 +113,7 @@ function SearchResults({
           {results.length === 0 ? (
             <EmptyState
               title="Sin resultados"
-              description="Prueba con una ruta, tabla, módulo o dominio diferente."
+              description="Prueba con otra ruta, tabla, regla de calidad o reporte."
             />
           ) : null}
           {results.map((result) => (
@@ -127,7 +130,7 @@ function ResultCard({ result }: Readonly<{ result: GlobalSearchResult }>) {
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
-          {result.kind}
+          {KIND_LABELS[result.kind] ?? result.kind}
         </p>
         <h3 className="mt-1 truncate text-sm font-semibold text-atlas-text">
           {result.title}
@@ -171,3 +174,17 @@ function ResultMeta({ result }: Readonly<{ result: GlobalSearchResult }>) {
     </span>
   );
 }
+
+/** Los nombres que el backend usa para cada tipo de resultado, en palabras. */
+const TOTAL_LABELS: Record<string, string> = {
+  endpoints: "Endpoints",
+  tables: "Tablas",
+  qualityRules: "Reglas de calidad",
+  reports: "Reportes",
+};
+const KIND_LABELS: Record<string, string> = {
+  endpoint: "Endpoint",
+  table: "Tabla",
+  quality_rule: "Regla de calidad",
+  report: "Reporte",
+};

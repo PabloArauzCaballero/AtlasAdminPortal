@@ -2,9 +2,15 @@
 
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { SeverityBadge, StatusBadge } from "@/shared/components/ui/badges";
-import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { ListCard } from "./list-card";
 import type { getInvestigationSummary } from "./services";
+import {
+  caseTypeLabel,
+  engineSuggestionText,
+  identityChannelLabel,
+  identityResultLabel,
+} from "./identity-review-rules";
 
 type Resumen = Awaited<ReturnType<typeof getInvestigationSummary>>;
 
@@ -24,11 +30,16 @@ export function IdentidadYAgendaSection({ data }: Readonly<{ data: Resumen }>) {
             ? [
                 {
                   label: "Resultado",
-                  value: safeText(data.latestIdentityVerification.result),
+                  value: identityResultLabel(
+                    data.latestIdentityVerification.result,
+                  ),
                 },
+                ...sugerencia(data.latestIdentityVerification),
                 {
                   label: "Canal",
-                  value: safeText(data.latestIdentityVerification.channel),
+                  value: identityChannelLabel(
+                    data.latestIdentityVerification.channel,
+                  ),
                 },
                 {
                   label: "Parecido biométrico",
@@ -124,7 +135,7 @@ export function CasosAbiertosSection({ data }: Readonly<{ data: Resumen }>) {
             className="flex items-center justify-between gap-2 py-1.5 text-sm"
           >
             <span className="font-mono text-xs">
-              #{item.caseId} · {safeText(item.caseType)}
+              #{item.caseId} · {caseTypeLabel(item.caseType)}
             </span>
             <StatusBadge value={item.status} />
           </li>
@@ -149,4 +160,14 @@ export function CasosAbiertosSection({ data }: Readonly<{ data: Resumen }>) {
       </ListCard>
     </section>
   );
+}
+
+function sugerencia(
+  identidad: NonNullable<Resumen["latestIdentityVerification"]>,
+): { label: string; value: string }[] {
+  const texto = engineSuggestionText(
+    identidad.engineSuggestion,
+    identidad.engineReason,
+  );
+  return texto ? [{ label: "Sugerencia del Motor", value: texto }] : [];
 }

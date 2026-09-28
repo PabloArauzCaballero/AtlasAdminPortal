@@ -3,6 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useCurrentRiskPolicy } from "@/features/operations/hooks";
 import { AvisoDeAutoriaEnElMotor } from "./policy-authoring-notice";
+import { riskPolicyLabel } from "./risk-policy-labels";
 import type { RiskPolicyCurrent } from "@/features/operations/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -15,7 +16,7 @@ import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { Scale } from "lucide-react";
 type RuleRow = RiskPolicyCurrent["rulesetVersions"][number]["rules"][number] & {
   ruleset: string;
@@ -27,7 +28,10 @@ export function CurrentRiskPolicyPage() {
   // datos vivieran aquí, las queries saldrían en el render antes de que el
   // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
   return (
-    <PermissionGate permissions={["lineage.read"]}>
+    // El mismo permiso que el ítem del menú (`operations.riskPolicy.read`). Pedía `lineage.read`:
+    // un analista de riesgo veía «Política riesgo» en el menú y al entrar le salía «Acceso
+    // restringido», porque ningún rol de riesgo tiene permisos de linaje.
+    <PermissionGate permissions={["operations.riskPolicy.read"]}>
       <AuthorizedCurrentRiskPolicyPage />
     </PermissionGate>
   );
@@ -69,10 +73,27 @@ function AuthorizedCurrentRiskPolicyPage() {
           <span className="font-mono text-xs">{row.original.ruleCode}</span>
         ),
       },
-      { header: "Dimensión", accessorKey: "riskDimension" },
-      { header: "Tipo", accessorKey: "ruleType" },
-      { header: "Severidad", accessorKey: "severity" },
-      { header: "Acción", accessorKey: "actionCode" },
+      {
+        header: "Dimensión",
+        accessorKey: "riskDimension",
+        cell: ({ row }) =>
+          riskPolicyLabel.dimension(row.original.riskDimension),
+      },
+      {
+        header: "Tipo",
+        accessorKey: "ruleType",
+        cell: ({ row }) => riskPolicyLabel.ruleType(row.original.ruleType),
+      },
+      {
+        header: "Severidad",
+        accessorKey: "severity",
+        cell: ({ row }) => riskPolicyLabel.severity(row.original.severity),
+      },
+      {
+        header: "Acción",
+        accessorKey: "actionCode",
+        cell: ({ row }) => riskPolicyLabel.action(row.original.actionCode),
+      },
       {
         header: "Hard stop",
         accessorKey: "isHardStop",
@@ -143,8 +164,8 @@ function AuthorizedCurrentRiskPolicyPage() {
                     <StatusBadge value={r.status} />
                   </div>
                   <p className="mt-2 text-xs text-atlas-muted">
-                    Tipo: {safeText(r.assessmentType)} · Desde:{" "}
-                    {formatDateTime(r.effectiveFrom)} · Hasta:{" "}
+                    Tipo: {riskPolicyLabel.assessmentType(r.assessmentType)} ·
+                    Desde: {formatDateTime(r.effectiveFrom)} · Hasta:{" "}
                     {formatDateTime(r.effectiveUntil)}
                   </p>
                 </div>

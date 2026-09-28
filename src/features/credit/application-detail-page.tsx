@@ -13,7 +13,7 @@ import { ApplicationDecisionPanel } from "./application-decision-panel";
 import { ApplicationEvents } from "./application-events";
 import { BusinessAcceptancePanel } from "./business-acceptance-panel";
 import { AcceptanceBadge, ApplicationStatusBadge } from "./credit-badges";
-import { DECISION_MODE_LABELS, labelOr } from "./credit-options";
+import { DECISION_MODE_LABELS, labelOr, reasonLabel } from "./credit-options";
 import { creditErrorMessage } from "./credit-rules";
 import { useCreditApplication } from "./hooks";
 import type { CreditApplication } from "./types";
@@ -114,7 +114,9 @@ function ApplicationSummary({
         },
         {
           label: "Motivo de la decisión",
-          value: application.decisionReasonCode,
+          value: application.decisionReasonCode
+            ? reasonLabel(application.decisionReasonCode)
+            : application.decisionReasonCode,
         },
         {
           label: "Tramo de riesgo",

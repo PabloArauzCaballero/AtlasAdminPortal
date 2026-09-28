@@ -18,11 +18,14 @@ import {
   UserCog,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
+import { CASE_QUEUE_NAV_ITEMS } from "./nav-items-case-queues";
 import { paymentClaimsNavItem } from "./nav-items-payment-claims";
 import {
   CAMPAIGN_READ_ROLE_LIST,
   INTERNAL_PORTAL_ROLE_LIST,
   LOAN_PORTFOLIO_ROLE_LIST,
+  LOAN_RATING_ROLE_LIST,
+  OPERATIONS_CASE_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
   SUPPORT_ADMIN_ROLE_LIST,
@@ -47,17 +50,21 @@ export const navGroupOperations: InternalNavGroup = {
       icon: MailCheck,
       // Mismo gate por rol que la cola de trabajo (@Roles del OperationsController).
       permissions: [],
+      roles: OPERATIONS_CASE_ROLE_LIST,
     },
     {
       label: "Cola de trabajo",
       href: "/internal/operations/work-queue",
       icon: ShieldAlert,
-      // El backend gatea por rol (@Roles internal_operator/risk_analyst/compliance_analyst/
-      // fraud_analyst/admin/platform_admin), no por un permiso granular dedicado — no existe
-      // "operations.workQueue.read" en el catálogo de /internal/permissions. Se deja visible y
-      // el backend responde 403 con mensaje claro si el rol no alcanza.
+      // El backend gatea por rol (@Roles de la clase OperationsController: internal_operator/
+      // risk_analyst/compliance_analyst/admin/platform_admin; fraud_analyst NO), no por un permiso
+      // granular — no existe "operations.workQueue.read" en el catálogo de /internal/permissions.
       permissions: [],
+      roles: OPERATIONS_CASE_ROLE_LIST,
     },
+    // Las dos colas por separado. Se definieron en la integración de procesos (#42) y nunca se
+    // montaron: sólo se llegaba a ellas escribiendo la URL.
+    ...CASE_QUEUE_NAV_ITEMS,
     {
       label: "Soporte",
       href: "/internal/support",
@@ -122,9 +129,11 @@ export const navGroupOperations: InternalNavGroup = {
       icon: Gauge,
       // Calificación contable (de Atlas) y salud de la entrega de desenlaces al Motor. Los
       // desenlaces se MIDEN en el Motor; entregarlos es un job, no un botón.
-      // El backend gatea por @Roles (risk_analyst/internal_operator/admin/platform_admin).
+      // El backend gatea por @Roles: leer el resumen, operación, riesgo, cumplimiento y
+      // administración (LOAN_RATING_ROLES). Con la lista del portal entero, QA, devops y el
+      // auditor veían el ítem y recibían un 403.
       permissions: [],
-      roles: INTERNAL_PORTAL_ROLE_LIST,
+      roles: LOAN_RATING_ROLE_LIST,
     },
     {
       label: "Préstamos",

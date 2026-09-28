@@ -98,8 +98,10 @@ describe("investigación · verificación de identidad", () => {
     expect(
       await screen.findByText("Verificación de identidad"),
     ).toBeInTheDocument();
-    expect(screen.getByText("IN_REVIEW")).toBeInTheDocument();
-    expect(screen.getByText("MOBILE_APP")).toBeInTheDocument();
+    // En palabras, no el código de la columna.
+    expect(screen.getByText("En revisión humana")).toBeInTheDocument();
+    expect(screen.getByText("App del cliente")).toBeInTheDocument();
+    expect(screen.queryByText("IN_REVIEW")).toBeNull();
     /*
      * Los dos números viven al lado y se confunden, así que el rótulo va entero: uno es cuánto se
      * parecen las dos caras y el otro cuánto se sospecha que el documento esté falsificado. Un
@@ -107,6 +109,29 @@ describe("investigación · verificación de identidad", () => {
      * exactamente lo que no son.
      */
     expect(screen.getByText("Riesgo de fraude documental")).toBeInTheDocument();
+  });
+
+  it("con la revisión humana obligatoria enseña la SUGERENCIA del Motor, no un veredicto", async () => {
+    pintar({
+      ...BASE,
+      latestIdentityVerification: {
+        ...BASE.latestIdentityVerification!,
+        engineSuggestion: "REJECTED",
+        engineReason: "ROSTRO_NO_COINCIDE",
+      },
+    });
+    expect(await screen.findByText("Sugerencia del Motor")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "El Motor sugiere rechazar (rostro no coincide). Decide una persona.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("sin política de revisión no inventa sugerencia", async () => {
+    pintar(BASE);
+    await screen.findByText("Verificación de identidad");
+    expect(screen.queryByText("Sugerencia del Motor")).toBeNull();
   });
 
   it("sin verificaciones lo DICE, en vez de dejar la sección vacía", async () => {

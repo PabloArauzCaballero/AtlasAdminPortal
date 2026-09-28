@@ -19,6 +19,11 @@ import {
   useEvidenceDocumentContent,
 } from "./hooks";
 import type { EvidenceDocument } from "./types";
+import {
+  DEFAULT_IDENTITY_REASON,
+  documentContentErrorText,
+  identityDecisionErrorText,
+} from "./identity-review-rules";
 
 const ROTULOS: Record<string, string> = {
   identity_front: "Carnet · frente",
@@ -43,7 +48,9 @@ export function IdentityEvidencePanel({
   const documentos = useEvidenceDocuments(customerId);
   const decidir = useDecideIdentityMutation();
   const [decision, setDecision] = useState<"approve" | "reject">("approve");
-  const [reasonCode, setReasonCode] = useState("identity_verified");
+  const [reasonCode, setReasonCode] = useState<string>(
+    DEFAULT_IDENTITY_REASON.approve,
+  );
   const [notes, setNotes] = useState("");
 
   const delegada =
@@ -60,6 +67,7 @@ export function IdentityEvidencePanel({
 
   return (
     <section
+      id="identidad"
       className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
       data-testid="identity-evidence-panel"
     >
@@ -122,7 +130,18 @@ export function IdentityEvidencePanel({
               testId="identity-decision"
               options={IDENTITY_DECISIONS}
               value={decision}
-              onChange={(valor) => setDecision(valor as "approve" | "reject")}
+              onChange={(valor) => {
+                const siguiente = valor as "approve" | "reject";
+                setDecision(siguiente);
+                // Si el motivo sigue siendo el de por defecto, acompaña a la decisión: un rechazo
+                // auditado como `identity_verified` diría lo contrario de lo que pasó.
+                if (
+                  Object.values(DEFAULT_IDENTITY_REASON).includes(
+                    reasonCode as never,
+                  )
+                )
+                  setReasonCode(DEFAULT_IDENTITY_REASON[siguiente]);
+              }}
             />
           </Field>
           <Field
@@ -141,7 +160,7 @@ export function IdentityEvidencePanel({
           tooltip="Qué viste en la evidencia para decidir así. No copies números de documento."
           hint={
             decision === "reject"
-              ? "Obligatorias al rechazar: el backend exige justificarlo."
+              ? "Obligatorias al rechazar: hay que justificarlo."
               : "Opcional."
           }
         >
@@ -175,11 +194,7 @@ export function IdentityEvidencePanel({
         ) : decidir.error ? (
           <ErrorState
             title="No se pudo registrar la decisión"
-            description={
-              isAtlasApiError(decidir.error)
-                ? decidir.error.message
-                : "Error inesperado."
-            }
+            description={identityDecisionErrorText(decidir.error)}
             requestId={
               isAtlasApiError(decidir.error)
                 ? decidir.error.requestId
@@ -243,7 +258,7 @@ function VistaDeDocumento({
         {contenido.isLoading ? <LoadingSkeleton rows={1} /> : null}
         {contenido.error ? (
           <span className="p-2 text-xs text-rose-700">
-            El objeto ya no está en el almacén.
+            {documentContentErrorText(contenido.error)}
           </span>
         ) : null}
         {url && esImagen ? (

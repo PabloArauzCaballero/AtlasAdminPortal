@@ -1,6 +1,14 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
+
+/*
+ * `findBy*` y `waitFor` esperan 1 s por defecto. Con dos suites completas en paralelo en la misma
+ * máquina (varias sesiones sobre el mismo Mac), la ficha del préstamo tardó 1,58 s en pintar su
+ * cabecera y la prueba cayó sin ningún fallo en la pantalla (medido el 2026-09-28; sola pasa 5/5).
+ * 5 s sigue muy por debajo del `testTimeout` de 20 s y deja de confundir lentitud con un bug.
+ */
+configure({ asyncUtilTimeout: 5_000 });
 
 /**
  * Node 22 expone un `localStorage` experimental propio que queda en `undefined`

@@ -152,3 +152,32 @@ export const PAYMENT_CLAIMS_ROLES = [
   "platform_admin",
 ] as const;
 export const PAYMENT_CLAIMS_ROLE_LIST: string[] = [...PAYMENT_CLAIMS_ROLES];
+
+/**
+ * `DecisionArtifactBindingController` (`/internal/decision-artifacts`): qué artefacto del Motor
+ * decide identidad, crédito, riesgo y comercios. El menú lo filtraba por `governance.policies.read`,
+ * que tienen cumplimiento y no riesgo: la jefatura de riesgo no encontraba la pantalla que el backend
+ * sí le abre, y cumplimiento la encontraba y recibía un 403.
+ */
+export const DECISION_ARTIFACT_ROLES = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+] as const;
+export const DECISION_ARTIFACT_ROLE_LIST: string[] = [
+  ...DECISION_ARTIFACT_ROLES,
+];
+
+/**
+ * `OperationsController` (clase): cola de trabajo, contactos sin verificar, expediente del cliente
+ * y la cola de revisión manual. `fraud_analyst` NO entra aquí (sólo en `fraud-cases`), ni
+ * `readonly_auditor` ni QA: sin `roles` el ítem les salía y respondía 403.
+ */
+export const OPERATIONS_CASE_ROLE_LIST: string[] = [
+  "internal_operator",
+  "risk_analyst",
+  "compliance_analyst",
+  "admin",
+  "platform_admin",
+];

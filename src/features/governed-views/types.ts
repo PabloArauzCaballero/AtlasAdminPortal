@@ -27,6 +27,8 @@ export type GovernedViewFilter = {
   label: string;
   /** `text` va al buscador; el resto se ofrece como desplegable con los valores de la página. */
   kind: "text" | "facet";
+  /** Campo de la fila del que salen las opciones, cuando no se llama como el filtro. */
+  field?: string;
 };
 
 export type GovernedViewDefinition = {
@@ -57,8 +59,20 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
       "Ficha resumida por cliente: estado de ciclo de vida, última decisión de riesgo y qué tiene abierto.",
     filters: [
       { name: "q", label: "Buscar", kind: "text" },
-      { name: "status", label: "Estado", kind: "facet" },
-      { name: "riskBand", label: "Banda de riesgo", kind: "facet" },
+      // El filtro se llama `status`/`riskBand`, pero la fila trae `lifecycleStatus`/
+      // `latestRiskBand`: sin `field` las opciones salían siempre vacías.
+      {
+        name: "status",
+        label: "Estado",
+        kind: "facet",
+        field: "lifecycleStatus",
+      },
+      {
+        name: "riskBand",
+        label: "Banda de riesgo",
+        kind: "facet",
+        field: "latestRiskBand",
+      },
     ],
   },
   {

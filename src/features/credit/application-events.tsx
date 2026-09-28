@@ -3,7 +3,11 @@ import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/ui/states";
 import { formatDateTime } from "@/shared/lib/format";
-import { APPLICATION_STATUS_LABELS, labelOr } from "./credit-options";
+import {
+  APPLICATION_STATUS_LABELS,
+  labelOr,
+  reasonLabel,
+} from "./credit-options";
 import type { CreditApplicationEvent } from "./types";
 
 const EVENT_LABELS: Record<string, string> = {
@@ -19,6 +23,13 @@ const ACTOR_LABELS: Record<string, string> = {
   decision_engine_manual_review: "Revisión en el Motor",
   customer: "Cliente",
   merchant: "Comercio",
+  // Una decisión humana se registra con el rol de quien la tomó (`currentUser.role`).
+  internal_operator: "Operación",
+  risk_analyst: "Riesgo",
+  compliance_analyst: "Cumplimiento",
+  fraud_analyst: "Fraude",
+  admin: "Administración",
+  platform_admin: "Administración",
 };
 
 /** El historial de la solicitud, más reciente primero (hasta 100 eventos, como lo sirve el backend). */
@@ -67,7 +78,9 @@ export function ApplicationEvents({
                   {event.actorInternalUserId
                     ? ` #${event.actorInternalUserId}`
                     : ""}
-                  {event.reasonCode ? ` · ${event.reasonCode}` : ""}
+                  {event.reasonCode
+                    ? ` · ${reasonLabel(event.reasonCode)}`
+                    : ""}
                 </p>
                 {event.notes ? (
                   <p className="mt-1 whitespace-pre-line text-atlas-text">

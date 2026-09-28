@@ -118,6 +118,31 @@ export function medioDePago(value: string): string {
  * lance viaja en uno o en otro.
  */
 const MOTIVOS: Record<string, string> = {
+  // Primero los códigos que contienen a otros («…_CURRENCY_MISMATCH» contiene «CURRENCY_MISMATCH»):
+  // la búsqueda se queda con la primera coincidencia.
+  CREDIT_LIMIT_CURRENCY_MISMATCH:
+    "La línea del cliente está en otra moneda que la solicitud.",
+  CREDIT_LIMIT_UNKNOWN:
+    "El cliente todavía no tiene línea calculada: no se puede comprobar si le alcanza.",
+  CREDIT_EXPOSURE_LIMIT_EXCEEDED:
+    "El préstamo supera lo que queda disponible en la línea del cliente.",
+  CREDIT_EXPOSURE_RESERVATION_NOT_AVAILABLE:
+    "No se pudo reservar el cupo de la línea. Vuelve a intentarlo en unos segundos.",
+  REQUIRED_CONSENT_MISSING:
+    "Falta un consentimiento que el cliente debe aceptar antes del desembolso.",
+  CONSENT_REVOKED_AFTER_DECISION:
+    "El cliente revocó un consentimiento después de la decisión: no se desembolsa.",
+  CONSENT_REVOCATION_PENDING_SYNC:
+    "Hay una revocación de consentimiento que aún no llegó al motor: se desembolsa cuando llegue.",
+  CREDIT_PRODUCT_WITHOUT_RATE:
+    "Ni el motor fijó tasa ni el producto tiene una: no hay con qué calcular las cuotas. Pon tasa al producto.",
+  INVALID_INTEREST_RATE: "La tasa de interés no es válida para este producto.",
+  DELINQUENCY_POLICY_NOT_PUBLISHED:
+    "No hay política de mora publicada: sin ella no se puede abrir el préstamo.",
+  EMPTY_LOAN_SCHEDULE:
+    "El plan de pagos salió vacío: revisa el plazo y el monto de la solicitud.",
+  IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_PAYMENT:
+    "Ese cobro ya se registró con otros datos. Recarga la pantalla antes de repetirlo.",
   CREDIT_APPLICATION_NOT_FOUND: "La solicitud no existe en este inquilino.",
   CREDIT_APPLICATION_NOT_APPROVED:
     "La solicitud ya no está aprobada; no se puede desembolsar.",

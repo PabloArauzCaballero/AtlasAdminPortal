@@ -101,4 +101,28 @@ describe("buildWorkQueueColumns · dónde se decide", () => {
       "/internal/operations/credit/applications/from-case?customerId=900&caseCode=CR-CA-2026-000077",
     );
   });
+
+  /*
+   * Con IDENTITY_REQUIRE_HUMAN_REVIEW el backend abre casos `identity_review` (MR-ID-…). El
+   * formulario de riesgo los rechaza siempre con 409 MANUAL_REVIEW_ES_DE_IDENTIDAD: la fila lleva
+   * al panel de identidad del expediente, no a «Decidir».
+   */
+  it("un caso de identidad lleva al panel de identidad, no ofrece «Decidir»", () => {
+    render(
+      <Tabla
+        filas={[
+          item({ caseCode: "MR-ID-1759", reasonCode: "identity_review" }),
+        ]}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Decidir" })).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Decidir identidad" }),
+    ).toHaveAttribute(
+      "href",
+      "/internal/operations/customers/900/investigation-summary#identidad",
+    );
+    expect(screen.getByText("Identidad")).toBeInTheDocument();
+    expect(screen.queryByText("identity_review")).toBeNull();
+  });
 });

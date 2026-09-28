@@ -10,6 +10,12 @@ import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Field, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { DecisionConsumersSection } from "./decision-consumers-section";
+import {
+  assignErrorText,
+  catalogErrorText,
+  enginePresence,
+  versionStatusLabel,
+} from "./engine-presence";
 import { useAssignDecisionArtifact, useDecisionArtifacts } from "./hooks";
 import type { BindingSource, DecisionType } from "./types";
 
@@ -53,6 +59,14 @@ export function DecisionDetailPage({
   const motorSinResponder = !artifacts.isLoading && disponibles.length === 0;
 
   if (artifacts.isLoading) return <LoadingSkeleton rows={6} />;
+  if (artifacts.error) {
+    return (
+      <ErrorState
+        title="No pudimos leer el catálogo"
+        description={catalogErrorText(artifacts.error)}
+      />
+    );
+  }
   if (!binding) {
     return (
       <ErrorState
@@ -70,6 +84,7 @@ export function DecisionDetailPage({
     (elegido !== binding.artifactCode ||
       versionElegida !== (binding.pinnedVersion ?? ""));
   const origen = SOURCE_LABEL[binding.source];
+  const faltaEnMotor = enginePresence(binding, disponibles) === "missing";
 
   return (
     <div className="space-y-6">
@@ -135,11 +150,23 @@ export function DecisionDetailPage({
           </div>
         </CardHeader>
         <CardContent>
+          {faltaEnMotor ? (
+            <p
+              className="mb-3 text-sm text-red-700"
+              data-testid="artifact-missing-in-engine"
+            >
+              El motor no tiene publicado «{binding.artifactCode}». Mientras
+              siga así, cada vez que se pida esta decisión el motor contestará
+              que no hay nada desplegado. Elige uno de la lista o publica ese
+              artefacto en el motor.
+            </p>
+          ) : null}
           {motorSinResponder ? (
             <p className="mb-3 text-sm text-amber-700">
-              El motor no devolvió su catálogo de artefactos. Puedes ver la
-              configuración vigente, pero no cambiarla hasta que responda:
-              elegir un código a ciegas es justo lo que esta pantalla evita.
+              El motor no devolvió ningún artefacto: o no respondió, o todavía
+              no tiene nada publicado. Puedes ver la configuración vigente, pero
+              no cambiarla hasta que lo haga: elegir un código a ciegas es justo
+              lo que esta pantalla evita.
             </p>
           ) : null}
 
@@ -197,7 +224,7 @@ export function DecisionDetailPage({
                       ? [
                           {
                             value: artefactoElegido.latestVersion,
-                            label: `Fijar ${artefactoElegido.latestVersion}${artefactoElegido.status ? ` · ${artefactoElegido.status}` : ""}`,
+                            label: `Fijar ${artefactoElegido.latestVersion}${artefactoElegido.status ? ` · ${versionStatusLabel(artefactoElegido.status)}` : ""}`,
                             description:
                               "Fija esta versión: publicar otra en el motor no cambia lo que decide.",
                           },
@@ -242,8 +269,7 @@ export function DecisionDetailPage({
           ) : null}
           {assign.error ? (
             <p className="mt-2 text-xs font-medium text-red-700">
-              El motor no publica ese artefacto. Elige uno de la lista y vuelve
-              a intentarlo.
+              {assignErrorText(assign.error)}
             </p>
           ) : null}
         </CardContent>

@@ -17,6 +17,11 @@ import {
   isCreditReviewCase,
 } from "@/features/credit/credit-rules";
 import type { WorkQueueItem } from "./types";
+import {
+  caseTypeLabel,
+  identityCaseHref,
+  isIdentityReviewCase,
+} from "./identity-review-rules";
 
 function WorkItemTypeBadge({
   value,
@@ -93,7 +98,11 @@ export function buildWorkQueueColumns(
     {
       header: "Motivo",
       accessorKey: "reasonCode",
-      cell: ({ row }) => safeText(row.original.reasonCode),
+      // En revisión manual el motivo ES el tipo de caso (`identity_review`…); en fraude, el patrón.
+      cell: ({ row }) =>
+        row.original.workItemType === "manual_review"
+          ? caseTypeLabel(row.original.reasonCode)
+          : safeText(row.original.reasonCode),
     },
     {
       header: "Abierto",
@@ -147,6 +156,24 @@ function AccionDeFila({
     ) : (
       <span className="text-xs text-atlas-muted">
         Se decide en la solicitud de crédito
+      </span>
+    );
+  }
+
+  // Un caso `identity_review` se cierra decidiendo la identidad en el expediente (ver
+  // identity-review-rules): «Decidir» aquí acababa siempre en 409 MANUAL_REVIEW_ES_DE_IDENTIDAD.
+  if (isIdentityReviewCase(item)) {
+    const href = identityCaseHref(item.customerId);
+    return href ? (
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-2 py-1 text-xs text-atlas-text hover:bg-atlas-soft"
+      >
+        Decidir identidad
+      </Link>
+    ) : (
+      <span className="text-xs text-atlas-muted">
+        Se decide en el expediente del cliente
       </span>
     );
   }
