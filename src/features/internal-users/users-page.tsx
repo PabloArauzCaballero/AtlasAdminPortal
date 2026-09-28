@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useInternalUsers } from "./hooks";
 import type { InternalUserListItem } from "./types";
+import { departmentLabel } from "./labels";
 import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
@@ -63,7 +64,11 @@ function AuthorizedUsersPage() {
         ),
       },
       { header: "Nombre", accessorKey: "fullName" },
-      { header: "Departamento", accessorKey: "department" },
+      {
+        header: "Departamento",
+        accessorKey: "department",
+        cell: ({ row }) => departmentLabel(row.original.department),
+      },
       { header: "Cargo", accessorKey: "jobTitle" },
       {
         header: "Roles",
@@ -75,12 +80,12 @@ function AuthorizedUsersPage() {
         ),
       },
       {
-        header: "MFA",
+        header: "Segundo factor",
         accessorKey: "mfaEnabled",
         cell: ({ row }) => formatBoolean(row.original.mfaEnabled),
       },
       {
-        header: "Cambio pass",
+        header: "Debe cambiar contraseña",
         accessorKey: "mustChangePassword",
         cell: ({ row }) => formatBoolean(row.original.mustChangePassword),
       },
@@ -99,7 +104,7 @@ function AuthorizedUsersPage() {
         icon={Users}
         eyebrow="Usuarios internos"
         title="Usuarios internos"
-        description="Listado de usuarios internos desde `/internal/users`. No se inventan roles: se muestran únicamente los que devuelve el servicio interno."
+        description="Las personas con acceso a este portal, con sus roles y el estado de su cuenta."
         actions={
           hasPermission("internal.users.manage") ? (
             <Link href="/internal/settings/users/new">

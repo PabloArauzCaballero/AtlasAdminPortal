@@ -4,6 +4,7 @@ import { useInternalUser } from "./hooks";
 import { UserEditForm } from "./user-edit-form";
 import { UserRolesForm } from "./user-roles-form";
 import { UserUnlockCard } from "./user-unlock-card";
+import { departmentLabel } from "./labels";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -63,10 +64,13 @@ function AuthorizedUserDetailPage({
               items={[
                 { label: "Tenant", value: user.data.user.tenantId, mono: true },
                 { label: "Código", value: user.data.user.userCode, mono: true },
-                { label: "Departamento", value: user.data.user.department },
+                {
+                  label: "Departamento",
+                  value: departmentLabel(user.data.user.department),
+                },
                 { label: "Cargo", value: user.data.user.jobTitle },
                 {
-                  label: "MFA",
+                  label: "Segundo factor",
                   value: formatBoolean(user.data.user.mfaEnabled),
                 },
                 {
@@ -87,7 +91,7 @@ function AuthorizedUserDetailPage({
               <CardHeader>
                 <SectionHeader
                   title="Permisos efectivos"
-                  description="Permisos devueltos por `/internal/users/:id`. No se infieren desde la interfaz."
+                  description="Lo que esta cuenta puede hacer hoy, según los roles que tiene asignados."
                   className="mb-0"
                 />
               </CardHeader>

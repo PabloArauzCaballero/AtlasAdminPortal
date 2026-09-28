@@ -21,7 +21,7 @@ export function ProfilePage() {
       <PageHeader
         icon={UserCircle}
         title="Perfil interno"
-        description="Sesión, roles y permisos efectivos recibidos desde `/internal/auth/me`."
+        description="Tu cuenta, tus roles y lo que puedes hacer en este portal."
       />
       {user ? (
         <div className="space-y-6">
@@ -35,11 +35,11 @@ export function ProfilePage() {
               { label: "Cargo", value: user.jobTitle },
               { label: "Estado", value: user.status },
               {
-                label: "MFA habilitado",
+                label: "Segundo factor",
                 value: formatBoolean(user.mfaEnabled),
               },
               {
-                label: "Debe cambiar password",
+                label: "Debe cambiar contraseña",
                 value: formatBoolean(user.mustChangePassword),
               },
             ]}
@@ -59,7 +59,7 @@ export function ProfilePage() {
             <CardContent>
               <SectionHeader
                 title="Permisos"
-                description="El menú y acciones se renderizan con estos permisos, no con roles hardcodeados."
+                description="El menú y las acciones que ves salen de estos permisos."
               />{" "}
               <div className="flex flex-wrap gap-2">
                 {permissions.map((permission) => (

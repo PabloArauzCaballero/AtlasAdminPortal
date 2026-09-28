@@ -26,8 +26,8 @@ export function useInternalUsers(query: QueryParams = {}) {
 export function useUpdateInternalUserRolesMutation(internalUserId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (roles: string[]) =>
-      updateInternalUserRoles(internalUserId, roles),
+    mutationFn: (input: { roles: string[]; reason: string }) =>
+      updateInternalUserRoles(internalUserId, input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.internalUser(internalUserId),

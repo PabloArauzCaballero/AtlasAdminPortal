@@ -9,9 +9,12 @@ import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
+
+const MIN_REASON = 8;
 
 export function UserRolesForm({
   user,
@@ -20,6 +23,24 @@ export function UserRolesForm({
   const roles = useInternalRoles({ page: 1, limit: 100 });
   const mutation = useUpdateInternalUserRolesMutation(user.id);
   const [selected, setSelected] = useState(() => new Set(user.roles));
+  const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState<string | null>(null);
+
+  /** El backend exige el motivo (8+ caracteres) y lo guarda en la auditoría con los roles. */
+  function save() {
+    const motivo = reason.trim();
+    if (motivo.length < MIN_REASON) {
+      setReasonError(
+        `El motivo es obligatorio y debe tener al menos ${MIN_REASON} caracteres.`,
+      );
+      return;
+    }
+    setReasonError(null);
+    mutation.mutate(
+      { roles: Array.from(selected), reason: motivo },
+      { onSuccess: () => setReason("") },
+    );
+  }
 
   /**
    * Nadie edita sus PROPIOS roles, y esto no es una política del portal: `replaceRoles` del
@@ -136,6 +157,20 @@ export function UserRolesForm({
               : "ninguno"}
           </span>
         </p>
+        {isSelf ? null : (
+          <Field
+            tooltip="Por qué cambian los roles de esta cuenta; queda en la auditoría junto con los roles nuevos."
+            label="Motivo (obligatorio, mínimo 8 caracteres)"
+            error={reasonError ?? undefined}
+            hint="Se guarda en el registro de auditoría junto con el cambio de roles."
+          >
+            <Input
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder="Ej: Pasa al equipo de cobranzas por pedido de gerencia"
+            />
+          </Field>
+        )}
         {mutation.error ? (
           <ErrorState
             description={
@@ -161,7 +196,7 @@ export function UserRolesForm({
               ? "Tus propios roles los cambia otro administrador."
               : undefined
           }
-          onClick={() => mutation.mutate(Array.from(selected))}
+          onClick={save}
         >
           <ShieldCheck className="h-4 w-4" aria-hidden />
           Guardar roles y permisos

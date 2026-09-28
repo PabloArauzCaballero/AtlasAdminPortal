@@ -12,6 +12,7 @@ import {
   type CreateUserForm,
 } from "./user-create-schema";
 import type { CreateInternalUserResult } from "./types";
+import { DEPARTMENT_LABELS } from "./labels";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Field, Input } from "@/shared/components/ui/input";
@@ -109,7 +110,10 @@ export function UserCreateForm() {
               <FormSelect
                 control={control}
                 name="department"
-                options={DEPARTMENTS.map((value) => ({ value, label: value }))}
+                options={DEPARTMENTS.map((value) => ({
+                  value,
+                  label: DEPARTMENT_LABELS[value],
+                }))}
               />
             </Field>
           </div>
@@ -168,11 +172,7 @@ export function UserCreateForm() {
 
           {mutation.error ? (
             <ErrorState
-              description={
-                isAtlasApiError(mutation.error)
-                  ? mutation.error.message
-                  : "No se pudo crear el usuario."
-              }
+              description={createErrorMessage(mutation.error)}
               requestId={
                 isAtlasApiError(mutation.error)
                   ? mutation.error.requestId
@@ -194,6 +194,22 @@ export function UserCreateForm() {
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * `createUser` responde 409 con el código `INTERNAL_USER_EMAIL_ALREADY_EXISTS` cuando el correo ya
+ * tiene cuenta, y la pantalla lo pintaba tal cual: un código en mayúsculas que no dice qué hacer.
+ */
+export function createErrorMessage(error: unknown): string {
+  if (!isAtlasApiError(error)) return "No se pudo crear el usuario.";
+  if (
+    [error.code, error.message].some((v) =>
+      v?.includes("INTERNAL_USER_EMAIL_ALREADY_EXISTS"),
+    )
+  ) {
+    return "Ya existe una cuenta interna con ese correo. Búscala en Usuarios internos en lugar de crear otra.";
+  }
+  return error.message;
 }
 
 /**
@@ -221,7 +237,7 @@ export function UsuarioCreadoAviso({
       <CardHeader>
         <SectionHeader
           title="Usuario creado"
-          description={`La contraseña provisional se envió a ${email}. Este portal no la muestra: la persona la recibe por correo.`}
+          description={`Atlas envía la contraseña provisional a ${email}. Este portal no la muestra: la persona la recibe por correo.`}
           className="mb-0"
         />
       </CardHeader>
@@ -234,16 +250,25 @@ export function UsuarioCreadoAviso({
             Al entrar recibirá un código de un solo uso por correo y tendrá que
             escribirlo: es el segundo factor de acceso, no un error.
           </li>
+          {/*
+           * Antes decía que desde la ficha «se corrige la cuenta»: la ficha no deja cambiar el
+           * correo ni reenviar la contraseña, así que quien seguía el consejo no encontraba nada.
+           * Lo que sí funciona es la recuperación por correo de la pantalla de acceso.
+           */}
           <li>
-            Si el correo no llega, revisa la dirección en{" "}
+            Si el correo no llega, la persona puede pedir uno nuevo con
+            «¿Olvidaste tu contraseña?» en la pantalla de acceso.
+          </li>
+          <li>
+            Si la dirección está mal escrita, desactiva la cuenta desde{" "}
             <Link
               href={`/internal/settings/users/${userId}`}
               className="font-medium text-atlas-accent underline"
             >
               la ficha del usuario
-            </Link>
-            ; desde ahí se corrige la cuenta y se le exige un cambio de
-            contraseña.
+            </Link>{" "}
+            y créala de nuevo con la correcta: el correo de una cuenta no se
+            puede cambiar.
           </li>
         </ul>
         <Button variant="primary" onClick={onContinue}>
