@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { clickAndNavigate } from "./evidence";
 import { BuzonPin, HAY_BUZON } from "./pin-inbox";
 
 /**
@@ -39,7 +40,17 @@ export function motivoParaSaltar(): string {
   return "";
 }
 
-export async function loginAsInternalUser(page: Page): Promise<void> {
+/**
+ * Entra con la cuenta de la suite o, si se pasan, con otras credenciales (p. ej. una cuenta recién
+ * dada de alta por la propia prueba). Un solo camino de login: las copias locales se quedaban sin
+ * las protecciones de aquí (hidratación, valor escrito, clic perdido).
+ */
+export async function loginAsInternalUser(
+  page: Page,
+  credentials: { email?: string; password?: string } = {},
+): Promise<void> {
+  const email = credentials.email ?? EMAIL ?? "";
+  const password = credentials.password ?? PASSWORD ?? "";
   const buzon = new BuzonPin();
   await buzon.abrir();
   buzon.vaciar();
@@ -62,12 +73,12 @@ export async function loginAsInternalUser(page: Page): Promise<void> {
     // enviaba con «11» y el backend contestaba, con razón, que ese tenant no existe.
     await tenant.clear();
     await tenant.fill(TENANT);
-    await form.getByLabel("Correo interno").fill(EMAIL ?? "");
-    await form.getByLabel("Contraseña").fill(PASSWORD ?? "");
+    await form.getByLabel("Correo interno").fill(email);
+    await form.getByLabel("Contraseña").fill(password);
 
     // Comprobar lo escrito antes de enviar convierte «la hidratación se comió el formulario» en un
     // error que se lee solo, en vez de un timeout tres pantallas más adelante.
-    await expect(form.getByLabel("Correo interno")).toHaveValue(EMAIL ?? "");
+    await expect(form.getByLabel("Correo interno")).toHaveValue(email);
 
     await form
       .getByRole("button", { name: /entrar al portal interno/i })
@@ -76,19 +87,20 @@ export async function loginAsInternalUser(page: Page): Promise<void> {
     // Segundo paso: el código que acaba de salir por correo.
     const campoPin = page.getByLabel("Código de verificación");
     await expect(campoPin).toBeVisible({ timeout: 30_000 });
-    await campoPin.fill(await buzon.esperarPin(EMAIL ?? ""));
-    await page
-      .getByRole("button", { name: /verificar|continuar|entrar/i })
-      .click();
+    await campoPin.fill(await buzon.esperarPin(email));
 
     // Predicado y no expresión regular: tras el login el portal aterriza en `/internal` a secas, sin
     // barra final, y un patrón que exija `/internal/algo` da un timeout que se lee como «el login
-    // falló» cuando en realidad funcionó.
-    await page.waitForURL(
+    // falló» cuando en realidad funcionó. Intentos de 10 s: verificar el PIN y cargar la portada
+    // tarda más que un cambio de pestaña, y un segundo clic sobre un PIN ya aceptado sobra.
+    await clickAndNavigate(
+      page,
+      page.getByRole("button", { name: /verificar|continuar|entrar/i }),
       (url) =>
         url.pathname.startsWith("/internal") &&
         !url.pathname.startsWith("/internal/login"),
-      { timeout: 30_000 },
+      "el login no salió de /internal/login tras confirmar el PIN",
+      { attemptMs: 10_000, timeout: 30_000 },
     );
   } finally {
     await buzon.cerrar();

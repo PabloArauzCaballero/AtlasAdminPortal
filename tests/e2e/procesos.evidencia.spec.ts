@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { quietaParaCapturar } from "./estabilizar";
+import { clickAndNavigate } from "./evidence";
 
 /** Fuera de `test-results/`: Playwright la vacía en cada corrida. */
 const SALIDA = process.env.PROCESOS_SHOTS ?? "test-results/procesos";
@@ -286,12 +287,13 @@ test("Procesos — el menú y el listado con sus cifras", async ({ page }) => {
 test("Procesos — la ficha destaca los pasos sin pantalla", async ({ page }) => {
   await preparar(page);
   await page.goto("/internal/procesos", { waitUntil: "domcontentloaded" });
-  await page
-    .getByRole("row", { name: /Alta de cuenta/ })
-    .getByRole("link", { name: "Ver ficha" })
-    .click();
-  await expect(page).toHaveURL(
+  await clickAndNavigate(
+    page,
+    page
+      .getByRole("row", { name: /Alta de cuenta/ })
+      .getByRole("link", { name: "Ver ficha" }),
     /\/internal\/procesos\/account_signup_to_login$/,
+    "la ficha del proceso no abrió tras el clic",
   );
   await expect(page.getByRole("status")).toContainText("1 paso sin pantalla");
   await expect(page.getByText("¿Qué pasa cuando falla?")).toBeVisible();
@@ -311,8 +313,12 @@ test("Procesos — casos en curso y avance de uno", async ({ page }) => {
   await expect(page.getByLabel("Casos por estado")).toContainText("12", {
     timeout: 30_000,
   });
-  await page.getByRole("button", { name: "Ver avance" }).first().click();
-  await expect(page).toHaveURL(/caso=9001/);
+  await clickAndNavigate(
+    page,
+    page.getByRole("button", { name: "Ver avance" }).first(),
+    /caso=9001/,
+    "el avance del caso no abrió tras el clic",
+  );
   await expect(page.getByTestId("avance-del-caso")).toContainText("Está aquí");
   await capturar(page, "casos-y-avance");
 });

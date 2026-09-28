@@ -143,3 +143,48 @@ export async function settled(page: Page): Promise<void> {
     timeout: 20_000,
   });
 }
+
+/** Qué URL cuenta como «llegó»: una expresión sobre la URL completa o un predicado. */
+export type UrlExpected = RegExp | ((url: URL) => boolean);
+
+function urlMatches(page: Page, expected: UrlExpected): boolean {
+  const current = new URL(page.url());
+  return typeof expected === "function"
+    ? expected(current)
+    : expected.test(current.href);
+}
+
+/**
+ * Hace clic en algo que NAVEGA (un `next/link`, una fila, un botón que cambia la URL) y espera a que
+ * la URL cumpla `expected`, reintentando el clic mientras no la cumpla.
+ *
+ * Un clic que cae antes de que React hidrate, o mientras la tabla se repinta, se pierde en silencio:
+ * la URL no cambia y la prueba muere 30 s después esperando una ficha que nunca se pidió. Pasó en CI
+ * con el catálogo de esquema, la ficha de auditoría y el login de mensajería, en ramas cuyo mismo
+ * árbol había salido verde. Reintentar el clic cubre esa carrera; un enlace roto de verdad sigue
+ * fallando aquí, con un error que dice qué no abrió, dónde se quedó la página y qué seguía en vuelo.
+ *
+ * Antes de cada reintento se mira si la URL YA cumple: una navegación lenta no recibe un segundo
+ * clic. Aun así, no sirve para botones que además crean algo (lanzar una corrida, enviar un
+ * formulario de alta): ahí un segundo clic es un segundo efecto.
+ */
+export async function clickAndNavigate(
+  page: Page,
+  locator: Locator,
+  expected: UrlExpected,
+  what: string,
+  options: { health?: PageHealth; attemptMs?: number; timeout?: number } = {},
+): Promise<void> {
+  const health = options.health ?? new PageHealth(page);
+  const attemptMs = options.attemptMs ?? 5_000;
+  try {
+    await expect(async () => {
+      if (!urlMatches(page, expected)) {
+        await locator.click({ timeout: attemptMs });
+      }
+      await expect(page).toHaveURL(expected, { timeout: attemptMs });
+    }).toPass({ timeout: options.timeout ?? 45_000 });
+  } catch (error) {
+    throw new Error(`${what}\n${health.describe()}\n\n${String(error)}`);
+  }
+}

@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { clickAndNavigate } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 /**
@@ -101,8 +102,12 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
 
     // La navegación tiene que llevar a la pestaña, no sólo la URL escrita a mano.
     await page.goto("/internal/systems/dashboard");
-    await page.getByRole("link", { name: "Salud de la red" }).click();
-    await expect(page).toHaveURL(/\/internal\/systems\/network-health/);
+    await clickAndNavigate(
+      page,
+      page.getByRole("link", { name: "Salud de la red" }),
+      /\/internal\/systems\/network-health/,
+      "la pestaña «Salud de la red» no abrió tras el clic",
+    );
   });
 
   test("la pestaña de artefactos del motor lista los despliegues activos", async ({
@@ -120,9 +125,11 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     await expect(table.or(warning).first()).toBeVisible();
 
     await page.goto("/internal/systems/dashboard");
-    await page.getByRole("link", { name: "Artefactos del motor" }).click();
-    await expect(page).toHaveURL(
+    await clickAndNavigate(
+      page,
+      page.getByRole("link", { name: "Artefactos del motor" }),
       /\/internal\/systems\/decision-engine\/artifacts/,
+      "la pestaña «Artefactos del motor» no abrió tras el clic",
     );
   });
 });

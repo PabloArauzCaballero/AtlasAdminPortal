@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickAndNavigate } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 /**
@@ -76,8 +77,12 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
 
     const nav = page.getByRole("navigation", { name: "Índice de la guía" });
     await expect(nav).toBeVisible();
-    await nav.getByRole("link", { name: /Journey encadenado/ }).click();
-    await expect(page).toHaveURL(/#journey$/);
+    await clickAndNavigate(
+      page,
+      nav.getByRole("link", { name: /Journey encadenado/ }),
+      /#journey$/,
+      "el índice no llevó al ancla #journey tras el clic",
+    );
     await expect(
       page.getByRole("heading", {
         level: 2,
@@ -135,8 +140,12 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   // La cabecera del lab ya no repite la guía: vive en el menú QA, junto al lab.
   test("el menú QA lleva del lab a la guía", async ({ page }) => {
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
-    await page.getByRole("link", { name: "Guía QA Lab" }).first().click();
-    await expect(page).toHaveURL(/\/internal\/qa\/guia$/);
+    await clickAndNavigate(
+      page,
+      page.getByRole("link", { name: "Guía QA Lab" }).first(),
+      /\/internal\/qa\/guia$/,
+      "la guía no abrió tras el clic en el menú QA",
+    );
     await expect(
       page.getByRole("heading", {
         level: 1,

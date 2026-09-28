@@ -3,6 +3,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { tutorialCatalog } from "../../src/features/qa-tutorials/catalog";
 import type { TutorialDefinition } from "../../src/features/qa-tutorials/types";
 import { quietaParaCapturar } from "./estabilizar";
+import { clickAndNavigate } from "./evidence";
 import { INTERNAL_STORAGE_STATE, motivoParaSaltar } from "./internal-session";
 
 /**
@@ -69,10 +70,12 @@ test("el recorrido sobrevive a un F5 y al cambio de página", async () => {
   await resetProgress(page, tutorial);
   await page.goto("/internal/qa/aprender", { waitUntil: "domcontentloaded" });
   // Arranca desde el Centro (otra página que el Lab): antes moría aquí mismo.
-  await page
-    .getByRole("button", { name: "Entender la plataforma desde cero" })
-    .click();
-  await expect(page).toHaveURL(/\/internal\/qa\/lab/);
+  await clickAndNavigate(
+    page,
+    page.getByRole("button", { name: "Entender la plataforma desde cero" }),
+    /\/internal\/qa\/lab/,
+    "el tutorial no llevó al Lab tras el clic",
+  );
   await expect(dialog(page)).toContainText("Bienvenido a QA LAB");
   await page.getByRole("button", { name: "Siguiente paso" }).click();
   await expect(dialog(page)).toContainText("Tres formas de mirar una prueba");

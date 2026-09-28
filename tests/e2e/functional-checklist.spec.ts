@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { seMantiene } from "./estabilizar";
+import { clickAndNavigate } from "./evidence";
 import {
   INTERNAL_STORAGE_STATE,
   loginAsInternalUser,
@@ -321,11 +322,13 @@ test.describe("Checklist funcional con backend real", () => {
     const refreshValue = refresh?.value ?? "";
 
     // Logout desde la UI.
-    await page
-      .getByRole("button", { name: /cerrar sesión/i })
-      .first()
-      .click();
-    await page.waitForURL(/\/internal\/login/, { timeout: 20_000 });
+    await clickAndNavigate(
+      page,
+      page.getByRole("button", { name: /cerrar sesión/i }).first(),
+      /\/internal\/login/,
+      "el cierre de sesión no volvió a /internal/login",
+      { timeout: 20_000 },
+    );
 
     // El refresh token de antes ya no debe servir: revocado en servidor.
     const res = await request.post(
