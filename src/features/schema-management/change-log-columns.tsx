@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import type { SchemaChangeLog } from "./types";
+import { requesterLabel } from "./change-actor";
 
 function ApprovalStatusBadge({
   value,
@@ -25,6 +26,7 @@ function ApprovalStatusBadge({
 
 export function buildChangeLogColumns(
   onDecide: (change: SchemaChangeLog) => void,
+  canApprove: boolean,
 ): ColumnDef<SchemaChangeLog>[] {
   return [
     {
@@ -56,10 +58,10 @@ export function buildChangeLogColumns(
     },
     {
       header: "Solicitante",
-      accessorKey: "requesterPlatformUserId",
+      id: "requester",
       cell: ({ row }) => (
         <span className="font-mono text-xs">
-          #{row.original.requesterPlatformUserId}
+          {requesterLabel(row.original)}
         </span>
       ),
     },
@@ -73,7 +75,8 @@ export function buildChangeLogColumns(
       cell: ({ row }) => (
         <Button
           className="h-8 px-2 text-xs"
-          disabled={row.original.approvalStatus !== "pending"}
+          disabled={row.original.approvalStatus !== "pending" || !canApprove}
+          title={canApprove ? undefined : "Requiere governance.schema.approve"}
           onClick={() => onDecide(row.original)}
         >
           Revisar

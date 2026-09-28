@@ -9,6 +9,7 @@ import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useApproveSchemaChangeMutation } from "./hooks";
 import type { SchemaChangeLog } from "./types";
+import { requesterLabel } from "./change-actor";
 
 export function ApproveChangeDialog({
   change,
@@ -39,7 +40,7 @@ export function ApproveChangeDialog({
       <div className="space-y-4">
         <p className="text-sm text-atlas-text">
           {change.changeType} · solicitado por{" "}
-          <span className="font-mono">#{change.requesterPlatformUserId}</span>
+          <span className="font-mono">{requesterLabel(change)}</span>
         </p>
         <JsonViewer title="Payload propuesto" value={change.changePayload} />
         <Field

@@ -207,7 +207,7 @@ export function ProposeTableForm({
         {propose.isSuccess ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
             Propuesta registrada (change #{propose.data.changeId}), pendiente de
-            aprobación de un platform_admin distinto de vos.
+            aprobación de otra persona con governance.schema.approve.
           </div>
         ) : null}
         <div className="flex gap-2">

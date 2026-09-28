@@ -5,6 +5,8 @@ import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { useAuth } from "@/shared/auth/auth-context";
+import { SCHEMA_APPROVE_PERMISSION } from "./change-actor";
 import { ApproveChangeDialog } from "./approve-change-dialog";
 import { buildChangeLogColumns } from "./change-log-columns";
 import { useSchemaChangeLog } from "./hooks";
@@ -23,6 +25,8 @@ export function SchemaChangeLogTable({
   const [approvalStatus, setApprovalStatus] = useState("");
   const [requesterUserId, setRequesterUserId] = useState("");
   const [deciding, setDeciding] = useState<SchemaChangeLog | null>(null);
+  const { hasPermission } = useAuth();
+  const canApprove = hasPermission(SCHEMA_APPROVE_PERMISSION);
 
   const changeLog = useSchemaChangeLog({
     limit: pageSize,
@@ -31,8 +35,8 @@ export function SchemaChangeLogTable({
     requesterUserId,
   });
   const columns = useMemo(
-    () => buildChangeLogColumns((change) => setDeciding(change)),
-    [],
+    () => buildChangeLogColumns((change) => setDeciding(change), canApprove),
+    [canApprove],
   );
 
   return (

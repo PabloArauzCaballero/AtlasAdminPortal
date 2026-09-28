@@ -73,14 +73,21 @@ export type SchemaChangeLog = {
   affectedEntityId: string | null;
   changePayload: Record<string, unknown>;
   approvalStatus: SchemaChangeApprovalStatus;
-  requesterPlatformUserId: string;
+  /** Proponente: uno de los dos, según la población de la sesión que propuso. */
+  requesterPlatformUserId: string | null;
+  /** Opcionales mientras un backend anterior a A4 pueda responder sin ellos. */
+  requesterInternalUserId?: string | null;
   approvedByPlatformUserId: string | null;
+  approvedByInternalUserId?: string | null;
   approvedAt: string | null;
   approvalNotes: string | null;
   changeResult: "pending" | "success" | "failed" | "rejected" | null;
   errorMessage: string | null;
   createdAt: string;
   rolledBack: boolean;
+  /** Migración que aplicó el cambio aprobado; `null` mientras no la haya. */
+  appliedByMigration?: string | null;
+  appliedAt?: string | null;
 };
 
 export type ApprovalResult = {
