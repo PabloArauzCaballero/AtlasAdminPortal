@@ -146,9 +146,9 @@ function BroadcastForm() {
             </div>
             {audience !== "internal_users" ? (
               <Field
-                label="IDs de customers (opcional)"
+                label="IDs de clientes (opcional)"
                 tooltip="Para enviar sólo a algunos clientes; vacío lo manda a todos los activos."
-                hint="Separados por coma. Vacío = todos los customers activos del tenant."
+                hint="Separados por coma. Vacío = todos los clientes activos."
               >
                 <Input
                   placeholder="12, 45, 90"
@@ -160,7 +160,7 @@ function BroadcastForm() {
               <Field
                 label="IDs de usuarios internos (opcional)"
                 tooltip="Para enviar sólo a algunas personas del equipo; vacío lo manda a todas."
-                hint="Separados por coma. Vacío = todos los usuarios internos activos del tenant."
+                hint="Separados por coma. Vacío = todos los usuarios internos activos."
               >
                 <Input
                   placeholder="3, 7"
@@ -185,7 +185,7 @@ function BroadcastForm() {
                 {send.data.status === "queued"
                   ? "Aceptada — entrega en curso en segundo plano."
                   : "Enviada."}{" "}
-                {send.data.targeted} destinatario(s) targeteados,{" "}
+                {send.data.targeted} destinatario(s) alcanzados,{" "}
                 {send.data.created} mensaje(s) creados (referencia{" "}
                 <code className="font-mono">{send.data.broadcastId}</code>).
               </p>

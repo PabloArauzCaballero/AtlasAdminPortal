@@ -10,34 +10,34 @@ import type { BroadcastAudience, NotificationChannel } from "./types";
 export const CHANNEL_OPTIONS: (Option & { value: NotificationChannel })[] = [
   {
     value: "in_app",
-    label: "in_app",
+    label: "En la app",
     description:
       "Aparece en la bandeja de avisos dentro de la app o del portal.",
   },
   {
     value: "push",
-    label: "push",
+    label: "Push",
     description:
       "Notificación del sistema en el móvil, aunque la app esté cerrada.",
   },
   {
     value: "email",
-    label: "email",
+    label: "Correo",
     description: "Correo al buzón registrado; para lo que necesita constancia.",
   },
   {
     value: "sms",
-    label: "sms",
+    label: "SMS",
     description: "Mensaje de texto al teléfono; corto y con coste por envío.",
   },
   {
     value: "whatsapp",
-    label: "whatsapp",
+    label: "WhatsApp",
     description: "Mensaje por WhatsApp con plantilla aprobada por Meta.",
   },
   {
     value: "phone",
-    label: "phone",
+    label: "Llamada",
     description: "Llamada de voz; sólo para avisos que no admiten demora.",
   },
 ];
@@ -45,47 +45,47 @@ export const CHANNEL_OPTIONS: (Option & { value: NotificationChannel })[] = [
 export const MESSAGE_STATUS_OPTIONS: Option[] = [
   {
     value: "pending",
-    label: "pending",
+    label: "Pendiente",
     description: "Creado pero todavía no puesto en la cola de envío.",
   },
   {
     value: "queued",
-    label: "queued",
+    label: "En cola",
     description: "En la cola, esperando turno del trabajador de envío.",
   },
   {
     value: "sending",
-    label: "sending",
+    label: "Enviándose",
     description: "El proveedor lo está enviando en este momento.",
   },
   {
     value: "sent",
-    label: "sent",
+    label: "Enviado",
     description: "El proveedor lo aceptó; aún sin confirmar la entrega.",
   },
   {
     value: "delivered",
-    label: "delivered",
+    label: "Entregado",
     description: "El proveedor confirmó que llegó al destinatario.",
   },
   {
     value: "read",
-    label: "read",
+    label: "Leído",
     description: "El destinatario lo abrió (sólo canales que lo informan).",
   },
   {
     value: "failed",
-    label: "failed",
+    label: "Fallido",
     description: "Falló sin más reintentos; hay que revisar el motivo.",
   },
   {
     value: "retrying",
-    label: "retrying",
+    label: "Reintentando",
     description: "Falló una vez y se volverá a intentar automáticamente.",
   },
   {
     value: "cancelled",
-    label: "cancelled",
+    label: "Cancelado",
     description: "Anulado antes de enviarse; no llegará a nadie.",
   },
 ];
@@ -93,27 +93,27 @@ export const MESSAGE_STATUS_OPTIONS: Option[] = [
 export const RECIPIENT_TYPE_OPTIONS: Option[] = [
   {
     value: "customer",
-    label: "customer",
+    label: "Cliente",
     description: "Un cliente final de la app de Atlas.",
   },
   {
     value: "merchant",
-    label: "merchant",
+    label: "Comercio",
     description: "Un comercio socio o uno de sus usuarios del ERP.",
   },
   {
     value: "internal_user",
-    label: "internal_user",
+    label: "Persona del equipo",
     description: "Una persona del equipo interno que usa este portal.",
   },
   {
     value: "operations",
-    label: "operations",
+    label: "Buzón de operaciones",
     description: "Un buzón del equipo de operaciones, no una persona.",
   },
   {
     value: "system",
-    label: "system",
+    label: "Sistema",
     description: "Otro servicio de la plataforma, sin persona detrás.",
   },
 ];
@@ -121,7 +121,7 @@ export const RECIPIENT_TYPE_OPTIONS: Option[] = [
 export const AUDIENCE_OPTIONS: (Option & { value: BroadcastAudience })[] = [
   {
     value: "customers",
-    label: "Todos los customers",
+    label: "Todos los clientes",
     description:
       "Sólo clientes de la app; vacío en IDs llega a todos los activos.",
   },
@@ -133,7 +133,7 @@ export const AUDIENCE_OPTIONS: (Option & { value: BroadcastAudience })[] = [
   },
   {
     value: "both",
-    label: "Customers + usuarios internos",
+    label: "Clientes y usuarios internos",
     description:
       "Clientes y equipo interno a la vez; revisa bien antes de enviar.",
   },

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
+import { apiErrorText } from "@/shared/api/errors";
+import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
@@ -93,13 +95,20 @@ export function PolicyCard({
               {policy.isActive ? "activo" : "inactivo"}
             </Badge>
             {!editing ? (
-              <Button
-                variant="secondary"
-                onClick={onEdit}
-                data-testid={`edit-${policy.eventCode}-${policy.channel}`}
+              // Declarar un aviso irrenunciable es gestión: el servidor sólo lo acepta de quien
+              // tiene `governance.policies.manage`, y un botón que siempre acaba en 403 no ayuda.
+              <PermissionGate
+                permissions={["governance.policies.manage"]}
+                fallback={null}
               >
-                Editar
-              </Button>
+                <Button
+                  variant="secondary"
+                  onClick={onEdit}
+                  data-testid={`edit-${policy.eventCode}-${policy.channel}`}
+                >
+                  Editar
+                </Button>
+              </PermissionGate>
             ) : null}
           </div>
         </div>
@@ -211,8 +220,11 @@ export function PolicyCard({
             </div>
 
             {mutation.error ? (
-              <p className="text-xs font-medium text-red-600">
-                No pudimos guardar. Revisa los datos e intenta otra vez.
+              <p role="alert" className="text-xs font-medium text-red-600">
+                {apiErrorText(
+                  mutation.error,
+                  "No pudimos guardar. Revisa los datos e intenta otra vez.",
+                )}
               </p>
             ) : null}
           </div>

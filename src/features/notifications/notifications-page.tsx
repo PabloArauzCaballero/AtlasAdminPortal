@@ -74,9 +74,10 @@ function AuthorizedNotificationsPage() {
         Esta vista muestra los mensajes que el sistema genera automáticamente a
         partir de eventos de negocio (una alerta de proveedor, una revisión
         manual abierta, un onboarding completado, etc.) y a quién se les envió.
-        No es un chat: los mensajes los dispara el backend según reglas de
-        negocio, no se redactan desde aquí. Sirve para auditar qué se comunicó,
-        confirmar que llegó, y reintentar o cancelar entregas.
+        No es un chat: estos mensajes los dispara Atlas según reglas de negocio;
+        lo único que se redacta desde aquí es el aviso de la pestaña «Enviar
+        notificación». Sirve para auditar qué se comunicó, confirmar que llegó,
+        y reintentar o cancelar entregas.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
       {activeTab === "Mensajes" ? (
@@ -90,7 +91,7 @@ function AuthorizedNotificationsPage() {
                 name: "status",
                 label: "Estado",
                 tooltip:
-                  "En qué punto del envío está cada mensaje; «failed» es lo que hay que revisar.",
+                  "En qué punto del envío está cada mensaje; los fallidos son los que hay que revisar.",
                 value: status,
                 options: MESSAGE_STATUS_OPTIONS,
               },

@@ -33,3 +33,18 @@ export class AtlasApiError extends Error {
 export function isAtlasApiError(error: unknown): error is AtlasApiError {
   return error instanceof AtlasApiError;
 }
+
+/**
+ * El texto que una pantalla enseña cuando su petición falla.
+ *
+ * Varias pantallas decían «Reintenta en unos segundos» ante CUALQUIER error, también ante un 403: la
+ * persona reintentaba, volvía a fallar y nadie sabía que lo que faltaba era un permiso. El servidor
+ * ya explica en `message` qué pasó (qué permiso falta, qué campo sobra); se enseña eso, y el texto
+ * genérico sólo cuando el fallo no llegó del servidor (red caída, respuesta ilegible).
+ */
+export function apiErrorText(error: unknown, fallback: string): string {
+  if (!isAtlasApiError(error)) return fallback;
+  if (error.status === 403)
+    return `${error.message} Pide el acceso a quien administra los usuarios internos; reintentar no lo cambia.`;
+  return error.message || fallback;
+}
