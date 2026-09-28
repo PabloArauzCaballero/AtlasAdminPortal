@@ -4,14 +4,15 @@ import {
   CAPACIDAD_OPTIONS,
   CUALQUIER_COLA,
   NIVEL_OPTIONS,
+  PRESENCIA_OPTIONS,
   queueOptions,
 } from "./support-options";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Select } from "@/shared/components/ui/input";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import {
@@ -20,15 +21,20 @@ import {
   useSupportAgents,
   useSupportQueues,
 } from "./hooks";
+import { legible } from "./labels";
+import { SelectorUsuarioInterno } from "./internal-user-picker";
 import { AccesoASoporte } from "./support-access-state";
+import type { Option } from "@/shared/lib/options";
 import { UserPlus } from "lucide-react";
 
 /**
- * La pantalla que faltaba en todo el circuito.
+ * Quién atiende en la mesa.
  *
- * `support.support_agent_profiles` no la escribía ningún endpoint: el rol interno abre las rutas de
- * soporte, pero atender exige perfil, y crearlo era escribir SQL a mano contra la base. El síntoma
- * era una bandeja que respondía 403 a un administrador con todos los permisos.
+ * Desde el autoalta del servidor (`support-agent-enrollment.service.ts`), quien tiene el rol de
+ * soporte o uno de administración (SUPER_ADMIN, SYSTEMS_ADMIN, INTERNAL_IDENTITY_ADMIN) recibe su
+ * perfil de agente solo la primera vez que entra en la mesa. Esta pantalla queda para lo que el
+ * autoalta no hace: habilitar a alguien sin esos roles, ajustar nivel y capacidad, dar de baja, y
+ * reactivar a quien se dio de baja (el autoalta respeta la baja y no lo recrea).
  *
  * Sólo la ven `admin` y `platform_admin` en el backend: habilitar agentes decide quién puede LEER
  * expedientes de soporte, y dentro de un expediente está la conversación completa con el cliente.
@@ -45,6 +51,15 @@ export function SupportAgentsPage() {
   const [maxConcurrentChannels, setMaxConcurrentChannels] = useState("3");
 
   const listo = /^[1-9][0-9]*$/.test(internalUserId.trim());
+  const yaEnLaMesa = useMemo(
+    () =>
+      new Set(
+        (agentes.data?.agents ?? [])
+          .filter((agente) => agente.isActive)
+          .map((agente) => agente.internalUserId),
+      ),
+    [agentes.data],
+  );
 
   return (
     <>
@@ -55,13 +70,13 @@ export function SupportAgentsPage() {
         description="Quién está habilitado para atender casos de soporte, con qué nivel, en qué cola y con cuánta capacidad."
       />
       <BusinessContextNote>
-        Tener rol interno no basta para atender: hace falta un perfil de agente.
-        Sin él, toda la sección de soporte responde 403{" "}
-        <code>SUPPORT_AGENT_PROFILE_REQUIRED</code>, también a un administrador.
-        Dar de baja a alguien no borra su historia: apaga el perfil y libera su
-        capacidad, y las asignaciones y eventos ya escritos siguen apuntando al
-        mismo identificador, que es lo que permite auditar después quién atendió
-        qué.
+        Quien tiene el rol de soporte o de administración entra en la mesa solo:
+        su perfil de agente se crea la primera vez que abre esta sección. Aquí
+        se habilita a otras personas, se ajusta su nivel y capacidad, y se da de
+        baja o se reactiva a alguien. Dar de baja no borra su historia: apaga el
+        perfil y libera su capacidad, y los casos y eventos que atendió siguen a
+        su nombre. Una baja se respeta aunque la persona conserve su rol: sólo
+        vuelve si alguien la reactiva desde aquí.
       </BusinessContextNote>
 
       <section className="mb-6 rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
@@ -85,18 +100,11 @@ export function SupportAgentsPage() {
             );
           }}
         >
-          <Field
-            label="ID de usuario interno"
-            tooltip="Número del usuario interno que va a atender; sin perfil de agente la bandeja le responde 403."
-            hint="El identificador de iam.internal_users, no el correo."
-          >
-            <Input
-              value={internalUserId}
-              inputMode="numeric"
-              placeholder="Ej: 3"
-              onChange={(event) => setInternalUserId(event.target.value)}
-            />
-          </Field>
+          <SelectorUsuarioInterno
+            value={internalUserId}
+            onChange={setInternalUserId}
+            yaEnLaMesa={yaEnLaMesa}
+          />
           <Field
             label="Nivel"
             tooltip="Qué casos puede ver y a quién le llegan sus escalados; decide su alcance en la mesa."
@@ -170,7 +178,7 @@ export function SupportAgentsPage() {
       {agentes.data && agentes.data.agents.length === 0 ? (
         <EmptyState
           title="No hay ningún agente habilitado."
-          description="Mientras la mesa esté vacía, la bandeja de soporte responde 403 a todo el mundo y ninguna conversación se reparte: el enrutado sólo reserva agentes con perfil activo y presencia AVAILABLE."
+          description="Nadie ha entrado todavía en la mesa. Quien tenga rol de soporte o de administración aparecerá aquí al abrir la bandeja; mientras tanto, las conversaciones de los clientes esperan porque sólo se reparten a agentes activos y disponibles."
         />
       ) : null}
 
@@ -196,7 +204,8 @@ export function SupportAgentsPage() {
                 </Badge>
               </div>
               <p className="text-xs text-atlas-muted">
-                Nivel {agente.supportLevel} · presencia {agente.presenceState}
+                {etiqueta(NIVEL_OPTIONS, agente.supportLevel)} ·{" "}
+                {etiqueta(PRESENCIA_OPTIONS, agente.presenceState)}
               </p>
               <p className="text-xs text-atlas-muted">
                 Ocupación {agente.activeChannelCount} de{" "}
@@ -205,7 +214,11 @@ export function SupportAgentsPage() {
               {agente.isActive ? (
                 <Button
                   className="h-8 w-full px-2 text-xs"
-                  isLoading={dardebaja.isPending}
+                  isLoading={
+                    dardebaja.isPending &&
+                    dardebaja.variables === agente.agentProfileId
+                  }
+                  disabled={dardebaja.isPending}
                   onClick={() => dardebaja.mutate(agente.agentProfileId)}
                 >
                   Quitar de la mesa
@@ -220,5 +233,12 @@ export function SupportAgentsPage() {
         <p className="mt-3 text-xs text-red-700">{dardebaja.error.message}</p>
       ) : null}
     </>
+  );
+}
+
+/** El nombre de un código de nivel o presencia; si el mapa no lo tiene, en texto corrido. */
+function etiqueta(opciones: Option[], codigo: string): string {
+  return (
+    opciones.find((opcion) => opcion.value === codigo)?.label ?? legible(codigo)
   );
 }

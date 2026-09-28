@@ -3,12 +3,10 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
-import {
-  Badge,
-  SeverityBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
+import { Badge } from "@/shared/components/ui/badges";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+import { tipoCaso } from "./labels";
+import { EstadoCasoBadge, PrioridadBadge } from "./support-badges";
 import type { SupportCase } from "./types";
 
 /**
@@ -61,8 +59,8 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
           <p className="truncate text-xs" title={row.original.title}>
             {safeText(row.original.title)}
           </p>
-          <p className="truncate font-mono text-[0.6875rem] text-atlas-muted">
-            {safeText(row.original.caseType)}
+          <p className="truncate text-[0.6875rem] text-atlas-muted">
+            {tipoCaso(row.original.caseType)}
           </p>
         </div>
       ),
@@ -70,12 +68,14 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
     {
       header: "Prioridad",
       accessorKey: "priority",
-      cell: ({ row }) => <SeverityBadge value={row.original.priority} />,
+      cell: ({ row }) => <PrioridadBadge value={row.original.priority} />,
     },
     {
       header: "Estado",
       accessorKey: "internalStatus",
-      cell: ({ row }) => <StatusBadge value={row.original.internalStatus} />,
+      cell: ({ row }) => (
+        <EstadoCasoBadge value={row.original.internalStatus} />
+      ),
     },
     {
       header: "Sensibilidad",
@@ -83,6 +83,10 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
       cell: ({ row }) => <SensibilidadBadge value={row.original.sensitivity} />,
     },
     {
+      /*
+       * La ficha del caso sólo trae el número de perfil del agente, no su nombre: se enseña el
+       * número tal cual en vez de inventar un nombre que la respuesta no trae.
+       */
       header: "Agente",
       accessorKey: "assigneeAgentId",
       cell: ({ row }) =>

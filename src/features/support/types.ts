@@ -16,8 +16,8 @@ export type SupportCase = {
   title: string;
   caseType: string;
   domain: string;
+  /** Lo que ve el cliente, ya en palabras («Necesitamos tu respuesta»). El estado real es `internalStatus`. */
   status: string;
-  customerStatus: string;
   openedAt: string;
   lastActivityAt: string | null;
   resolvedAt: string | null;
@@ -115,22 +115,31 @@ export type SupportLiveEvent = {
   data: Record<string, unknown>;
 };
 
+/**
+ * Un evento de la historia, tal como lo proyecta `toCaseEventDto`.
+ *
+ * No trae `eventId` ni quién fue en concreto (`actorId`): la identidad es `sequence`, la posición
+ * del evento en la cadena de hash del caso, y del actor sólo viaja el tipo.
+ */
 export type SupportCaseEvent = {
-  eventId: string;
+  sequence: string;
   eventType: string;
   actorType: string;
-  actorId: string | null;
-  occurredAt: string;
+  occurredAt: string | null;
   payload: Record<string, unknown> | null;
+  eventHash: string;
 };
 
+/** `toAssignmentDto`: la razón viaja como `reason`, y la de la liberación aparte. */
 export type SupportAssignment = {
   assignmentId: string;
+  assigneeType: string;
   agentProfileId: string | null;
   queueId: string | null;
   assignedAt: string | null;
   releasedAt: string | null;
-  assignmentReason: string | null;
+  reason: string | null;
+  releaseReason: string | null;
 };
 
 export type SupportCaseDetail = SupportCase & {
@@ -272,4 +281,13 @@ export type CreateAgentInput = {
   supportLevel: string;
   queueCode?: string;
   maxConcurrentChannels: number;
+};
+
+/** Lo que el selector de «Habilitar a una persona» necesita de un usuario interno. */
+export type InternalUserForDesk = {
+  id: string;
+  email: string;
+  fullName: string;
+  status: string;
+  roles: string[];
 };

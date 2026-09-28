@@ -1,11 +1,12 @@
 import type { Option } from "@/shared/lib/options";
+import { prioridad, sujeto } from "./labels";
 import type { SupportCodeOption, SupportQueue } from "./types";
 
 /**
  * Las listas de la mesa de soporte, con lo que significa cada opción.
  *
- * Las colas y los códigos llegan del backend: una cola es una ENTIDAD, así que su descripción es
- * su ficha (código · contexto · prioridad por defecto) y no un texto inventado. Los códigos de
+ * Las colas y los códigos llegan del servidor: una cola es una ENTIDAD, así que su descripción es
+ * su ficha (a quién atiende · prioridad por defecto) y no un texto inventado. Los códigos de
  * resolución y prioridad traen su propia explicación en `label`, que es justo la descripción.
  */
 export function queueOptions(
@@ -17,18 +18,42 @@ export function queueOptions(
     label: cola.name,
     description:
       cola.description ??
-      `${cola.queueCode} · contexto ${cola.contextType} · prioridad por defecto ${cola.defaultPriority}`,
+      `Atiende a ${sujeto(cola.contextType)} · prioridad por defecto ${prioridad(cola.defaultPriority).label}`,
   }));
 }
 
-/** El código es la etiqueta; lo que el backend llama `label` es la explicación. */
-export function codeOptions(codes: SupportCodeOption[]): Option[] {
+/**
+ * Los códigos de resolución, causa raíz y prioridad llegan con su explicación en `label`.
+ *
+ * El código (`APPLICATION_DEFECT`) no se enseña: es el nombre interno. Si hay un nombre corto
+ * propio (la prioridad: «P1 · Crítica») va de etiqueta y la explicación debajo; si no, la
+ * explicación del catálogo ES la etiqueta.
+ */
+export function codeOptions(
+  codes: SupportCodeOption[],
+  nombre?: (code: string) => string,
+): Option[] {
   return codes.map((codigo) => ({
     value: codigo.code,
-    label: codigo.code,
-    description: codigo.label,
+    label: nombre ? nombre(codigo.code) : sinPuntoFinal(codigo.label),
+    description: nombre ? codigo.label : undefined,
   }));
 }
+
+function sinPuntoFinal(texto: string): string {
+  return texto.trim().replace(/\.$/, "");
+}
+
+/** El filtro de causa raíz, con TODAS las causas que el catálogo del servidor conoce. */
+export function causaRaizFiltroOptions(codes: SupportCodeOption[]): Option[] {
+  return [CUALQUIER_CAUSA, ...codeOptions(codes)];
+}
+
+const CUALQUIER_CAUSA: Option = {
+  value: "",
+  label: "Cualquiera",
+  description: "Sin filtrar por causa raíz, resueltos o no.",
+};
 
 export const SIN_CAMBIAR: Option = {
   value: "",
@@ -72,12 +97,12 @@ export const PRESENCIA_OPTIONS: Option[] = [
 export const NIVEL_OPTIONS: Option[] = [
   {
     value: "L1",
-    label: "L1",
+    label: "Primera línea (L1)",
     description: "Primera línea: atiende y resuelve lo frecuente del cliente.",
   },
   {
     value: "L2",
-    label: "L2",
+    label: "Segunda línea (L2)",
     description: "Segunda línea: recibe lo que L1 no puede cerrar.",
   },
   {
@@ -150,51 +175,23 @@ export const PRIORIDAD_FILTRO_OPTIONS: Option[] = [
   },
   {
     value: "P1",
-    label: "P1",
+    label: "P1 · Crítica",
     description: "Crítica: el cliente no puede operar; se atiende ya.",
   },
   {
     value: "P2",
-    label: "P2",
+    label: "P2 · Alta",
     description: "Alta: afecta a una operación importante del cliente.",
   },
   {
     value: "P3",
-    label: "P3",
+    label: "P3 · Normal",
     description: "Normal: molesta pero el cliente puede seguir operando.",
   },
   {
     value: "P4",
-    label: "P4",
+    label: "P4 · Baja",
     description: "Baja: consulta o mejora sin impacto en la operación.",
-  },
-];
-
-export const CAUSA_RAIZ_FILTRO_OPTIONS: Option[] = [
-  {
-    value: "",
-    label: "Cualquiera",
-    description: "Sin filtrar por causa raíz, resueltos o no.",
-  },
-  {
-    value: "UNKNOWN",
-    label: "Sin determinar (UNKNOWN)",
-    description: "Se resolvió sin llegar a saber por qué pasó.",
-  },
-  {
-    value: "APPLICATION_DEFECT",
-    label: "Defecto de la aplicación",
-    description: "Un error del producto de Atlas lo provocó.",
-  },
-  {
-    value: "THIRD_PARTY",
-    label: "Proveedor externo",
-    description: "Falló un servicio de terceros (banco, pasarela, SMS).",
-  },
-  {
-    value: "USER_MISUNDERSTANDING",
-    label: "Malentendido del usuario",
-    description: "Todo funcionaba; el cliente entendió mal cómo se usa.",
   },
 ];
 
