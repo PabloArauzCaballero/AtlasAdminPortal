@@ -39,6 +39,11 @@ export type NetworkBlockHealth = {
     endpoints: number;
     dataEntities: number;
     federationStatus: string;
+    /**
+     * Si los contadores son una medición. Falta en backends anteriores: entonces se deduce de
+     * `lastSuccessAt` (ver `isCatalogMeasured`).
+     */
+    measured?: boolean;
     federationMessage: string | null;
     lastAttemptAt: string | null;
     lastSuccessAt: string | null;
