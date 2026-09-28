@@ -82,6 +82,15 @@ export default defineConfig({
    * HTML y no hay forma de leer la corrida completa.
    */
   workers: process.env.CI ? 1 : undefined,
+  /*
+   * Dos topes que existen para que un fallo sistémico se VEA en vez de morir en silencio. El
+   * 2026-09-28 el fragmento 1 se pasó de los 45 min del job: 35 rutas × 90 s × reintento, sin un
+   * mensaje en el log y sin informe, porque GitHub canceló el job antes de que Playwright acabara.
+   * Con `globalTimeout` Playwright termina él (rojo, con blob-report) antes de que el runner lo mate;
+   * con `maxFailures` una rotura que afecta a todo deja de gastar el reloj tras los primeros casos.
+   */
+  globalTimeout: process.env.CI ? 35 * 60_000 : undefined,
+  maxFailures: process.env.CI ? 10 : 0,
   reporter: process.env.CI
     ? [["list"], ["blob"], ["github"]]
     : [["list"], ["html", { open: "never" }]],

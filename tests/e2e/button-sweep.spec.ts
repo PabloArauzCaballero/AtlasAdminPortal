@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { capture, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
@@ -65,6 +65,28 @@ const ROUTES = [
  */
 const MAX_CONTROLS = 30;
 
+/**
+ * Cierra el diálogo que un control haya abierto. Primero Escape (el patrón de todos los modales
+ * del portal), después el botón de cierre del propio diálogo. Se comprueba que se cerró: si un
+ * diálogo no se puede cerrar, es un defecto que la prueba debe enseñar, no esquivar.
+ */
+async function cerrarDialogosAbiertos(page: Page): Promise<void> {
+  const dialog = page.getByRole("dialog").last();
+  if (!(await dialog.isVisible({ timeout: 500 }).catch(() => false))) return;
+  await page.keyboard.press("Escape").catch(() => undefined);
+  if (!(await dialog.isVisible({ timeout: 500 }).catch(() => false))) return;
+  const cierre = dialog
+    .getByRole("button", { name: /^(cerrar|cancelar|close)\b/i })
+    .first();
+  if (await cierre.isVisible({ timeout: 500 }).catch(() => false)) {
+    await cierre.click({ timeout: 3_000 }).catch(() => undefined);
+  }
+  await expect(
+    dialog,
+    "un diálogo abierto por un control no se pudo cerrar con Escape ni con su botón",
+  ).toBeHidden({ timeout: 3_000 });
+}
+
 test.describe("recorrido de controles", () => {
   test.skip(Boolean(motivoParaSaltar()), motivoParaSaltar());
 
@@ -104,11 +126,13 @@ test.describe("recorrido de controles", () => {
           .catch(() => undefined);
         pressed.push(label.slice(0, 40));
 
-        // Un diálogo abierto tapa el resto de la pantalla: se cierra antes de seguir.
-        const cancel = page.getByRole("button", { name: /^cancelar$/i });
-        if (await cancel.isVisible({ timeout: 500 }).catch(() => false)) {
-          await cancel.click().catch(() => undefined);
-        }
+        // Un diálogo abierto tapa el resto de la pantalla (el fondo queda `inert`): se cierra antes
+        // de seguir. Antes sólo se buscaba «Cancelar»; el 2026-09-28 el asistente (#52) puso en
+        // TODAS las vistas un botón que abre un diálogo cuyo cierre es «Cerrar asistente», y el
+        // barrido se quedó pulsando contra un fondo inerte: cada clic agotaba su plazo, cada ruta
+        // el suyo, y el fragmento 1 superó los 45 min del job sin un solo mensaje. Ahora se cierra
+        // cualquier diálogo abierto, por Escape y, si sigue, por su propio botón de cierre.
+        await cerrarDialogosAbiertos(page);
       }
 
       testInfo.annotations.push({

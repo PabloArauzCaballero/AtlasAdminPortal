@@ -201,7 +201,7 @@ jobs:
           if [ -d public ]; then cp -R public .next/standalone/public; fi
 
       - name: Correr E2E
-        run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=blob,json
+        run: yarn playwright test --shard=${{ matrix.shard }}/2 --reporter=list,blob,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
 
@@ -242,17 +242,20 @@ jobs:
       # Playwright escribe los ARGUMENTOS de cada acción en el título de su paso, así que el
       # `fill(TEST_PASSWORD)` del setup queda en report.jsonl de todos los fragmentos. Se sustituyen
       # las claves por *** y DESPUÉS el guardián vuelve a buscarlas: si queda alguna, aborta.
+      # También cuando el fragmento FALLA: un fragmento rojo sin informe obliga a adivinar qué
+      # rompió (2026-09-28: tres corridas canceladas y ni un artefacto). Se redacta y se comprueba
+      # ANTES de subir, igual que en verde; si la redacción no puede garantizarlo, no se sube.
       - name: Retirar las claves QA del reporte
-        if: success()
+        if: ${{ !cancelled() }}
         run: python3 scripts/redact-e2e-secrets.py blob-report/
 
       - name: Comprobar que el reporte no conserva la clave QA
-        if: success()
+        if: ${{ !cancelled() }}
         run: python3 scripts/assert-no-e2e-secret.py blob-report/
 
       - name: Subir el informe parcial del fragmento
         uses: actions/upload-artifact@v7
-        if: success()
+        if: ${{ !cancelled() }}
         with:
           name: blob-report-${{ matrix.shard }}
           path: blob-report/
@@ -262,7 +265,10 @@ jobs:
   # completa, sólo mitades sueltas.
   informe:
     name: Unir los informes de los fragmentos
-    if: success()
+    # Se une también cuando un fragmento falló, para que el informe completo exista; el resultado
+    # del trabajo sigue siendo el de los fragmentos (último paso). Un fragmento CANCELADO o SALTADO
+    # cuenta como fallo: ese caso es justo el que antes salía «verde a medias».
+    if: ${{ !cancelled() }}
     needs: [e2e]
     runs-on: ubuntu-latest
     steps:
@@ -284,3 +290,8 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+      - name: Exigir que TODOS los fragmentos terminaran en verde
+        if: needs.e2e.result != 'success'
+        run: |
+          echo "::error::Fragmentos E2E: ${{ needs.e2e.result }} (hace falta success en todos)"
+          exit 1
