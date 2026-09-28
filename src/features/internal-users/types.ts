@@ -21,7 +21,21 @@ export type InternalUsersListResponse = {
   pagination?: PaginationMeta;
 };
 
-export type InternalUserProfile = { user: InternalUserListItem };
+/**
+ * El bloqueo AUTOMÁTICO por intentos fallidos (`auth_credentials.locked_until`), que no es el
+ * estado `locked` del usuario: ése lo pone un administrador. Lo manda `GET /internal/users/:id`;
+ * es opcional porque otras respuestas del mismo perfil (alta, edición de roles) no lo traen.
+ */
+export type InternalUserLockState = {
+  locked: boolean;
+  lockedUntil: string | null;
+  failedLoginAttempts: number;
+};
+
+export type InternalUserProfile = {
+  user: InternalUserListItem;
+  lock?: InternalUserLockState;
+};
 
 export type InternalUserDepartment =
   | "OPERATIONS"
