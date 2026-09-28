@@ -7,6 +7,8 @@ import { Card } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { explainStatus } from "./finding-codes";
+import { leerJsonObjeto } from "./provider-display";
 import { RequestResultCard } from "./request-result-card";
 import {
   useApproveRequestMutation,
@@ -30,10 +32,16 @@ export function ApproveRequestTab() {
      */
     <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
-        Aprueba una solicitud bloqueada por política de costo o que requiere
-        revisión manual, permitiendo su ejecución. Solo{" "}
-        <span className="font-mono">admin</span>/
-        <span className="font-mono">platform_admin</span>.
+        Aprueba una solicitud frenada por política de costo o que espera
+        revisión manual. Aprobar NO la ejecuta: queda aprobada y hay que volver
+        a lanzarla. Sólo pueden hacerlo los administradores de la plataforma.
+      </p>
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        Sólo se aprueban solicitudes en «
+        {explainStatus("MANUAL_APPROVAL_REQUIRED").label}», «
+        {explainStatus("BLOCKED_BY_COST_POLICY").label}» o «
+        {explainStatus("PENDING").label}». Comprueba su estado en el listado
+        antes: cualquier otra se rechaza.
       </p>
       <Field
         tooltip="Número de la solicitud al proveedor que quieres aprobar."
@@ -93,13 +101,32 @@ export function ApproveRequestTab() {
 
 export function RetryRequestTab() {
   const [requestId, setRequestId] = useState("");
+  const [inputJson, setInputJson] = useState("");
+  const [jsonError, setJsonError] = useState<string | null>(null);
   const retry = useRetryRequestMutation();
+
+  function reintentar() {
+    // Obligatorio: por privacidad el backend no guarda los datos originales y, sin ellos,
+    // responde 400 (RETRY_REQUIRES_NEW_INPUT). Se valida aquí para no gastar el viaje.
+    const lectura = leerJsonObjeto(inputJson, { obligatorio: true });
+    if (!lectura.ok) {
+      setJsonError(lectura.error);
+      return;
+    }
+    setJsonError(null);
+    retry.mutate({
+      requestId: requestId.trim(),
+      body: { input: lectura.value },
+    });
+  }
 
   return (
     <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
-        Reintenta una solicitud fallida a un proveedor externo, reutilizando sus
-        parámetros originales.
+        Vuelve a lanzar una solicitud a un proveedor externo. Reutiliza el
+        proveedor, el tipo de consulta, el cliente y la finalidad de la
+        original, pero NO sus datos: por privacidad no se guardan, así que hay
+        que escribirlos de nuevo.
       </p>
       <Field
         tooltip="Número de la solicitud al proveedor que quieres reintentar."
@@ -112,6 +139,21 @@ export function RetryRequestTab() {
           className="font-mono text-xs"
         />
       </Field>
+      <Field
+        tooltip="Los datos que se envían otra vez al proveedor, como objeto JSON entre llaves."
+        label="Datos de la consulta (JSON)"
+        hint="Obligatorio. P. ej. el número de documento que se consultó."
+      >
+        <Textarea
+          value={inputJson}
+          onChange={(event) => setInputJson(event.target.value)}
+          placeholder='{"documentNumber": "1234567"}'
+          className="min-h-24 font-mono text-xs"
+        />
+      </Field>
+      {jsonError ? (
+        <ErrorState title="Revisa los datos" description={jsonError} />
+      ) : null}
       {retry.error ? (
         <ErrorState
           title="No se pudo reintentar la solicitud"
@@ -127,10 +169,10 @@ export function RetryRequestTab() {
       ) : null}
       <Button
         variant="primary"
-        disabled={!requestId.trim()}
+        disabled={!requestId.trim() || !inputJson.trim()}
         isLoading={retry.isPending}
         loadingText="Reintentando…"
-        onClick={() => retry.mutate({ requestId: requestId.trim(), body: {} })}
+        onClick={reintentar}
       >
         <RotateCw className="h-4 w-4" aria-hidden />
         Reintentar solicitud
@@ -149,8 +191,8 @@ export function RebuildFeaturesTab() {
   return (
     <Card className="max-w-2xl space-y-4 p-5">
       <p className="text-sm text-atlas-muted">
-        Recalcula el snapshot de features a partir de la respuesta ya almacenada
-        de una solicitud, sin volver a consultar al proveedor.
+        Recalcula los indicadores que se sacan de una solicitud a partir de la
+        respuesta ya guardada, sin volver a consultar al proveedor.
       </p>
       <Field
         tooltip="Número de la solicitud al proveedor sobre la que actúas."
@@ -165,7 +207,7 @@ export function RebuildFeaturesTab() {
       </Field>
       {rebuild.error ? (
         <ErrorState
-          title="No se pudo reconstruir el snapshot"
+          title="No se pudieron recalcular los indicadores"
           description={
             isAtlasApiError(rebuild.error)
               ? rebuild.error.message
@@ -180,15 +222,15 @@ export function RebuildFeaturesTab() {
         variant="primary"
         disabled={!requestId.trim()}
         isLoading={rebuild.isPending}
-        loadingText="Reconstruyendo…"
+        loadingText="Recalculando…"
         onClick={() => rebuild.mutate(requestId.trim())}
       >
         <RefreshCcwDot className="h-4 w-4" aria-hidden />
-        Reconstruir features
+        Recalcular indicadores
       </Button>
       {rebuild.data ? (
         <RequestResultCard
-          title="Features reconstruidos"
+          title="Indicadores recalculados"
           result={rebuild.data}
         />
       ) : null}

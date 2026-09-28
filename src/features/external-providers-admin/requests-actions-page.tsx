@@ -17,7 +17,7 @@ const tabs = [
   "Listado",
   "Aprobar",
   "Reintentar",
-  "Reconstruir features",
+  "Recalcular indicadores",
   "Vista previa de política",
 ];
 
@@ -35,15 +35,14 @@ export function RequestsActionsPage() {
       <BusinessContextNote>
         Las acciones trabajan sobre UNA solicitud, identificada por su ID. El
         listado es de dónde se saca: cada fila copia su identificador con un
-        clic. Aprobar y editar costos está restringido a{" "}
-        <span className="font-mono">admin</span>/
-        <span className="font-mono">platform_admin</span> en el backend.
+        clic. Aprobar y editar costos sólo lo pueden hacer los administradores
+        de la plataforma.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
       {activeTab === "Listado" ? <RequestsListTab /> : null}
       {activeTab === "Aprobar" ? <ApproveRequestTab /> : null}
       {activeTab === "Reintentar" ? <RetryRequestTab /> : null}
-      {activeTab === "Reconstruir features" ? <RebuildFeaturesTab /> : null}
+      {activeTab === "Recalcular indicadores" ? <RebuildFeaturesTab /> : null}
       {activeTab === "Vista previa de política" ? <PolicyPreviewTab /> : null}
     </>
   );

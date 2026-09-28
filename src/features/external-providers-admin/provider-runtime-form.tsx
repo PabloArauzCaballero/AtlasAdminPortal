@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
+import { etiquetaDeModo } from "./provider-badges";
 import { isAtlasApiError } from "@/shared/api/errors";
 import {
   useKillSwitchMutation,
@@ -39,9 +40,15 @@ const AYUDA_ESTADO: Record<string, string> = {
   DISABLED: "Retirado del catálogo operativo.",
 };
 
+/**
+ * `modoDelEntorno`: el modo que fija la configuración del servidor cuando no coincide con el
+ * guardado. El backend ejecuta con ése (`providerModeFromEnv`) y guardar aquí respondía «guardado»
+ * sin cambiar nada de lo que corre; el aviso lo dice antes de que alguien lo descubra probando.
+ */
 export function ProviderRuntimeForm({
   provider,
-}: Readonly<{ provider: ProviderRow }>) {
+  modoDelEntorno = null,
+}: Readonly<{ provider: ProviderRow; modoDelEntorno?: string | null }>) {
   const [defaultMode, setDefaultMode] = useState<
     ProviderRuntimePatchInput["defaultMode"] | ""
   >(provider.defaultMode as ProviderRuntimePatchInput["defaultMode"]);
@@ -57,6 +64,13 @@ export function ProviderRuntimeForm({
 
   return (
     <div className="space-y-4">
+      {modoDelEntorno ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Este entorno fija el modo en{" "}
+          <strong>{etiquetaDeModo(modoDelEntorno)}</strong>; lo que guardes aquí
+          no se aplica hasta quitar esa configuración.
+        </p>
+      ) : null}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         {/*
          * Las opciones se escribían con el literal del backend (`mock_local`, `MOCK_ONLY`). El
@@ -164,7 +178,7 @@ export function ProviderRuntimeForm({
       </Field>
       {patchRuntime.error ? (
         <ErrorState
-          title="No se pudo actualizar el runtime"
+          title="No se pudo guardar el modo ni el tipo"
           description={
             isAtlasApiError(patchRuntime.error)
               ? patchRuntime.error.message
@@ -179,7 +193,9 @@ export function ProviderRuntimeForm({
       ) : null}
       {patchRuntime.isSuccess ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          Política runtime actualizada.
+          {modoDelEntorno
+            ? "Guardado, pero el modo sigue siendo el que fija el entorno."
+            : "Modo y tipo guardados."}
         </div>
       ) : null}
       <div className="flex flex-wrap gap-2">
@@ -197,16 +213,16 @@ export function ProviderRuntimeForm({
           }
         >
           <Save className="h-4 w-4" aria-hidden />
-          Guardar cambios de runtime
+          Guardar modo y tipo
         </Button>
         <Button variant="danger" onClick={() => setConfirmingKillSwitch(true)}>
           <OctagonX className="h-4 w-4" aria-hidden />
-          Kill switch de emergencia
+          Apagar de emergencia
         </Button>
       </div>
       {killSwitch.error ? (
         <ErrorState
-          title="No se pudo activar el kill switch"
+          title="No se pudo apagar el proveedor"
           description={
             isAtlasApiError(killSwitch.error)
               ? killSwitch.error.message
@@ -216,8 +232,8 @@ export function ProviderRuntimeForm({
       ) : null}
       <ConfirmDialog
         open={confirmingKillSwitch}
-        title={`Kill switch de ${provider.code}`}
-        description="Desactiva inmediatamente el proveedor (modo disabled, estado DISABLED, inactivo). Úsese ante fuga de datos o abuso de costo detectado."
+        title={`Apagar ${provider.code} de emergencia`}
+        description="Deja de llamar al proveedor de inmediato: pasa a «No llamar», queda deshabilitado e inactivo. Úsalo ante una fuga de datos o un gasto descontrolado."
         confirmText="Desactivar ahora"
         isLoading={killSwitch.isPending}
         onCancel={() => setConfirmingKillSwitch(false)}

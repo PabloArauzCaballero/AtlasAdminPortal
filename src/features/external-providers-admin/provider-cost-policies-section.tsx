@@ -9,6 +9,12 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
 import { useProviderCostPolicies, useUpdateCostPolicyMutation } from "./hooks";
+import {
+  DESCRIPCION_DE_TRAMO,
+  ETIQUETA_DE_TRAMO,
+  etiquetaTipoConsulta,
+  type TramoDeCosto,
+} from "./provider-display";
 import type { CostPolicy, CostPolicyPatchInput } from "./types";
 
 /**
@@ -28,13 +34,7 @@ const TONO_DE_TRAMO: Record<
   CRITICAL: "critical",
 };
 
-const ETIQUETA_DE_TRAMO: Record<NonNullable<CostPolicy["costTier"]>, string> = {
-  FREE: "Sin costo",
-  LOW: "Costo bajo",
-  MEDIUM: "Costo medio",
-  HIGH: "Costo alto",
-  CRITICAL: "Costo crítico",
-};
+const TRAMOS: TramoDeCosto[] = ["FREE", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
 export function ProviderCostPoliciesSection({
   providerCode,
@@ -61,8 +61,8 @@ export function ProviderCostPoliciesSection({
   if (items.length === 0) {
     return (
       <p className="text-sm text-atlas-muted">
-        Este proveedor no tiene políticas de costo configuradas — QUALITY_AUDIT
-        lo marca como hallazgo (MISSING_COST_POLICY).
+        Este proveedor no tiene políticas de costo configuradas. La auditoría de
+        calidad lo marca como hallazgo: sin política no hay tope de gasto.
       </p>
     );
   }
@@ -75,8 +75,8 @@ export function ProviderCostPoliciesSection({
           className="rounded-lg border border-atlas-border p-3 text-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono text-xs font-semibold">
-              {policy.queryType}
+            <span className="text-xs font-semibold">
+              {etiquetaTipoConsulta(policy.queryType)}
             </span>
             <div className="flex items-center gap-1.5">
               <Badge tone={policy.active ? "success" : "muted"}>
@@ -155,7 +155,7 @@ function CostPolicyEditForm({
   return (
     <div className="mt-3 space-y-3 border-t border-atlas-border pt-3">
       <Field
-        tooltip="Categoría de costo por consulta del proveedor, de FREE a CRITICAL."
+        tooltip="Cuánto cuesta cada consulta a este proveedor, de «sin costo» a «crítico»."
         label="Nivel de costo"
       >
         <Select
@@ -164,9 +164,11 @@ function CostPolicyEditForm({
           onChange={(valor) =>
             setCostTier(valor as NonNullable<CostPolicy["costTier"]>)
           }
-          options={["FREE", "LOW", "MEDIUM", "HIGH", "CRITICAL"].map(
-            (value) => ({ value, label: value }),
-          )}
+          options={TRAMOS.map((value) => ({
+            value,
+            label: ETIQUETA_DE_TRAMO[value],
+            description: DESCRIPCION_DE_TRAMO[value],
+          }))}
         />
       </Field>
       <div className="flex flex-wrap gap-3 text-xs text-atlas-text">
