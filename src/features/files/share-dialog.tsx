@@ -3,9 +3,11 @@
 import { useId, useState } from "react";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
+import { Field, Select, Textarea } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badges";
+import { explicarError } from "./errores";
 import { useCompartir, useConcesiones } from "./hooks";
+import { SelectorDePersona, useNombresDePersonas } from "./share-person-picker";
 import { NIVELES, type Nivel, type Nodo } from "./types";
 
 const NIVEL_AYUDA: Record<Nivel, string> = {
@@ -51,6 +53,10 @@ export function DialogoDeCompartir({
     abierto ? nodo.nodoId : null,
   );
   const { conceder, revocar } = useCompartir(expedienteId, nodo.nodoId);
+  const nombreDe = useNombresDePersonas(
+    expedienteId,
+    abierto ? nodo.nodoId : null,
+  );
 
   const [principalTipo, setPrincipalTipo] = useState<"rol" | "usuario_interno">(
     "rol",
@@ -101,7 +107,10 @@ export function DialogoDeCompartir({
               >
                 <span className="min-w-0">
                   <span className="font-medium text-atlas-text">
-                    {concesion.principalId}
+                    {concesion.principalTipo === "rol"
+                      ? `Rol ${concesion.principalId}`
+                      : (nombreDe(concesion.principalId) ??
+                        `Persona interna n.º ${concesion.principalId}`)}
                   </span>{" "}
                   <Badge tone="info">{concesion.nivel}</Badge>{" "}
                   {/* De dónde viene el acceso importa: una concesión heredada se quita en su carpeta,
@@ -138,9 +147,12 @@ export function DialogoDeCompartir({
               <Select
                 name="principalTipo"
                 value={principalTipo}
-                onChange={(valor) =>
-                  setPrincipalTipo(valor as "rol" | "usuario_interno")
-                }
+                onChange={(valor) => {
+                  const tipo = valor as "rol" | "usuario_interno";
+                  setPrincipalTipo(tipo);
+                  // El valor de un tipo no sirve para el otro: un código de rol no es una persona.
+                  setPrincipalId(tipo === "rol" ? ROLES_SUGERIDOS[0] : "");
+                }}
                 options={[
                   {
                     value: "rol",
@@ -185,11 +197,7 @@ export function DialogoDeCompartir({
               }))}
             />
           ) : (
-            <Input
-              value={principalId}
-              onChange={(evento) => setPrincipalId(evento.target.value)}
-              placeholder="Identificador del usuario interno"
-            />
+            <SelectorDePersona value={principalId} onChange={setPrincipalId} />
           )}
 
           <Field
@@ -238,9 +246,13 @@ export function DialogoDeCompartir({
             </p>
           ) : null}
           {conceder.isError ? (
-            <p className="text-xs text-red-700">
-              No se pudo dar el acceso. No se puede conceder un nivel superior
-              al propio.
+            <p role="alert" className="text-xs text-red-700">
+              {explicarError(conceder.error, "No se pudo dar el acceso.")}
+            </p>
+          ) : null}
+          {revocar.isError ? (
+            <p role="alert" className="text-xs text-red-700">
+              {explicarError(revocar.error, "No se pudo quitar el acceso.")}
             </p>
           ) : null}
         </section>

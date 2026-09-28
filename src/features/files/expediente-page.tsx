@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FolderPlus, Trash2, UploadCloud } from "lucide-react";
+import { FolderPlus, Trash2, UploadCloud, X } from "lucide-react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
@@ -13,6 +13,8 @@ import { CabeceraDeExpediente } from "./expediente-header";
 import { DialogoDeCompartir } from "./share-dialog";
 import { DialogoDeSubida } from "./upload-dialog";
 import { PanelDeNodo } from "./node-detail-panel";
+import { DialogoDeVaciarPapelera } from "./purge-dialog";
+import { textosDelSujeto } from "./sujeto";
 import { buildNodeColumns } from "./node-columns";
 import { useExpediente, useMutacionesDelArbol, useNodos } from "./hooks";
 import { alcanza, type Nodo } from "./types";
@@ -38,14 +40,21 @@ function ExpedienteAutorizado({
   const [subiendo, setSubiendo] = useState(false);
   const [porBorrar, setPorBorrar] = useState<Nodo | null>(null);
   const [verPapelera, setVerPapelera] = useState(false);
-  const [motivoDePurga, setMotivoDePurga] = useState<string | null>(null);
+  const [vaciando, setVaciando] = useState(false);
 
   const nodos = useNodos(expedienteId, carpeta?.nodoId ?? null, {
     q: q.trim() || undefined,
     incluirPapelera: verPapelera,
   });
-  const { crearCarpeta, renombrar, borrar, restaurar, purgar } =
-    useMutacionesDelArbol(expedienteId);
+  const {
+    crearCarpeta,
+    renombrar,
+    borrar,
+    restaurar,
+    purgar,
+    error,
+    limpiarError,
+  } = useMutacionesDelArbol(expedienteId);
 
   const columns = useMemo(
     () =>
@@ -158,12 +167,8 @@ function ExpedienteAutorizado({
                 <Button
                   variant="danger"
                   onClick={() => {
-                    // El motivo va en el cuerpo de la purga y queda en la actividad: sin él no se
-                    // abre la confirmación, porque un borrado definitivo sin porqué no se audita.
-                    const motivo = window.prompt(
-                      "¿Por qué se vacía la papelera? (queda registrado)",
-                    );
-                    if (motivo?.trim()) setMotivoDePurga(motivo.trim());
+                    limpiarError();
+                    setVaciando(true);
                   }}
                 >
                   Vaciar la papelera
@@ -171,6 +176,22 @@ function ExpedienteAutorizado({
               ) : null}
             </span>
           </div>
+          {error && !vaciando ? (
+            <p
+              role="alert"
+              className="mb-3 flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+            >
+              {error}
+              <button
+                type="button"
+                onClick={limpiarError}
+                aria-label="Cerrar el aviso"
+                className="shrink-0 rounded p-0.5 hover:bg-red-100"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </p>
+          ) : null}
           {nodos.isLoading ? (
             <LoadingSkeleton rows={6} />
           ) : (
@@ -183,7 +204,7 @@ function ExpedienteAutorizado({
               emptyDescription={
                 q.trim()
                   ? "Prueba con parte del nombre del archivo."
-                  : "Lo que suba el cliente y lo que deje el Motor aparecerá aquí sin que nadie lo mueva a mano."
+                  : textosDelSujeto(expediente.data.subjectType).carpetaVacia
               }
             />
           )}
@@ -210,20 +231,17 @@ function ExpedienteAutorizado({
         abierto={subiendo}
         onCerrar={() => setSubiendo(false)}
       />
-      <ConfirmDialog
-        open={motivoDePurga !== null}
-        title="Vaciar la papelera"
-        description="Borra DEFINITIVAMENTE del almacén los archivos de la papelera que nada más referencia. Los que otro expediente o el Motor siguen usando se conservan. No se puede deshacer."
-        confirmText="Vaciar"
-        typedConfirmationPhrase="VACIAR"
-        isLoading={purgar.isPending}
-        onConfirm={() => {
-          if (motivoDePurga)
-            purgar.mutate(motivoDePurga, {
-              onSettled: () => setMotivoDePurga(null),
-            });
+      <DialogoDeVaciarPapelera
+        abierto={vaciando}
+        enCurso={purgar.isPending}
+        error={vaciando ? error : null}
+        onConfirmar={(motivo) =>
+          purgar.mutate(motivo, { onSuccess: () => setVaciando(false) })
+        }
+        onCancelar={() => {
+          setVaciando(false);
+          limpiarError();
         }}
-        onCancel={() => setMotivoDePurga(null)}
       />
       <ConfirmDialog
         open={Boolean(porBorrar)}

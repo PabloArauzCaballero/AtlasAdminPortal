@@ -6,6 +6,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
 import { formatearTamano } from "./node-columns";
+import { textosDelSujeto } from "./sujeto";
 import type { Expediente } from "./types";
 
 /**
@@ -35,7 +36,7 @@ export function CabeceraDeExpediente({
         title={
           expediente.customerCode ?? `Expediente ${expediente.expedienteId}`
         }
-        description="Todo lo que se subió, se generó o se revisó sobre esta persona, en un solo sitio."
+        description={textosDelSujeto(expediente.subjectType).descripcion}
         actions={acciones}
       />
       <div className="mb-5 flex flex-wrap items-center gap-2">

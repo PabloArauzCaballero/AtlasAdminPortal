@@ -34,10 +34,19 @@ export type ArchivoDescargado = {
  * petición. Reintentar más veces sobre un 401 que persiste sólo alarga la espera de quien mira una
  * pantalla que ya no va a cargar.
  */
+export type ApiDownloadOptions = ApiRequestOptions & {
+  /**
+   * Acepta un 200 con `application/json` como archivo. Por defecto NO (ver abajo): sólo lo activa
+   * quien pide algo que de verdad puede ser un JSON guardado, como el `manifest.json` de un
+   * expediente.
+   */
+  permitirJson?: boolean;
+};
+
 export async function apiDownload(
   path: string,
   fallbackNombre: string,
-  options: ApiRequestOptions = {},
+  { permitirJson = false, ...options }: ApiDownloadOptions = {},
 ): Promise<ArchivoDescargado> {
   const respuesta = await pedir(path, options);
 
@@ -50,7 +59,7 @@ export async function apiDownload(
 
   const contentType =
     respuesta.headers.get("content-type") ?? "application/octet-stream";
-  if (contentType.includes("application/json")) {
+  if (!permitirJson && contentType.includes("application/json")) {
     /*
      * Un 200 con JSON no es una descarga.
      *

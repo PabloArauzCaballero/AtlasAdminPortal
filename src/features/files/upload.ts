@@ -32,6 +32,14 @@ export async function sha256Hex(archivo: File): Promise<string> {
     .join("");
 }
 
+/** El PUT al almacén falló. Su mensaje ya está escrito para quien opera. */
+export class ErrorDelAlmacen extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ErrorDelAlmacen";
+  }
+}
+
 export async function subirArchivo(input: {
   expedienteId: string;
   parentId: string | null;
@@ -66,8 +74,10 @@ export async function subirArchivo(input: {
     body: input.archivo,
   });
   if (!respuesta.ok) {
-    throw new Error(
-      `El almacén rechazó la subida (HTTP ${String(respuesta.status)}).`,
+    // Sin el estado HTTP en el texto: a quien opera no le dice nada, y el detalle ya queda en la
+    // pestaña de red para quien lo investigue.
+    throw new ErrorDelAlmacen(
+      "El almacén no aceptó el archivo. Vuelve a intentarlo; si se repite, avisa a soporte.",
     );
   }
 
@@ -77,22 +87,13 @@ export async function subirArchivo(input: {
   return confirmarSubida(input.expedienteId, ticket.ticketId);
 }
 
-/** Motivos de rechazo del backend, en el idioma de quien los lee. */
-export const MOTIVO_DE_RECHAZO: Record<string, string> = {
-  FILE_EMPTY: "El archivo está vacío.",
-  FILE_TOO_LARGE: "El archivo supera el tamaño permitido.",
-  FILE_CONTENT_TYPE_NOT_ALLOWED: "Ese tipo de archivo no se admite aquí.",
-  FILE_CONTENT_TYPE_MISMATCH:
-    "El contenido no coincide con la extensión: el archivo no es lo que dice ser.",
-  FILE_HASH_MISMATCH:
-    "Lo que llegó al almacén no coincide con lo que se eligió. Vuelve a subirlo.",
-  FILE_SIZE_MISMATCH: "El tamaño de lo subido no coincide con lo autorizado.",
-  FILE_MALWARE_DETECTED: "El antivirus marcó este archivo. No se guardó.",
-  FILE_SCAN_UNAVAILABLE:
-    "No se pudo analizar el archivo. Inténtalo de nuevo en unos minutos.",
-  EXPEDIENTE_TICKET_VENCIDO:
-    "El permiso de subida caducó. Vuelve a intentarlo.",
-  EXPEDIENTE_ARCHIVO_DUPLICADO: "Ese archivo ya está en el expediente.",
-  EXPEDIENTE_NODO_CONGELADO:
-    "El expediente se congeló al enviarse; sólo se puede añadir en «otros».",
-};
+/** Los motivos viven en `errores.ts`; se reexportan para quien ya los importaba de aquí. */
+export { MOTIVO_DE_RECHAZO } from "./errores";
+
+/**
+ * Lo que el backend admite por defecto (`FILE_UPLOAD_ALLOWED_MIME_TYPES` y `FILE_UPLOAD_MAX_BYTES`
+ * en `env.files.schema.ts`; TEST los arranca con estos mismos valores). Filtrar en el selector
+ * ahorra al operador elegir algo que el servidor va a rechazar después de subirlo.
+ */
+export const TIPOS_ADMITIDOS = "image/jpeg,image/png,application/pdf";
+export const LIMITES_DE_SUBIDA = "JPG, PNG o PDF, hasta 15 MB cada uno.";

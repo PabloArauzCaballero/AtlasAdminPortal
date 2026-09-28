@@ -7,7 +7,7 @@
  */
 import { apiRequest } from "@/shared/api/client";
 import { apiDownload, type ArchivoDescargado } from "@/shared/api/download";
-import type { QueryParams } from "@/shared/api/types";
+import type { PaginationMeta, QueryParams } from "@/shared/api/types";
 import type {
   Actividad,
   ActividadListResponse,
@@ -27,8 +27,45 @@ function idempotencyKey(prefijo: string): string {
   return `${prefijo}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-export function listarExpedientes(query: QueryParams) {
-  return apiRequest<ExpedienteListResponse>("/expedientes", { query });
+/**
+ * Las listas del expediente llegan como `{ items, page, pageSize, total, totalPages, hasNextPage }`,
+ * con la paginación PLANA. El cliente del portal sólo arma `meta` cuando viene `pagination`, así
+ * que la tabla no recibía nada, no pintaba paginador y todo lo que pasara de la primera página era
+ * inalcanzable. Aquí se lleva a la forma que entiende `DataTable`: `{ items, meta }`.
+ */
+export function aPaginaDelPortal<T>(
+  respuesta: unknown,
+  query: QueryParams,
+): { items: T[]; meta: PaginationMeta } {
+  const registro = (respuesta ?? {}) as Record<string, unknown>;
+  const items = Array.isArray(registro.items) ? (registro.items as T[]) : [];
+  const numero = (valor: unknown, porDefecto: number) =>
+    typeof valor === "number" && Number.isFinite(valor) ? valor : porDefecto;
+  const page = numero(registro.page, Number(query.page) || 1);
+  const limit = numero(
+    registro.pageSize,
+    Number(query.pageSize) || items.length,
+  );
+  const total = numero(registro.total, items.length);
+  return {
+    items,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: numero(
+        registro.totalPages,
+        Math.max(1, Math.ceil(total / Math.max(1, limit))),
+      ),
+    },
+  };
+}
+
+export async function listarExpedientes(
+  query: QueryParams,
+): Promise<ExpedienteListResponse> {
+  const respuesta = await apiRequest<unknown>("/expedientes", { query });
+  return aPaginaDelPortal<Expediente>(respuesta, query);
 }
 
 export function obtenerExpediente(expedienteId: string) {
@@ -52,6 +89,11 @@ export function listarNodos(expedienteId: string, query: QueryParams) {
   );
 }
 
+/**
+ * `permitirJson` porque un archivo del expediente PUEDE ser JSON —el `manifest.json` del envío o
+ * la decisión del Motor—, y `apiDownload` lo rechazaría por defecto tomándolo por una respuesta
+ * de la API en lugar del archivo.
+ */
 export function descargarNodo(
   expedienteId: string,
   nodo: Nodo,
@@ -60,7 +102,7 @@ export function descargarNodo(
   return apiDownload(
     `/expedientes/${encodeURIComponent(expedienteId)}/nodos/${encodeURIComponent(nodo.nodoId)}/contenido`,
     nodo.nombre,
-    { query: { disposition } },
+    { query: { disposition }, permitirJson: true },
   );
 }
 
@@ -146,11 +188,15 @@ export function purgarPapelera(expedienteId: string, motivo: string) {
   });
 }
 
-export function listarActividad(expedienteId: string, query: QueryParams) {
-  return apiRequest<ActividadListResponse>(
+export async function listarActividad(
+  expedienteId: string,
+  query: QueryParams,
+): Promise<ActividadListResponse> {
+  const respuesta = await apiRequest<unknown>(
     `/expedientes/${encodeURIComponent(expedienteId)}/actividad`,
     { query },
   );
+  return aPaginaDelPortal<Actividad>(respuesta, query);
 }
 
 export function obtenerContactos(
@@ -214,3 +260,21 @@ export function revocar(expedienteId: string, nodoId: string, grantId: string) {
 }
 
 export type { Actividad, Concesion, Contactos, Espectador, Expediente, Nodo };
+
+/**
+ * Las personas internas, para elegir a quién dar acceso por su nombre y no por su identificador.
+ *
+ * Se pide aquí y no con el hook de `internal-users` porque un feature no importa los internals de
+ * otro (`check:source-boundaries`). Es la misma ruta y la misma consulta: comparten caché.
+ * El backend no filtra por texto; 100 es su máximo por página y el selector busca en lo traído.
+ */
+export function listarPersonasInternas() {
+  return apiRequest<{
+    items: Array<{
+      id: string;
+      fullName: string;
+      email: string;
+      status: string;
+    }>;
+  }>("/internal/users", { query: { limit: 100 } });
+}

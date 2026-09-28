@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ExpedientePage } from "@/features/files/expediente-page";
+import { AtlasApiError } from "@/shared/api/errors";
 import type { Expediente, Nodo } from "@/features/files/types";
 
 /**
@@ -23,6 +24,7 @@ vi.mock("@/features/files/services", () => ({
   listarNodos: vi.fn(),
   listarActividad: vi.fn(),
   listarConcesiones: vi.fn(),
+  listarVisibilidad: vi.fn(),
   obtenerContactos: vi.fn(),
   descargarNodo: vi.fn(),
   crearCarpeta: vi.fn(),
@@ -44,7 +46,7 @@ vi.mock("@/shared/auth/permission-gate", () => ({
   ),
 }));
 
-const { obtenerExpediente, listarNodos, purgarPapelera } =
+const { obtenerExpediente, listarNodos, purgarPapelera, crearCarpeta } =
   await import("@/features/files/services");
 
 const EXPEDIENTE: Expediente = {
@@ -166,9 +168,6 @@ describe("ExpedientePage", () => {
       objetosBorrados: 2,
       objetosConservados: 0,
     });
-    const prompt = vi
-      .spyOn(window, "prompt")
-      .mockReturnValue("Cierre del expediente");
     pintar();
     await screen.findByText("Manifiesto firmado");
 
@@ -176,15 +175,98 @@ describe("ExpedientePage", () => {
     expect(screen.queryByText("Vaciar la papelera")).not.toBeInTheDocument();
     await userEvent.click(screen.getByText("Ver la papelera"));
     await userEvent.click(screen.getByText("Vaciar la papelera"));
-    expect(prompt).toHaveBeenCalledTimes(1);
 
-    // Dos cajas de texto: el buscador del expediente y la frase de confirmación del diálogo.
     const dialogo = screen.getByRole("dialog");
-    await userEvent.type(within(dialogo).getByRole("textbox"), "VACIAR");
-    await userEvent.click(screen.getByRole("button", { name: "Vaciar" }));
+    const [motivo, frase] = within(dialogo).getAllByRole("textbox");
+    const vaciar = within(dialogo).getByRole("button", { name: "Vaciar" });
 
-    expect(purgarPapelera).toHaveBeenCalledWith("42", "Cierre del expediente");
+    // El backend exige ocho caracteres: con menos, el botón no se habilita y se dice por qué.
+    await userEvent.type(motivo!, "corto");
+    await userEvent.type(frase!, "VACIAR");
+    expect(vaciar).toBeDisabled();
+    expect(
+      within(dialogo).getByText(/al menos 8 caracteres/),
+    ).toBeInTheDocument();
+
+    await userEvent.type(motivo!, " y cerrado");
+    expect(vaciar).toBeEnabled();
+    await userEvent.click(vaciar);
+
+    expect(purgarPapelera).toHaveBeenCalledWith("42", "corto y cerrado");
+  });
+
+  it("si el servidor rechaza la purga, el motivo se pinta en el diálogo", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue(EXPEDIENTE);
+    vi.mocked(purgarPapelera).mockRejectedValue(
+      new AtlasApiError({
+        status: 403,
+        code: "FORBIDDEN",
+        message: "EXPEDIENTE_NIVEL_INSUFICIENTE",
+      }),
+    );
+    pintar();
+    await screen.findByText("Manifiesto firmado");
+    await userEvent.click(screen.getByText("Ver la papelera"));
+    await userEvent.click(screen.getByText("Vaciar la papelera"));
+    const dialogo = screen.getByRole("dialog");
+    const [motivo, frase] = within(dialogo).getAllByRole("textbox");
+    await userEvent.type(motivo!, "cierre del expediente");
+    await userEvent.type(frase!, "VACIAR");
+    await userEvent.click(
+      within(dialogo).getByRole("button", { name: "Vaciar" }),
+    );
+
+    expect(
+      await within(dialogo).findByText(
+        "Tu acceso a este expediente no alcanza para esto.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("un fallo al crear la carpeta se explica en vez de callarse", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue(EXPEDIENTE);
+    vi.mocked(crearCarpeta).mockRejectedValue(
+      new AtlasApiError({
+        status: 409,
+        code: "CONFLICT",
+        message: "EXPEDIENTE_NOMBRE_OCUPADO",
+      }),
+    );
+    const prompt = vi.spyOn(window, "prompt").mockReturnValue("auth");
+    pintar();
+    await userEvent.click(await screen.findByText("Nueva carpeta"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ya hay algo con ese nombre en esta carpeta.",
+    );
     prompt.mockRestore();
+  });
+
+  it("«Ver la papelera» vuelve a pedir la carpeta incluyendo lo borrado", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue(EXPEDIENTE);
+    pintar();
+    await screen.findByText("Manifiesto firmado");
+    await userEvent.click(screen.getByText("Ver la papelera"));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(listarNodos)).toHaveBeenCalledWith(
+        "42",
+        expect.objectContaining({ incluirPapelera: "true" }),
+      ),
+    );
+  });
+
+  it("en el expediente de un comercio no habla de «esta persona» ni «el cliente»", async () => {
+    vi.mocked(obtenerExpediente).mockResolvedValue({
+      ...EXPEDIENTE,
+      subjectType: "partner",
+    });
+    vi.mocked(listarNodos).mockResolvedValue([]);
+    pintar();
+    expect(await screen.findByText(/sobre este comercio/)).toBeInTheDocument();
+    expect(await screen.findByText(/Sus QR de cobro/)).toBeInTheDocument();
+    expect(screen.queryByText(/esta persona/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/suba el cliente/)).not.toBeInTheDocument();
   });
 
   it("sin nivel de escritura la papelera se ve pero no se vacía", async () => {

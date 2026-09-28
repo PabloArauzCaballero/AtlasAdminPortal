@@ -19,11 +19,12 @@ import type { Concesion, Nodo } from "@/features/files/types";
  */
 vi.mock("@/features/files/services", () => ({
   listarConcesiones: vi.fn(),
+  listarVisibilidad: vi.fn(),
   conceder: vi.fn(),
   revocar: vi.fn(),
 }));
 
-const { listarConcesiones, conceder } =
+const { listarConcesiones, listarVisibilidad, conceder } =
   await import("@/features/files/services");
 
 const NODO: Nodo = {
@@ -78,6 +79,52 @@ describe("DialogoDeCompartir", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(listarConcesiones).mockResolvedValue([]);
+    vi.mocked(listarVisibilidad).mockResolvedValue([]);
+  });
+
+  it("una concesión a una persona se enseña con su nombre, no con su identificador", async () => {
+    vi.mocked(listarConcesiones).mockResolvedValue([
+      {
+        ...HEREDADA,
+        principalTipo: "usuario_interno",
+        principalId: "77",
+        heredadaDe: null,
+      },
+    ]);
+    vi.mocked(listarVisibilidad).mockResolvedValue([
+      {
+        internalUserId: "77",
+        nombre: "Ana Quispe",
+        email: "ana@atlas.bo",
+        estado: "active",
+        departamento: null,
+        cargo: null,
+        roles: [],
+        nivel: "leer",
+        porRol: false,
+        porConcesionDeRol: false,
+        porConcesionDirecta: true,
+        heredadaDe: null,
+        accedeAlMotor: false,
+      },
+    ]);
+    pintar();
+    expect(await screen.findByText("Ana Quispe")).toBeInTheDocument();
+  });
+
+  it("si no se sabe el nombre, lo dice en vez de soltar el número a secas", async () => {
+    vi.mocked(listarConcesiones).mockResolvedValue([
+      {
+        ...HEREDADA,
+        principalTipo: "usuario_interno",
+        principalId: "78",
+        heredadaDe: null,
+      },
+    ]);
+    pintar();
+    expect(
+      await screen.findByText("Persona interna n.º 78"),
+    ).toBeInTheDocument();
   });
 
   it("no deja conceder sin motivo", async () => {

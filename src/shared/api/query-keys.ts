@@ -210,11 +210,22 @@ export const queryKeys = {
     ["expedientes", "detalle", expedienteId] as const,
   expedientePorCliente: (customerId: string) =>
     ["expedientes", "por-cliente", customerId] as const,
+  // `incluirPapelera` va en la clave: sin él, «Ver la papelera» devolvía de la caché la lista sin
+  // papelera y el botón no cambiaba nada.
   expedienteNodos: (
     expedienteId: string,
     parentId: string | null,
     q?: string,
-  ) => ["expedientes", "nodos", expedienteId, parentId, q ?? ""] as const,
+    incluirPapelera = false,
+  ) =>
+    [
+      "expedientes",
+      "nodos",
+      expedienteId,
+      parentId,
+      q ?? "",
+      incluirPapelera,
+    ] as const,
   expedienteContenido: (expedienteId: string, nodoId: string) =>
     ["expedientes", "contenido", expedienteId, nodoId] as const,
   expedienteActividad: (expedienteId: string, params: unknown) =>
