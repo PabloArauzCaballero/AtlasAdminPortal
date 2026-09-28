@@ -9,8 +9,9 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatDateTime } from "@/shared/lib/format";
 import { JobActions } from "./job-actions";
+import { formatJobDuration, jobDisplayName, jobQueueLabel } from "./labels";
 import { useJobRun } from "./hooks";
 import { ListChecks } from "lucide-react";
 
@@ -49,8 +50,8 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
           <PageHeader
             icon={ListChecks}
             eyebrow="Job interno"
-            title={job.data.name}
-            description="Detalle operativo, payload sanitizado, resultado y logs de ejecución."
+            title={jobDisplayName(job.data.jobKey, job.data.name)}
+            description="Qué recibió la corrida, qué devolvió y, si falló, con qué error."
             actions={<JobActions jobRunId={jobRunId} />}
           />
           <Card>
@@ -60,18 +61,11 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
             <CardContent>
               <KeyValueGrid
                 items={[
-                  { label: "Key", value: job.data.jobKey, mono: true },
-                  { label: "Cola", value: job.data.queue },
-                  { label: "Prioridad", value: job.data.priority },
-                  { label: "Intentos", value: formatNumber(job.data.attempts) },
+                  { label: "Código", value: job.data.jobKey, mono: true },
+                  { label: "Origen", value: jobQueueLabel(job.data.queue) },
                   {
                     label: "Duración",
-                    value: formatNumber(job.data.durationMs),
-                  },
-                  {
-                    label: "Request ID",
-                    value: job.data.requestId,
-                    mono: true,
+                    value: formatJobDuration(job.data.durationMs),
                   },
                   {
                     label: "Inicio",
@@ -88,12 +82,22 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
           </Card>
           <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
             <JsonViewer
-              title="Payload sanitizado"
+              title="Datos de entrada"
               value={job.data.payloadSummary}
             />
             <JsonViewer title="Resultado" value={job.data.resultSummary} />
           </div>
-          <JsonViewer title="Logs" value={job.data.logs} />
+          {/*
+           * Aquí se pintaba «Logs»: una sola línea que el backend arma con el estado («Job X registrado
+           * con estado Y»), no un registro de ejecución. Lo único que la corrida guarda además de su
+           * entrada y su resultado es el mensaje de error, y ése no se mostraba en ninguna parte.
+           */}
+          {job.data.errorMessage ? (
+            <ErrorState
+              title="La corrida terminó con error"
+              description={job.data.errorMessage}
+            />
+          ) : null}
         </div>
       ) : null}
     </>

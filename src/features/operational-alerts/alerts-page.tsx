@@ -10,10 +10,60 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import type { Option } from "@/shared/lib/options";
 import { buildAlertColumns } from "./alert-columns";
 import { useAlerts } from "./hooks";
 import { Siren } from "lucide-react";
+
+/*
+ * Opciones fijas y no sacadas de la página visible: un desplegable armado con las 20 filas de la
+ * página no ofrece «Crítica» si las críticas están en la página 3. Son los valores que publica
+ * `GET /internal/alerts` (en mayúsculas), y el backend ya los filtra en vez de ignorarlos.
+ */
+const SEVERITY_OPTIONS: Option[] = [
+  {
+    value: "CRITICAL",
+    label: "Crítica",
+    description: "La regla marca un dato que no puede quedar así.",
+  },
+  {
+    value: "HIGH",
+    label: "Alta",
+    description: "Conviene revisarla hoy mismo.",
+  },
+  {
+    value: "MEDIUM",
+    label: "Media",
+    description: "Revisar en la operación normal.",
+  },
+  {
+    value: "LOW",
+    label: "Baja",
+    description: "Informativa; no bloquea nada.",
+  },
+];
+
+const STATUS_OPTIONS: Option[] = [
+  { value: "OPEN", label: "Abierta", description: "Nadie la ha revisado." },
+  {
+    value: "ACKNOWLEDGED",
+    label: "Reconocida",
+    description: "Alguien ya la vio desde esta pantalla.",
+  },
+  {
+    value: "RESOLVED",
+    label: "Resuelta",
+    description: "El dato ya se corrigió y se cerró.",
+  },
+];
+
+/*
+ * Sin filtros y sin filas, lo que hay que decir es por qué: en AtlasBackend nada inserta todavía en
+ * `data_quality_issues` —el job «Recalcular calidad de datos» sólo CUENTA las abiertas—, así que la
+ * bandeja vacía no significa «todo en orden».
+ */
+const NO_ALERTS_YET =
+  "Hoy ningún proceso las crea solo: las reglas de calidad existen, pero todavía no se evalúan de forma automática.";
 
 export function AlertsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -34,14 +84,6 @@ function AuthorizedAlertsPage() {
   const alerts = useAlerts({ page, limit: 20, q, severity, status });
   const items = useMemo(() => alerts.data?.items ?? [], [alerts.data]);
   const columns = useMemo(() => buildAlertColumns(), []);
-  const severityOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.severity)),
-    [items],
-  );
-  const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
-    [items],
-  );
 
   return (
     <>
@@ -49,7 +91,7 @@ function AuthorizedAlertsPage() {
         icon={Siren}
         eyebrow="Alertas operativas"
         title="Alertas operativas"
-        description="Seguimiento de alertas del sistema interno, severidad, fuente y reconocimiento auditable."
+        description="Incidencias de calidad de datos: qué regla las levantó, sobre qué registro y si alguien ya las reconoció."
       />
       <FilterBar
         search={q}
@@ -59,13 +101,13 @@ function AuthorizedAlertsPage() {
             name: "severity",
             label: "Severidad",
             value: severity,
-            options: severityOptions,
+            options: SEVERITY_OPTIONS,
           },
           {
             name: "status",
             label: "Estado",
             value: status,
-            options: statusOptions,
+            options: STATUS_OPTIONS,
           },
         ]}
         onSearchChange={(value) => {
@@ -126,7 +168,16 @@ function AuthorizedAlertsPage() {
             columns={columns}
             meta={alerts.data.meta}
             onPageChange={setPage}
-            emptyTitle="No hay alertas para los filtros actuales."
+            emptyTitle={
+              q || severity || status
+                ? "No hay alertas para los filtros actuales."
+                : "No hay incidencias registradas."
+            }
+            emptyDescription={
+              q || severity || status
+                ? "Prueba a quitar algún filtro."
+                : NO_ALERTS_YET
+            }
           />
         </div>
       ) : null}

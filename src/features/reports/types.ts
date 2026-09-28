@@ -40,16 +40,28 @@ export type ReportFilter = {
   defaultValue: unknown;
 };
 
+/** Una línea de un widget ya calculado: una etiqueta legible y su valor. */
+export type ReportWidgetEntry = { label: string; value: number | string };
+
+export type ReportWidgetData = {
+  /** `metrics`: cifras sueltas; `breakdown`: conteo por categoría; `rows`: filas de detalle. */
+  kind: "metrics" | "breakdown" | "rows";
+  entries: ReportWidgetEntry[];
+};
+
+/**
+ * Lo que devuelve `POST /internal/reports/:id/run`. El informe se calcula en vivo y no se guarda:
+ * no hay `executionId` ni `status` (el tipo anterior los declaraba y el backend nunca los mandó).
+ */
 export type ReportRunResult = {
   reportId: string;
-  executionId: string | null;
-  status: string;
-  generatedAt: string | null;
-  data: unknown;
-  widgets?: Array<{
+  computedAt: string;
+  persisted: false;
+  appliedFilters?: Record<string, unknown>;
+  widgets: Array<{
     widgetId: string;
     title: string;
-    data: unknown;
+    data: ReportWidgetData | Record<string, unknown>;
   }>;
 };
 

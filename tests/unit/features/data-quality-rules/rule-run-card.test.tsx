@@ -8,13 +8,13 @@ import { RuleRunCard } from "@/features/data-quality-rules/rule-run-card";
  * ofrece el botón.
  */
 describe("RuleRunCard", () => {
-  it("no ofrece ejecutar la regla y explica dónde corre el recálculo", () => {
+  it("no ofrece ejecutar la regla y no promete una evaluación que no existe", () => {
     render(<RuleRunCard ruleId="r1" />);
     expect(
       screen.queryByRole("button", { name: /ejecutar/i }),
     ).not.toBeInTheDocument();
-    expect(screen.getByTestId("rule-run-note")).toHaveTextContent(
-      /Recalcular calidad de datos/,
-    );
+    const note = screen.getByTestId("rule-run-note");
+    expect(note).toHaveTextContent(/ninguna regla se evalúa sola/);
+    expect(note).not.toHaveTextContent(/corre para todas las reglas/);
   });
 });

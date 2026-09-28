@@ -6,8 +6,6 @@ export type JobRunSummary = {
   name: string;
   queue: string | null;
   status: string;
-  priority: string | null;
-  attempts: number | null;
   durationMs: number | null;
   startedAt: string | null;
   finishedAt: string | null;
@@ -37,4 +35,10 @@ export type JobActionResult = {
   message?: string | null;
 };
 
-export type JobRunListResponse = PaginatedResponse<JobRunSummary>;
+/**
+ * `summary.byStatus` cuenta TODAS las corridas del filtro, no sólo la página: es lo que alimenta
+ * las tarjetas «Fallidas» y «En ejecución». Opcional mientras el backend desplegado no lo mande.
+ */
+export type JobRunListResponse = PaginatedResponse<JobRunSummary> & {
+  summary?: { byStatus: Record<string, number> };
+};
