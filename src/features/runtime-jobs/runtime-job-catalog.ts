@@ -152,7 +152,7 @@ const QUEUE_JOBS: readonly RuntimeJobDefinition[] = [
       {
         name: "policyCode",
         label: "Código de política",
-        hint: "Vacío aplica todas las políticas mapeadas. Máximo 120 caracteres.",
+        hint: "Vacío aplica todas las políticas activas. Un código sólo actúa si su política está ACTIVA en Gobierno de datos › Retención; si no, la corrida no hace nada.",
         placeholder: "gps_observations_90d",
         options: RETENTION_POLICY_CODES,
       },
@@ -160,11 +160,13 @@ const QUEUE_JOBS: readonly RuntimeJobDefinition[] = [
   },
   {
     code: "recalculate-data-quality",
-    title: "Recalcular calidad de datos",
+    // El job del backend se llama «recalcular», pero hoy sólo CUENTA: no evalúa ninguna regla ni
+    // crea incidencias (`issuesCreated` es siempre 0). El título y el texto dicen lo que hace.
+    title: "Contar incidencias de calidad abiertas",
     systems:
-      "Reevalúa las reglas de calidad y devuelve el conteo de issues abiertos.",
+      "Cuenta las incidencias de calidad abiertas (`recalculate_data_quality`). No evalúa las reglas ni crea incidencias nuevas: eso todavía no existe.",
     business:
-      "Sincera la bandeja de calidad: sin esto, los issues ya corregidos siguen contando como abiertos y los nuevos no aparecen.",
+      "Da la cifra de incidencias abiertas de todo el tenant o de un cliente. No limpia ni llena la bandeja de «Alertas».",
     destructive: false,
     fields: [
       {

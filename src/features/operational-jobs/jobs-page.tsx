@@ -10,9 +10,9 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildJobRunColumns } from "./job-columns";
 import { useJobRuns } from "./hooks";
+import { JOB_QUEUE_OPTIONS, JOB_STATUS_OPTIONS } from "./labels";
 import { ListChecks } from "lucide-react";
 
 export function JobsPage() {
@@ -34,14 +34,16 @@ function AuthorizedJobsPage() {
   const jobs = useJobRuns({ page, limit: 20, q, status, queue });
   const items = useMemo(() => jobs.data?.items ?? [], [jobs.data]);
   const columns = useMemo(() => buildJobRunColumns(), []);
-  const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
-    [items],
-  );
-  const queueOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.queue)),
-    [items],
-  );
+  const byStatus = jobs.data?.summary?.byStatus;
+  /*
+   * Con el resumen del backend las tarjetas cuentan TODO el filtro. Sin él (un backend anterior)
+   * sólo se puede contar la página, y la tarjeta lo dice en vez de presentarlo como el total.
+   */
+  const countStatus = (value: string) =>
+    byStatus
+      ? (byStatus[value] ?? 0)
+      : items.filter((item) => item.status?.toUpperCase() === value).length;
+  const scopeHint = byStatus ? undefined : "En esta página";
 
   return (
     <>
@@ -49,19 +51,24 @@ function AuthorizedJobsPage() {
         icon={ListChecks}
         eyebrow="Jobs operativos"
         title="Jobs internos"
-        description="Seguimiento operativo de procesos asíncronos, colas, reintentos y ejecuciones pesadas del sistema."
+        description="Cada vez que corrió un proceso automático: cuándo, cuánto tardó y si terminó bien."
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar job, cola o estado…"
+        searchPlaceholder="Buscar por código del proceso…"
         filters={[
           {
             name: "status",
             label: "Estado",
             value: status,
-            options: statusOptions,
+            options: JOB_STATUS_OPTIONS,
           },
-          { name: "queue", label: "Cola", value: queue, options: queueOptions },
+          {
+            name: "queue",
+            label: "Origen",
+            value: queue,
+            options: JOB_QUEUE_OPTIONS,
+          },
         ]}
         onSearchChange={(value) => {
           setQ(value);
@@ -85,7 +92,7 @@ function AuthorizedJobsPage() {
           description={
             isAtlasApiError(jobs.error)
               ? jobs.error.message
-              : "No se pudieron cargar jobs internos."
+              : "No se pudieron cargar las corridas."
           }
           requestId={
             isAtlasApiError(jobs.error) ? jobs.error.requestId : undefined
@@ -97,23 +104,24 @@ function AuthorizedJobsPage() {
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              label="Jobs"
+              label="Corridas"
               value={formatNumber(jobs.data.meta.total)}
             />
-            <MetricCard label="Visibles" value={formatNumber(items.length)} />
             <MetricCard
-              label="En ejecución"
-              value={formatNumber(
-                items.filter((item) => item.status?.toUpperCase() === "RUNNING")
-                  .length,
-              )}
+              label="Completadas"
+              value={formatNumber(countStatus("COMPLETED"))}
+              hint={scopeHint}
             />
             <MetricCard
-              label="Fallidos"
-              value={formatNumber(
-                items.filter((item) => item.status?.toUpperCase() === "FAILED")
-                  .length,
-              )}
+              label="En ejecución"
+              value={formatNumber(countStatus("RUNNING"))}
+              hint={scopeHint}
+            />
+            <MetricCard
+              label="Fallidas"
+              value={formatNumber(countStatus("FAILED"))}
+              hint={scopeHint}
+              tone={countStatus("FAILED") > 0 ? "critical" : "default"}
             />
           </section>
           <DataTable
@@ -121,7 +129,8 @@ function AuthorizedJobsPage() {
             columns={columns}
             meta={jobs.data.meta}
             onPageChange={setPage}
-            emptyTitle="No hay jobs para los filtros actuales."
+            emptyTitle="No hay corridas para los filtros actuales."
+            emptyDescription="Prueba a quitar algún filtro."
           />
         </div>
       ) : null}

@@ -6,8 +6,8 @@ import { SectionHeader } from "@/shared/components/layout/page-header";
 /**
  * Antes: «Ejecutar regla», con confirmación y «la acción quedará auditada». Llamaba a
  * `POST /internal/data-quality/rules/:id/run`, que AtlasBackend retiró por devolver 200 sin
- * ejecutar nada; el botón siguió aquí y pasó a dar 404. No hay ejecución por regla: lo que existe
- * es el job de mantenimiento que recalcula todas, y se dispara desde Operaciones.
+ * ejecutar nada; el botón siguió aquí y pasó a dar 404. Tampoco hay evaluación en bloque: el job
+ * `recalculate_data_quality` sólo cuenta las incidencias abiertas (`issuesCreated` siempre es 0).
  */
 export function RuleRunCard({ ruleId }: Readonly<{ ruleId: string }>) {
   return (
@@ -15,7 +15,7 @@ export function RuleRunCard({ ruleId }: Readonly<{ ruleId: string }>) {
       <CardHeader>
         <SectionHeader
           title="Ejecución"
-          description="Las reglas no se ejecutan de una en una."
+          description="Las reglas todavía no se evalúan de forma automática."
           className="mb-0"
         />
       </CardHeader>
@@ -25,10 +25,11 @@ export function RuleRunCard({ ruleId }: Readonly<{ ruleId: string }>) {
           data-testid="rule-run-note"
           data-rule-id={ruleId}
         >
-          El recálculo de calidad de datos corre para todas las reglas a la vez
-          con el job de mantenimiento «Recalcular calidad de datos» de
-          Operaciones (primero en simulación, después de verdad). Esta ficha
-          muestra la definición y el estado de la regla; no la dispara.
+          Hoy ninguna regla se evalúa sola: la regla queda definida, pero nada
+          recorre los datos para levantar incidencias. El job «Contar
+          incidencias de calidad abiertas» de Operaciones sólo cuenta las que ya
+          existen. Esta ficha muestra la definición y el estado de la regla; no
+          la dispara.
         </p>
       </CardContent>
     </Card>

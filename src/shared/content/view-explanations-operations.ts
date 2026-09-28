@@ -153,15 +153,15 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/jobs": {
       systems:
-        "Ejecuciones de jobs internos (`system_job_runs`): estado, duración, errores y reintentos.",
+        "Corridas de jobs internos (`system_job_runs`): estado, duración, entrada, resultado y error. Es de lectura: una corrida no se reintenta, el job se vuelve a disparar desde «Jobs de runtime».",
       business:
         "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres); si uno falla, se ve aquí antes de que falten datos.",
     },
     "/internal/alerts": {
       systems:
-        "Alertas operativas generadas por reglas del backend, con severidad, estado y asignación.",
+        "Incidencias de calidad (`data_quality_issues`) con la severidad de la regla que las levantó; se pueden reconocer. No hay asignación a una persona. Hoy nada las inserta de forma automática.",
       business:
-        "Los avisos que requieren acción humana, separados del ruido, con responsable y seguimiento.",
+        "Los registros que no cumplen una regla de calidad y requieren que alguien los mire.",
     },
     "/internal/notifications": {
       systems:

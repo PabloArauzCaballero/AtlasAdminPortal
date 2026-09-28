@@ -2,39 +2,40 @@ import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatDateTime } from "@/shared/lib/format";
+import { formatJobDuration, jobDisplayName, jobQueueLabel } from "./labels";
 import type { JobRunSummary } from "./types";
 
 export function buildJobRunColumns(): ColumnDef<JobRunSummary>[] {
   return [
     {
       accessorKey: "name",
-      header: "Job",
+      header: "Proceso",
       cell: ({ row }) => (
         <div>
-          <p className="font-medium text-atlas-text">{row.original.name}</p>
+          <p className="font-medium text-atlas-text">
+            {jobDisplayName(row.original.jobKey, row.original.name)}
+          </p>
           <p className="font-mono text-xs text-atlas-muted">
             {row.original.jobKey}
           </p>
         </div>
       ),
     },
-    { accessorKey: "queue", header: "Cola" },
+    {
+      accessorKey: "queue",
+      header: "Origen",
+      cell: ({ row }) => jobQueueLabel(row.original.queue),
+    },
     {
       accessorKey: "status",
       header: "Estado",
       cell: ({ row }) => <StatusBadge value={row.original.status} />,
     },
-    { accessorKey: "priority", header: "Prioridad" },
-    {
-      accessorKey: "attempts",
-      header: "Intentos",
-      cell: ({ row }) => formatNumber(row.original.attempts),
-    },
     {
       accessorKey: "durationMs",
-      header: "Duración ms",
-      cell: ({ row }) => formatNumber(row.original.durationMs),
+      header: "Duración",
+      cell: ({ row }) => formatJobDuration(row.original.durationMs),
     },
     {
       accessorKey: "createdAt",

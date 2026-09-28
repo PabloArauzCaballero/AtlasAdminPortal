@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/layout/page-header";
-import { Badge } from "@/shared/components/ui/badges";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { safeText } from "@/shared/lib/format";
 import type { ReportWidget } from "./types";
 
+/**
+ * Qué apartados trae el informe. Decía que «la definición visual viene desde BD»: viene de
+ * `portal-report-definitions.ts` en AtlasBackend, no de ninguna tabla. Y enseñaba el `queryKey`, el
+ * tipo de gráfico y la configuración en JSON, que no le dicen nada a quien lee el informe.
+ */
 export function ReportWidgetsCard({
   widgets,
 }: Readonly<{ widgets: ReportWidget[] }>) {
@@ -12,42 +15,31 @@ export function ReportWidgetsCard({
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Widgets configurados"
-          description="La definición visual viene desde BD; el portal solo renderiza la configuración recibida."
+          title="Qué calcula"
+          description="Los apartados que salen al calcular el informe."
           className="mb-0"
         />
       </CardHeader>
       <CardContent>
         {widgets.length ? (
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <ul className="grid gap-3 grid-cols-1 lg:grid-cols-2">
             {widgets.map((widget) => (
-              <article
+              <li
                 key={widget.widgetId}
                 className="rounded-lg border border-atlas-border p-4"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-atlas-text">
-                      {widget.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-atlas-muted">
-                      {safeText(widget.description)}
-                    </p>
-                  </div>
-                  <Badge>{widget.widgetType}</Badge>
-                </div>
-                <p className="mt-3 font-mono text-xs text-atlas-muted">
-                  Query: {safeText(widget.queryKey)}
+                <h3 className="text-sm font-semibold text-atlas-text">
+                  {widget.title}
+                </h3>
+                <p className="mt-1 text-xs text-atlas-muted">
+                  {safeText(widget.description)}
                 </p>
-                <div className="mt-3">
-                  <JsonViewer value={widget.visualConfig} />
-                </div>
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         ) : (
           <p className="text-sm text-atlas-muted">
-            No hay widgets configurados para este reporte.
+            Este informe no declara apartados.
           </p>
         )}
       </CardContent>

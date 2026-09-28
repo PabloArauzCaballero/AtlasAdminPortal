@@ -41,7 +41,7 @@ function AuthorizedReportDetailPage({
         icon={ChartColumn}
         eyebrow="Reportería dinámica"
         title={report.data?.name ?? "Detalle de reporte"}
-        description="Contrato, widgets y ejecución auditada del reporte. Se computa en vivo sobre los datos del tenant: no se archiva ninguna copia."
+        description="Qué mide el informe y sus cifras de ahora. Se calcula en vivo sobre los datos del tenant: no se archiva ninguna copia."
       />
       {report.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {report.error ? (
@@ -61,7 +61,10 @@ function AuthorizedReportDetailPage({
         <div className="space-y-6">
           <ReportSummaryCard report={report.data} />
           <ReportWidgetsCard widgets={report.data.widgets ?? []} />
-          <ReportRunCard reportId={reportId} />
+          <ReportRunCard
+            reportId={reportId}
+            filters={report.data.filters ?? []}
+          />
         </div>
       ) : null}
     </>
