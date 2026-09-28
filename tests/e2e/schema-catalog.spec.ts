@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { capture, PageHealth, settled } from "./evidence";
+import { capture, clickAndNavigate, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 /**
@@ -26,15 +26,14 @@ test.describe("catálogo de esquema", () => {
     // La versión activa debe declarar tablas: un catálogo en cero es el defecto original.
     const versionLink = page.getByRole("link", { name: /^v\d/ }).first();
     await expect(versionLink).toBeVisible();
-    // Un clic que cae antes de que la tabla hidrate (o mientras se repinta) se pierde y la URL no
-    // cambia: pasó en CI en `dev` y en ramas con el mismo árbol que había salido verde. Se reintenta
-    // el clic hasta que la URL cambie; un enlace roto de verdad sigue fallando aquí.
-    await expect(async () => {
-      await versionLink.click();
-      await page.waitForURL(/\/internal\/schema\/versions\/[^/?#]+/, {
-        timeout: 5_000,
-      });
-    }).toPass({ timeout: 45_000 });
+    // Un clic que cae antes de que la tabla hidrate se pierde: `clickAndNavigate` lo reintenta.
+    await clickAndNavigate(
+      page,
+      versionLink,
+      /\/internal\/schema\/versions\/[^/?#]+/,
+      "la versión no abrió tras el clic",
+      { health },
+    );
     await settled(page);
 
     // Comprobado ANTES del heading: si la navegación se atasca por un error de cliente, el mensaje

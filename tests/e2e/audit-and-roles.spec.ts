@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { capture, PageHealth, settled } from "./evidence";
+import { capture, clickAndNavigate, PageHealth, settled } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 test.describe("auditoría y RBAC", () => {
@@ -26,7 +26,13 @@ test.describe("auditoría y RBAC", () => {
       .first();
     await expect(requestLink).toBeVisible();
     const requestId = (await requestLink.textContent())?.trim() ?? "";
-    await requestLink.click();
+    await clickAndNavigate(
+      page,
+      requestLink,
+      /\/internal\/audit\/request\//,
+      "la ficha del request no abrió tras el clic",
+      { health },
+    );
     await settled(page);
 
     // Comprobado ANTES del título: si la navegación se atasca por un error de cliente, el mensaje
