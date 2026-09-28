@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { clickAndNavigate } from "./evidence";
 import { loginAsInternalUser } from "./internal-session";
 
 /**
@@ -273,8 +274,13 @@ test.describe("Producción — verificación real con backend", () => {
       .or(page.getByRole("link", { name: /cerrar sesión|salir|logout/i }))
       .first();
     if ((await logout.count()) > 0) {
-      await logout.click();
-      await page.waitForURL(/\/internal\/login/, { timeout: 15_000 });
+      await clickAndNavigate(
+        page,
+        logout,
+        /\/internal\/login/,
+        "el cierre de sesión no volvió a /internal/login",
+        { timeout: 15_000 },
+      );
       const cookies = await page.context().cookies();
       expect(
         cookies.find((c) => c.name === "atlas_internal_access"),

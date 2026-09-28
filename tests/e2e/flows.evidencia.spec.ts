@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { expect, test, type Page } from "@playwright/test";
-import { capture, PageHealth } from "./evidence";
+import { capture, clickAndNavigate, PageHealth } from "./evidence";
 import { quietaParaCapturar } from "./estabilizar";
 
 /**
@@ -99,12 +99,14 @@ async function entrarConPin(page: Page, buzon: BuzonPin): Promise<void> {
   await page
     .getByLabel("Código de verificación")
     .fill(await buzon.esperarPin(EMAIL));
-  await page.getByRole("button", { name: /confirmar y entrar/i }).click();
-  await page.waitForURL(
+  await clickAndNavigate(
+    page,
+    page.getByRole("button", { name: /confirmar y entrar/i }),
     (url) =>
       url.pathname.startsWith("/internal") &&
       !url.pathname.startsWith("/internal/login"),
-    { timeout: 20_000 },
+    "el login no salió de /internal/login tras confirmar el PIN",
+    { attemptMs: 10_000, timeout: 20_000 },
   );
 }
 
@@ -143,13 +145,13 @@ test.describe("Flujos (stack real)", () => {
       await capture(page, testInfo, "filtro criticos desde la tarjeta");
 
       // La ficha se abre desde la ruta y queda en la URL (enlace profundo).
-      await tabla
-        .locator("tbody tr")
-        .first()
-        .getByRole("button")
-        .first()
-        .click();
-      await expect(page).toHaveURL(/flow=flow_[a-f0-9]{12}/);
+      await clickAndNavigate(
+        page,
+        tabla.locator("tbody tr").first().getByRole("button").first(),
+        /flow=flow_[a-f0-9]{12}/,
+        "la ficha del flujo no abrió tras el clic en la fila",
+        { health },
+      );
       const ficha = page.getByRole("dialog");
       await expect(
         ficha.getByText("Autorización", { exact: true }),
@@ -290,11 +292,16 @@ test.describe("Flujos (stack real)", () => {
       await expect(page.getByText("todo enlazado").first()).toBeVisible();
       await capture(page, testInfo, "procesos de negocio con sus pasos");
       // Un paso lleva a la ficha del flujo que lo implementa.
-      await page.locator("li button").first().click();
+      await clickAndNavigate(
+        page,
+        page.locator("li button").first(),
+        /flow=flow_[a-f0-9]{12}/,
+        "el paso de negocio no abrió su flujo tras el clic",
+        { health },
+      );
       await expect(
         page.getByRole("dialog").getByText("Autorización", { exact: true }),
       ).toBeVisible({ timeout: 30_000 });
-      await expect(page).toHaveURL(/flow=flow_[a-f0-9]{12}/);
       await capture(page, testInfo, "paso de negocio abre su flujo");
       // La ficha se cierra por su botón: `Escape` compite con el foco del botón del paso.
       await page.getByRole("dialog").getByRole("button").first().click();
