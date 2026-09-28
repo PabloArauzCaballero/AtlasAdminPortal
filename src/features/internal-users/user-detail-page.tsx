@@ -3,6 +3,7 @@
 import { useInternalUser } from "./hooks";
 import { UserEditForm } from "./user-edit-form";
 import { UserRolesForm } from "./user-roles-form";
+import { UserUnlockCard } from "./user-unlock-card";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -13,7 +14,7 @@ import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
-import { formatBoolean } from "@/shared/lib/format";
+import { formatBoolean, formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { UserCog } from "lucide-react";
 
@@ -72,6 +73,12 @@ function AuthorizedUserDetailPage({
                   label: "Debe cambiar contraseña",
                   value: formatBoolean(user.data.user.mustChangePassword),
                 },
+                {
+                  label: "Bloqueo por intentos fallidos",
+                  value: user.data.lock?.locked
+                    ? `Hasta ${formatDateTime(user.data.lock.lockedUntil)}`
+                    : "No",
+                },
                 { label: "Roles", value: user.data.user.roles.join(", ") },
                 { label: "Permisos", value: user.data.user.permissions.length },
               ]}
@@ -97,6 +104,12 @@ function AuthorizedUserDetailPage({
               permissions={["internal.users.manage"]}
               fallback={null}
             >
+              {user.data.lock?.locked ? (
+                <UserUnlockCard
+                  internalUserId={user.data.user.id}
+                  lock={user.data.lock}
+                />
+              ) : null}
               <UserRolesForm user={user.data.user} />
               <UserEditForm user={user.data.user} />
             </PermissionGate>

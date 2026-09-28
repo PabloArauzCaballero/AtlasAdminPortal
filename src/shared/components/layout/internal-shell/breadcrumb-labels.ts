@@ -55,6 +55,7 @@ export const breadcrumbLabels: Record<string, string> = {
   applications: "Solicitudes",
   "from-case": "Desde la cola",
   "pending-contacts": "Contactos sin verificar",
+  "payment-claims": "Avisos de pago",
   support: "Soporte",
   cases: "Casos",
   caseId: "Caso",

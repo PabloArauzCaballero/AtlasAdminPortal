@@ -10,6 +10,7 @@ import {
   listInternalPermissions,
   listInternalRoles,
   listInternalUsers,
+  unlockInternalUser,
   updateInternalUser,
   updateInternalUserRoles,
 } from "./services";
@@ -54,6 +55,20 @@ export function useUpdateInternalUserMutation(internalUserId: string) {
         queryKey: queryKeys.internalUser(internalUserId),
       });
       await queryClient.invalidateQueries({ queryKey: ["internal-users"] });
+    },
+  });
+}
+
+export function useUnlockInternalUserMutation(internalUserId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) => unlockInternalUser(internalUserId, reason),
+    // También si falla: un 409 dice que la ficha estaba vieja (el bloqueo ya había vencido o
+    // alguien lo levantó), y releerla es lo que quita el botón.
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.internalUser(internalUserId),
+      });
     },
   });
 }
