@@ -5,7 +5,10 @@ import yaml
 ci = yaml.safe_load(Path('.github/workflows/ci.yml').read_text())
 jobs = ci['jobs']
 worker = jobs['auth-worker']
-assert 'auth-worker' in jobs['deploy-dev']['needs']
+# El deploy cuelga sólo de `release-gate`, y el broker es uno de los trabajos que ese gate exige.
+assert jobs['deploy-dev']['needs'] == ['release-gate'], jobs['deploy-dev']['needs']
+assert 'auth-worker' in jobs['release-gate']['needs'], jobs['release-gate']['needs']
+assert jobs['release-gate']['if'] == 'always()'
 steps = worker['steps']
 commands = [step.get('run', '') for step in steps]
 for required in (
