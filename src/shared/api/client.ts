@@ -153,6 +153,7 @@ function sendOnce(
       const response = await fetchWithTimeout(
         buildUrl(path, options.query),
         buildRequestInit(options, session),
+        options.timeoutMs,
       );
       return { response, payload: await parseJsonSafely(response) };
     },

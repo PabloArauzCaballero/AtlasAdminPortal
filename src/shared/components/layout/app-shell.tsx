@@ -8,6 +8,7 @@ import { useNavDrawer } from "@/shared/hooks/use-nav-drawer";
 import { AppSidebar } from "./internal-shell/app-sidebar";
 import { AppTopbar } from "./internal-shell/app-topbar";
 import { ViewExplainer } from "./view-explainer";
+import { AssistFab } from "@/features/assist/assist-fab";
 
 export function AppShell({
   children,
@@ -37,15 +38,18 @@ export function AppShell({
       <div className="relative lg:pl-[268px]">
         <AppTopbar onMenu={() => setMenuOpen(true)} menuOpen={menuOpen} />
         {/* key={pathname} remonta el contenido en cada navegación para que toda
-            vista entre con la misma transición de fade/slide. */}
+            vista entre con la misma transición de fade/slide. El relleno inferior deja sitio al
+            botón del asistente: sin él tapaba la última acción de la página (la paginación). */}
         <main
           key={pathname}
-          className="animate-fade-in px-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] pt-5 sm:px-4 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pt-6 lg:px-6"
+          className="animate-fade-in px-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-5 sm:px-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pt-6 lg:px-6"
         >
           <ViewExplainer />
           {children}
         </main>
       </div>
+      {/* Fuera del `main`: éste se remonta en cada navegación y la conversación se perdería. */}
+      <AssistFab />
     </div>
   );
 }
