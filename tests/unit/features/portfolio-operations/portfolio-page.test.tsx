@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -153,7 +154,7 @@ describe("PortfolioOperationsPage — calificación de Atlas, desenlaces del Mot
     renderWithProviders(<PortfolioOperationsPage />);
     await waitFor(() =>
       expect(
-        screen.getByText(/DECISION_ENGINE_OUTCOME_API_KEY/),
+        screen.getByText(/no tiene configurada la credencial/),
       ).toBeInTheDocument(),
     );
   });
@@ -168,5 +169,105 @@ describe("PortfolioOperationsPage — calificación de Atlas, desenlaces del Mot
     expect(
       screen.queryByRole("link", { name: /medir en el motor/i }),
     ).toBeNull();
+  });
+});
+
+/** Una sesión con estos roles de token, con `hasAnyRole` de verdad y no un «sí» a todo. */
+function sesionCon(roles: string[]) {
+  mockUseAuth.mockReturnValue({
+    permissions: [],
+    roles,
+    hasAnyRole: (pedidos: string[]) => pedidos.some((r) => roles.includes(r)),
+    hasPermission: () => false,
+  });
+}
+
+describe("PortfolioOperationsPage — lo que no se puede o falla, se dice", () => {
+  it("un error al leer los agotados NO se pinta como «ninguno agotó»", async () => {
+    server.use(
+      http.get(`${API_BASE}/operations/loans/outcome-backlog`, () =>
+        HttpResponse.json(
+          { error: { code: "INTERNAL", message: "Se cayó la lectura" } },
+          { status: 500 },
+        ),
+      ),
+    );
+    renderWithProviders(<PortfolioOperationsPage />);
+    expect(await screen.findByText(/Se cayó la lectura/)).toBeInTheDocument();
+    expect(
+      screen.queryByText("Ningún desenlace agotó sus reintentos."),
+    ).toBeNull();
+  });
+
+  it("a quien el backend no deja leer los agotados no se los pide ni le miente", async () => {
+    sesionCon(["compliance_analyst"]);
+    renderWithProviders(<PortfolioOperationsPage />);
+    await waitFor(() =>
+      expect(screen.getByText("Entregados")).toBeInTheDocument(),
+    );
+    expect(peticiones).not.toContain("GET /operations/loans/outcome-backlog");
+    expect(
+      screen.getByText(/Esta lista sólo la ven Análisis de riesgo/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Ningún desenlace agotó sus reintentos."),
+    ).toBeNull();
+    // Cumplimiento lee la cartera pero no la recalifica.
+    expect(
+      screen.queryByRole("button", { name: "Recalificar la cartera" }),
+    ).toBeNull();
+  });
+
+  it("recalificar la cartera pinta cuántos se calificaron y cuáles fallaron", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post(`${API_BASE}/operations/credit-rating/sweep`, () =>
+        HttpResponse.json({
+          data: {
+            customers: 5,
+            rated: 4,
+            failed: 1,
+            failedCustomerIds: ["77"],
+          },
+        }),
+      ),
+    );
+    renderWithProviders(<PortfolioOperationsPage />);
+    await user.click(
+      await screen.findByRole("button", { name: "Recalificar la cartera" }),
+    );
+    await user.click(await screen.findByRole("button", { name: "Ejecutar" }));
+    expect(
+      await screen.findByText(/4 calificados y 1 fallaron \(clientes 77\)/),
+    ).toBeInTheDocument();
+  });
+
+  it("un crédito que no existe se dice; texto que no es número ni se manda", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post(`${API_BASE}/operations/credit-rating/loans/:id/rate`, () =>
+        HttpResponse.json(
+          { error: { code: "NOT_FOUND", message: "LOAN_NOT_FOUND" } },
+          { status: 404 },
+        ),
+      ),
+    );
+    renderWithProviders(<PortfolioOperationsPage />);
+    const campo = await screen.findByRole("textbox", {
+      name: /recalificar un crédito/i,
+    });
+    await user.type(campo, "L-7");
+    expect(screen.getByText(/Escribe sólo cifras/)).toBeInTheDocument();
+    const [calificarCredito] = screen.getAllByRole("button", {
+      name: "Calificar",
+    });
+    expect(calificarCredito).toBeDisabled();
+
+    await user.clear(campo);
+    await user.type(campo, "999");
+    await user.click(calificarCredito!);
+    expect(
+      await screen.findByText("No existe un crédito con ese número."),
+    ).toBeInTheDocument();
   });
 });

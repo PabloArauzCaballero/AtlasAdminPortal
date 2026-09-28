@@ -9,6 +9,9 @@ import type { OutcomeDeliveryStatus } from "./types";
 /**
  * Las dos piezas del bloque de desenlaces: el estado de la entrega y el enlace a donde se miden.
  *
+ * Si falta la credencial (`DECISION_ENGINE_OUTCOME_API_KEY`), el aviso lo dice en palabras: el
+ * nombre de la variable no le sirve a quien lee la pantalla, sí a quien la configura.
+ *
  * Salen de `portfolio-page.tsx` porque la pantalla pasó de las 300 líneas que admite
  * `yarn max-lines`. El corte es el que ya marcaba la propia pantalla: la calificación es de Atlas
  * y se queda allí; los desenlaces son del Motor y aquí sólo se enseña si la entrega va al día.
@@ -20,9 +23,9 @@ export function EstadoEntrega({
     <div className="space-y-3">
       {!estado.configured ? (
         <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          Falta la credencial del plano de gestión del Motor
-          (DECISION_ENGINE_OUTCOME_API_KEY): el job no puede entregar nada y la
-          cola sólo crece.
+          Atlas no tiene configurada la credencial para entregar desenlaces al
+          Motor: la entrega automática no puede mandar nada y la cola sólo
+          crece. Avisa a Administración de sistemas.
         </p>
       ) : null}
       <div className="grid gap-4 grid-cols-2 xl:grid-cols-4">

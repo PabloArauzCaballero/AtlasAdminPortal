@@ -21,6 +21,7 @@ import { usePaymentClaims } from "./hooks";
 import {
   PAYMENT_CLAIM_AGE_OPTIONS,
   PAYMENT_CLAIM_STATUS_OPTIONS,
+  isValidCustomerIdFilter,
 } from "./labels";
 import type { PaymentClaimsFilters } from "./types";
 
@@ -50,7 +51,9 @@ export function PaymentClaimsPage() {
 
 function AuthorizedPaymentClaimsPage() {
   const [filters, setFilters] = useState<PaymentClaimsFilters>(SIN_FILTROS);
-  const claims = usePaymentClaims(filters);
+  // Con texto que no es un número no se pregunta al servidor: se avisa aquí y la tabla espera.
+  const idValido = isValidCustomerIdFilter(filters.customerId);
+  const claims = usePaymentClaims(filters, idValido);
   const columns = useMemo(
     () =>
       buildPaymentClaimColumns((partnerId) =>
@@ -95,8 +98,8 @@ function AuthorizedPaymentClaimsPage() {
       ) : null}
       <FilterBar
         search={filters.customerId}
-        searchPlaceholder="ID de cliente…"
-        searchTooltip="Número interno del cliente (el de su ficha). Deja sólo sus avisos."
+        searchPlaceholder="N.º de cliente…"
+        searchTooltip="Número interno del cliente (el de su ficha), sólo cifras. Deja sólo sus avisos."
         filters={[
           {
             name: "status",
@@ -138,8 +141,17 @@ function AuthorizedPaymentClaimsPage() {
           </Button>
         ) : null}
       </div>
-      {claims.isLoading ? <LoadingSkeleton rows={6} /> : null}
-      {claims.error ? (
+      {!idValido ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+        >
+          El número de cliente sólo lleva cifras, sin letras, espacios ni ceros
+          delante. Es el número de su ficha.
+        </p>
+      ) : null}
+      {idValido && claims.isLoading ? <LoadingSkeleton rows={6} /> : null}
+      {idValido && claims.error ? (
         <ErrorState
           description={
             isAtlasApiError(claims.error)
@@ -152,7 +164,7 @@ function AuthorizedPaymentClaimsPage() {
           onRetry={() => void claims.refetch()}
         />
       ) : null}
-      {claims.data ? (
+      {idValido && claims.data ? (
         <Card>
           <CardHeader>
             <SectionHeader

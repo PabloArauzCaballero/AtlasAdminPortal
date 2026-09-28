@@ -58,3 +58,14 @@ export function formatAgeHours(hours: number): string {
   const rest = hours % 24;
   return rest === 0 ? `${days} d` : `${days} d ${rest} h`;
 }
+
+/**
+ * ¿Lo escrito en el buscador es un número de cliente que el servidor acepte?
+ *
+ * El backend sólo admite un entero positivo sin ceros delante; con cualquier otra cosa respondía un
+ * 400 que la pantalla enseñaba en crudo. Vacío vale: significa «sin filtro».
+ */
+export function isValidCustomerIdFilter(valor: string): boolean {
+  const limpio = valor.trim();
+  return limpio === "" || /^[1-9][0-9]*$/.test(limpio);
+}

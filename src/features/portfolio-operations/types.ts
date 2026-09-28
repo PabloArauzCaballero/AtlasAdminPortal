@@ -73,3 +73,16 @@ export type ExhaustedOutcome = {
 };
 
 export type ExhaustedOutcomeList = { items: ExhaustedOutcome[] };
+
+/** Una calificación tal y como la devuelve recalificar (sólo lo que la pantalla enseña). */
+export type RatingSnapshot = { grade?: string; gradeLabel?: string } | null;
+
+export type LoanRatingResult = {
+  loanRating: RatingSnapshot;
+  customerRating: RatingSnapshot;
+};
+
+export type CustomerRatingResult = {
+  loanRatings: RatingSnapshot[];
+  customerRating: RatingSnapshot;
+};

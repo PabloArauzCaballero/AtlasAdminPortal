@@ -20,6 +20,30 @@ export function useMerchantUsers(query: QueryParams) {
   });
 }
 
+/**
+ * Cuántas identidades hay en un estado, en TODO el tenant: una página de un elemento y su `total`.
+ *
+ * Los contadores de cabecera contaban las filas de la página que se estaba viendo, y se leían como
+ * totales. Pedir el total al backend cuesta una consulta por contador y dice la verdad.
+ */
+export function useMerchantUserCount(status: string) {
+  return useQuery({
+    queryKey: [...RAIZ, "count", status],
+    queryFn: () => listMerchantUsers({ page: 1, limit: 1, status }),
+    select: (lista) => lista.total,
+  });
+}
+
+/** Las peticiones pendientes de TODO el tenant, no sólo las de la primera página de la cola. */
+export function usePendingProvisioningCount() {
+  return useQuery({
+    queryKey: [...COLA, "count", "pending"],
+    queryFn: () =>
+      listProvisioningRequests({ page: 1, limit: 1, status: "pending" }),
+    select: (lista) => lista.total,
+  });
+}
+
 export function useProvisioningRequests(query: QueryParams) {
   return useQuery({
     queryKey: [...COLA, query],

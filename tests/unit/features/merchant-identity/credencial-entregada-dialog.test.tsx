@@ -54,6 +54,9 @@ describe("CredencialEntregadaDialog", () => {
       screen.getByRole("heading", { name: /acceso concedido/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/ana@comercio\.test/)).toBeInTheDocument();
+    // El backend pide el envío y se traga el fallo: no se afirma una entrega que nadie comprobó.
+    expect(screen.getByText(/Se pidió el envío/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/se envió a/);
     expect(screen.getByText(/código de un solo uso/i)).toBeInTheDocument();
   });
 });

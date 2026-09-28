@@ -2,15 +2,16 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
-import { StatusBadge } from "@/shared/components/ui/badges";
+import { Badge, statusTone } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Select } from "@/shared/components/ui/input";
 import { formatBoolean, formatDateTime, safeText } from "@/shared/lib/format";
 import {
-  MERCHANT_USER_STATUSES,
-  type MerchantProvisioningRequest,
-  type MerchantUserProfile,
-} from "./types";
+  merchantUserStatusLabel,
+  provisioningStatusLabel,
+  statusChangeOptions,
+} from "./labels";
+import type { MerchantProvisioningRequest, MerchantUserProfile } from "./types";
 
 /*
  * POR QUÉ LAS CELDAS DE ESTA TABLA LLEVAN UN ANCHO FIJO EN `ch`.
@@ -24,9 +25,15 @@ import {
  * entero sigue en el `title`.
  */
 
-/** Las identidades ya concedidas. La única acción de la fila va clavada a la derecha. */
+/**
+ * Las identidades ya concedidas. La única acción de la fila va clavada a la derecha.
+ *
+ * `puedeCambiar` es si la sesión lleva `merchant.users.manage`: `PATCH :id/status` lo exige, y
+ * ofrecer el selector a quien no lo tiene terminaba en un 403 que nadie veía.
+ */
 export function buildIdentityColumns(
   onCambiar: (usuario: MerchantUserProfile, destino: string) => void,
+  puedeCambiar = true,
 ): ColumnDef<MerchantUserProfile>[] {
   return [
     {
@@ -46,7 +53,11 @@ export function buildIdentityColumns(
     {
       accessorKey: "status",
       header: "Estado",
-      cell: ({ row }) => <StatusBadge value={row.original.status} />,
+      cell: ({ row }) => (
+        <Badge tone={statusTone(row.original.status)} dot>
+          {merchantUserStatusLabel(row.original.status)}
+        </Badge>
+      ),
     },
     {
       accessorKey: "mustChangePassword",
@@ -62,20 +73,26 @@ export function buildIdentityColumns(
       id: "actions",
       header: "Acciones",
       meta: { pinRight: true } satisfies AtlasColumnMeta,
-      cell: ({ row }) => (
-        <Select
-          name={`estado-${row.original.id}`}
-          ariaLabel={`Cambiar estado de ${row.original.fullName}`}
-          value=""
-          placeholder="Cambiar estado…"
-          onChange={(valor) => {
-            if (valor) onCambiar(row.original, valor);
-          }}
-          options={MERCHANT_USER_STATUSES.filter(
-            (estado) => estado !== row.original.status,
-          ).map((estado) => ({ value: estado, label: estado }))}
-        />
-      ),
+      cell: ({ row }) =>
+        puedeCambiar ? (
+          <Select
+            name={`estado-${row.original.id}`}
+            ariaLabel={`Cambiar estado de ${row.original.fullName}`}
+            value=""
+            placeholder="Cambiar estado…"
+            onChange={(valor) => {
+              if (valor) onCambiar(row.original, valor);
+            }}
+            options={statusChangeOptions(row.original.status)}
+          />
+        ) : (
+          <span
+            className="text-xs text-atlas-muted"
+            title="Cambiar el estado de un acceso lo hace el equipo de Operaciones de comercios."
+          >
+            Sin permiso para cambiarlo
+          </span>
+        ),
     },
   ];
 }
@@ -162,9 +179,9 @@ export function buildRequestColumns(
         row.original.status === "pending" && !puedeDecidir ? (
           <span
             className="text-xs text-atlas-muted"
-            title="Hace falta el permiso merchant.users.manage (rol MERCHANT_OPERATIONS)."
+            title="Conceder o rechazar un acceso lo hace el equipo de Operaciones de comercios."
           >
-            Pendiente · la concede MERCHANT_OPERATIONS
+            Pendiente · la concede Operaciones de comercios
           </span>
         ) : row.original.status === "pending" ? (
           <div className="flex items-center gap-2">
@@ -185,7 +202,9 @@ export function buildRequestColumns(
           </div>
         ) : (
           <div className="w-[26ch]">
-            <StatusBadge value={row.original.status} />
+            <Badge tone={statusTone(row.original.status)} dot>
+              {provisioningStatusLabel(row.original.status)}
+            </Badge>
             <p
               className="truncate text-xs text-atlas-muted"
               title={row.original.rejectionReason ?? undefined}

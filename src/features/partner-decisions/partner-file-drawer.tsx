@@ -16,7 +16,11 @@ import {
   usePartnerStatus,
   useRequestKybReviewMutation,
 } from "./hooks";
+import { onboardingStatusLabel, partnerActionErrorMessage } from "./labels";
 import { PartnerDecisionProvenanceCard } from "./partner-decision-provenance";
+import { PartnerFolderLink } from "./partner-folder-link";
+import { PedirVerificacion } from "./partner-kyb-request";
+import { PartnerNetworkLists } from "./partner-network-lists";
 import type { PartnerDecisionProvenance, PartnerQueueItem } from "./types";
 
 /**
@@ -24,8 +28,10 @@ import type { PartnerDecisionProvenance, PartnerQueueItem } from "./types";
  *
  * Se pide el expediente COMPLETO al abrir y no se aprovecha la fila de la cola: la cola trae lo
  * justo para elegir a quién atender, y firmar una verificación con cuatro campos resumidos sería
- * firmar sin haber mirado. El volcado íntegro va al final, porque los documentos y las
- * verificaciones de contacto viven ahí y son justamente lo que hay que revisar.
+ * firmar sin haber mirado. Sucursales, QR y terminales se enseñan como listas; los DOCUMENTOS no
+ * vienen en esta lectura (`/status` trae perfil, requisitos pendientes, sucursales, QR y
+ * terminales), así que se enlaza a la carpeta del comercio en Archivos. El volcado técnico va al
+ * final, plegado, y ya no se titula «Expediente completo»: no lo es.
  *
  * La comisión (MDR) se enseña, no se edita: se negocia y se lleva en el ERP.
  *
@@ -53,6 +59,16 @@ export function PartnerFileDrawer({
   // el botón sólo se ofrece a quien el backend va a dejar pasar.
   const { hasPermission } = useAuth();
   const puedePedirVerificacion = hasPermission("partner.kyb.request");
+  const pedirVerificacion = () => {
+    // El error se pinta desde `reevaluar.error`; aquí sólo se evita la promesa rechazada suelta.
+    reevaluar.mutateAsync(undefined).catch(() => undefined);
+  };
+  const errorDeDecision = decidir.error
+    ? partnerActionErrorMessage(
+        decidir.error,
+        "No se pudo registrar la decisión.",
+      )
+    : null;
 
   const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
     string,
@@ -100,7 +116,10 @@ export function PartnerFileDrawer({
                   value: safeText(perfil.tradeName),
                 },
                 { label: "NIT", value: safeText(perfil.taxId), mono: true },
-                { label: "Estado", value: onboardingStatus },
+                {
+                  label: "Estado",
+                  value: onboardingStatusLabel(onboardingStatus),
+                },
                 {
                   label: "Enviado",
                   value: formatDateTime(expediente.submittedAt),
@@ -116,6 +135,8 @@ export function PartnerFileDrawer({
 
             <PartnerDecisionProvenanceCard decision={decision} />
 
+            <PartnerFolderLink partnerId={expediente.partnerId} />
+
             {enRevision && delegadoAlMotor ? (
               <div className="space-y-3">
                 <p className="text-sm text-atlas-muted">
@@ -123,26 +144,13 @@ export function PartnerFileDrawer({
                   donde está la traza de la ejecución que abrió el caso. Cuando
                   se resuelva, el expediente se actualiza solo.
                 </p>
-                {puedePedirVerificacion ? (
-                  <Button
-                    disabled={reevaluar.isPending}
-                    onClick={() => void reevaluar.mutateAsync(undefined)}
-                  >
-                    Volver a pedir la verificación
-                  </Button>
-                ) : (
-                  <p className="text-xs text-atlas-muted">
-                    Volver a pedir la verificación exige el permiso
-                    «partner.kyb.request» (OPERATIONS_MANAGER o SUPER_ADMIN).
-                  </p>
-                )}
-                {reevaluar.error ? (
-                  <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                    {isAtlasApiError(reevaluar.error)
-                      ? reevaluar.error.message
-                      : "No se pudo pedir la verificación."}
-                  </p>
-                ) : null}
+                <PedirVerificacion
+                  texto="Volver a pedir la verificación"
+                  permitido={puedePedirVerificacion}
+                  pendiente={reevaluar.isPending}
+                  error={reevaluar.error}
+                  onPedir={pedirVerificacion}
+                />
               </div>
             ) : null}
 
@@ -153,12 +161,13 @@ export function PartnerFileDrawer({
                   decisión manual es la única que hay. Pedir la verificación de
                   nuevo es preferible cuando el Motor estaba caído al enviarlo.
                 </p>
-                <Button
-                  disabled={reevaluar.isPending}
-                  onClick={() => void reevaluar.mutateAsync(undefined)}
-                >
-                  Pedir la verificación al Motor
-                </Button>
+                <PedirVerificacion
+                  texto="Pedir la verificación al Motor"
+                  permitido={puedePedirVerificacion}
+                  pendiente={reevaluar.isPending}
+                  error={reevaluar.error}
+                  onPedir={pedirVerificacion}
+                />
                 <Field
                   tooltip="Lo que el comercio debe corregir; lo lee tal cual en su portal."
                   label="Motivo del rechazo"
@@ -173,14 +182,20 @@ export function PartnerFileDrawer({
                 <div className="flex gap-2">
                   <Button
                     variant="primary"
-                    onClick={() => setPendiente("aprobar")}
+                    onClick={() => {
+                      decidir.reset();
+                      setPendiente("aprobar");
+                    }}
                   >
                     Aprobar
                   </Button>
                   <Button
                     variant="danger"
                     disabled={motivo.trim().length < 3}
-                    onClick={() => setPendiente("rechazar")}
+                    onClick={() => {
+                      decidir.reset();
+                      setPendiente("rechazar");
+                    }}
                   >
                     Rechazar
                   </Button>
@@ -190,16 +205,22 @@ export function PartnerFileDrawer({
 
             {!enRevision ? (
               <p className="text-sm text-atlas-muted">
-                {`Este expediente está en «${onboardingStatus || "sin estado"}», así que no admite decisión.`}
+                {`Este expediente está «${onboardingStatusLabel(onboardingStatus).toLowerCase()}», así que no admite decisión.`}
               </p>
             ) : null}
 
-            <div>
-              <h3 className="mb-2 text-sm font-semibold text-atlas-text">
-                Expediente completo
-              </h3>
+            <PartnerNetworkLists estado={estado.data} />
+
+            <details>
+              <summary className="cursor-pointer text-sm font-semibold text-atlas-text">
+                Datos técnicos del expediente
+              </summary>
+              <p className="my-2 text-xs text-atlas-muted">
+                Los mismos datos de arriba sin formato, para soporte. Los
+                documentos no están aquí: se ven en Archivos.
+              </p>
               <JsonViewer value={estado.data} />
-            </div>
+            </details>
           </div>
         ) : null}
       </DrawerPanel>
@@ -211,24 +232,32 @@ export function PartnerFileDrawer({
             ? "Aprobar el expediente"
             : "Rechazar el expediente"
         }
-        description={
+        description={`${
           pendiente === "aprobar"
-            ? "El comercio queda verificado: sus QR resolverán y sus ventas podrán atribuirse. La decisión queda con tu usuario y su fecha."
+            ? "El comercio queda verificado y la decisión queda con tu usuario y su fecha. Sus QR de cobro no cambian: cada uno sigue esperando su propia revisión en la cola de QR."
             : "El comercio queda rechazado con el motivo escrito. Podrá corregir y volver a enviar."
-        }
+        }${errorDeDecision ? ` · No se registró: ${errorDeDecision}` : ""}`}
         confirmText={pendiente === "aprobar" ? "Aprobar" : "Rechazar"}
         isLoading={decidir.isPending}
-        onCancel={() => setPendiente(null)}
+        onCancel={() => {
+          decidir.reset();
+          setPendiente(null);
+        }}
         onConfirm={() => {
           const aprobado = pendiente === "aprobar";
-          void decidir
+          // En error el diálogo SIGUE abierto y dice por qué: cerrarlo mudo dejaba creer que se
+          // había decidido. Sólo el éxito cierra el diálogo y el cajón.
+          decidir
             .mutateAsync(
               aprobado
                 ? { approved: true }
                 : { approved: false, rejectionReason: motivo.trim() },
             )
-            .then(() => onClose())
-            .finally(() => setPendiente(null));
+            .then(() => {
+              setPendiente(null);
+              onClose();
+            })
+            .catch(() => undefined);
         }}
       />
     </>

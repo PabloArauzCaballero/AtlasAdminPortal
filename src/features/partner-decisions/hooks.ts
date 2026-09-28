@@ -6,6 +6,7 @@ import type { QueryParams } from "@/shared/api/types";
 import {
   decidePartner,
   downloadPartnerQrImage,
+  getPartnerFolder,
   getPartnerStatus,
   listPartnerQueue,
   listQrPendingReview,
@@ -116,4 +117,14 @@ export function usePartnerQrImage(partnerId: string, qrId: string) {
     return () => URL.revokeObjectURL(objectUrl);
   }, [blob]);
   return { url, isLoading: query.isLoading, error: query.error };
+}
+
+/** La carpeta del comercio en Archivos. Sin reintentos: si no hay acceso, no insiste. */
+export function usePartnerFolder(partnerId: string) {
+  return useQuery({
+    queryKey: [...RAIZ, partnerId, "carpeta"],
+    queryFn: () => getPartnerFolder(partnerId),
+    enabled: Boolean(partnerId),
+    retry: false,
+  });
 }

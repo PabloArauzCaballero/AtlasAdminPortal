@@ -2,9 +2,10 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+import { decisionOutcomeLabel, onboardingStatusLabel } from "./labels";
+import { PartnerStatusBadge } from "./partner-status-badge";
 import type { PartnerQueueItem } from "./types";
 
 /**
@@ -58,7 +59,10 @@ export function buildPartnerQueueColumns(
         }
         return (
           <div className="min-w-0">
-            <StatusBadge value={decision.outcome} />
+            <PartnerStatusBadge
+              value={decision.outcome}
+              label={decisionOutcomeLabel(decision.outcome)}
+            />
             {decision.manualReviewCaseCode ? (
               <p className="truncate font-mono text-[11px] text-atlas-muted">
                 {`caso ${decision.manualReviewCaseCode}`}
@@ -71,7 +75,12 @@ export function buildPartnerQueueColumns(
     {
       accessorKey: "onboardingStatus",
       header: "Estado",
-      cell: ({ row }) => <StatusBadge value={row.original.onboardingStatus} />,
+      cell: ({ row }) => (
+        <PartnerStatusBadge
+          value={row.original.onboardingStatus}
+          label={onboardingStatusLabel(row.original.onboardingStatus)}
+        />
+      ),
     },
     {
       id: "actions",

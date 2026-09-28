@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Stamp } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
+import { PARTNER_OPERATIONS_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
@@ -45,10 +45,14 @@ import type { PartnerQueueItem } from "./types";
  * El onboarding es autoservicio hasta el envío; de ahí en adelante es verificación, y por eso el
  * backend deja fuera al rol `merchant`: un comercio que pudiera aprobarse a sí mismo convertiría el
  * trámite en un formulario.
+ *
+ * La puerta es `PARTNER_OPERATIONS_ROLE_LIST`, copia del `@Roles` de `PartnerOperationsController`
+ * (cola, decisión y cola de QR). Con la lista general del portal, `compliance_analyst` y
+ * `readonly_auditor` entraban a una pantalla que les respondía 403 en cada tabla.
  */
 export function PartnerDecisionsPage() {
   return (
-    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST}>
+    <RoleGate roles={PARTNER_OPERATIONS_ROLE_LIST}>
       <AuthorizedPartnerDecisionsPage />
     </RoleGate>
   );
@@ -89,9 +93,9 @@ function AuthorizedPartnerDecisionsPage() {
         Cada fila es un comercio que terminó su onboarding y espera decisión. La
         verificación la resuelve el Motor con una política versionada; lo que
         llega aquí es lo que exigió criterio humano, y la columna «Decidió» dice
-        cuál fue su veredicto. Un expediente verificado deja resolver sus QR y
-        atribuirle sus ventas. La comisión (MDR) no se fija aquí: es un término
-        comercial y se lleva en el ERP.
+        cuál fue su veredicto. Verificar el comercio no aprueba sus QR de cobro:
+        cada QR se revisa aparte, en la cola de más abajo. La comisión (MDR) no
+        se fija aquí: es un término comercial y se lleva en el ERP.
       </BusinessContextNote>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

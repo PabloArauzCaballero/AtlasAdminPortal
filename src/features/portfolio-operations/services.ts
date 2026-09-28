@@ -1,6 +1,8 @@
 import { apiRequest } from "@/shared/api/client";
 import type {
+  CustomerRatingResult,
   ExhaustedOutcomeList,
+  LoanRatingResult,
   OutcomeDeliveryStatus,
   PortfolioSummary,
   RatingSweepResult,
@@ -20,14 +22,14 @@ export function sweepRatings(limit: number) {
 }
 
 export function rateLoan(loanId: string) {
-  return apiRequest<Record<string, unknown>>(
+  return apiRequest<LoanRatingResult>(
     `/operations/credit-rating/loans/${encodeURIComponent(loanId)}/rate`,
     { method: "POST" },
   );
 }
 
 export function rateCustomer(customerId: string) {
-  return apiRequest<Record<string, unknown>>(
+  return apiRequest<CustomerRatingResult>(
     `/operations/credit-rating/customers/${encodeURIComponent(customerId)}/rate`,
     { method: "POST" },
   );

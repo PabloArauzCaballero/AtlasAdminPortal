@@ -5,8 +5,9 @@ import {
   engineExecutionUrl,
   engineUrl,
 } from "@/shared/decision-engine/engine-links";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime } from "@/shared/lib/format";
+import { decisionOutcomeLabel, decisionReasonLabel } from "./labels";
+import { PartnerStatusBadge } from "./partner-status-badge";
 import type { PartnerDecisionProvenance } from "./types";
 
 /**
@@ -45,10 +46,13 @@ export function PartnerDecisionProvenanceCard({
         <span className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
           Decidió el Motor
         </span>
-        <StatusBadge value={decision.outcome} />
+        <PartnerStatusBadge
+          value={decision.outcome}
+          label={decisionOutcomeLabel(decision.outcome)}
+        />
         {decision.reason ? (
           <span className="font-mono text-[11px] text-atlas-muted">
-            {decision.reason}
+            {decisionReasonLabel(decision.reason)}
           </span>
         ) : null}
       </div>
