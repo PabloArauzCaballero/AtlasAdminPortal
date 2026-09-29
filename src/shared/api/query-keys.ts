@@ -172,8 +172,6 @@ export const queryKeys = {
     ["operations", "session-investigation-summary", sessionId] as const,
   customerAuditFeed: (customerId: string) =>
     ["operations", "customer-audit", "feed", customerId] as const,
-  customerAuditEvents: (customerId: string, params: unknown) =>
-    ["operations", "customer-audit", "events", customerId, params] as const,
   schemaVersions: (params: unknown) => ["schema", "versions", params] as const,
   schemaVersion: (versionId: string) =>
     ["schema", "version", versionId] as const,

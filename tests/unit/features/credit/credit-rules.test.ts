@@ -201,3 +201,16 @@ describe("creditErrorMessage · el 409 dice qué hacer", () => {
     expect(isDuplicatedProductCode(conflict("OTRO"))).toBe(false);
   });
 });
+
+describe("creditErrorMessage · transición de producto no permitida (2026-09-29)", () => {
+  it("el 409 del servidor se explica en palabras, no con el código", () => {
+    expect(
+      creditErrorMessage(
+        conflict(
+          "CREDIT_PRODUCT_STATUS_TRANSITION_NOT_ALLOWED: un producto en «retired» no puede pasar a «active».",
+        ),
+        "x",
+      ),
+    ).toMatch(/no está permitido desde el estado actual/);
+  });
+});
