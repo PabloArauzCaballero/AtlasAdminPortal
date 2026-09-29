@@ -65,6 +65,11 @@ const ROUTES = [
  */
 const MAX_CONTROLS = 30;
 
+/** Ruido que NO es una avería del portal (ver el comentario junto a la comprobación). */
+// `consoleErrors` trae la URL completa (…/api/v1/internal/assist/…) y `failedRequests` sólo la ruta
+// ("404 /internal/assist/…"): el patrón cubre las dos formas.
+const ERRORES_ESPERADOS = /logs\/mongo|503|429|404[^\n]*\/internal\/assist\//;
+
 /**
  * Cierra el diálogo que un control haya abierto. Primero Escape (el patrón de todos los modales
  * del portal), después el botón de cierre del propio diálogo. Se comprueba que se cerró: si un
@@ -146,16 +151,17 @@ test.describe("recorrido de controles", () => {
       await capture(page, testInfo, `${route} tras pulsar`);
 
       // Lo que se comprueba: ningún control dejó la página rota.
+      // Lo que se descuenta, y por qué, uno por uno: `logs/mongo` (el MongoDB de logs está borrado),
+      // 503/429 (el stack de CI se satura y se limita solo). Y el 404 de `/internal/assist/`:
+      // es el contrato documentado de AtlasBackend con `ASSIST_ENABLED` apagada («ASSIST_DISABLED,
+      // el portal esconde el botón»), no una avería; el stack de CI no tiene asistente. Un 404 de
+      // cualquier OTRA ruta sigue siendo rojo.
       expect(
-        health.consoleErrors.filter(
-          (entry) => !/logs\/mongo|503|429/.test(entry),
-        ),
+        health.consoleErrors.filter((entry) => !ERRORES_ESPERADOS.test(entry)),
         "errores de consola tras pulsar controles",
       ).toEqual([]);
       expect(
-        health.failedRequests.filter(
-          (entry) => !/logs\/mongo|503|429/.test(entry),
-        ),
+        health.failedRequests.filter((entry) => !ERRORES_ESPERADOS.test(entry)),
         "peticiones fallidas tras pulsar controles",
       ).toEqual([]);
     });
