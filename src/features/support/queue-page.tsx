@@ -30,7 +30,11 @@ import {
   VISTAS,
   motivoOptions,
 } from "./queue-filters";
-import type { SupportCase, SupportCaseListResponse, SupportCursor } from "./types";
+import type {
+  SupportCase,
+  SupportCaseListResponse,
+  SupportCursor,
+} from "./types";
 
 export { ESTADOS_ABIERTOS } from "./queue-filters";
 
@@ -258,7 +262,11 @@ function ResumenDeLaBandeja({
       <MetricCard
         label={resumen ? "Casos en esta vista" : "Casos en esta página"}
         value={formatNumber(resumen ? resumen.total : items.length)}
-        hint={resumen ? "Todos los que cumplen los filtros, no sólo esta página." : alcance}
+        hint={
+          resumen
+            ? "Todos los que cumplen los filtros, no sólo esta página."
+            : alcance
+        }
       />
       <MetricCard
         label="P1 y P2"

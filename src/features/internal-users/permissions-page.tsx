@@ -32,7 +32,10 @@ function AuthorizedPermissionsPage() {
   const permissions = useInternalPermissions();
   const [q, setQ] = useState("");
   const [module, setModule] = useState("");
-  const todos = useMemo(() => permissions.data?.items ?? [], [permissions.data]);
+  const todos = useMemo(
+    () => permissions.data?.items ?? [],
+    [permissions.data],
+  );
   const visibles = useMemo(
     () => filterPermissions(todos, q, module),
     [todos, q, module],

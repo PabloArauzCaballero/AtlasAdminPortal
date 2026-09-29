@@ -112,8 +112,7 @@ function AuthorizedUsersPage() {
             label: "Rol",
             value: role,
             options: roleOptions,
-            tooltip:
-              "Deja sólo a quien tiene ese rol asignado y vigente hoy.",
+            tooltip: "Deja sólo a quien tiene ese rol asignado y vigente hoy.",
           },
         ]}
         onSearchChange={(valor) => {

@@ -27,7 +27,8 @@ vi.mock("@/features/files/services", () => ({
   listarVisibilidad: vi.fn(),
 }));
 
-const { listInternalUsers } = await import("@/features/internal-users/services");
+const { listInternalUsers } =
+  await import("@/features/internal-users/services");
 const { SelectorDePersona } =
   await import("@/features/files/share-person-picker");
 
@@ -64,7 +65,9 @@ describe("SelectorDePersona", () => {
         expect.objectContaining({ q: "quispe", status: "active", limit: 20 }),
       ),
     );
-    fireEvent.mouseDown(await screen.findByRole("option", { name: /Ana Quispe/ }));
+    fireEvent.mouseDown(
+      await screen.findByRole("option", { name: /Ana Quispe/ }),
+    );
     expect(onChange).toHaveBeenCalledWith("7");
   });
 

@@ -260,9 +260,9 @@ export function UsuarioCreadoAviso({
            * Lo que sí funciona es la recuperación por correo de la pantalla de acceso.
            */}
           <li>
-            Si el correo no llega —puede que el envío haya fallado—, la
-            persona puede pedir uno nuevo con «¿Olvidaste tu contraseña?» en la
-            pantalla de acceso.
+            Si el correo no llega —puede que el envío haya fallado—, la persona
+            puede pedir uno nuevo con «¿Olvidaste tu contraseña?» en la pantalla
+            de acceso.
           </li>
           <li>
             Si la dirección está mal escrita, desactiva la cuenta desde{" "}

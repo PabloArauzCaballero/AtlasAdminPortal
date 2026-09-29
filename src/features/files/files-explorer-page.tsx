@@ -30,7 +30,8 @@ const ESTADOS = [
   {
     label: "Abierto",
     value: "abierto",
-    description: "Todavía recibe archivos: el alta o el trámite siguen en curso.",
+    description:
+      "Todavía recibe archivos: el alta o el trámite siguen en curso.",
   },
   {
     label: "Enviado",
@@ -59,12 +60,14 @@ const TIPOS_DE_SUJETO = [
   {
     label: "Cliente",
     value: "customer",
-    description: "La carpeta de una persona: carnet, selfie, extractos y evaluación.",
+    description:
+      "La carpeta de una persona: carnet, selfie, extractos y evaluación.",
   },
   {
     label: "Comercio",
     value: "partner",
-    description: "La carpeta de un negocio: QR de cobro, poderes y documentos del ERP.",
+    description:
+      "La carpeta de un negocio: QR de cobro, poderes y documentos del ERP.",
   },
 ];
 
@@ -237,14 +240,16 @@ function ExploradorAutorizado() {
             label: "Tipo",
             value: subjectType,
             options: TIPOS_DE_SUJETO,
-            tooltip: "Deja sólo las carpetas de personas o sólo las de comercios.",
+            tooltip:
+              "Deja sólo las carpetas de personas o sólo las de comercios.",
           },
           {
             name: "estado",
             label: "Estado",
             value: estado,
             options: ESTADOS,
-            tooltip: "En qué punto de su vida está la carpeta: abierta, enviada, cerrada o purgada.",
+            tooltip:
+              "En qué punto de su vida está la carpeta: abierta, enviada, cerrada o purgada.",
           },
         ]}
       />
@@ -256,14 +261,14 @@ function ExploradorAutorizado() {
         />
       ) : null}
       {expedientes.data ? (
-      <DataTable
-        data={expedientes.data.items}
-        columns={columns}
-        meta={expedientes.data.meta}
-        onPageChange={setPage}
-        emptyTitle="Ningún expediente coincide."
-        emptyDescription="Los expedientes se abren solos al empezar un onboarding de cliente o al crearse un comercio. Los clientes anteriores necesitan el relleno histórico."
-      />
+        <DataTable
+          data={expedientes.data.items}
+          columns={columns}
+          meta={expedientes.data.meta}
+          onPageChange={setPage}
+          emptyTitle="Ningún expediente coincide."
+          emptyDescription="Los expedientes se abren solos al empezar un onboarding de cliente o al crearse un comercio. Los clientes anteriores necesitan el relleno histórico."
+        />
       ) : null}
     </>
   );

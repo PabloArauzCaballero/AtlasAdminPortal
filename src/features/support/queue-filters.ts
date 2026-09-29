@@ -81,14 +81,16 @@ const QUE_CUBRE: Record<string, string> = {
   TECHNICAL_INCIDENT: "Algo de la app o del portal no funciona.",
   ACCOUNT_ACCESS: "No pueden entrar, o perdieron su contraseña o código.",
   IDENTITY_KYC: "Problemas al validar el carnet o la selfie.",
-  CREDIT_DECISION_EXPLANATION: "Quieren saber por qué se decidió así su crédito.",
+  CREDIT_DECISION_EXPLANATION:
+    "Quieren saber por qué se decidió así su crédito.",
   PURCHASE_SUPPORT: "Dudas o problemas con una compra en cuotas.",
   PAYMENT_EVIDENCE: "Enviaron o discuten un comprobante de pago.",
   QR_SUPPORT: "Problemas al cobrar o pagar con código QR.",
   PARTNER_ONBOARDING: "Un comercio con dudas o trabas en su alta.",
   PARTNER_OPERATION: "Un comercio con problemas en su operación diaria.",
   RECONCILIATION_SUPPORT: "Diferencias entre lo cobrado y lo liquidado.",
-  BILLING_MDR_SUPPORT: "Dudas sobre facturas o comisiones cobradas al comercio.",
+  BILLING_MDR_SUPPORT:
+    "Dudas sobre facturas o comisiones cobradas al comercio.",
   COMPLAINT: "Queja formal sobre el servicio recibido.",
   PRIVACY_REQUEST: "Ejercicio de derechos sobre sus datos personales.",
   SECURITY_INCIDENT: "Sospecha de acceso indebido o fuga de datos.",
@@ -136,13 +138,16 @@ export const SOLO_MIOS_OPTIONS: Option[] = [
 ];
 
 /** Los motivos del catálogo del servidor, con sus submotivos aplanados debajo. */
-export function motivoOptions(categorias: readonly SupportCategory[]): Option[] {
+export function motivoOptions(
+  categorias: readonly SupportCategory[],
+): Option[] {
   return categorias.flatMap((categoria) => [
     {
       value: categoria.categoryCode,
       label: categoria.label,
       description:
-        categoria.description ?? `Casos abiertos con el motivo ${categoria.label}.`,
+        categoria.description ??
+        `Casos abiertos con el motivo ${categoria.label}.`,
     },
     ...motivoOptions(categoria.subcategories ?? []),
   ]);

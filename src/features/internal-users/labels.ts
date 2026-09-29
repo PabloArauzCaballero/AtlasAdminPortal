@@ -50,12 +50,14 @@ export const USER_STATUS_OPTIONS = [
   {
     value: "suspended",
     label: STATUS_LABELS.suspended,
-    description: "Acceso cortado temporalmente por un administrador, con motivo.",
+    description:
+      "Acceso cortado temporalmente por un administrador, con motivo.",
   },
   {
     value: "locked",
     label: STATUS_LABELS.locked,
-    description: "Bloqueada por un administrador; no es el bloqueo por intentos.",
+    description:
+      "Bloqueada por un administrador; no es el bloqueo por intentos.",
   },
   {
     value: "disabled",

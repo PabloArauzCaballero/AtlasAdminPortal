@@ -30,10 +30,7 @@ export const ESTADO_AGENTE_OPTIONS: Option[] = [
 ];
 
 function normalizar(texto: string | null | undefined): string {
-  return (texto ?? "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+  return (texto ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 /**
@@ -48,8 +45,7 @@ export function filtrarAgentes(
   const buscado = normalizar(filtros.q.trim());
   return agentes.filter(
     (agente) =>
-      (!filtros.estado ||
-        (filtros.estado === "activo") === agente.isActive) &&
+      (!filtros.estado || (filtros.estado === "activo") === agente.isActive) &&
       (!filtros.nivel || agente.supportLevel === filtros.nivel) &&
       (!buscado ||
         normalizar(agente.fullName).includes(buscado) ||
@@ -112,7 +108,9 @@ export function buildAgentColumns(accion: {
         row.original.isActive ? (
           <Button
             className="h-8 px-2 text-xs"
-            isLoading={accion.ocupado && accion.quitando === row.original.agentProfileId}
+            isLoading={
+              accion.ocupado && accion.quitando === row.original.agentProfileId
+            }
             disabled={accion.ocupado}
             onClick={() => accion.onQuitar(row.original.agentProfileId)}
           >

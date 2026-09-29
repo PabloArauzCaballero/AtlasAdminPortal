@@ -134,15 +134,16 @@ export function InternalUserSearchCombobox({
         />
         {abierto ? (
           <div className="absolute z-20 mt-1 w-full rounded-lg border border-atlas-border bg-white shadow-card">
-            <ul
+            <div
               id={listId}
               role="listbox"
               aria-label={label}
               className="max-h-64 overflow-auto py-1"
             >
               {opciones.map((persona, indice) => (
-                <li
+                <div
                   key={persona.id}
+                  tabIndex={-1}
                   id={`${listId}-${indice}`}
                   role="option"
                   aria-selected={persona.id === value}
@@ -161,9 +162,9 @@ export function InternalUserSearchCombobox({
                   <span className="block text-xs text-atlas-muted">
                     {persona.email}
                   </span>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
             <p className="border-t border-atlas-border px-3 py-1.5 text-xs text-atlas-muted">
               {personas.isLoading
                 ? "Buscando…"

@@ -121,7 +121,9 @@ export function MessagesSection({
             value={recipientId}
             inputMode="numeric"
             placeholder="Ej: 1024"
-            onChange={(event) => cambiar(() => setRecipientId(event.target.value))}
+            onChange={(event) =>
+              cambiar(() => setRecipientId(event.target.value))
+            }
           />
         </Field>
         <Field

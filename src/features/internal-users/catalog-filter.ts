@@ -11,10 +11,7 @@ import type { InternalPermission, InternalRole } from "./types";
  * cosa ni la otra.
  */
 function normalizar(texto: string | null | undefined): string {
-  return (texto ?? "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+  return (texto ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 function contiene(campos: Array<string | null | undefined>, q: string) {

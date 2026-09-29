@@ -294,4 +294,3 @@ export type CreateAgentInput = {
   queueCode?: string;
   maxConcurrentChannels: number;
 };
-
