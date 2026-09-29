@@ -10,23 +10,8 @@ import {
   Radar,
   Workflow,
 } from "lucide-react";
-import { Badge } from "@/shared/components/ui/badges";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { QA_SCENARIOS } from "./qa-scenarios";
-
-const SCENARIO_TONE: Record<
-  string,
-  "success" | "warning" | "critical" | "info"
-> = {
-  valid_payload: "success",
-  without_auth: "warning",
-  invalid_token: "warning",
-  wrong_role_token: "critical",
-  missing_tenant: "warning",
-  missing_idempotency_key: "info",
-  invalid_payload: "warning",
-  custom: "info",
-};
+import { ScenarioTable } from "./guide/guide-tables";
 
 export function QaLabDocsPanel() {
   const [expanded, setExpanded] = useState(false);
@@ -115,24 +100,7 @@ export function QaLabDocsPanel() {
             <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-atlas-text">
               <Workflow className="h-3.5 w-3.5" /> Escenarios de prueba
             </p>
-            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-              {QA_SCENARIOS.map((scenario) => (
-                <div
-                  key={scenario.key}
-                  className="rounded-lg border border-atlas-border bg-white p-2.5"
-                >
-                  <Badge tone={SCENARIO_TONE[scenario.key] ?? "default"}>
-                    {scenario.label}
-                  </Badge>
-                  <p className="mt-1.5 text-[11px] leading-4 text-atlas-muted">
-                    {scenario.description}
-                  </p>
-                  <p className="mt-1 text-[11px] font-medium text-atlas-text">
-                    → {scenario.expectedOutcome}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <ScenarioTable />
           </div>
         </CardContent>
       ) : null}

@@ -2,6 +2,7 @@
 
 import { Note, Section, StepList } from "./guide-primitives";
 import { GuideStressChart } from "./guide-stress-chart";
+import { DialsTable } from "./guide-tables";
 
 export function Funcional() {
   return (
@@ -105,44 +106,7 @@ export function Stress() {
       <h3 className="text-base font-semibold text-atlas-text">
         Los diales de carga
       </h3>
-      <div className="atlas-table-scroll rounded-xl border border-atlas-border">
-        <table className="w-full min-w-[520px] border-collapse text-sm">
-          <thead>
-            <tr className="bg-atlas-soft text-left font-mono text-[0.6875rem] uppercase tracking-[0.06em] text-atlas-muted">
-              <th className="px-4 py-2.5">Dial</th>
-              <th className="px-4 py-2.5">Qué controla</th>
-              <th className="px-4 py-2.5">Rango</th>
-            </tr>
-          </thead>
-          <tbody>
-            <DialRow
-              name="Peticiones por segundo"
-              ctrl="Ritmo que se intenta sostener (RPS)."
-              range="1 – 500"
-            />
-            <DialRow
-              name="Peticiones a la vez"
-              ctrl="Peticiones esperando respuesta al mismo tiempo."
-              range="1 – 200"
-            />
-            <DialRow
-              name="Duración"
-              ctrl="Tiempo total planeado de la corrida."
-              range="1 – 3600 s"
-            />
-            <DialRow
-              name="Subida gradual"
-              ctrl="Sube el ritmo poco a poco en vez de arrancar a tope."
-              range="0 – duración"
-            />
-            <DialRow
-              name="Tope de peticiones"
-              ctrl="Techo duro. Si RPS × duración lo supera, la corrida se recorta aquí."
-              range="1 – 10.000"
-            />
-          </tbody>
-        </table>
-      </div>
+      <DialsTable />
 
       <h3 className="text-base font-semibold text-atlas-text">
         Umbrales de aprobación
@@ -182,21 +146,5 @@ export function Stress() {
         descarga el registro si necesitas compararla después.
       </Note>
     </Section>
-  );
-}
-
-function DialRow({
-  name,
-  ctrl,
-  range,
-}: Readonly<{ name: string; ctrl: string; range: string }>) {
-  return (
-    <tr className="border-t border-atlas-border align-top">
-      <td className="px-4 py-3">
-        <code className="font-mono text-atlas-accent">{name}</code>
-      </td>
-      <td className="px-4 py-3 text-atlas-text">{ctrl}</td>
-      <td className="px-4 py-3 font-mono text-xs text-atlas-muted">{range}</td>
-    </tr>
   );
 }
