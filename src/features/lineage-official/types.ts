@@ -45,6 +45,8 @@ export type LineageNodeDetail = LineageNode & {
   incomingEdges?: LineageEdge[];
   outgoingEdges?: LineageEdge[];
   relatedNodes?: LineageNode[];
+  /** El servidor corta la ficha en 500 aristas y lo declara aquí. */
+  edgesTruncated?: boolean;
 };
 
 export type LineageImpactItem = {
