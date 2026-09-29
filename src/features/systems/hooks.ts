@@ -59,6 +59,7 @@ export {
   useQueueStressRunMutation,
   useUpsertStressProfileMutation,
   useStressRuns,
+  useStressRunCapabilities,
 } from "./stress-hooks";
 export {
   useTestSuites,

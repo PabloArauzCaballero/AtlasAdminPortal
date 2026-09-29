@@ -80,16 +80,4 @@ describe("customer-actions-services", () => {
       ],
     ).toMatch(/^risk-recheck-/);
   });
-
-  it("colas por cursor: cada cola en su ruta", async () => {
-    await services.listCasesByCursor("manual_review", { cursor: "abc" });
-    expect(apiRequest).toHaveBeenLastCalledWith(
-      "/operations/manual-review-cases",
-      { query: { cursor: "abc" } },
-    );
-    await services.listCasesByCursor("fraud", {});
-    expect(apiRequest).toHaveBeenLastCalledWith("/operations/fraud-cases", {
-      query: {},
-    });
-  });
 });

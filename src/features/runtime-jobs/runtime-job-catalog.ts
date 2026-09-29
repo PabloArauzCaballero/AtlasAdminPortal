@@ -144,9 +144,9 @@ const QUEUE_JOBS: readonly RuntimeJobDefinition[] = [
     code: "apply-retention-policies",
     title: "Aplicar políticas de retención",
     systems:
-      "Ejecuta las políticas de retención: borra o anonimiza según el objetivo. Devuelve `outcomes` por tabla y `unmappedPolicies`.",
+      "Actúa sólo sobre cinco tablas de telemetría y registros: GPS crudo de direcciones, datos de dispositivo (se anonimizan), interacción con formularios, historial de jobs y registro de peticiones. Devuelve `outcomes` por tabla y `unmappedPolicies`.",
     business:
-      "Es el job que hace real la promesa de retención frente al regulador. No correrlo acumula datos que ya no se deberían conservar.",
+      "Limpia datos operativos que ya no hacen falta. NO aplica todavía la retención de los datos personales del cliente, de riesgo, de auditoría, de notificaciones, de soporte ni de evidencia de proveedores: esas 13 políticas están pendientes de decisión de Legal, Riesgo y Cumplimiento, y la corrida las devuelve en `unmappedPolicies` sin tocarlas.",
     destructive: true,
     fields: [
       {

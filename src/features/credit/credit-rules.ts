@@ -118,6 +118,10 @@ const KNOWN_ERRORS: Array<[string, string]> = [
   ],
   ["CREDIT_PRODUCT_NOT_FOUND", "Ese producto ya no existe en el catálogo."],
   [
+    "CREDIT_PRODUCT_STATUS_TRANSITION_NOT_ALLOWED",
+    "Ese cambio de estado no está permitido desde el estado actual del producto (un producto retirado no vuelve a ofrecerse). Recarga la lista.",
+  ],
+  [
     "DECISION_ENGINE_UNAVAILABLE",
     "El Motor de decisiones no respondió. La línea vigente no se tocó; vuelve a intentarlo en unos minutos.",
   ],

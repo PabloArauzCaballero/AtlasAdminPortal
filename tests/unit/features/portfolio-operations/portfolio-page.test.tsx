@@ -287,3 +287,79 @@ describe("PortfolioOperationsPage — quién entra", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("PortfolioOperationsPage — desenlaces agotados por páginas (O8)", () => {
+  it("pide página y límite, enseña el TOTAL del servidor, pagina y filtra por préstamo", async () => {
+    const pedidas: URLSearchParams[] = [];
+    server.use(
+      http.get(
+        `${API_BASE}/operations/loans/outcome-backlog`,
+        ({ request }) => {
+          pedidas.push(new URL(request.url).searchParams);
+          return HttpResponse.json({
+            data: {
+              items: [
+                {
+                  loanId: "77",
+                  decisionExecutionId: "88001",
+                  windowDays: 90,
+                  label: "paid",
+                  attempts: 6,
+                  lastError: "HTTP 500",
+                  observedAt: "2026-08-01T00:00:00.000Z",
+                },
+              ],
+              meta: { page: 1, limit: 25, total: 140, totalPages: 6 },
+            },
+          });
+        },
+      ),
+    );
+    renderWithProviders(<PortfolioOperationsPage />);
+    expect(await screen.findByText("140 con este filtro")).toBeInTheDocument();
+    expect(pedidas.at(-1)?.get("limit")).toBe("25");
+    await userEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await waitFor(() => expect(pedidas.at(-1)?.get("page")).toBe("2"));
+    await userEvent.type(
+      screen.getByRole("textbox", { name: /número de préstamo/i }),
+      "77",
+    );
+    await waitFor(() => expect(pedidas.at(-1)?.get("loanId")).toBe("77"));
+    expect(pedidas.at(-1)?.get("page")).toBe("1");
+  });
+});
+
+describe("PortfolioOperationsPage — la escala vigente vive aquí (02·#15)", () => {
+  it("pinta la escala del servidor con días de atraso y previsión", async () => {
+    server.use(
+      http.get(`${API_BASE}/operations/rating-scale`, () =>
+        HttpResponse.json({
+          data: {
+            policyCode: "ASFI",
+            versionCode: "v1",
+            grades: [
+              {
+                grade: "A",
+                label: "Normal",
+                severityRank: 1,
+                minDaysPastDue: 0,
+                maxDaysPastDue: 5,
+                provisionRate: 0.01,
+                tone: "success",
+                help: "Al día o casi.",
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    renderWithProviders(<PortfolioOperationsPage />);
+    expect(
+      await screen.findByRole("heading", {
+        name: "Escala de calificación vigente",
+      }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("0 – 5")).toBeInTheDocument();
+    expect(screen.getByText("Al día o casi.")).toBeInTheDocument();
+  });
+});

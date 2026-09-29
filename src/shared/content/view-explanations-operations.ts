@@ -96,33 +96,27 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/operations/work-queue": {
       systems:
-        "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",
+        "GET /operations/work-queue con `queue` (all / manual_review / fraud, pestaña `?cola=`), `q` (código de cliente o de caso), estado y prioridad, paginado en el servidor y con `summary.byType` para las cifras. `fraud_analyst` sólo entra con `queue=fraud`. Las rutas /internal/operations/manual-review-cases y /fraud-cases redirigen aquí.",
       business:
-        "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
+        "El 'inbox' del analista: los casos de revisión manual y de fraude que esperan decisión, en una sola cola con una pestaña por tipo, sin planillas paralelas.",
     },
     "/internal/operations/manual-review-cases": {
       systems:
-        "Cola de revisión manual sola, paginada por cursor (GET /operations/manual-review-cases). Mismas filas y misma acción de decidir que la cola combinada, sin su coste de paginar por posición.",
+        "Ruta antigua: redirige a /internal/operations/work-queue?cola=manual_review conservando sus parámetros.",
       business:
-        "Las altas que esperan a una persona, sin mezclarlas con fraude, para recorrerlas enteras aunque sean muchas.",
+        "La revisión manual es ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/operations/fraud-cases": {
       systems:
-        "Cola de casos de fraude sola, paginada por cursor (GET /operations/fraud-cases). La decisión sigue restringida a analistas de fraude y administración.",
+        "Ruta antigua: redirige a /internal/operations/work-queue?cola=fraud conservando sus parámetros.",
       business:
-        "Qué patrones de fraude hay abiertos y sobre qué clientes, para que el equipo de fraude los atienda por orden.",
+        "Los casos de fraude son ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/files": {
       systems:
         "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
       business:
         "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
-    },
-    "/internal/operations/runtime-jobs": {
-      systems:
-        "Disparo manual de los 5 procesos de mantenimiento del backend (outbox, eventos, expiración de sesiones, retención y recálculo de calidad). Cada corrida arranca en dry-run y queda registrada con su jobRunId.",
-      business:
-        "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
     },
     "/internal/operations/loans": {
       systems:
@@ -153,9 +147,9 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/jobs": {
       systems:
-        "Corridas de jobs internos (`system_job_runs`): estado, duración, entrada, resultado y error. Es de lectura: una corrida no se reintenta, el job se vuelve a disparar desde «Jobs de runtime».",
+        "Dos pestañas sobre `system_job_runs`. «Historial»: cada corrida con estado, duración, entrada, resultado y error (de lectura; una corrida no se reintenta). «Ejecutar ahora» (sólo admin, platform_admin y system): disparo manual de los procesos de mantenimiento, que arrancan en ensayo y dejan su corrida en el historial.",
       business:
-        "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres); si uno falla, se ve aquí antes de que falten datos.",
+        "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres) y la palanca para destrabar la operación cuando algo se atasca, sin esperar a la ventana programada ni pedir un despliegue.",
     },
     "/internal/alerts": {
       systems:

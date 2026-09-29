@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -170,5 +171,49 @@ describe("DomainEventsPage — con la forma real del backend", () => {
     expect(valores).toEqual(
       expect.arrayContaining(["user.registered", "loan.disbursed"]),
     );
+  });
+});
+
+describe("DomainEventsPage — buscador y cifras del servidor (2026-09-29)", () => {
+  it("el buscador manda `q` (parte de código, agregado o correlación) y NO pisa el eventCode del desplegable", async () => {
+    const pedidas: URLSearchParams[] = [];
+    server.use(
+      http.get(`${API_BASE}/operations/events`, ({ request }) => {
+        pedidas.push(new URL(request.url).searchParams);
+        return HttpResponse.json(RESPUESTA_LISTADO);
+      }),
+    );
+    renderWithProviders(<DomainEventsPage />);
+    await userEvent.type(
+      await screen.findByRole("textbox", {
+        name: /código, agregado o correlación/i,
+      }),
+      "corr",
+    );
+    await waitFor(() => expect(pedidas.at(-1)?.get("q")).toBe("corr"));
+    expect(pedidas.at(-1)?.get("eventCode")).toBeNull();
+  });
+
+  it("fallidos y pendientes salen de summary.byStatus, no de contar la página", async () => {
+    server.use(
+      http.get(`${API_BASE}/operations/events`, () =>
+        HttpResponse.json({
+          ...RESPUESTA_LISTADO,
+          data: {
+            ...RESPUESTA_LISTADO.data,
+            summary: { byStatus: { failed: 41, pending: 7 } },
+          },
+        }),
+      ),
+    );
+    renderWithProviders(<DomainEventsPage />);
+    await waitFor(() =>
+      expect(
+        screen.getByText("Fallidos con esta búsqueda").parentElement,
+      ).toHaveTextContent("41"),
+    );
+    expect(
+      screen.getByText("Pendientes con esta búsqueda").parentElement,
+    ).toHaveTextContent("7");
   });
 });

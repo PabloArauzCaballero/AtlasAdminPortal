@@ -6,6 +6,8 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { PARTNER_OPERATIONS_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -62,24 +64,20 @@ function AuthorizedPartnerDecisionsPage() {
   const [page, setPage] = useState(1);
   const [abierto, setAbierto] = useState<PartnerQueueItem | null>(null);
 
-  const cola = usePartnerQueue({ page, limit: 25 });
+  const [busqueda, setBusqueda] = useState("");
+  const cola = usePartnerQueue({ page, limit: 25, q: busqueda.trim() });
   const items = useMemo(() => cola.data?.items ?? [], [cola.data]);
   const columns = useMemo(
-    () => buildPartnerQueueColumns((expediente) => setAbierto(expediente)),
+    () =>
+      withoutClientSorting(
+        buildPartnerQueueColumns((expediente) => setAbierto(expediente)),
+      ),
     [],
   );
 
-  const masAntiguo = useMemo(
-    () =>
-      items.reduce<string | null>(
-        (acumulado, item) =>
-          item.submittedAt && (!acumulado || item.submittedAt < acumulado)
-            ? item.submittedAt
-            : acumulado,
-        null,
-      ),
-    [items],
-  );
+  // De TODA la cola (servidor): calculado sobre la página, «el más antiguo» mentía desde la 2.
+  const resumen = cola.data?.summary;
+  const masAntiguo = resumen?.oldestSubmittedAt ?? null;
 
   return (
     <>
@@ -101,9 +99,12 @@ function AuthorizedPartnerDecisionsPage() {
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard
           label="Esperando decisión"
-          value={formatNumber(cola.data?.meta.total ?? 0)}
+          value={resumen ? formatNumber(resumen.total) : "—"}
         />
-        <MetricCard label="En esta página" value={formatNumber(items.length)} />
+        <MetricCard
+          label="Con esta búsqueda"
+          value={cola.data ? formatNumber(cola.data.meta.total) : "—"}
+        />
         <MetricCard
           label="El más antiguo"
           value={
@@ -128,6 +129,19 @@ function AuthorizedPartnerDecisionsPage() {
           disponible.
         </p>
 
+        <FilterBar
+          search={busqueda}
+          searchPlaceholder="Nombre del comercio o NIT…"
+          searchTooltip="Busca por parte del nombre legal, del nombre comercial o del NIT, sin distinguir mayúsculas."
+          onSearchChange={(valor) => {
+            setBusqueda(valor);
+            setPage(1);
+          }}
+          onClear={() => {
+            setBusqueda("");
+            setPage(1);
+          }}
+        />
         {cola.isLoading ? <LoadingSkeleton rows={5} /> : null}
         {cola.error ? (
           <ErrorState
@@ -148,7 +162,11 @@ function AuthorizedPartnerDecisionsPage() {
             columns={columns}
             meta={cola.data.meta}
             onPageChange={setPage}
-            emptyTitle="No hay expedientes esperando decisión."
+            emptyTitle={
+              busqueda.trim()
+                ? "Ningún expediente en revisión coincide con la búsqueda."
+                : "No hay expedientes esperando decisión."
+            }
             emptyDescription="Cuando un comercio termine su onboarding y lo envíe, aparecerá aquí."
           />
         ) : null}

@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import { InvestigationSummaryPage } from "@/features/operations-cases/investigation-summary-page";
 import type { InvestigationSummary } from "@/features/operations-cases/types";
 
+vi.mock("@/shared/auth/auth-context", () => ({
+  useAuth: () => ({ hasAnyRole: () => true }),
+}));
+
 /**
  * Identidad y agenda en la investigación de un caso.
  *

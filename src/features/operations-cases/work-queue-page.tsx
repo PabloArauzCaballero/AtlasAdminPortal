@@ -1,78 +1,114 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ShieldAlert } from "lucide-react";
+import { useAuth } from "@/shared/auth/auth-context";
+import { WORK_QUEUE_ROLE_LIST } from "@/shared/auth/portal-roles";
+import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import { actionErrorMessage } from "./action-error";
 import {
   WORK_QUEUE_PRIORITY_HELP,
   WORK_QUEUE_STATUS_HELP,
 } from "./decision-options";
 import { DecisionDialog } from "./decision-dialog";
 import { useWorkQueue } from "./hooks";
-import { buildWorkQueueColumns } from "./work-queue-columns";
 import type { WorkQueueItem } from "./types";
-import { ShieldAlert } from "lucide-react";
+import { buildWorkQueueColumns } from "./work-queue-columns";
+import {
+  DECIDE_ROLES,
+  tabFromParam,
+  WORK_QUEUE_TABS,
+  type WorkQueueTab,
+} from "./work-queue-tabs";
 
-const queueOptions = [
-  {
-    label: "Revisión manual",
-    value: "manual_review",
-    description: "Altas con KYC dudoso o incompleto que decide un analista.",
-  },
-  {
-    label: "Fraude",
-    value: "fraud",
-    description:
-      "Patrones de fraude detectados; sólo analistas de fraude deciden.",
-  },
-];
+const POR_PAGINA = 20;
+
+/** Opciones FIJAS (el catálogo de lo que el servidor escribe), no las de la página cargada. */
+const opciones = (help: Record<string, string>) =>
+  Object.entries(help).map(([value, description]) => ({
+    value,
+    label: value,
+    description,
+  }));
+const STATUS_OPTIONS = opciones(WORK_QUEUE_STATUS_HELP);
+const PRIORITY_OPTIONS = opciones(WORK_QUEUE_PRIORITY_HELP);
 
 export function WorkQueuePage() {
+  return (
+    <RoleGate roles={WORK_QUEUE_ROLE_LIST}>
+      <AuthorizedWorkQueuePage />
+    </RoleGate>
+  );
+}
+
+function AuthorizedWorkQueuePage() {
+  const { hasAnyRole } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const pestañas = WORK_QUEUE_TABS.filter((tab) => hasAnyRole(tab.roles));
+  const pedida = tabFromParam(params.get("cola"));
+  // Quien sólo ve fraude cae en «Fraude» aunque la URL pida otra cola: el servidor le daría 403.
+  const activa = pestañas.find((tab) => tab.value === pedida) ?? pestañas[0];
+
   const [page, setPage] = useState(1);
-  const [queue, setQueue] = useState("all");
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
-  const [customerId, setCustomerId] = useState("");
+  const [search, setSearch] = useState("");
   const [decidingItem, setDecidingItem] = useState<WorkQueueItem | null>(null);
 
-  const workQueue = useWorkQueue({
+  const cola = useWorkQueue({
     page,
-    limit: 20,
-    queue,
+    limit: POR_PAGINA,
+    queue: activa.value,
     status,
     priority,
-    // El backend exige un número (`^[1-9][0-9]*$`) y responde 400 a cualquier otra cosa: con un
-    // código a medio escribir la tabla se cambiaba por un error. Sólo se filtra con un número.
-    customerId: /^[1-9]\d*$/.test(customerId.trim()) ? customerId.trim() : "",
+    q: search.trim(),
   });
-  const items = useMemo(() => workQueue.data?.items ?? [], [workQueue.data]);
+  const items = useMemo(() => cola.data?.items ?? [], [cola.data]);
   const columns = useMemo(
-    () => buildWorkQueueColumns((item) => setDecidingItem(item)),
-    [],
-  );
-  const statusOptions = useMemo(
     () =>
-      uniqueTextOptions(
-        items.map((item) => item.status),
-        WORK_QUEUE_STATUS_HELP,
+      withoutClientSorting(
+        buildWorkQueueColumns(
+          (item) => setDecidingItem(item),
+          (item) => hasAnyRole(DECIDE_ROLES[item.workItemType]),
+        ),
       ),
-    [items],
+    [hasAnyRole],
   );
-  const priorityOptions = useMemo(
-    () =>
-      uniqueTextOptions(
-        items.map((item) => item.priority),
-        WORK_QUEUE_PRIORITY_HELP,
-      ),
-    [items],
-  );
+  const porTipo = cola.data?.summary?.byType ?? {};
+  const etiqueta = (tab: (typeof pestañas)[number]) => {
+    const cifra =
+      tab.value === "all"
+        ? porTipo.manual_review !== undefined && porTipo.fraud !== undefined
+          ? porTipo.manual_review + porTipo.fraud
+          : undefined
+        : porTipo[tab.value];
+    return cifra === undefined
+      ? tab.label
+      : `${tab.label} · ${formatNumber(cifra)}`;
+  };
+  const etiquetas = new Map(pestañas.map((tab) => [etiqueta(tab), tab.value]));
+
+  const cambiarPestaña = (value: WorkQueueTab) => {
+    const next = new URLSearchParams(params.toString());
+    next.set("cola", value);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    setPage(1);
+  };
+  const error = cola.error
+    ? actionErrorMessage(cola.error, activa.whoCan)
+    : null;
 
   return (
     <>
@@ -80,107 +116,87 @@ export function WorkQueuePage() {
         icon={ShieldAlert}
         eyebrow="Operaciones"
         title="Cola de trabajo"
-        description="Casos de revisión manual y de fraude pendientes de decisión, combinados en una sola cola priorizada."
+        description="Casos de revisión manual y de fraude pendientes de decisión, en una sola cola con una pestaña por tipo."
       />
-      <BusinessContextNote>
-        Cada fila es un caso real abierto por el sistema (identidad por revisar,
-        patrón de fraude detectado, etc.). Decidir un caso lo cierra de forma
-        auditable y, si corresponde, actualiza el estado del cliente. La
-        decisión de fraude está restringida a analistas de fraude y
-        administración: si tu rol no alcanza, la acción lo dice.
-      </BusinessContextNote>
+      <DetailTabs
+        tabs={[...etiquetas.keys()]}
+        active={etiqueta(activa)}
+        onChange={(label) => cambiarPestaña(etiquetas.get(label) ?? "all")}
+      />
+      <BusinessContextNote>{activa.note}</BusinessContextNote>
       <FilterBar
-        search={customerId}
-        searchPlaceholder="Número de cliente…"
-        searchTooltip="Escribe el número del cliente (sólo dígitos) para ver sólo sus casos abiertos."
+        search={search}
+        searchPlaceholder="Código de cliente o de caso…"
+        searchTooltip="Busca por parte del código del cliente (CUS-…) o del caso (MR-…, FR-…). Con sólo dígitos también encuentra el número interno del caso o del cliente."
         filters={[
-          {
-            name: "queue",
-            label: "Cola",
-            value: queue === "all" ? "" : queue,
-            tooltip:
-              "Separa la revisión manual (KYC) de los casos de fraude, que decide otro equipo.",
-            options: queueOptions,
-          },
           {
             name: "status",
             label: "Estado",
             value: status,
             tooltip:
-              "Acota la cola al momento del caso; los estados salen de los casos cargados.",
-            options: statusOptions,
+              "Acota la cola al momento del caso: abierto, en investigación (fraude) o cerrado.",
+            options: STATUS_OPTIONS,
           },
           {
             name: "priority",
             label: "Prioridad",
             value: priority,
             tooltip:
-              "Muestra primero lo urgente: la prioridad se asigna al abrir el caso.",
-            options: priorityOptions,
+              "Muestra primero lo urgente. En fraude es la severidad del patrón detectado.",
+            options: PRIORITY_OPTIONS,
           },
         ]}
         onSearchChange={(value) => {
-          setCustomerId(value);
+          setSearch(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
-          if (name === "queue") setQueue(value || "all");
           if (name === "status") setStatus(value);
           if (name === "priority") setPriority(value);
           setPage(1);
         }}
         onClear={() => {
-          setQueue("all");
           setStatus("");
           setPriority("");
-          setCustomerId("");
+          setSearch("");
           setPage(1);
         }}
       />
-      {workQueue.isLoading ? <LoadingSkeleton rows={6} /> : null}
-      {workQueue.error ? (
+      {cola.isLoading ? <LoadingSkeleton rows={6} /> : null}
+      {error ? (
         <ErrorState
-          description={
-            isAtlasApiError(workQueue.error)
-              ? workQueue.error.message
-              : "No se pudo cargar la cola de trabajo."
-          }
-          requestId={
-            isAtlasApiError(workQueue.error)
-              ? workQueue.error.requestId
-              : undefined
-          }
-          onRetry={() => void workQueue.refetch()}
+          description={error.message}
+          requestId={error.requestId}
+          onRetry={() => void cola.refetch()}
         />
       ) : null}
-      {workQueue.data ? (
+      {cola.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Casos en cola"
-              value={formatNumber(workQueue.data.meta.total)}
+              label={`${activa.label} con estos filtros`}
+              value={formatNumber(cola.data.meta.total)}
             />
-            <MetricCard
-              label="Fraude visible"
-              value={formatNumber(
-                items.filter((item) => item.workItemType === "fraud").length,
-              )}
-            />
-            <MetricCard
-              label="Revisión manual visible"
-              value={formatNumber(
-                items.filter((item) => item.workItemType === "manual_review")
-                  .length,
-              )}
-            />
+            {porTipo.manual_review !== undefined ? (
+              <MetricCard
+                label="Revisión manual con estos filtros"
+                value={formatNumber(porTipo.manual_review)}
+              />
+            ) : null}
+            {porTipo.fraud !== undefined ? (
+              <MetricCard
+                label="Fraude con estos filtros"
+                value={formatNumber(porTipo.fraud)}
+              />
+            ) : null}
           </section>
           <DataTable
             data={items}
             columns={columns}
-            meta={workQueue.data.meta}
+            meta={cola.data.meta}
             onPageChange={setPage}
             emptyTitle="No hay casos para los filtros actuales."
-            emptyDescription="La cola de revisión manual y fraude está vacía para este filtro."
+            emptyDescription="Prueba a quitar filtros o cambia de pestaña."
           />
         </div>
       ) : null}

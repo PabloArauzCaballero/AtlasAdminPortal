@@ -18,7 +18,14 @@ vi.mock("@/features/operations-cases/customer-actions-services", () => ({
   decideEligibility: vi.fn(),
   getBehaviorSummary: vi.fn(),
   recalculateRisk: vi.fn(),
-  listCasesByCursor: vi.fn(),
+}));
+
+// El rol de la sesión: por defecto `admin`, que el backend deja cribar y descartar.
+const sesion = vi.hoisted(() => ({ role: "admin" }));
+vi.mock("@/shared/auth/auth-context", () => ({
+  useAuth: () => ({
+    hasAnyRole: (roles: string[]) => roles.includes(sesion.role),
+  }),
 }));
 
 const services =
@@ -41,6 +48,38 @@ function renderPanel(status = "under_review") {
     { wrapper },
   );
 }
+
+describe("CustomerDecisionsPanel · botones por rol (el @Roles real del backend)", () => {
+  it("operación NO ve «Ejecutar cribado» ni «Descartar» (el backend le da 403 en los dos)", () => {
+    sesion.role = "internal_operator";
+    renderPanel();
+    expect(screen.queryByTestId("compliance-screen")).toBeNull();
+    expect(screen.queryByTestId("clear-matches-submit")).toBeNull();
+    expect(screen.getByTestId("compliance-screen-sin-rol")).toHaveTextContent(
+      "cumplimiento, riesgo y administración",
+    );
+    sesion.role = "admin";
+  });
+
+  it("riesgo criba pero NO descarta coincidencias", () => {
+    sesion.role = "risk_analyst";
+    renderPanel();
+    expect(screen.getByTestId("compliance-screen")).toBeInTheDocument();
+    expect(screen.queryByTestId("clear-matches-submit")).toBeNull();
+    expect(screen.getByTestId("clear-matches-sin-rol")).toHaveTextContent(
+      "cumplimiento y administración",
+    );
+    sesion.role = "admin";
+  });
+
+  it("cumplimiento hace las dos cosas", () => {
+    sesion.role = "compliance_analyst";
+    renderPanel();
+    expect(screen.getByTestId("compliance-screen")).toBeInTheDocument();
+    expect(screen.getByTestId("clear-matches-submit")).toBeInTheDocument();
+    sesion.role = "admin";
+  });
+});
 
 describe("CustomerDecisionsPanel", () => {
   beforeEach(() => {

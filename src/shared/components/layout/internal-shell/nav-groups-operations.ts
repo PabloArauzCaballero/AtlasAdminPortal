@@ -9,7 +9,6 @@ import {
   MailCheck,
   Megaphone,
   MessageSquare,
-  PlayCircle,
   Radio,
   ShieldAlert,
   Stamp,
@@ -18,7 +17,6 @@ import {
   UserCog,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
-import { CASE_QUEUE_NAV_ITEMS } from "./nav-items-case-queues";
 import { paymentClaimsNavItem } from "./nav-items-payment-claims";
 import {
   CAMPAIGN_READ_ROLE_LIST,
@@ -29,6 +27,7 @@ import {
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
   SUPPORT_ADMIN_ROLE_LIST,
+  WORK_QUEUE_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
 
 /** El grupo «Operaciones», aparte del resto del menú secundario para que cada archivo quepa en 300 líneas. */
@@ -56,15 +55,11 @@ export const navGroupOperations: InternalNavGroup = {
       label: "Cola de trabajo",
       href: "/internal/operations/work-queue",
       icon: ShieldAlert,
-      // El backend gatea por rol (@Roles de la clase OperationsController: internal_operator/
-      // risk_analyst/compliance_analyst/admin/platform_admin; fraud_analyst NO), no por un permiso
-      // granular — no existe "operations.workQueue.read" en el catálogo de /internal/permissions.
+      // El backend gatea por rol (@Roles de `GET work-queue`), no por un permiso granular. Absorbió
+      // «Revisión manual» y «Casos de fraude» (pestañas): `fraud_analyst` entra y sólo ve «Fraude».
       permissions: [],
-      roles: OPERATIONS_CASE_ROLE_LIST,
+      roles: WORK_QUEUE_ROLE_LIST,
     },
-    // Las dos colas por separado. Se definieron en la integración de procesos (#42) y nunca se
-    // montaron: sólo se llegaba a ellas escribiendo la URL.
-    ...CASE_QUEUE_NAV_ITEMS,
     {
       label: "Soporte",
       href: "/internal/support",
@@ -152,21 +147,18 @@ export const navGroupOperations: InternalNavGroup = {
       roles: INTERNAL_PORTAL_ROLE_LIST,
     },
     {
-      label: "Jobs internos",
+      label: "Jobs",
       href: "/internal/jobs",
       icon: ListChecks,
       // Igual que "Cola de trabajo": el backend gatea por @Roles, no por permiso granular.
       // Con `internal.jobs.read` —que no existe en /internal/permissions— el ítem no salía
       // en el menú de NADIE y la pantalla quedaba inalcanzable salvo escribiendo la URL.
+      // Une las dos pestañas: quien sólo puede disparar jobs (`system`) también entra, y la
+      // página le enseña sólo «Ejecutar ahora».
       permissions: [],
-      roles: INTERNAL_PORTAL_ROLE_LIST,
-    },
-    {
-      label: "Jobs de runtime",
-      href: "/internal/operations/runtime-jobs",
-      icon: PlayCircle,
-      permissions: [],
-      roles: RUNTIME_JOB_ROLE_LIST,
+      roles: [
+        ...new Set([...INTERNAL_PORTAL_ROLE_LIST, ...RUNTIME_JOB_ROLE_LIST]),
+      ],
     },
     {
       label: "Alertas",

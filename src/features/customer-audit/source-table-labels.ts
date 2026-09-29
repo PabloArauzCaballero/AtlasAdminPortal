@@ -15,36 +15,3 @@ const sourceTableLabels: Record<CustomerAuditSourceTable, string> = {
 export function sourceTableLabel(value: string): string {
   return sourceTableLabels[value as CustomerAuditSourceTable] ?? value;
 }
-
-/** Etiquetas de los tipos de evento del endpoint deprecado (conjunto acotado). */
-const eventTypeLabels: Record<string, string> = {
-  status: "Cambio de estado",
-  auth: "Autenticación",
-  consent: "Consentimiento",
-  manual_review: "Revisión manual",
-  fraud: "Fraude",
-  data_change: "Cambio de datos",
-  customer_action: "Acción del cliente",
-  operational_audit: "Auditoría operativa",
-};
-
-export function eventTypeLabel(value: string): string {
-  return eventTypeLabels[value] ?? value;
-}
-
-/**
- * Opciones filtrables del endpoint deprecado. Se omiten a propósito:
- * - `risk`: está en el enum del backend pero no tiene rama en el repositorio,
- *   así que filtrar por él devuelve 0 eventos siempre.
- * - `operational_audit`: no es un valor aceptado por el enum; esos eventos solo
- *   aparecen cuando el filtro es "Todos".
- */
-export const eventTypeOptions = [
-  "status",
-  "auth",
-  "consent",
-  "manual_review",
-  "fraud",
-  "data_change",
-  "customer_action",
-].map((value) => ({ label: eventTypeLabel(value), value }));

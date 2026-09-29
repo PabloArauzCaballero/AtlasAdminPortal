@@ -32,8 +32,20 @@ vi.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
-const { QaLabGuidePage } =
-  await import("@/features/qa-lab/guide/qa-lab-guide-page");
+vi.mock("@/shared/auth/auth-context", () => ({
+  useAuth: () => ({ permissions: ["systems.endpoints.read"], roles: [] }),
+}));
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams("tab=guia"),
+  usePathname: () => "/internal/qa/aprender",
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+}));
+
+// La guía vive ahora como pestaña «Guía de referencia» de Aprender QA Lab
+// (`/internal/qa/aprender?tab=guia`); se prueba montada en su página.
+const { LearningCenterPage } =
+  await import("@/features/qa-tutorials/learning-center-page");
+const QaLabGuidePage = () => <LearningCenterPage />;
 const { GuideScenarioMatrix } =
   await import("@/features/qa-lab/guide/guide-scenario-matrix");
 const { GuideStressChart } =
@@ -84,8 +96,11 @@ describe("QaLabGuidePage · estructura completa", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Guía del Laboratorio de testing",
+        name: "Aprender QA Lab",
       }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Guía de referencia" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Abrir el lab" })).toHaveAttribute(
       "href",

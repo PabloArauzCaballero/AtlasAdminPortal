@@ -41,7 +41,8 @@ export type PaymentClaimsSummary = {
 export type PaymentClaimsFilters = {
   status: string;
   partnerId: string;
-  customerId: string;
+  /** Parte del código del aviso, del cliente o del nombre del comercio. */
+  q: string;
   olderThanHours: string;
   page: number;
 };

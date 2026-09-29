@@ -1,24 +1,20 @@
 "use client";
 
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
-import type { QueryParams } from "@/shared/api/types";
 import {
   clearComplianceMatches,
   decideEligibility,
   getBehaviorSummary,
-  listCasesByCursor,
   recalculateRisk,
   runComplianceScreening,
 } from "./customer-actions-services";
 import type {
-  CaseQueue,
   ClearMatchesInput,
   EligibilityDecisionInput,
 } from "./customer-actions-types";
@@ -87,20 +83,5 @@ export function useRecalculateBehaviorMutation(customerId: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.behaviorSummary(customerId), data);
     },
-  });
-}
-
-/** Una cola por cursor: cada «Cargar más» pide la página siguiente con el `nextCursor` anterior. */
-export function useCaseQueue(queue: CaseQueue, filters: QueryParams) {
-  return useInfiniteQuery({
-    queryKey: queryKeys.caseQueue(queue, filters),
-    queryFn: ({ pageParam }) =>
-      listCasesByCursor(queue, {
-        ...filters,
-        limit: 20,
-        ...(pageParam ? { cursor: pageParam } : {}),
-      }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 }
