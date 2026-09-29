@@ -1,7 +1,6 @@
 "use client";
 
 import { FlaskConical, Gauge, KeyRound, Radar, Workflow } from "lucide-react";
-import { Badge } from "@/shared/components/ui/badges";
 import { FeatureCard, Note, Section } from "./guide-primitives";
 import { ScenarioTable, TargetsTable } from "./guide-tables";
 

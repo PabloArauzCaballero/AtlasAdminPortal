@@ -126,12 +126,14 @@ describe("Recorridos de aprendizaje · tablas homogéneas", () => {
 
   it("el filtro de pantalla deja sólo los tutoriales de ese módulo", async () => {
     render(<LearningPaths />);
-    const module = tutorialCatalog[0].module;
+    const moduleName = tutorialCatalog[0].module;
     await elegirOpcion(
       screen.getByRole("combobox", { name: "Pantalla" }),
-      module,
+      moduleName,
     );
-    const expected = tutorialCatalog.filter((t) => t.module === module).length;
+    const expected = tutorialCatalog.filter(
+      (t) => t.module === moduleName,
+    ).length;
     await waitFor(() =>
       expect(within(tutorialsTable()).getAllByRole("row")).toHaveLength(
         expected + 1,
