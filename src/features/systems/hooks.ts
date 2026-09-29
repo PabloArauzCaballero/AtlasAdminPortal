@@ -89,6 +89,7 @@ export function useEndpoints(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.endpoints(query),
     queryFn: () => listEndpoints(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -112,6 +113,7 @@ export function useDataEntities(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.dataEntities(query),
     queryFn: () => listDataEntities(query),
+    placeholderData: keepPreviousData,
   });
 }
 

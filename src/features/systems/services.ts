@@ -1,6 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
+  CatalogSummary,
   CatalogSeedRefreshInput,
   EndpointDiscoveryInput,
   QueueStressRunInput,
@@ -163,6 +164,11 @@ export async function listDomains(query: QueryParams) {
 }
 
 /** El mapa entero, con las cifras ya cruzadas en el servidor. */
+/** Cifras del catálogo contadas en el servidor: sensibilidad, documentación y cobertura QA. */
+export function getCatalogSummary() {
+  return apiRequest<CatalogSummary>("/systems/catalog/summary");
+}
+
 export function getDomainOverview() {
   return apiRequest<DomainOverview>("/systems/domains/overview");
 }

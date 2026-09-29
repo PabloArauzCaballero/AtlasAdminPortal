@@ -1,5 +1,7 @@
 "use client";
 
+import { ExportDownloadButton } from "@/features/data-exports/export-download-button";
+
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -9,6 +11,7 @@ import type { DataEntity } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { serverPagedColumns } from "@/shared/components/data-table/server-columns";
 import {
   BlockBadge,
   ModuleBadge,
@@ -64,89 +67,91 @@ function AuthorizedDataEntitiesPage() {
     [blocks.data],
   );
 
+  // Paginada en el servidor: la cabecera no ofrece ordenar la página como si fuera el catálogo.
   const columns = useMemo<ColumnDef<DataEntity>[]>(
-    () => [
-      {
-        header: "Bloque",
-        accessorKey: "systemCode",
-        cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
-      },
-      {
-        header: "Schema",
-        accessorKey: "schemaName",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.schemaName}</span>
-        ),
-      },
-      {
-        header: "Tabla",
-        accessorKey: "tableName",
-        cell: ({ row }) => (
-          <Link
-            className="font-mono text-xs font-semibold text-atlas-accent underline"
-            href={`/internal/data-catalog/tables/${row.original.entityId}`}
-          >
-            {row.original.tableName}
-          </Link>
-        ),
-      },
-      {
-        header: "Entidad",
-        accessorKey: "entityName",
-        cell: ({ row }) => row.original.entityName ?? "—",
-      },
-      {
-        header: "Módulo",
-        accessorKey: "module",
-        cell: ({ row }) => <ModuleBadge value={row.original.module} />,
-      },
-      {
-        header: "Owner",
-        accessorKey: "dataOwner",
-        cell: ({ row }) => row.original.dataOwner ?? "—",
-      },
-      {
-        header: "PII",
-        accessorKey: "containsPii",
-        cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
-      },
-      {
-        header: "Financiera",
-        accessorKey: "containsFinancialData",
-        cell: ({ row }) => formatBoolean(row.original.containsFinancialData),
-      },
-      {
-        header: "Riesgo",
-        accessorKey: "containsRiskData",
-        cell: ({ row }) => formatBoolean(row.original.containsRiskData),
-      },
-      {
-        header: "Audit critical",
-        accessorKey: "isAuditCritical",
-        cell: ({ row }) => formatBoolean(row.original.isAuditCritical),
-      },
-      {
-        header: "Retención",
-        accessorKey: "retentionPolicyCode",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">
-            {row.original.retentionPolicyCode ?? "—"}
-          </span>
-        ),
-      },
-      {
-        header: "Review",
-        accessorKey: "reviewStatus",
-        cell: ({ row }) => (
-          <ReviewStatusBadge value={row.original.reviewStatus} />
-        ),
-      },
-      {
-        header: "Estado",
-        accessorKey: "status",
-        cell: ({ row }) => <StatusBadge value={row.original.status} />,
-      },
-    ],
+    () =>
+      serverPagedColumns([
+        {
+          header: "Bloque",
+          accessorKey: "systemCode",
+          cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
+        },
+        {
+          header: "Schema",
+          accessorKey: "schemaName",
+          cell: ({ row }) => (
+            <span className="font-mono text-xs">{row.original.schemaName}</span>
+          ),
+        },
+        {
+          header: "Tabla",
+          accessorKey: "tableName",
+          cell: ({ row }) => (
+            <Link
+              className="font-mono text-xs font-semibold text-atlas-accent underline"
+              href={`/internal/data-catalog/tables/${row.original.entityId}`}
+            >
+              {row.original.tableName}
+            </Link>
+          ),
+        },
+        {
+          header: "Entidad",
+          accessorKey: "entityName",
+          cell: ({ row }) => row.original.entityName ?? "—",
+        },
+        {
+          header: "Módulo",
+          accessorKey: "module",
+          cell: ({ row }) => <ModuleBadge value={row.original.module} />,
+        },
+        {
+          header: "Owner",
+          accessorKey: "dataOwner",
+          cell: ({ row }) => row.original.dataOwner ?? "—",
+        },
+        {
+          header: "PII",
+          accessorKey: "containsPii",
+          cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
+        },
+        {
+          header: "Financiera",
+          accessorKey: "containsFinancialData",
+          cell: ({ row }) => formatBoolean(row.original.containsFinancialData),
+        },
+        {
+          header: "Riesgo",
+          accessorKey: "containsRiskData",
+          cell: ({ row }) => formatBoolean(row.original.containsRiskData),
+        },
+        {
+          header: "Audit critical",
+          accessorKey: "isAuditCritical",
+          cell: ({ row }) => formatBoolean(row.original.isAuditCritical),
+        },
+        {
+          header: "Retención",
+          accessorKey: "retentionPolicyCode",
+          cell: ({ row }) => (
+            <span className="font-mono text-xs">
+              {row.original.retentionPolicyCode ?? "—"}
+            </span>
+          ),
+        },
+        {
+          header: "Review",
+          accessorKey: "reviewStatus",
+          cell: ({ row }) => (
+            <ReviewStatusBadge value={row.original.reviewStatus} />
+          ),
+        },
+        {
+          header: "Estado",
+          accessorKey: "status",
+          cell: ({ row }) => <StatusBadge value={row.original.status} />,
+        },
+      ]),
     [],
   );
 
@@ -156,6 +161,12 @@ function AuthorizedDataEntitiesPage() {
         icon={Database}
         title="Catálogo de datos"
         description="Tablas y entidades de LOS TRES bloques del ecosistema, desde `/systems/data-entities`."
+        actions={
+          <ExportDownloadButton
+            downloadUrl="/api/v1/systems/data-entities"
+            fileName="catalogo-de-datos"
+          />
+        }
       />
       <BusinessContextNote>
         Cada fila es una tabla real de la base de datos. Este catálogo existe
@@ -168,7 +179,8 @@ function AuthorizedDataEntitiesPage() {
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar tabla, esquema, entidad, módulo u owner…"
+        searchPlaceholder="Buscar tabla, esquema, entidad, modelo, módulo o responsable…"
+        searchTooltip="Busca en el servidor en el nombre de la tabla, la entidad, el modelo, el esquema, el módulo y el responsable."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);

@@ -83,23 +83,83 @@ export function buildLineageEdgeColumns(
       ),
     },
     {
-      header: "Etiqueta",
+      // Para endpoint → tabla es la severidad; para tabla → tabla, el motivo de la relación.
+      header: "Detalle",
       accessorKey: "label",
       cell: ({ row }) => safeText(row.original.label ?? "—"),
     },
   ];
 }
 
+/** Enlace a la ficha de un extremo: un endpoint a su ficha de ruta, una tabla a su nodo de linaje. */
+function NodeLink({
+  node,
+  fallback,
+}: Readonly<{ node?: LineageNode; fallback: string }>) {
+  if (!node) return <span className="font-mono text-xs">{fallback}</span>;
+  const href =
+    node.nodeType === "endpoint"
+      ? `/internal/systems/endpoints/${node.referenceId}`
+      : `/internal/lineage/nodes/${encodeURIComponent(node.nodeId)}`;
+  return (
+    <Link
+      className="text-xs font-medium text-atlas-accent underline"
+      href={href}
+    >
+      {node.label}
+    </Link>
+  );
+}
+
+export const FAMILY_LABELS: Record<string, string> = {
+  impact: "Endpoint → tabla",
+  relationship: "Tabla → tabla",
+};
+
 export function buildImpactColumns(): ColumnDef<LineageImpactItem>[] {
   return [
-    { header: "Tipo", accessorKey: "impactType" },
+    {
+      header: "Relación",
+      id: "family",
+      cell: ({ row }) => (
+        <Badge tone="muted">
+          {FAMILY_LABELS[row.original.family ?? ""] ?? "—"}
+        </Badge>
+      ),
+    },
+    { header: "Operación", accessorKey: "impactType" },
     {
       header: "Severidad",
       accessorKey: "severity",
-      cell: ({ row }) => <RiskBadge value={row.original.severity} />,
+      // Sólo las aristas endpoint → tabla tienen severidad. Antes una relación entre tablas enseñaba
+      // aquí su motivo de negocio (texto libre) pintado como si fuera un nivel de riesgo.
+      cell: ({ row }) =>
+        row.original.severity ? (
+          <RiskBadge value={row.original.severity} />
+        ) : (
+          <span className="text-xs text-atlas-muted">No aplica</span>
+        ),
     },
-    { header: "Origen", accessorKey: "sourceNodeId" },
-    { header: "Destino", accessorKey: "targetNodeId" },
+    {
+      header: "Origen",
+      id: "source",
+      cell: ({ row }) => (
+        <NodeLink
+          node={row.original.path?.[0]}
+          fallback={row.original.sourceNodeId}
+        />
+      ),
+    },
+    {
+      header: "Destino",
+      id: "target",
+      cell: ({ row }) => (
+        <NodeLink
+          node={row.original.path?.[1]}
+          fallback={row.original.targetNodeId}
+        />
+      ),
+    },
     {
       header: "Descripción",
       accessorKey: "description",

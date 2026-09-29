@@ -1,5 +1,20 @@
-import { BusinessGlossaryPage } from "@/features/business-glossary/business-glossary-page";
+import { redirect } from "next/navigation";
+import {
+  redirectWithParams,
+  type RouteSearchParams,
+} from "@/shared/lib/redirect-with-params";
 
-export default function Page() {
-  return <BusinessGlossaryPage />;
+/** El glosario es ahora la pestaña «Términos» de «Dominios y glosario». La ficha `[termId]` se conserva. */
+export default async function Page({
+  searchParams,
+}: Readonly<{ searchParams: RouteSearchParams }>) {
+  redirect(
+    redirectWithParams(
+      "/internal/business-metadata/domains",
+      await searchParams,
+      {
+        tab: "terminos",
+      },
+    ),
+  );
 }

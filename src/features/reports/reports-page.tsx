@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { serverPagedColumns } from "@/shared/components/data-table/server-columns";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
   PageHeader,
@@ -36,15 +37,17 @@ function AuthorizedReportsPage() {
   const [status, setStatus] = useState("");
   const reports = useReports({ page, limit: 20, q, domain, status });
   const items = useMemo(() => reports.data?.items ?? [], [reports.data]);
-  const columns = useMemo(() => buildReportColumns(), []);
+  const columns = useMemo(() => serverPagedColumns(buildReportColumns()), []);
+  // Las opciones salen del catálogo entero que publica el servidor, no de la página cargada.
   const domainOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.domain)),
-    [items],
+    () => uniqueTextOptions(reports.data?.facets?.domains ?? []),
+    [reports.data?.facets],
   );
   const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
-    [items],
+    () => uniqueTextOptions(reports.data?.facets?.statuses ?? []),
+    [reports.data?.facets],
   );
+  const summary = reports.data?.summary;
 
   return (
     <>
@@ -52,23 +55,26 @@ function AuthorizedReportsPage() {
         icon={ChartColumn}
         eyebrow="Reportería"
         title="Reportería dinámica"
-        description="Inventario real de `report_definitions`, widgets y fuentes autorizadas del servicio interno."
+        description="Los informes que Atlas sabe calcular. Están definidos en el código del servidor (no hay tabla de informes) y cada uno se calcula en vivo al ejecutarlo; no se guarda un historial."
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar reporte, dominio, dueño o fuente…"
+        searchPlaceholder="Buscar informe, clave, descripción, dominio, dueño o fuente…"
+        searchTooltip="Busca en el servidor en el nombre, la clave, la descripción, el dominio, el dueño y la fuente del informe."
         filters={[
           {
             name: "domain",
             label: "Dominio",
             value: domain,
             options: domainOptions,
+            tooltip: "Área de negocio del informe.",
           },
           {
             name: "status",
             label: "Estado",
             value: status,
             options: statusOptions,
+            tooltip: "Si el informe está disponible para ejecutarse.",
           },
         ]}
         onSearchChange={(value) => {
@@ -103,34 +109,27 @@ function AuthorizedReportsPage() {
       ) : null}
       {reports.data ? (
         <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            {/* Cifras de TODO lo filtrado (`summary` del servidor), no de la página. «Activos»
+                comparaba con `active` en minúscula y el catálogo dice ACTIVE: salía siempre 0. */}
             <MetricCard
-              label="Reportes"
+              label="Informes"
               value={formatNumber(reports.data.meta.total)}
             />
-            <MetricCard label="Visibles" value={formatNumber(items.length)} />
             <MetricCard
               label="Activos"
-              value={formatNumber(
-                items.filter((item) => item.status === "active").length,
-              )}
+              value={summary ? formatNumber(summary.active) : "—"}
             />
             <MetricCard
-              label="Críticos"
-              value={formatNumber(
-                items.filter(
-                  (item) =>
-                    item.criticality === "HIGH" ||
-                    item.criticality === "CRITICAL",
-                ).length,
-              )}
+              label="Críticos o altos"
+              value={summary ? formatNumber(summary.critical) : "—"}
             />
           </section>
           <Card>
             <CardHeader>
               <SectionHeader
                 title="Definiciones disponibles"
-                description="Cada reporte se abre con contratos, widgets, snapshots y ejecución controlada por permisos."
+                description="Cada informe se abre con sus bloques y sus filtros, y se calcula en vivo al ejecutarlo."
                 className="mb-0"
               />
             </CardHeader>

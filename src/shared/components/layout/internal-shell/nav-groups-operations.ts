@@ -1,5 +1,4 @@
 import {
-  Download,
   FolderTree,
   Gauge,
   Landmark,
@@ -168,13 +167,6 @@ export const navGroupOperations: InternalNavGroup = {
       // `@Roles` en el servidor, sin permiso granular: leer lo puede internal_operator.
       permissions: [],
       roles: CAMPAIGN_READ_ROLE_LIST,
-    },
-    {
-      label: "Exportaciones",
-      href: "/internal/exports",
-      icon: Download,
-      permissions: [],
-      roles: INTERNAL_PORTAL_ROLE_LIST,
     },
   ],
 };

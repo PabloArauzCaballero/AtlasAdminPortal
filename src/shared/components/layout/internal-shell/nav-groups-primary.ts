@@ -34,14 +34,9 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["catalog.data.read"],
       },
       {
-        label: "Dominios",
+        // Dominios y glosario son una pantalla con dos pestañas; `/glossary` redirige a la segunda.
+        label: "Dominios y glosario",
         href: "/internal/business-metadata/domains",
-        icon: BookOpen,
-        permissions: ["businessMetadata.read"],
-      },
-      {
-        label: "Glosario",
-        href: "/internal/business-metadata/glossary",
         icon: BookOpen,
         permissions: ["businessMetadata.read"],
       },
@@ -68,20 +63,10 @@ export const navGroupsPrimary: InternalNavGroup[] = [
     icon: GitBranch,
     items: [
       {
-        label: "Relaciones",
+        // Una pantalla con pestañas (Grafo, Nodos, Relaciones e impacto, Mapa por dominio). Las
+        // antiguas «Lineage oficial» e «Impacto lineage» redirigen a su pestaña.
+        label: "Lineage",
         href: "/internal/lineage",
-        icon: GitBranch,
-        permissions: ["lineage.read"],
-      },
-      {
-        label: "Lineage oficial",
-        href: "/internal/lineage/official",
-        icon: GitBranch,
-        permissions: ["lineage.read"],
-      },
-      {
-        label: "Impacto lineage",
-        href: "/internal/lineage/impact",
         icon: GitBranch,
         permissions: ["lineage.read"],
       },

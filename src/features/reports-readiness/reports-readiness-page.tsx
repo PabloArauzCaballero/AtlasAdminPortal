@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import {
-  useDashboard,
-  useDataEntities,
-  useEndpoints,
-  useTestSuites,
-} from "@/features/systems/hooks";
+import { useCatalogSummary } from "@/features/systems/catalog-summary-hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import {
   PageHeader,
@@ -40,50 +35,34 @@ export function ReportsReadinessPage({
 function AuthorizedReportsReadinessPage({
   embedded = false,
 }: Readonly<{ embedded?: boolean }>) {
-  const dashboard = useDashboard();
-  const endpoints = useEndpoints({ page: 1, limit: 100 });
-  const entities = useDataEntities({ page: 1, limit: 100 });
-  const suites = useTestSuites({ page: 1, limit: 100 });
-  const error =
-    dashboard.error ?? endpoints.error ?? entities.error ?? suites.error;
-
+  // Las cifras salen de `GET /systems/catalog/summary`, contadas en la base sobre el catálogo
+  // entero. Antes se calculaban aquí sobre las primeras 100 filas de endpoints, tablas y suites: con
+  // 432 rutas y 186 tablas, «Cobertura» y «QA testable» eran porcentajes de un corte sin decirlo.
+  const summary = useCatalogSummary();
+  const error = summary.error;
   const readiness = useMemo(() => {
-    const tables = entities.data?.items ?? [];
-    const routes = endpoints.data?.items ?? [];
-    const testSuites = suites.data?.items ?? [];
-    const tablesWithPurpose = tables.filter(
-      (item) => item.businessPurpose && item.businessPurpose.trim().length > 0,
-    ).length;
-    const endpointsWithPurpose = routes.filter(
-      (item) => item.businessPurpose && item.businessPurpose.trim().length > 0,
-    ).length;
-    const riskTables = tables.filter(
-      (item) => item.containsRiskData || item.containsFinancialData,
-    ).length;
-    const testableEndpoints = routes.filter(
-      (item) => item.isTestableFromPortal,
-    ).length;
-    const enabledSuites = testSuites.filter((item) => item.isEnabled).length;
-    const tableCoverage = tables.length
-      ? Math.round((tablesWithPurpose / tables.length) * 100)
-      : 0;
-    const endpointCoverage = routes.length
-      ? Math.round((endpointsWithPurpose / routes.length) * 100)
-      : 0;
-    const qaCoverage = routes.length
-      ? Math.round((testableEndpoints / routes.length) * 100)
-      : 0;
+    const data = summary.data;
+    const pct = (part: number, total: number) =>
+      total > 0 ? Math.round((part / total) * 100) : 0;
     return {
-      tables,
-      routes,
-      testSuites,
-      riskTables,
-      enabledSuites,
-      tableCoverage,
-      endpointCoverage,
-      qaCoverage,
+      tableCoverage: pct(
+        data?.tables.withPurpose ?? 0,
+        data?.tables.total ?? 0,
+      ),
+      endpointCoverage: pct(
+        data?.endpoints.withPurpose ?? 0,
+        data?.endpoints.total ?? 0,
+      ),
+      qaCoverage: pct(
+        data?.endpoints.testableFromPortal ?? 0,
+        data?.endpoints.total ?? 0,
+      ),
+      enabledSuites: data?.testSuites.enabled ?? 0,
+      riskTables: data?.tables.financialOrRisk ?? 0,
+      routes: data?.endpoints.total ?? 0,
+      tables: data?.tables.total ?? 0,
     };
-  }, [endpoints.data?.items, entities.data?.items, suites.data?.items]);
+  }, [summary.data]);
 
   const content = (
     <>
@@ -100,12 +79,7 @@ function AuthorizedReportsReadinessPage({
           description="Cobertura complementaria para confirmar que el release cuenta con metadata y QA suficientes."
         />
       )}
-      {dashboard.isLoading ||
-      endpoints.isLoading ||
-      entities.isLoading ||
-      suites.isLoading ? (
-        <LoadingSkeleton rows={6} />
-      ) : null}
+      {summary.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {error ? (
         <ErrorState
           description={
@@ -114,15 +88,10 @@ function AuthorizedReportsReadinessPage({
               : "No se pudo evaluar preparación de reportería."
           }
           requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => {
-            void dashboard.refetch();
-            void endpoints.refetch();
-            void entities.refetch();
-            void suites.refetch();
-          }}
+          onRetry={() => void summary.refetch()}
         />
       ) : null}
-      {dashboard.data && endpoints.data && entities.data && suites.data ? (
+      {summary.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
@@ -197,11 +166,11 @@ function AuthorizedReportsReadinessPage({
                 />
                 <MetricCard
                   label="Endpoints disponibles"
-                  value={formatNumber(readiness.routes.length)}
+                  value={formatNumber(readiness.routes)}
                 />
                 <MetricCard
                   label="Tablas disponibles"
-                  value={formatNumber(readiness.tables.length)}
+                  value={formatNumber(readiness.tables)}
                 />
               </CardContent>
             </Card>

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import { getReport, listReports, runReport } from "./services";
@@ -9,6 +14,7 @@ export function useReports(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.reports(query),
     queryFn: () => listReports(query),
+    placeholderData: keepPreviousData,
   });
 }
 

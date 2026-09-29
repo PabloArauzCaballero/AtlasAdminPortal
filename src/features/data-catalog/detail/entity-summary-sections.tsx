@@ -42,23 +42,21 @@ export function EntitySummarySections({
           { label: "Legal", value: formatBoolean(entity.containsLegalData) },
         ]}
       />
+      {/*
+       * Aquí iban «Append only», «Update permitido» y «Delete permitido». El catálogo no guarda esas
+       * reglas —la API no las devuelve y la tabla no tiene esas columnas—, así que salían «No» para
+       * todas las tablas. Se enseña sólo lo que existe.
+       */}
       <KeyValueSection
-        title="Gobierno operativo"
-        description="Reglas que el backend debe respetar en escrituras, borrados y auditoría."
+        title="Responsabilidad"
+        description="Quién responde por la tabla y cuánto tiempo se guardan sus datos."
         items={[
-          { label: "Append only", value: formatBoolean(entity.isAppendOnly) },
-          {
-            label: "Update permitido",
-            value: formatBoolean(entity.allowsUpdates),
-          },
-          {
-            label: "Delete permitido",
-            value: formatBoolean(entity.allowsDeletes),
-          },
           {
             label: "Auditoría crítica",
             value: formatBoolean(entity.isAuditCritical),
           },
+          { label: "Retención", value: entity.retentionPolicyCode, mono: true },
+          { label: "Estado de revisión", value: entity.reviewStatus },
         ]}
       />
     </div>
