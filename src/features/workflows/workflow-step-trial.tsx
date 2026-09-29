@@ -13,12 +13,11 @@ import {
   runWorkflowStepTrial,
   type WorkflowStepTrial as WorkflowStepTrialResult,
 } from "./services";
-import type { WorkflowStep } from "./types";
+import type { RoutedWorkflowStep } from "./step-endpoint";
 
 const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 /** Techo duro de repeticiones: este panel prueba un paso, no reemplaza el stress del QA Lab. */
 const MAX_REPEAT = 50;
-
 /**
  * Prueba del paso desde el propio lienzo: rellenar los parámetros de ruta, ver
  * el cuerpo que el catálogo declara y mandarlo.
@@ -33,7 +32,9 @@ const MAX_REPEAT = 50;
  * `runWorkflowStepTrial` — mismo canal, misma sesión, mismo host propio del portal — así que
  * repetir no abre ninguna puerta que la prueba de un solo tiro no tuviera ya.
  */
-export function WorkflowStepTrial({ step }: Readonly<{ step: WorkflowStep }>) {
+type Props = Readonly<{ step: RoutedWorkflowStep }>;
+
+export function WorkflowStepTrial({ step }: Props) {
   const params = useMemo(
     () => pathParamNames(step.routePath),
     [step.routePath],
@@ -288,7 +289,7 @@ function parsePayload(text: string): unknown {
 }
 
 /** Esqueleto a partir del contrato: las claves reales, con el tipo como pista. */
-function draftPayload(step: WorkflowStep): string {
+function draftPayload(step: RoutedWorkflowStep): string {
   const contract = step.inputContract;
   if (!contract || Object.keys(contract).length === 0) return "{}";
   const draft = Object.fromEntries(

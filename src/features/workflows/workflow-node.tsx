@@ -1,5 +1,6 @@
 import type { GraphNode, WorkflowLane } from "./workflow-graph-layout";
 import { NODE_W } from "./workflow-graph-layout";
+import { MANUAL_STEP_METHOD, MANUAL_STEP_ROUTE } from "./step-endpoint";
 
 /**
  * El nodo del lienzo: una tarjeta real por endpoint, con sus puertos de
@@ -41,7 +42,7 @@ export function WorkflowNodeCard({
   dimmed: boolean;
 }>) {
   const accent = ACTOR_COLOR[node.actorType] ?? "#64748b";
-  const method = node.step.httpMethod;
+  const method = node.step.httpMethod ?? MANUAL_STEP_METHOD;
   return (
     <g opacity={dimmed ? 0.28 : 1}>
       <rect
@@ -90,7 +91,7 @@ export function WorkflowNodeCard({
         fontFamily="ui-monospace, monospace"
         fill="#334155"
       >
-        {clip(node.step.routePath, 26)}
+        {clip(node.step.routePath ?? MANUAL_STEP_ROUTE, 26)}
       </text>
 
       <text

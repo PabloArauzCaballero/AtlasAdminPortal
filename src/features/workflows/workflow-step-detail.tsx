@@ -8,6 +8,7 @@ import {
   DetailSection,
 } from "./workflow-detail-primitives";
 import { WorkflowStepTrial } from "./workflow-step-trial";
+import { isRoutedStep, MANUAL_STEP_ROUTE } from "./step-endpoint";
 
 /**
  * Ficha del paso: el endpoint concreto que el flujo recorre, con lo que el
@@ -55,7 +56,11 @@ export function WorkflowStepDetail({ step }: Readonly<{ step: WorkflowStep }>) {
         <p className="text-xs leading-5 text-atlas-muted">{step.description}</p>
       ) : null}
 
-      <DetailField label="Código de operación" value={step.endpointCode} mono />
+      <DetailField
+        label="Código de operación"
+        value={step.endpointCode ?? `Sin operación: ${MANUAL_STEP_ROUTE}`}
+        mono
+      />
 
       <DetailList
         title="Roles autorizados"
@@ -119,7 +124,7 @@ export function WorkflowStepDetail({ step }: Readonly<{ step: WorkflowStep }>) {
         />
       </div>
 
-      <WorkflowStepTrial step={step} />
+      {isRoutedStep(step) ? <WorkflowStepTrial step={step} /> : null}
 
       {step.possibleErrors.length > 0 ? (
         <DetailSection title="Errores posibles" isEmpty={false} empty="">

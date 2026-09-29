@@ -31,6 +31,8 @@ export function RunCountsLayer({
   return (
     <g aria-hidden pointerEvents="none">
       {nodes.map((node) => {
+        // Un paso que hace una persona no tiene ruta: ninguna corrida lo cuenta.
+        if (!node.step.httpMethod || !node.step.routePath) return null;
         const step = counts.get(
           endpointKey(node.step.httpMethod, node.step.routePath),
         );
