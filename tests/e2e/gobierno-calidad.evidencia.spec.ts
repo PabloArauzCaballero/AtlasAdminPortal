@@ -318,7 +318,7 @@ const VISTAS = [
     nombre: "consentimientos",
     ruta: "/internal/settings/consent-documents",
     lista: "consent-documents-list",
-    tarjeta: '[data-testid="consent-document-credit_bureau_query"]',
+    tarjeta: '[data-testid="consent-documents-list"] .bg-white',
     titulo: /Documentos de consentimiento/,
     editar: "edit-credit_bureau_query",
     campo: "body-credit_bureau_query",

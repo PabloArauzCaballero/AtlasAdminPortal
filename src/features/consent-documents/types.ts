@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
 /**
  * Los documentos que el cliente acepta al registrarse.
  *
@@ -19,7 +21,26 @@ export type ConsentDocument = {
   status: string | null;
 };
 
-export type ConsentDocumentList = { items: ConsentDocument[] };
+/** Cuántos documentos hay en el catálogo entero, sin filtros: no cambia al buscar ni al paginar. */
+export type ConsentDocumentSummary = {
+  total: number;
+  published: number;
+  draft: number;
+  retired: number;
+};
+
+export type ConsentDocumentList = {
+  items: ConsentDocument[];
+  meta?: PaginationMeta;
+  summary?: ConsentDocumentSummary;
+};
+
+export type ConsentDocumentQuery = {
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+};
 
 /** Correccion de un documento: nunca su codigo ni su version. */
 export type ConsentDocumentUpdate = {

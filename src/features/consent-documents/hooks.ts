@@ -1,17 +1,31 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   listConsentDocuments,
   publishConsentDocument,
   updateConsentDocument,
 } from "./services";
-import type { ConsentDocumentCreate, ConsentDocumentUpdate } from "./types";
+import type {
+  ConsentDocumentCreate,
+  ConsentDocumentQuery,
+  ConsentDocumentUpdate,
+} from "./types";
 
 const KEY = ["consent-documents"] as const;
 
-export function useConsentDocuments() {
-  return useQuery({ queryKey: KEY, queryFn: listConsentDocuments });
+export function useConsentDocuments(query: ConsentDocumentQuery = {}) {
+  return useQuery({
+    queryKey: [...KEY, query],
+    queryFn: () => listConsentDocuments(query),
+    // Cambiar de página o de filtro no vacía la tabla: se ve la anterior hasta que llega la nueva.
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useUpdateConsentDocument() {
