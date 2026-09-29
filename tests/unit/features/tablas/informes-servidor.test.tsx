@@ -28,7 +28,7 @@ const asyncHooks = vi.hoisted(() => ({
 }));
 vi.mock("@/features/flows/async/hooks", () => asyncHooks);
 const systemsHooks = vi.hoisted(() => ({ useTrafficRoutesPage: vi.fn() }));
-vi.mock("@/features/systems/hooks", () => systemsHooks);
+vi.mock("@/features/systems/traffic-hooks", () => systemsHooks);
 vi.mock("@/features/flows/flow-catalog-not-loaded", () => ({
   FlowCatalogNotLoaded: () => null,
 }));

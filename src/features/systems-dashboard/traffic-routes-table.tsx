@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { useTrafficRoutesPage } from "@/features/systems/hooks";
+import { useTrafficRoutesPage } from "@/features/systems/traffic-hooks";
 import type { TrafficLatencyRoute } from "@/features/systems/types";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
