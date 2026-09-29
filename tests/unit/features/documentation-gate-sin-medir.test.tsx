@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "@/shared/api/client";
@@ -85,5 +85,78 @@ describe("Compuerta de documentación", () => {
     expect(await screen.findByText("Pasa")).toBeInTheDocument();
     expect(screen.getByText("Se puede certificar")).toBeInTheDocument();
     expect(screen.queryByTestId("flow-catalog-not-loaded")).toBeNull();
+  });
+
+  it("es una tabla con cabeceras, y el buscador y el filtro de estado recortan las filas", async () => {
+    responder(
+      {
+        passed: false,
+        artifactsLoaded: true,
+        evaluatedAt: "2026-09-28T12:00:00.000Z",
+        checks: [
+          {
+            code: "CRITICAL_VERIFIED",
+            passed: false,
+            measured: true,
+            count: 142,
+            detail: "flujos sin verificar",
+          },
+          {
+            code: "UNPROTECTED_WRITE_OPEN",
+            passed: true,
+            measured: true,
+            count: 0,
+            detail: "escrituras sin guarda",
+          },
+          {
+            code: "RBAC_DRIFT_SIN_GUARDA",
+            passed: false,
+            measured: false,
+            count: 0,
+            detail: "sin uso observado",
+          },
+        ],
+      },
+      [],
+    );
+    renderWithProviders(<DocumentationGatePage />);
+
+    await screen.findByText("CRITICAL_VERIFIED");
+    const tabla = screen.getByRole("table");
+    for (const cabecera of [
+      "Comprobación",
+      "Qué comprueba",
+      "Cantidad",
+      "Estado",
+    ]) {
+      expect(
+        within(tabla).getByRole("columnheader", { name: new RegExp(cabecera) }),
+      ).toBeInTheDocument();
+    }
+    expect(within(tabla).getAllByRole("row")).toHaveLength(4);
+
+    fireEvent.change(screen.getByPlaceholderText(/Buscar por código/), {
+      target: { value: "unprotected" },
+    });
+    await waitFor(
+      () =>
+        expect(
+          within(screen.getByRole("table")).getAllByRole("row"),
+        ).toHaveLength(2),
+      { timeout: 2000 },
+    );
+    expect(screen.getByText("UNPROTECTED_WRITE_OPEN")).toBeInTheDocument();
+    expect(screen.queryByText("CRITICAL_VERIFIED")).toBeNull();
+
+    fireEvent.change(screen.getByPlaceholderText(/Buscar por código/), {
+      target: { value: "zzz-nada" },
+    });
+    expect(
+      await screen.findByText(
+        "Ninguna comprobación coincide con los filtros.",
+        {},
+        { timeout: 2000 },
+      ),
+    ).toBeInTheDocument();
   });
 });
