@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { QueryParams } from "@/shared/api/types";
 import {
   cancelDomainEvent,
@@ -17,6 +22,7 @@ export function useDomainEvents(query: QueryParams) {
   return useQuery({
     queryKey: [...RAIZ, "list", query],
     queryFn: () => listDomainEvents(query),
+    placeholderData: keepPreviousData,
   });
 }
 

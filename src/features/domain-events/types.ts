@@ -39,6 +39,8 @@ export type DomainEventSummary = {
 export type DomainEventList = {
   items: DomainEventSummary[];
   meta: PaginationMeta;
+  /** Cuántos hay en cada estado con los mismos filtros salvo el de estado. Ausente en un servidor anterior. */
+  summary?: { byStatus: Record<string, number> };
 };
 
 /**
