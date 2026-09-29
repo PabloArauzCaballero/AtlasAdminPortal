@@ -18,7 +18,7 @@ export function StressConsumerNotice({
     >
       <strong>Encolar está desactivado en este entorno.</strong>{" "}
       {capabilities.disabledReason ??
-        "El consumidor de corridas de estrés está apagado."}{" "}
+        "El servicio que ejecuta las corridas de carga está apagado."}{" "}
       Lo enciende quien administra el servidor; mientras tanto, una corrida no
       se ejecutaría.
     </p>

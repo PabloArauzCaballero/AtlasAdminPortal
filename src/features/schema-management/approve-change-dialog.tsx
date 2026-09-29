@@ -8,7 +8,7 @@ import { Field, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useApproveSchemaChangeMutation } from "./hooks";
-import type { SchemaChangeLog } from "./types";
+import { changeTypeLabel, type SchemaChangeLog } from "./types";
 import { requesterLabel } from "./change-actor";
 
 export function ApproveChangeDialog({
@@ -39,10 +39,13 @@ export function ApproveChangeDialog({
     >
       <div className="space-y-4">
         <p className="text-sm text-atlas-text">
-          {change.changeType} · solicitado por{" "}
+          {changeTypeLabel(change.changeType)} · solicitado por{" "}
           <span className="font-mono">{requesterLabel(change)}</span>
         </p>
-        <JsonViewer title="Payload propuesto" value={change.changePayload} />
+        <JsonViewer
+          title="Detalle del cambio propuesto"
+          value={change.changePayload}
+        />
         <Field
           tooltip="Justificación de tu decisión sobre el cambio; obligatoria para rechazar."
           label="Notas de aprobación"

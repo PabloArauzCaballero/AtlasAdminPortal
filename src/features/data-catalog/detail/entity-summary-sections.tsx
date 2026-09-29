@@ -25,7 +25,7 @@ export function EntitySummarySections({
         items={[
           { label: "Nombre de negocio", value: entity.entityName },
           { label: "Módulo", value: entity.module },
-          { label: "Owner", value: entity.dataOwner },
+          { label: "Responsable", value: entity.dataOwner },
           { label: "Propósito", value: entity.businessPurpose },
         ]}
       />
@@ -33,7 +33,10 @@ export function EntitySummarySections({
         title="Clasificación"
         description="Señales usadas por gobierno, auditoría, QA y ML."
         items={[
-          { label: "PII", value: formatBoolean(entity.containsPii) },
+          {
+            label: "Datos personales",
+            value: formatBoolean(entity.containsPii),
+          },
           {
             label: "Financiera",
             value: formatBoolean(entity.containsFinancialData),

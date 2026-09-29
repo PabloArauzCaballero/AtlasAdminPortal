@@ -31,7 +31,7 @@ export function DefinitionsPackagePage() {
         icon={Package}
         eyebrow="Definiciones"
         title="Publicar paquete de definiciones"
-        description="Conectado a `/operations/definitions/package`. Crea o actualiza en lote eventos, observaciones, atributos y features de un dominio."
+        description="Crea o actualiza en lote eventos, observaciones, atributos e indicadores calculados de un dominio."
         actions={
           <Link href="/internal/business-metadata/definitions">
             <Button>Ver definiciones</Button>
@@ -41,11 +41,12 @@ export function DefinitionsPackagePage() {
 
       <BusinessContextNote>
         Las definiciones son el vocabulario con el que se escriben las reglas de
-        riesgo y los modelos: qué es un &quot;evento de login&quot;, qué feature
-        alimenta un score. Publicar un paquete reescribe ese vocabulario para
-        todo un dominio de una sola vez, así que un código mal escrito acá deja
-        reglas apuntando a una señal que no existe. Por eso el paquete se valida
-        completo antes de enviarse y nunca se aplica a medias.
+        riesgo y los modelos: qué es un &quot;evento de inicio de sesión&quot;,
+        qué indicador calculado alimenta una puntuación. Publicar un paquete
+        reescribe ese vocabulario para todo un dominio de una sola vez, así que
+        un código mal escrito acá deja reglas apuntando a una señal que no
+        existe. Por eso el paquete se valida completo antes de enviarse y nunca
+        se aplica a medias.
       </BusinessContextNote>
 
       <PackageEditor<DefinitionsPackageInput>

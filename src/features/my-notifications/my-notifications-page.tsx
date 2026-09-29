@@ -68,13 +68,13 @@ export function MyNotificationsPage() {
         icon={BellRing}
         eyebrow="Autoservicio"
         title="Mis notificaciones"
-        description="Notificaciones dirigidas a vos: alertas automáticas del backend (ej. un servicio crítico caído o recuperado) y notificaciones personalizadas que un admin te haya enviado."
+        description="Notificaciones dirigidas a vos: alertas automáticas del sistema (ej. un servicio crítico caído o recuperado) y notificaciones que un administrador te haya enviado."
       />
       <BusinessContextNote>
         A diferencia de &quot;Mensajería interna&quot; (que muestra TODOS los
-        mensajes del tenant y requiere permiso de administración), esta vista
-        solo trae las notificaciones dirigidas a tu propio usuario interno — no
-        a otros.
+        mensajes de la organización y requiere permiso de administración), esta
+        vista solo trae las notificaciones dirigidas a tu propio usuario interno
+        — no a otros.
       </BusinessContextNote>
       <FilterBar
         search={q}
@@ -181,7 +181,7 @@ export function MyNotificationsPage() {
           meta={notifications.data.meta}
           onPageChange={setPage}
           emptyTitle="No tenés notificaciones."
-          emptyDescription="Acá aparecerán las alertas automáticas del backend y las notificaciones que un admin te envíe."
+          emptyDescription="Acá aparecerán las alertas automáticas del sistema y las notificaciones que un administrador te envíe."
         />
       ) : null}
     </>

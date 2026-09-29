@@ -186,7 +186,7 @@ export function ConsultarProveedorCard({
           />
         </Field>
         <Field
-          tooltip="Qué se le pide al proveedor, p. ej. IDENTITY_VERIFICATION."
+          tooltip="Qué se le pide al proveedor, p. ej. verificación de identidad."
           label="Tipo de consulta"
         >
           <Input

@@ -21,7 +21,7 @@ export function Journey() {
       title="Encadenar endpoints: la salida de uno alimenta al siguiente"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Segunda pestaña del lab. Un journey es una{" "}
+        Segunda pestaña del lab. Un recorrido es una{" "}
         <strong>lista ordenada de pasos</strong>; cada paso puede{" "}
         <strong>extraer</strong> un valor de su respuesta y los siguientes lo
         reinyectan con{" "}
@@ -33,16 +33,15 @@ export function Journey() {
         Cómo fluyen los datos
       </h3>
       <p className="text-sm text-atlas-muted">
-        Este diagrama ilustra un onboarding de tres pasos. Fíjate cómo{" "}
-        <code className="font-mono">customerId</code>, extraído en el paso 2,
-        viaja al path del paso 3:
+        Este diagrama ilustra un alta de cliente de tres pasos. Fíjate cómo el
+        número de cliente, extraído en el paso 2, viaja a la ruta del paso 3:
       </p>
       <GuideJourneyDiagram />
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <FeatureCard
           icon={<Layers className="h-5 w-5" />}
-          title="Campos por paso"
+          title="Campos por paso (en el JSON)"
         >
           <code className="font-mono">key</code>,{" "}
           <code className="font-mono">endpointId</code>,{" "}
@@ -54,7 +53,7 @@ export function Journey() {
           <code className="font-mono">extract</code>,{" "}
           <code className="font-mono">authMode</code> y{" "}
           <code className="font-mono">allowMutations</code>. Cada paso puede
-          tener su propio modo de auth.
+          tener su propio modo de identificación.
         </FeatureCard>
         <FeatureCard
           icon={<Workflow className="h-5 w-5" />}
@@ -65,32 +64,29 @@ export function Journey() {
           <code className="font-mono text-atlas-accent">
             {"{{customerId}}"}
           </code>{" "}
-          se sustituye en cualquier string de payload, path, query o headers de
-          los pasos siguientes.
+          se sustituye en cualquier texto del cuerpo, la ruta, la consulta o las
+          cabeceras de los pasos siguientes.
         </FeatureCard>
       </div>
 
-      <Note tone="critical" tag="Gotcha">
-        En <strong>dry-run el journey no extrae valores</strong>: la
-        previsualización no ejecuta de verdad, así que{" "}
+      <Note tone="critical" tag="Atención">
+        En <strong>dry-run (simulación) el recorrido no extrae valores</strong>:
+        la previsualización no ejecuta de verdad, así que{" "}
         <code className="font-mono">{"{{customerId}}"}</code> se queda literal y
-        el paso 3 fallará al resolver el path. Para ver el encadenamiento{" "}
+        el paso 3 fallará al resolver la ruta. Para ver el encadenamiento{" "}
         <strong>real</strong> hay que destildar dry-run (en <code>LOCAL</code>,
         o con doble confirmación fuera de él).
       </Note>
       <p className="text-sm text-atlas-muted">
-        La &ldquo;lista de payloads encadenados&rdquo; es justamente ese array
+        La &ldquo;lista de pasos encadenados&rdquo; es justamente esa lista en
         JSON: no se sube un archivo, se <strong>pega o edita</strong> en el
-        editor del lab. El resultado trae{" "}
-        <code className="font-mono">
-          totalSteps / passedSteps / failedSteps
-        </code>
-        , el <code className="font-mono">context</code> acumulado de variables
-        y, por paso, método, URL final, HTTP status, latencia y lo que extrajo.
+        editor del lab. El resultado trae los pasos totales, aprobados y
+        fallidos, las variables acumuladas y, por paso, método, dirección final,
+        código HTTP, latencia y lo que extrajo.
       </p>
 
       <Note tone="tip" tag="Tercera pestaña">
-        <strong>Árbol de decisión</strong> dibuja este mismo journey como una
+        <strong>Árbol de decisión</strong> dibuja este mismo recorrido como una
         cadena de bifurcaciones: en cada paso, ¿responde lo esperado? Marca un
         fallo y verás pintado qué pasos se quedan sin su dato — sin tener que
         provocar el fallo de verdad.
@@ -110,19 +106,18 @@ export function Seguridad() {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <FeatureCard
           icon={<Lock className="h-5 w-5" />}
-          title="Tokens efímeros"
+          title="Credenciales que no se guardan"
           iconClass="bg-red-50 text-red-700"
         >
-          Nunca se persisten en el almacenamiento del navegador.{" "}
-          <code className="font-mono">Authorization</code> y cookies van
-          enmascarados en logs y resultados.
+          Nunca se persisten en el almacenamiento del navegador. La cabecera de
+          autorización y las cookies van enmascaradas en registros y resultados.
         </FeatureCard>
         <FeatureCard
           icon={<Keyboard className="h-5 w-5" />}
           title="Doble confirmación"
           iconClass="bg-red-50 text-red-700"
         >
-          Mutación real fuera de <code>LOCAL</code> exige tildar el checkbox{" "}
+          Un cambio real fuera de <code>LOCAL</code> exige marcar la casilla{" "}
           <strong>y</strong> teclear <code className="font-mono">EJECUTAR</code>
           . Sin eso, el diálogo no deja continuar.
         </FeatureCard>
@@ -131,16 +126,16 @@ export function Seguridad() {
           title="Techo de carga"
           iconClass="bg-amber-50 text-amber-700"
         >
-          Stress topado a <strong>10.000</strong> requests, con recorte
-          automático y aviso si tu plan lo supera. Producción: stress totalmente
-          bloqueado.
+          La carga tiene un tope de <strong>10.000</strong> peticiones, con
+          recorte automático y aviso si tu plan lo supera. En producción la
+          prueba de carga está bloqueada.
         </FeatureCard>
         <FeatureCard
           icon={<Ticket className="h-5 w-5" />}
           title="Ticket de aprobación"
           iconClass="bg-amber-50 text-amber-700"
         >
-          Stress real fuera de <code>LOCAL</code> exige un ticket (p. ej.{" "}
+          Una carga real fuera de <code>LOCAL</code> exige un ticket (p. ej.{" "}
           <code className="font-mono">CHG-123</code>); sin él la corrida se
           bloquea por seguridad.
         </FeatureCard>
@@ -159,7 +154,7 @@ export function Historial() {
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
         Las pruebas sueltas del lab (funcional y carga) y el editor de pasos del
-        journey corren en tu navegador y{" "}
+        recorrido corren en tu navegador y{" "}
         <strong>no se guardan en ningún historial</strong>: si necesitas
         conservar una, descarga su registro. Lo que sí queda guardado vive en
         otras pantallas:
@@ -169,8 +164,8 @@ export function Historial() {
           href="/internal/qa/runs"
           className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle transition-[border-color,box-shadow] hover:border-slate-300 hover:shadow-card-hover"
         >
-          <p className="font-mono text-sm text-atlas-accent">
-            /internal/qa/runs
+          <p className="text-sm font-semibold text-atlas-accent">
+            Ver ejecuciones QA
           </p>
           <p className="mt-1 text-sm text-atlas-muted">
             <strong className="text-atlas-text">Ejecuciones QA</strong> — las
@@ -181,21 +176,21 @@ export function Historial() {
           href="/internal/qa/stress"
           className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle transition-[border-color,box-shadow] hover:border-slate-300 hover:shadow-card-hover"
         >
-          <p className="font-mono text-sm text-atlas-accent">
-            /internal/qa/stress
+          <p className="text-sm font-semibold text-atlas-accent">
+            Ver carga QA
           </p>
           <p className="mt-1 text-sm text-atlas-muted">
             <strong className="text-atlas-text">Carga QA</strong> — perfiles de
-            carga guardados. Encolar una corrida hoy sólo la deja en cola: no
-            hay un proceso que la ejecute.
+            carga guardados. Encolar deja la corrida en cola; sólo se ejecuta si
+            el servicio de carga está encendido en ese entorno.
           </p>
         </Link>
       </div>
       <Note tone="tip" tag="Ruta sugerida">
-        Selecciona el endpoint → <strong>funcional en dry-run</strong> para ver
-        el request → funcional real en <code>LOCAL</code> →{" "}
-        <strong>stress</strong> suave (5 RPS / 30 s) leyendo el gráfico → arma
-        el <strong>journey</strong> del flujo y ejecútalo real en{" "}
+        Selecciona la ruta → <strong>funcional en dry-run</strong> para ver la
+        petición → funcional real en <code>LOCAL</code> → <strong>carga</strong>{" "}
+        suave (5 peticiones/s durante 30 s) leyendo el gráfico → arma el{" "}
+        <strong>recorrido</strong> del flujo y ejecútalo real en{" "}
         <code>LOCAL</code>. Solo entonces sube a <code>STAGING</code>.
       </Note>
     </Section>

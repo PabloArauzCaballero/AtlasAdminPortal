@@ -41,7 +41,7 @@ export function JourneyStepEndpointSelect({
           }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           onChange={(event) => setQ(event.target.value)}
-          placeholder="Buscar endpoint…"
+          placeholder="Buscar ruta…"
           className="w-full min-w-0 border-none bg-transparent text-xs font-mono text-atlas-text outline-none placeholder:font-sans placeholder:text-atlas-muted"
         />
       </div>
@@ -73,7 +73,7 @@ export function JourneyStepEndpointSelect({
           ))}
           {mockMatches.length > 0 ? (
             <p className="border-t border-atlas-border px-3 py-1.5 text-[10px] uppercase tracking-wide text-atlas-muted">
-              Proveedores externos (mock)
+              Proveedores externos (simulador)
             </p>
           ) : null}
           {mockMatches.map((item) => (

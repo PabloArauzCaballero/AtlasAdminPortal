@@ -20,7 +20,7 @@ export type AuditFilterState = Readonly<Record<string, string>>;
 export const CAMPOS_MINIMOS: ActionLogFilterField[] = [
   {
     name: "requestId",
-    label: "Request ID",
+    label: "Código de referencia",
     source: "SCHEMA",
     control: "text",
     options: [],

@@ -71,7 +71,7 @@ function AuthorizedDataQualityIssuesPage() {
       <PageHeader
         icon={TriangleAlert}
         eyebrow="Calidad de datos"
-        title="Issues de calidad"
+        title="Incidencias de calidad"
         description="Registros que no cumplen una regla de calidad: reconócelos, corrígelos o descártalos, siempre con motivo."
       />
       <FilterBar

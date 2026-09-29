@@ -105,7 +105,7 @@ export function PackageEditor<T>({
         <CardHeader>
           <SectionHeader
             title="Paquete"
-            description="Se valida acá con el mismo esquema que exige el backend. Nada se envía hasta confirmar."
+            description="Se revisa aquí con las mismas reglas que aplica el sistema. Nada se envía hasta confirmar."
             className="mb-0"
           />
         </CardHeader>

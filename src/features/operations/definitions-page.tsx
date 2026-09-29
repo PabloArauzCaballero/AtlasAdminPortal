@@ -20,7 +20,7 @@ import {
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
+import { ReviewStatusBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
@@ -108,7 +108,9 @@ function AuthorizedDefinitionsPage() {
         {
           header: "Revisión",
           accessorKey: "reviewStatus",
-          cell: ({ row }) => <StatusBadge value={row.original.reviewStatus} />,
+          cell: ({ row }) => (
+            <ReviewStatusBadge value={row.original.reviewStatus} />
+          ),
         },
         {
           header: "Activo",
@@ -128,17 +130,17 @@ function AuthorizedDefinitionsPage() {
         icon={FileText}
         eyebrow="Motor de decisión"
         title="Definiciones del motor"
-        description="El vocabulario del motor de decisión: eventos, observaciones, atributos y features que pueden alimentar reglas y modelos."
+        description="El vocabulario del motor de decisión: eventos, observaciones, atributos e indicadores calculados que pueden alimentar reglas y modelos."
       />
       <BusinessContextNote>
         Antes de que el modelo de riesgo o un reporte pueda usar una señal (un
-        evento, un atributo, una feature calculada), esa señal tiene que estar
+        evento, un atributo, un indicador calculado), esa señal tiene que estar
         definida en algún lugar: qué significa, de dónde sale y qué tipo de dato
         es. Esta pantalla es ese diccionario técnico-de-negocio para las señales
         que alimentan decisiones automatizadas. El dominio de cada fila fue
         inferido automáticamente desde su dimensión de riesgo (columna
-        &quot;Revisión&quot; = NEEDS_REVIEW), no es información confirmada por
-        una persona todavía.
+        &quot;Revisión&quot; = «Revisión pendiente»), no es información
+        confirmada por una persona todavía.
       </BusinessContextNote>
       <FilterBar
         search={q}

@@ -55,7 +55,7 @@ export function WorkflowStepDetail({ step }: Readonly<{ step: WorkflowStep }>) {
         <p className="text-xs leading-5 text-atlas-muted">{step.description}</p>
       ) : null}
 
-      <DetailField label="Código de endpoint" value={step.endpointCode} mono />
+      <DetailField label="Código de operación" value={step.endpointCode} mono />
 
       <DetailList
         title="Roles autorizados"

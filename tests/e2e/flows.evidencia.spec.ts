@@ -87,7 +87,7 @@ class BuzonPin {
 
 async function entrarConPin(page: Page, buzon: BuzonPin): Promise<void> {
   await page.goto("/internal/login");
-  const tenant = page.getByLabel("Tenant");
+  const tenant = page.getByLabel("Organización");
   await tenant.clear();
   await tenant.fill(TENANT);
   await page.getByLabel("Correo interno").fill(EMAIL);

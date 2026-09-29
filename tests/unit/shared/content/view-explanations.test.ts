@@ -32,13 +32,13 @@ describe("resolveExplanation · gana el prefijo más largo", () => {
   });
 
   it("un módulo con prefijo más largo gana a otro módulo que también matchea", () => {
-    // `/internal/operations/catalogs` pertenece a "Catálogo y metadata", pero
+    // `/internal/operations/catalogs` pertenece a "Catálogo y metadatos", pero
     // "Operaciones" declara el prefijo más corto `/internal/operations`. Si
     // ganara el más corto, la ficha de catálogos mostraría la explicación del
     // módulo equivocado.
     const resolved = resolveExplanation("/internal/operations/catalogs");
 
-    expect(resolved?.module.module).toBe("Catálogo y metadata");
+    expect(resolved?.module.module).toBe("Catálogo y metadatos");
   });
 
   it("una ruta hermana bajo el prefijo corto sigue resolviendo a su módulo", () => {
@@ -56,7 +56,9 @@ describe("resolveExplanation · gana el prefijo más largo", () => {
     const resolved = resolveExplanation("/internal/systems/endpoints/ep_123");
 
     expect(resolved?.module.module).toBe("Systems Ops");
-    expect(resolved?.view?.systems).toContain("Lista paginada del catálogo");
+    expect(resolved?.view?.systems).toContain(
+      "Lista de todas las operaciones del inventario",
+    );
   });
 
   it("una ruta de módulo sin vista propia resuelve módulo con view null", () => {
@@ -128,6 +130,28 @@ describe("view-explanations · integridad de la configuración", () => {
       expect(moduleEntry.module.trim()).not.toBe("");
       expect(moduleEntry.systems.trim()).not.toBe("");
       expect(moduleEntry.business.trim()).not.toBe("");
+    }
+  });
+
+  it("ningún texto enseña tripas del código: rutas de la API, backticks, nombres internos", () => {
+    // El panel lo lee gente de operaciones. «`system_endpoint_catalog`», «GET /v1/…» o «el
+    // backend» no le dicen nada y hacen parecer la pantalla una nota para programadores.
+    const jerga =
+      /`|\b(GET|POST|PATCH|PUT|DELETE) \/|backend|payload|tenant|\bseeds?\b|@Roles|Controller\b|[a-z]+_[a-z_]+/;
+    for (const moduleEntry of moduleExplanations) {
+      const textos = [
+        ["módulo", moduleEntry.systems, moduleEntry.business],
+        ...Object.entries(moduleEntry.views).map(([prefix, view]) => [
+          prefix,
+          view.systems,
+          view.business,
+        ]),
+      ];
+      for (const [donde, ...partes] of textos) {
+        for (const texto of partes) {
+          expect(texto, `${moduleEntry.module} · ${donde}`).not.toMatch(jerga);
+        }
+      }
     }
   });
 

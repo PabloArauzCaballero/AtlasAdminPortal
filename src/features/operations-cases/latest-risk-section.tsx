@@ -35,7 +35,7 @@ export function UltimaEvaluacionDeRiesgo({
               href={`/internal/operations/risk-assessments/${evaluacion.riskAssessmentRunId}`}
               className="ml-auto font-mono text-xs text-atlas-accent underline"
             >
-              run #{evaluacion.riskAssessmentRunId}
+              corrida #{evaluacion.riskAssessmentRunId}
             </Link>
             <span className="w-full text-xs text-atlas-muted">
               Decidido: {formatDateTime(evaluacion.decidedAt)}

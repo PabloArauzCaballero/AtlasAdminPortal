@@ -15,14 +15,14 @@ export function EndpointSummary({
         items={[
           { label: "Ruta completa", value: endpoint.fullPath, mono: true },
           {
-            label: "Backend de origen",
+            label: "Sistema de origen",
             value: endpoint.backendService ?? "atlas-backend",
             mono: true,
           },
           ...(endpoint.backendBaseUrl
             ? [
                 {
-                  label: "Base URL del backend",
+                  label: "Dirección del sistema",
                   value: endpoint.backendBaseUrl,
                   mono: true,
                 },
@@ -30,7 +30,7 @@ export function EndpointSummary({
             : []),
           { label: "Módulo", value: endpoint.module },
           { label: "Controlador", value: endpoint.controllerName, mono: true },
-          { label: "Handler", value: endpoint.handlerName, mono: true },
+          { label: "Función", value: endpoint.handlerName, mono: true },
         ]}
       />
       <KeyValueSection

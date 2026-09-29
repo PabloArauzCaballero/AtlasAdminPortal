@@ -45,7 +45,7 @@ export function SchemaChangeLogTable({
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por tabla propuesta o tipo de cambio…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el tipo de cambio (p. ej. CREATE_TABLE), el tipo de objeto afectado, la tabla propuesta y las notas de aprobación."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el tipo de cambio, el tipo de objeto afectado, la tabla propuesta y las notas de aprobación."
         filters={[
           {
             name: "approvalStatus",

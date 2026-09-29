@@ -65,7 +65,7 @@ export async function loginAsInternalUser(
     // Next puede mantener brevemente el formulario SSR y el hidratado a la vez. Se usa el último
     // formulario para que los campos y el botón pertenezcan siempre a la misma instancia.
     const form = page.locator("form").last();
-    const tenant = form.getByLabel("Tenant");
+    const tenant = form.getByLabel("Organización");
     await expect(tenant).toBeEditable();
 
     // `clear()` antes de escribir: el campo llega con el tenant por defecto ya puesto y `fill` sobre

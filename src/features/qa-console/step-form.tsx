@@ -93,7 +93,7 @@ export function StepForm({
 
         <Field
           label="Método"
-          tooltip="Verbo HTTP con el que se llama a la ruta; debe coincidir con el del endpoint."
+          tooltip="Verbo HTTP con el que se llama a la ruta; debe coincidir con el de la ruta del catálogo."
           error={errors.method?.message}
         >
           <FormSelect
@@ -106,7 +106,7 @@ export function StepForm({
         <Field
           label="Modo de entrada"
           tooltip="De dónde salen los datos que envía el paso al ejecutarse."
-          hint="FROM_PREVIOUS_STEP toma datos extraídos por el paso anterior."
+          hint="«Del paso anterior» toma datos extraídos por el paso anterior."
           error={errors.inputMode?.message}
         >
           <FormSelect
@@ -120,7 +120,7 @@ export function StepForm({
       <Field
         label="Ruta"
         tooltip="Ruta relativa a la base URL que llama el paso, con {variables} si hace falta."
-        hint="Debe empezar con una sola barra. Admite plantillas: /api/v1/customers/{customerId}"
+        hint="Debe empezar con una sola barra. Admite variables entre llaves, p. ej.: /api/v1/customers/{customerId}"
         error={errors.pathTemplate?.message}
       >
         <Input
@@ -131,8 +131,8 @@ export function StepForm({
       </Field>
 
       <Field
-        label="Endpoint del catálogo (opcional)"
-        tooltip="Endpoint que prueba este paso; así cuenta en la cobertura de ese endpoint."
+        label="Ruta del catálogo (opcional)"
+        tooltip="Ruta que prueba este paso; así cuenta en la cobertura de esa ruta."
         hint="Asociarlo enlaza el paso con el catálogo y su cobertura. Vacío deja el paso suelto."
         error={errors.endpointId?.message}
       >
@@ -142,9 +142,9 @@ export function StepForm({
           options={[
             {
               value: "",
-              label: "Sin endpoint asociado",
+              label: "Sin ruta asociada",
               description:
-                "El paso queda suelto y no suma cobertura a ningún endpoint.",
+                "El paso queda suelto y no suma cobertura a ninguna ruta.",
             },
             ...(endpoints.data ?? []).map(endpointOption),
           ]}
@@ -153,28 +153,28 @@ export function StepForm({
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <JsonField
-          label="Assertions"
+          label="Comprobaciones"
           tooltip="Condiciones que la respuesta debe cumplir para dar el paso por bueno."
           hint='Qué se valida de la respuesta. Ej: {"expectedStatusCodes": [200]}'
           error={errors.assertions?.message}
           field={register("assertions")}
         />
         <JsonField
-          label="Extractors"
+          label="Valores a guardar"
           tooltip="Valores de la respuesta que se guardan con nombre para los pasos siguientes."
           hint="Qué guardar de la respuesta para pasos siguientes."
           error={errors.extractors?.message}
           field={register("extractors")}
         />
         <JsonField
-          label="Headers por defecto"
+          label="Cabeceras por defecto"
           tooltip="Cabeceras HTTP en JSON que acompañan a la petición. No pongas secretos."
           hint="Cabeceras que envía el paso."
           error={errors.defaultHeaders?.message}
           field={register("defaultHeaders")}
         />
         <JsonField
-          label="Payload por defecto"
+          label="Cuerpo por defecto"
           tooltip="Cuerpo JSON que envía el paso si la corrida no lo sobrescribe."
           hint="Cuerpo que envía el paso."
           error={errors.defaultPayload?.message}
@@ -183,9 +183,9 @@ export function StepForm({
       </div>
 
       <JsonField
-        label="Config schema"
+        label="Parámetros configurables"
         tooltip="Qué parámetros pide el paso al ejecutar y de qué tipo son."
-        hint="Parámetros configurables al ejecutar (solo con inputMode CONFIGURABLE)."
+        hint="Se piden al ejecutar; solo con el modo «Configurable al ejecutar»."
         error={errors.configSchema?.message}
         field={register("configSchema")}
       />

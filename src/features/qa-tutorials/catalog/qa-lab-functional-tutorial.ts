@@ -37,7 +37,7 @@ export const functionalTutorial: TutorialDefinition = {
       content:
         "Busca la operación en la tabla y pulsa «Probar» en su fila. Al elegirla aparece abajo la tarjeta de prueba con su método, su nivel de riesgo y los datos de entrada ya rellenos.",
       example:
-        "Escribe «health» en el buscador y elige la fila GET /api/v1/health («Salud del backend»): no necesita sesión y no cambia nada.",
+        "Escribe «health» en el buscador y elige la fila GET /api/v1/health («Salud del servidor»): no necesita sesión y no cambia nada.",
       position: "top",
       requiredAction: {
         type: "element-appears",
@@ -54,7 +54,7 @@ export const functionalTutorial: TutorialDefinition = {
       content:
         "Los datos de persona (nombre, correo, teléfono, carnet, dirección, dispositivo, ingresos) los inventa el generador del simulador de proveedores; aquí no hay datos escritos a mano.\n\n• «Clase de caso»: válidos, en el límite o inválidos (deben rechazarse).\n• «Personas de prueba»: una semilla con nombre repite SIEMPRE las mismas personas; «Personas nuevas» crea un lote que nunca se usó (lo necesitas en operaciones de alta, que rechazan a alguien que ya existe). La semilla queda escrita para copiarla y repetir.\n• «Ajustar los datos generados»: edad, departamento, ingresos, riesgo del dispositivo, montos.\n\nPulsa «Generar 3 casos» y elige un caso para cargarlo en los datos de entrada.",
       example:
-        "Health no lleva datos de entrada, así que no hay nada que generar. En «Iniciar alta de cliente», con «Personas nuevas» cada corrida registra a alguien distinto; con «Base» la segunda responde que ya existe.",
+        "La consulta de salud no lleva datos de entrada, así que no hay nada que generar. En «Iniciar alta de cliente», con «Personas nuevas» cada corrida registra a alguien distinto; con «Base» la segunda responde que ya existe.",
       position: "top",
       waitForElement: true,
       optional: true,
@@ -93,7 +93,7 @@ export const functionalTutorial: TutorialDefinition = {
       target: "qa-lab-functional-result",
       title: "Interpreta el resultado",
       content:
-        "Mira el código y el tiempo de respuesta:\n\n200 → salió bien.\n401 → falta identificarse o la credencial no vale.\n404 → la ruta no existe (o el registro, si escribiste un número en «Datos de la ruta»).\n500 → error interno del servidor: el problema está en el backend, no en tu prueba.\n\nEsta prueba no se guarda en ningún historial: si quieres conservarla, descarga el registro.",
+        "Mira el código y el tiempo de respuesta:\n\n200 → salió bien.\n401 → falta identificarse o la credencial no vale.\n404 → la ruta no existe (o el registro, si escribiste un número en «Datos de la ruta»).\n500 → error interno del servidor: el problema está en el servidor, no en tu prueba.\n\nEsta prueba no se guarda en ningún historial: si quieres conservarla, descarga el registro.",
       example:
         "Si esperabas 200 y ves 401: revisa que tu sesión tenga permiso, o que no hayas dejado «Sin identificarse» en el escenario.",
       position: "top",

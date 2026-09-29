@@ -81,7 +81,7 @@ export function UserRolesForm({
       <CardHeader>
         <SectionHeader
           title="Roles y permisos"
-          description="Los permisos efectivos se calculan desde los roles definidos por el backend."
+          description="Los permisos de cada persona salen de los roles que tiene asignados."
           className="mb-0"
         />
       </CardHeader>

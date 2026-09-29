@@ -21,7 +21,7 @@ import { RelatedEndpointsSection } from "./detail/related-endpoints-section";
 import { EntityGovernanceSummary } from "./entity-governance-summary";
 import { Table2 } from "lucide-react";
 
-const tabs = ["Vista general", "Columnas", "Endpoints", "Gobierno operativo"];
+const tabs = ["Vista general", "Columnas", "Operaciones", "Gobierno operativo"];
 
 export function DataEntityDetailPage(props: Readonly<{ entityId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -66,14 +66,14 @@ function AuthorizedDataEntityDetailPage({
             title={`${entity.data.schemaName}.${entity.data.tableName}`}
             description={
               entity.data.businessPurpose ??
-              "Tabla pendiente de completar con propósito de negocio, owner y reglas operativas."
+              "Tabla pendiente de completar con su propósito de negocio, su responsable y sus reglas operativas."
             }
             actions={
               <>
                 <Link
                   href={`/internal/data-catalog/tables/${entityId}/metadata`}
                 >
-                  <Button variant="primary">Editar metadata</Button>
+                  <Button variant="primary">Editar metadatos</Button>
                 </Link>
                 <PiiBadge value={entity.data.containsPii} />
                 <ReviewStatusBadge value={entity.data.reviewStatus} />

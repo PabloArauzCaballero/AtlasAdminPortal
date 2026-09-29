@@ -54,7 +54,7 @@ export function PortfolioBacklog({ visible }: Readonly<{ visible: boolean }>) {
       <p className="mb-4 text-sm text-atlas-muted">
         Cada fila es una decisión de la que el Motor nunca supo el resultado. No
         se reintentan solos: hay que arreglar la causa y volver a entregar desde
-        Jobs › Ejecutar ahora.
+        Procesos automáticos › Ejecutar ahora.
       </p>
       {!visible ? (
         <p className="text-sm text-atlas-muted">

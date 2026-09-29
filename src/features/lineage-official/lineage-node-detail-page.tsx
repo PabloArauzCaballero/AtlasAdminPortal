@@ -43,9 +43,9 @@ function AuthorizedLineageNodeDetailPage({
     <>
       <PageHeader
         icon={Workflow}
-        eyebrow="Lineage"
+        eyebrow="Linaje"
         title={data?.label ?? "Detalle de nodo"}
-        description="Impacto entrante, saliente y metadata de un nodo oficial."
+        description="Qué le llega, qué sale de él y sus metadatos."
         actions={data ? <RiskBadge value={data.criticality} /> : null}
       />
       {node.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -76,8 +76,7 @@ function AuthorizedLineageNodeDetailPage({
           {data.edgesTruncated ? (
             <p className="text-xs text-atlas-muted" role="status">
               Este nodo tiene más de 500 relaciones: se muestran las primeras
-              500. La pestaña «Relaciones e impacto» de Lineage las pagina
-              todas.
+              500. La pestaña «Relaciones e impacto» de Linaje las pagina todas.
             </p>
           ) : null}
           <NodeTable
@@ -95,7 +94,7 @@ function AuthorizedLineageNodeDetailPage({
             data={data.relatedNodes ?? []}
             columns={nodeColumns}
           />
-          <JsonViewer title="Metadata" value={data.metadata} />
+          <JsonViewer title="Metadatos" value={data.metadata} />
         </div>
       ) : null}
     </>

@@ -59,7 +59,7 @@ beforeEach(() => {
   });
 });
 
-describe("Issues de calidad · bandeja única (absorbe «Alertas»)", () => {
+describe("Incidencias de calidad · bandeja única (absorbe «Alertas»)", () => {
   it("las tarjetas salen del summary: pendientes, sin revisar, reconocidas y cerradas", async () => {
     renderWithProviders(<DataQualityIssuesPage />);
     await screen.findByText("rec-1");

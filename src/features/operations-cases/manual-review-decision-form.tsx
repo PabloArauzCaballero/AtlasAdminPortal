@@ -105,7 +105,7 @@ export function ManualReviewDecisionForm({
           error={errors.notes?.message}
           hint={
             notesRequired
-              ? "Obligatorio: el backend exige notas al rechazar o pedir más información."
+              ? "Obligatorio: hay que dejar notas al rechazar o pedir más información."
               : "Opcional."
           }
         >

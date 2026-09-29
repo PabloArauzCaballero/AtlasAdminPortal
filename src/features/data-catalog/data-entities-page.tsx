@@ -106,12 +106,12 @@ function AuthorizedDataEntitiesPage() {
           cell: ({ row }) => <ModuleBadge value={row.original.module} />,
         },
         {
-          header: "Owner",
+          header: "Responsable",
           accessorKey: "dataOwner",
           cell: ({ row }) => row.original.dataOwner ?? "—",
         },
         {
-          header: "PII",
+          header: "Datos personales",
           accessorKey: "containsPii",
           cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
         },
@@ -126,7 +126,7 @@ function AuthorizedDataEntitiesPage() {
           cell: ({ row }) => formatBoolean(row.original.containsRiskData),
         },
         {
-          header: "Audit critical",
+          header: "Crítica para auditoría",
           accessorKey: "isAuditCritical",
           cell: ({ row }) => formatBoolean(row.original.isAuditCritical),
         },
@@ -160,7 +160,7 @@ function AuthorizedDataEntitiesPage() {
       <PageHeader
         icon={Database}
         title="Catálogo de datos"
-        description="Tablas y entidades de LOS TRES bloques del ecosistema, desde `/systems/data-entities`."
+        description="Las tablas de datos de los tres bloques de Atlas: núcleo, motor de decisión y ERP."
         actions={
           <ExportDownloadButton
             downloadUrl="/api/v1/systems/data-entities"
@@ -170,12 +170,11 @@ function AuthorizedDataEntitiesPage() {
       />
       <BusinessContextNote>
         Cada fila es una tabla real de la base de datos. Este catálogo existe
-        para que soporte, auditoría y nuevos desarrolladores sepan qué significa
-        cada tabla, quién es responsable de ella y si contiene datos sensibles
-        (PII, financieros, de riesgo) — sin tener que leer el código fuente para
-        averiguarlo. El filtro <strong>Bloque</strong> separa las tablas de
-        Atlas Backend, del motor de decisión y del ERP: hasta que existió, esta
-        pantalla sólo mostraba las del primero sin decirlo en ninguna parte.
+        para que soporte, auditoría y el equipo técnico sepan qué significa cada
+        tabla, quién es responsable de ella y si contiene datos sensibles
+        (personales, financieros, de riesgo) sin tener que preguntarlo. El
+        filtro <strong>Bloque</strong> separa las tablas del núcleo de Atlas,
+        del motor de decisión y del ERP.
       </BusinessContextNote>
       <FilterBar
         search={q}

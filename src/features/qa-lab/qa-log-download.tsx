@@ -27,7 +27,7 @@ export function QaLogDownload({
       >
         <Button>
           <Download className="h-4 w-4" aria-hidden />
-          Descargar logs Pino
+          Descargar el registro
         </Button>
       </a>
       <Button onClick={() => void copyLogs()}>
@@ -36,7 +36,7 @@ export function QaLogDownload({
         ) : (
           <Copy className="h-4 w-4" />
         )}
-        {copied ? "Copiado" : "Copiar logs"}
+        {copied ? "Copiado" : "Copiar el registro"}
       </Button>
     </div>
   );

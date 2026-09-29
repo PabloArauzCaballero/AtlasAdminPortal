@@ -19,7 +19,7 @@ export const QA_FAKERS_MAX_BODY_BYTES = 16_384;
 const TYPE_PATTERN = /^[A-Za-z][A-Za-z0-9]{0,39}$/;
 
 export const QA_FAKERS_UNAVAILABLE_MESSAGE =
-  "El generador de datos de prueba no responde. Sin él no se inventan datos: revisa que el mock de proveedores externos esté levantado y que QA_FAKERS_ORIGIN apunte a él.";
+  "El generador de datos de prueba no responde. Sin él no se inventan datos: vuelve a intentarlo en un momento o avisa al equipo técnico.";
 
 export type FakerProxyInput = {
   method: string;

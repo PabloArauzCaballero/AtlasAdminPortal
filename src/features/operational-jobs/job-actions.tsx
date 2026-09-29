@@ -17,8 +17,8 @@ export function JobActions({ jobRunId }: Readonly<{ jobRunId: string }>) {
       data-job-run-id={jobRunId}
     >
       Una corrida no se reintenta ni se cancela desde aquí: es el registro de lo
-      que pasó. Para volver a ejecutar el proceso se dispara el job de nuevo
-      desde Operaciones, y queda como una corrida nueva.
+      que pasó. Para volver a ejecutar el proceso se lanza de nuevo desde
+      «Ejecutar ahora», y queda como una corrida nueva.
     </p>
   );
 }

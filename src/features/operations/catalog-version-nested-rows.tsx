@@ -47,7 +47,7 @@ export function AliasRows({ itemIndex }: Readonly<{ itemIndex: number }>) {
           >
             <Field
               label="Valor"
-              tooltip="Otra forma en que aparece el item en los datos, para reconocerlo igual."
+              tooltip="Otra forma en que aparece el elemento en los datos, para reconocerlo igual."
               error={errors?.[index]?.aliasValue?.message}
             >
               <Input
@@ -67,7 +67,7 @@ export function AliasRows({ itemIndex }: Readonly<{ itemIndex: number }>) {
             </Field>
             <Field
               label="Confianza"
-              tooltip="Cuánto se parece el alias al item, de 0 a 100; baja confianza pide revisión."
+              tooltip="Cuánto se parece el alias al elemento, de 0 a 100; baja confianza pide revisión."
               error={errors?.[index]?.confidenceScore?.message}
             >
               <Input
@@ -129,7 +129,7 @@ export function RiskMappingRows({
             <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
               <Field
                 label="Dimensión"
-                tooltip="Eje de riesgo que mueve este item. Ej.: income_stability"
+                tooltip="Eje de riesgo que mueve este elemento. Ej.: income_stability"
                 error={errors?.[index]?.riskDimension?.message}
               >
                 <Input
@@ -141,7 +141,7 @@ export function RiskMappingRows({
               </Field>
               <Field
                 label="Banda"
-                tooltip="Nivel de riesgo que asigna el item en esa dimensión. Ej.: high"
+                tooltip="Nivel de riesgo que asigna el elemento en esa dimensión. Ej.: high"
                 error={errors?.[index]?.riskBand?.message}
               >
                 <Input
@@ -221,8 +221,8 @@ export function RiskMappingRows({
             </div>
             <Field
               label="Explicación"
-              tooltip="Frase para el analista que explica por qué este item cambia el riesgo."
-              hint="Por qué este item mueve el riesgo. Se usa en la explicabilidad de la decisión."
+              tooltip="Frase para el analista que explica por qué este elemento cambia el riesgo."
+              hint="Por qué este elemento mueve el riesgo. Se usa en la explicabilidad de la decisión."
               error={errors?.[index]?.explanation?.message}
             >
               <Textarea

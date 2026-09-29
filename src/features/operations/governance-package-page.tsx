@@ -30,7 +30,7 @@ export function GovernancePackagePage() {
         icon={Package}
         eyebrow="Gobierno de datos"
         title="Publicar paquete de gobernanza"
-        description="Conectado a `/operations/data-governance/policy-package`. Crea o actualiza en lote propósitos, retenciones, proveedores, clasificaciones, campos sensibles y reglas de calidad."
+        description="Crea o actualiza en lote propósitos, retenciones, proveedores, clasificaciones, campos sensibles y reglas de calidad."
         actions={
           <Link href="/internal/governance/policies">
             <Button>Ver políticas</Button>

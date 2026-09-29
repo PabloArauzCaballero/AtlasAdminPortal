@@ -59,8 +59,8 @@ export function JobsPage() {
       <PageHeader
         icon={ListChecks}
         eyebrow="Operaciones"
-        title="Jobs"
-        description="Los procesos automáticos del backend: cada vez que corrieron —cuándo, cuánto tardaron y si terminaron bien— y, para administración, el disparo manual."
+        title="Procesos automáticos"
+        description="Los procesos que el sistema corre solo: cada vez que corrieron —cuándo, cuánto tardaron y si terminaron bien— y, para administración, el disparo manual."
       />
       {tabs.length > 1 ? (
         <DetailTabs tabs={tabs} active={active} onChange={selectTab} />

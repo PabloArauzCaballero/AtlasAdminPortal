@@ -123,7 +123,7 @@ export const navGroupOperations: InternalNavGroup = {
       roles: INTERNAL_PORTAL_ROLE_LIST,
     },
     {
-      label: "Jobs",
+      label: "Procesos automáticos",
       href: "/internal/jobs",
       icon: ListChecks,
       // Igual que "Cola de trabajo": el backend gatea por @Roles, no por permiso granular.

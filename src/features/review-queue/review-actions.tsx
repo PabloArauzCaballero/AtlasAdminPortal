@@ -15,7 +15,9 @@ export function ReviewActions({
       <Button
         className="h-8 px-2 text-xs"
         disabled={!canReview}
-        title={canReview ? undefined : "Requiere systems.reviewQueue.resolve"}
+        title={
+          canReview ? undefined : "Necesitas permiso para resolver revisiones"
+        }
         onClick={() => onDecision("APPROVED")}
       >
         Aprobar

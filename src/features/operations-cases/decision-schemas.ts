@@ -40,8 +40,7 @@ export const manualReviewSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["notes"],
-        message:
-          "Obligatorio al rechazar o pedir más información: el backend lo exige.",
+        message: "Obligatorio al rechazar o pedir más información.",
       });
     }
   });

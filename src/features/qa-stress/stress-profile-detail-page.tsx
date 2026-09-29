@@ -1,6 +1,7 @@
 "use client";
 
 import { ENVIRONMENT_OPTIONS } from "@/features/qa-console/qa-options";
+import { optionLabel } from "@/shared/lib/options";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -119,7 +120,7 @@ function AuthorizedStressProfileDetailPage({
           description={
             isAtlasApiError(profile.error)
               ? profile.error.message
-              : "No se pudo cargar perfil de stress."
+              : "No se pudo cargar el perfil de carga."
           }
           requestId={
             isAtlasApiError(profile.error) ? profile.error.requestId : undefined
@@ -131,10 +132,10 @@ function AuthorizedStressProfileDetailPage({
         <>
           <PageHeader
             icon={Gauge}
-            eyebrow={`Stress profile #${profile.data.profileId}`}
+            eyebrow={`Perfil de carga #${profile.data.profileId}`}
             title={profile.data.name}
             description={
-              profile.data.notes ?? "Perfil de stress sin notas adicionales."
+              profile.data.notes ?? "Perfil de carga sin notas adicionales."
             }
             actions={
               <>
@@ -151,14 +152,16 @@ function AuthorizedStressProfileDetailPage({
                     consumerOff
                       ? (capabilities.data?.disabledReason ?? undefined)
                       : productionSelected
-                        ? "El servicio interno bloquea stress en producción."
+                        ? "Las pruebas de carga están bloqueadas en producción."
                         : !canExecute
-                          ? "Necesitas systems.stress.execute."
+                          ? "Necesitas permiso para lanzar pruebas de carga."
                           : undefined
                   }
                   onClick={openConfirm}
                 >
-                  {advanced.dryRun ? "Encolar dry-run" : "Encolar stress real"}
+                  {advanced.dryRun
+                    ? "Encolar simulación"
+                    : "Encolar carga real"}
                 </Button>
               </>
             }
@@ -169,15 +172,14 @@ function AuthorizedStressProfileDetailPage({
             <Card>
               <CardContent className="space-y-4">
                 <p className="text-sm text-atlas-muted">
-                  El servicio interno bloquea `PRODUCTION_READONLY` para stress
-                  runs, incluso si aparece en el perfil. En dry-run sólo se
-                  valida que la URL sea construible: no sale tráfico.
+                  La carga está bloqueada en producción aunque el perfil la
+                  incluya. En simulación no sale tráfico.
                 </p>
                 <Link
                   className="text-sm font-medium text-atlas-accent underline"
                   href={`/internal/systems/endpoints/${profile.data.endpointId}`}
                 >
-                  Ver endpoint asociado
+                  Ver la ruta asociada
                 </Link>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <Field
@@ -185,7 +187,7 @@ function AuthorizedStressProfileDetailPage({
                     tooltip="Entorno contra el que se encola la corrida de este perfil."
                     hint={
                       productionAllowedByProfile
-                        ? "Producción aparece como scope pero está bloqueada para stress."
+                        ? "Producción aparece entre los ambientes del perfil, pero la carga está bloqueada ahí."
                         : undefined
                     }
                   >
@@ -205,7 +207,7 @@ function AuthorizedStressProfileDetailPage({
                   <Field
                     label="Ticket de aprobación"
                     tooltip="Número del cambio aprobado que autoriza la corrida. Ej.: CHG-123"
-                    hint="Opcional para dry-run; obligatorio si el perfil exige aprobación y la corrida es real."
+                    hint="Opcional en simulación; obligatorio si el perfil exige aprobación y la corrida es real."
                   >
                     <Input
                       value={approvalTicket}
@@ -223,7 +225,7 @@ function AuthorizedStressProfileDetailPage({
                 />
                 {advancedError ? (
                   <ErrorState
-                    title="Configuración inválida"
+                    title="Configuración no válida"
                     description={advancedError}
                   />
                 ) : null}
@@ -243,15 +245,11 @@ function AuthorizedStressProfileDetailPage({
           </DrawerPanel>
           <ConfirmDialog
             open={confirmOpen}
-            title={
-              advanced.dryRun
-                ? "Confirmar stress dry-run"
-                : "Confirmar stress real"
-            }
+            title={advanced.dryRun ? "Confirmar simulación" : "Confirmar carga"}
             description={
               advanced.dryRun
-                ? `Se encolará un ensayo en ${environment}: el consumidor de estrés de Core sólo comprueba que la petición se puede construir, sin mandar tráfico.`
-                : `Se encolará una corrida REAL en ${environment}: el consumidor de estrés de Core mandará tráfico de verdad contra ${advanced.baseUrl.trim() || "el host del endpoint del perfil"}.`
+                ? `Se encolará un ensayo en ${optionLabel(ENVIRONMENT_OPTIONS, environment)}: el servicio de carga sólo comprueba que la petición se puede construir, sin mandar tráfico.`
+                : `Se encolará una corrida REAL en ${optionLabel(ENVIRONMENT_OPTIONS, environment)}: el servicio de carga mandará tráfico de verdad contra ${advanced.baseUrl.trim() || "el servidor de la ruta del perfil"}.`
             }
             confirmText="Encolar"
             isLoading={queueMutation.isPending}
@@ -269,7 +267,7 @@ function AuthorizedStressProfileDetailPage({
                 description={
                   isAtlasApiError(queueMutation.error)
                     ? queueMutation.error.message
-                    : "No se pudo encolar stress run."
+                    : "No se pudo encolar la corrida de carga."
                 }
                 requestId={
                   isAtlasApiError(queueMutation.error)
@@ -288,7 +286,7 @@ function AuthorizedStressProfileDetailPage({
                     : undefined
                 }
               />
-              <JsonViewer title="Run encolado" value={queueMutation.data} />
+              <JsonViewer title="Corrida encolada" value={queueMutation.data} />
             </div>
           ) : null}
         </>

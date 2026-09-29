@@ -62,7 +62,7 @@ export function ColumnRowEditor({
               onChange({ ...column, isPii: event.target.checked })
             }
           />
-          PII
+          Datos personales
         </label>
         <label className="flex items-center gap-1.5">
           <input

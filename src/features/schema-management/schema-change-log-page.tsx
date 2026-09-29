@@ -11,14 +11,14 @@ export function SchemaChangeLogPage() {
       <PageHeader
         icon={History}
         eyebrow="Esquema"
-        title="Change log de propuestas"
+        title="Historial de cambios propuestos"
         description="Propuestas de cambio de esquema (crear tabla) pendientes o resueltas, con el segundo par de ojos de aprobación."
       />
       <BusinessContextNote>
-        Aprobar/rechazar exige el permiso{" "}
-        <span className="font-mono">governance.schema.approve</span> (lo tienen
-        Gobierno de datos, Administración de sistemas y Superadministración) y
-        el backend impide que quien propuso apruebe su propio cambio (4 ojos).
+        Aprobar o rechazar exige el permiso para aprobar cambios de esquema (lo
+        tienen Gobierno de datos, Administración de sistemas y
+        Superadministración), y el sistema impide que quien propuso un cambio lo
+        apruebe (siempre revisan dos personas).
       </BusinessContextNote>
       <SchemaChangeLogTable />
     </>

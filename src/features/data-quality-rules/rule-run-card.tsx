@@ -26,10 +26,10 @@ export function RuleRunCard({ ruleId }: Readonly<{ ruleId: string }>) {
           data-rule-id={ruleId}
         >
           Hoy ninguna regla se evalúa sola: la regla queda definida, pero nada
-          recorre los datos para levantar incidencias. El job «Contar
-          incidencias de calidad abiertas» de Operaciones sólo cuenta las que ya
-          existen. Esta ficha muestra la definición y el estado de la regla; no
-          la dispara.
+          recorre los datos para levantar incidencias. El proceso «Contar
+          incidencias de calidad abiertas» de Procesos automáticos sólo cuenta
+          las que ya existen. Esta ficha muestra la definición y el estado de la
+          regla; no la dispara.
         </p>
       </CardContent>
     </Card>

@@ -62,7 +62,7 @@ describe("ErrorState", () => {
 
   it("no muestra la línea de Request ID si no hay requestId", () => {
     renderWithProviders(<ErrorState />);
-    expect(screen.queryByText(/Request ID/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Código de referencia/)).not.toBeInTheDocument();
   });
 
   it("no muestra el botón de reintentar si no hay onRetry", () => {

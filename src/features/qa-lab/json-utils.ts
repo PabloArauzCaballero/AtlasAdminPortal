@@ -29,7 +29,7 @@ export function parseOptionalJsonValue(
   try {
     return { ok: true, value: JSON.parse(trimmed) as unknown };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "JSON invalido";
+    const message = error instanceof Error ? error.message : "JSON inválido";
     return { ok: false, error: `${label}: ${message}` };
   }
 }

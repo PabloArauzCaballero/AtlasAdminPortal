@@ -36,7 +36,7 @@ beforeEach(() => {
   withEndpoints([HEALTH, LOGIN]);
 });
 
-const BUSCAR = "Buscar endpoint…";
+const BUSCAR = "Buscar ruta…";
 
 describe("JourneyStepEndpointSelect · estado cerrado", () => {
   it("cerrado muestra el endpoint ya elegido, no una caja vacía", () => {

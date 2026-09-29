@@ -117,7 +117,7 @@ export function CatalogVersionCreateForm({
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-atlas-text">
-                  Items ({fields.length})
+                  Elementos ({fields.length})
                 </p>
                 <p className="text-xs text-atlas-muted">
                   Al menos 1, máximo 500.
@@ -128,7 +128,7 @@ export function CatalogVersionCreateForm({
                 onClick={() => append(emptyCatalogItemForm)}
                 disabled={fields.length >= 500}
               >
-                Agregar item
+                Agregar elemento
               </Button>
             </div>
             {errors.items?.message ? (

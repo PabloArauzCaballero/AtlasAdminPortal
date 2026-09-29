@@ -56,7 +56,7 @@ export function CustomerAuditFeedSection({
             <MetricCard
               label="Fuentes cubiertas"
               value={8}
-              hint="Paginado por cursor real sobre la vista audit_event_feed."
+              hint="La lista se carga por tramos, del más reciente al más antiguo."
             />
           </div>
           {/* Sin `meta`: el feed por cursor no devuelve total ni número de página,

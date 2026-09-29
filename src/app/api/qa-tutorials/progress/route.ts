@@ -20,7 +20,10 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const userId = new URL(request.url).searchParams.get("userId");
   if (!userId) {
-    return NextResponse.json({ error: "userId requerido" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Falta indicar el usuario." },
+      { status: 400 },
+    );
   }
   const items = await loadProgress(userId);
   return NextResponse.json({ items });
@@ -32,12 +35,18 @@ export async function PUT(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Los datos enviados no se pudieron leer." },
+      { status: 400 },
+    );
   }
   const parsed = saveProgressRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Payload inválido", issues: parsed.error.issues },
+      {
+        error: "Los datos del progreso no son válidos.",
+        issues: parsed.error.issues,
+      },
       { status: 422 },
     );
   }

@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import type { SchemaChangeLog } from "./types";
+import { changeTypeLabel, type SchemaChangeLog } from "./types";
 import { requesterLabel } from "./change-actor";
 
 function ApprovalStatusBadge({
@@ -39,7 +39,9 @@ export function buildChangeLogColumns(
     {
       header: "Tipo",
       accessorKey: "changeType",
-      cell: ({ row }) => <Badge tone="info">{row.original.changeType}</Badge>,
+      cell: ({ row }) => (
+        <Badge tone="info">{changeTypeLabel(row.original.changeType)}</Badge>
+      ),
     },
     {
       header: "Entidad",
@@ -76,7 +78,11 @@ export function buildChangeLogColumns(
         <Button
           className="h-8 px-2 text-xs"
           disabled={row.original.approvalStatus !== "pending" || !canApprove}
-          title={canApprove ? undefined : "Requiere governance.schema.approve"}
+          title={
+            canApprove
+              ? undefined
+              : "Necesitas permiso para aprobar cambios de esquema"
+          }
           onClick={() => onDecide(row.original)}
         >
           Revisar

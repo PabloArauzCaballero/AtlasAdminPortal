@@ -37,7 +37,7 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
           description={
             isAtlasApiError(job.error)
               ? job.error.message
-              : "No se pudo cargar el job."
+              : "No se pudo cargar el proceso."
           }
           requestId={
             isAtlasApiError(job.error) ? job.error.requestId : undefined
@@ -49,9 +49,9 @@ function AuthorizedJobDetailPage({ jobRunId }: Readonly<{ jobRunId: string }>) {
         <div className="space-y-6">
           <PageHeader
             icon={ListChecks}
-            eyebrow="Job interno"
+            eyebrow="Proceso automático"
             title={jobDisplayName(job.data.jobKey, job.data.name)}
-            description="Qué recibió la corrida, qué devolvió y, si falló, con qué error."
+            description="Qué recibió la ejecución, qué devolvió y, si falló, con qué error."
             actions={<JobActions jobRunId={jobRunId} />}
           />
           <Card>

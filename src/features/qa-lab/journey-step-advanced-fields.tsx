@@ -18,23 +18,23 @@ export function StepAdvancedFields({
   return (
     <div className="grid gap-3 rounded-lg bg-atlas-soft p-3 grid-cols-1 md:grid-cols-2">
       <JsonMiniField
-        label="Path params"
+        label="Datos de la ruta"
         hint='Ej: { "customerId": "{{customerId}}" }'
         value={step.pathParams}
         onCommit={(value) => onChange({ ...step, pathParams: value })}
       />
       <JsonMiniField
-        label="Query params"
+        label="Datos de consulta"
         value={step.queryParams}
         onCommit={(value) => onChange({ ...step, queryParams: value })}
       />
       <JsonMiniField
-        label="Payload"
+        label="Datos de entrada"
         value={step.payload}
         onCommit={(value) => onChange({ ...step, payload: value })}
       />
       <JsonMiniField
-        label="Headers"
+        label="Cabeceras"
         value={step.headers}
         onCommit={(value) =>
           onChange({ ...step, headers: value as Record<string, string> })
@@ -116,7 +116,7 @@ function JsonMiniField({
     try {
       const parsed = JSON.parse(trimmed) as unknown;
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        setError("Debe ser un objeto JSON, ej: {}");
+        setError("Debe ser un objeto JSON, p. ej.: {}");
         return;
       }
       setError(null);

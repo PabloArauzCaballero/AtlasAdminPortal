@@ -71,7 +71,7 @@ export async function PUT(request: Request): Promise<Response> {
   if (!hostPermitido(destino.hostname.toLowerCase())) {
     return rechazo(
       403,
-      `El almacén ${destino.hostname} no está permitido (ALMACEN_HOSTS_PERMITIDOS).`,
+      `El almacén de archivos ${destino.hostname} no está autorizado.`,
     );
   }
   if (Number(request.headers.get("content-length") ?? 0) > TAMANO_MAXIMO) {

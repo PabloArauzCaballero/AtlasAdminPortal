@@ -150,7 +150,7 @@ function AuthorizedMerchantUsersPage() {
         </h2>
         <p className="mb-4 text-sm text-atlas-muted">
           Quién puede entrar hoy al canal del comercio. Suspender corta el
-          acceso en la siguiente rotación del token; el historial se conserva.
+          acceso en cuanto caduca su sesión actual; el historial se conserva.
         </p>
         <FilterBar
           search={q}

@@ -281,7 +281,7 @@ describe("StressTestCard · resultado", () => {
 
     expect(screen.queryByText("Resultado completo")).toBeNull();
     expect(
-      screen.queryByText("Evolución de latencia y hits durante el stress"),
+      screen.queryByText("Evolución de latencia y peticiones durante la carga"),
     ).toBeNull();
   });
 
@@ -293,7 +293,7 @@ describe("StressTestCard · resultado", () => {
 
     expect(screen.getByText("Resultado completo")).toBeInTheDocument();
     expect(
-      screen.getByText("Evolución de latencia y hits durante el stress"),
+      screen.getByText("Evolución de latencia y peticiones durante la carga"),
     ).toBeInTheDocument();
   });
 
@@ -320,7 +320,7 @@ describe("StressTestCard · resultado", () => {
     render(<StressTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.getByRole("link", { name: "Descargar logs Pino" }),
+      screen.getByRole("link", { name: "Descargar el registro" }),
     ).toHaveAttribute("download", "stress-ep-1.log");
   });
 });

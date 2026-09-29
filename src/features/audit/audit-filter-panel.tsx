@@ -88,12 +88,12 @@ export function AuditFilterPanel({
         searchPlaceholder={
           buscador === "q"
             ? "Buscar por ruta o rol de quien la hizo…"
-            : "Filtrar por Request ID…"
+            : "Filtrar por código de referencia…"
         }
         searchTooltip={
           buscador === "q"
-            ? "Busca en el servidor, sin distinguir mayúsculas, en la plantilla de la ruta, la URL (sin datos sensibles) y el rol del actor."
-            : "Identificador de una petición concreta; lo muestra cualquier error del portal."
+            ? "Busca, sin distinguir mayúsculas, en la dirección de la operación (sin datos sensibles) y en el rol de quien la hizo."
+            : "Código de una solicitud concreta; aparece en cualquier mensaje de error del portal."
         }
         filters={filtrosDeBarra(campos, estado)}
         onSearchChange={(valor) => set(buscador, valor)}

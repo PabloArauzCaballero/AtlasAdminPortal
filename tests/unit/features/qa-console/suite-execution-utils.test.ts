@@ -41,7 +41,7 @@ describe("validateExecutionForm", () => {
   it("exige Base URL en una corrida real", () => {
     expect(
       validateExecutionForm({ ...ok, dryRun: false, baseUrl: "  " }),
-    ).toMatch(/Base URL/);
+    ).toMatch(/dirección base/);
   });
 
   it("permite Base URL vacía en dry-run", () => {

@@ -158,10 +158,10 @@ describe("JourneyStepCard · zona avanzada", () => {
   it("arranca plegada: los campos JSON no estorban al caso simple", () => {
     renderCard();
 
-    expect(screen.queryByLabelText("Payload")).toBeNull();
+    expect(screen.queryByLabelText("Datos de entrada")).toBeNull();
     expect(
       screen.getByRole("button", {
-        name: "Mostrar avanzado (path/query/payload/extract)",
+        name: "Mostrar avanzado (ruta, consulta, datos y extracción)",
       }),
     ).toBeInTheDocument();
   });
@@ -169,16 +169,16 @@ describe("JourneyStepCard · zona avanzada", () => {
   it("se despliega y se vuelve a plegar", async () => {
     renderCard();
     const toggle = screen.getByRole("button", {
-      name: "Mostrar avanzado (path/query/payload/extract)",
+      name: "Mostrar avanzado (ruta, consulta, datos y extracción)",
     });
 
     await userEvent.click(toggle);
-    expect(screen.getByLabelText("Payload")).toBeInTheDocument();
+    expect(screen.getByLabelText("Datos de entrada")).toBeInTheDocument();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Ocultar avanzado" }),
     );
-    expect(screen.queryByLabelText("Payload")).toBeNull();
+    expect(screen.queryByLabelText("Datos de entrada")).toBeNull();
   });
 
   it("cada campo JSON tiene su propio nombre accesible", async () => {
@@ -187,15 +187,15 @@ describe("JourneyStepCard · zona avanzada", () => {
     renderCard();
     await userEvent.click(
       screen.getByRole("button", {
-        name: "Mostrar avanzado (path/query/payload/extract)",
+        name: "Mostrar avanzado (ruta, consulta, datos y extracción)",
       }),
     );
 
     for (const label of [
-      "Path params",
-      "Query params",
-      "Payload",
-      "Headers",
+      "Datos de la ruta",
+      "Datos de consulta",
+      "Datos de entrada",
+      "Cabeceras",
       "Extraer variables",
       "HTTP esperados",
     ]) {
@@ -208,7 +208,7 @@ describe("JourneyStepCard · campos JSON", () => {
   async function openAdvanced() {
     await userEvent.click(
       screen.getByRole("button", {
-        name: "Mostrar avanzado (path/query/payload/extract)",
+        name: "Mostrar avanzado (ruta, consulta, datos y extracción)",
       }),
     );
   }
@@ -217,7 +217,7 @@ describe("JourneyStepCard · campos JSON", () => {
     renderCard({ step: step({ payload: { channel: "mobile_app" } }) });
     await openAdvanced();
 
-    expect(screen.getByLabelText("Payload")).toHaveValue(
+    expect(screen.getByLabelText("Datos de entrada")).toHaveValue(
       '{\n  "channel": "mobile_app"\n}',
     );
   });
@@ -226,14 +226,17 @@ describe("JourneyStepCard · campos JSON", () => {
     renderCard({ step: step({ payload: {} }) });
     await openAdvanced();
 
-    expect(screen.getByLabelText("Payload")).toHaveValue("");
+    expect(screen.getByLabelText("Datos de entrada")).toHaveValue("");
   });
 
   it("un JSON válido se confirma al salir del campo", async () => {
     const { onChange } = renderCard();
     await openAdvanced();
 
-    await userEvent.type(screen.getByLabelText("Payload"), '{{"a": 1}');
+    await userEvent.type(
+      screen.getByLabelText("Datos de entrada"),
+      '{{"a": 1}',
+    );
     await userEvent.tab();
 
     expect(onChange).toHaveBeenCalledWith(
@@ -247,7 +250,10 @@ describe("JourneyStepCard · campos JSON", () => {
     const { onChange } = renderCard();
     await openAdvanced();
 
-    await userEvent.type(screen.getByLabelText("Payload"), "{{no soy json");
+    await userEvent.type(
+      screen.getByLabelText("Datos de entrada"),
+      "{{no soy json",
+    );
     await userEvent.tab();
 
     expect(screen.getByText("JSON inválido")).toBeInTheDocument();
@@ -259,11 +265,11 @@ describe("JourneyStepCard · campos JSON", () => {
     await openAdvanced();
 
     // `[[` escapa el corchete: userEvent lo reserva para modificadores.
-    await userEvent.type(screen.getByLabelText("Payload"), "[[1, 2]");
+    await userEvent.type(screen.getByLabelText("Datos de entrada"), "[[1, 2]");
     await userEvent.tab();
 
     expect(
-      screen.getByText("Debe ser un objeto JSON, ej: {}"),
+      screen.getByText("Debe ser un objeto JSON, p. ej.: {}"),
     ).toBeInTheDocument();
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -271,7 +277,7 @@ describe("JourneyStepCard · campos JSON", () => {
   it("vaciar el campo guarda un objeto vacío y limpia el error previo", async () => {
     const { onChange } = renderCard({ step: step({ payload: { a: 1 } }) });
     await openAdvanced();
-    const field = screen.getByLabelText("Payload");
+    const field = screen.getByLabelText("Datos de entrada");
 
     await userEvent.clear(field);
     await userEvent.type(field, "roto");

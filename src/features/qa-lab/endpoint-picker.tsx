@@ -86,21 +86,21 @@ export function EndpointPicker({
               columns={columns}
               meta={endpoints.data.meta}
               emptyTitle="No se encontraron operaciones."
-              emptyDescription="Ajusta la búsqueda o pega el endpointId directamente."
+              emptyDescription="Ajusta la búsqueda o pega directamente el identificador de la ruta."
             />
           </div>
         ) : null}
         {mockMatches.length > 0 ? (
           <div className="space-y-2" data-tutorial-id="qa-lab-mock-providers">
             <SectionHeader
-              title="Proveedores externos (mock)"
-              description="Las 9 operaciones del simulador de proveedores externos (AtlasExternalProvidersMock), para probar carga y journeys sin depender del proveedor real. Al elegir una, la ruta base pasa sola a «Simulador de proveedores externos»."
+              title="Proveedores externos (simulador)"
+              description="Las 9 operaciones del simulador de proveedores externos, para probar carga y recorridos sin depender del proveedor real. Al elegir una, la ruta base pasa sola a «Simulador de proveedores externos»."
               className="mb-0"
             />
             <DataTable
               data={mockMatches}
               columns={columns}
-              emptyTitle="Sin coincidencias en el mock."
+              emptyTitle="Sin coincidencias en el simulador."
               emptyDescription="Ajusta la búsqueda."
             />
           </div>

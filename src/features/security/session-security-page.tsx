@@ -57,7 +57,7 @@ export function SessionSecurityPage() {
                   label: "Expira",
                   value: formatDateTime(session?.session?.expiresAt),
                 },
-                { label: "Tenant", value: user?.tenantId },
+                { label: "Organización", value: user?.tenantId },
               ]}
             />
             <div className="flex flex-wrap gap-2">

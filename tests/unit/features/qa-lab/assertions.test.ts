@@ -219,7 +219,7 @@ describe("evaluateEndpointAssertions · headers", () => {
         }),
       }),
     );
-    expect(itemNamed(summary, "Header Content-Type").passed).toBe(true);
+    expect(itemNamed(summary, "Cabecera Content-Type").passed).toBe(true);
   });
 
   // El valor sí es sensible a mayúsculas: un header vale por su valor exacto.
@@ -232,7 +232,7 @@ describe("evaluateEndpointAssertions · headers", () => {
         }),
       }),
     );
-    expect(itemNamed(summary, "Header content-type").passed).toBe(false);
+    expect(itemNamed(summary, "Cabecera content-type").passed).toBe(false);
   });
 
   it("un header ausente falla y se reporta como ausente, no como vacío", () => {
@@ -242,7 +242,7 @@ describe("evaluateEndpointAssertions · headers", () => {
         expectedResponse: expectedFixture({ headers: { "x-trace": "abc" } }),
       }),
     );
-    expect(itemNamed(summary, "Header x-trace")).toMatchObject({
+    expect(itemNamed(summary, "Cabecera x-trace")).toMatchObject({
       passed: false,
       actual: "(ausente)",
     });

@@ -17,7 +17,7 @@ describe("JobActions", () => {
       screen.queryByRole("button", { name: /cancelar/i }),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId("job-actions-note")).toHaveTextContent(
-      /se dispara el job de nuevo/i,
+      /se lanza de nuevo desde «Ejecutar ahora»/i,
     );
   });
 });

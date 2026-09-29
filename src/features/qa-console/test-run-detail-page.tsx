@@ -17,6 +17,8 @@ import {
 } from "@/shared/components/layout/page-header";
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { optionLabel } from "@/shared/lib/options";
+import { ENVIRONMENT_OPTIONS, RUN_STATUS_OPTIONS } from "./qa-options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
 
@@ -36,14 +38,14 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
   const columns = useMemo<ColumnDef<TestStepRun>[]>(
     () => [
       {
-        header: "Step run",
+        header: "Ejecución del paso",
         accessorKey: "stepRunId",
         cell: ({ row }) => (
           <span className="font-mono text-xs">#{row.original.stepRunId}</span>
         ),
       },
       {
-        header: "Step",
+        header: "Paso",
         accessorKey: "stepId",
         cell: ({ row }) => (
           <span className="font-mono text-xs">#{row.original.stepId}</span>
@@ -98,9 +100,9 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
         <>
           <PageHeader
             icon={FlaskConical}
-            eyebrow={`Run #${run.data.run.runId}`}
-            title={`Ejecución QA ${run.data.run.status}`}
-            description={`Ambiente: ${run.data.run.environment}`}
+            eyebrow={`Corrida #${run.data.run.runId}`}
+            title={`Ejecución QA ${optionLabel(RUN_STATUS_OPTIONS, run.data.run.status).toLowerCase()}`}
+            description={`Ambiente: ${optionLabel(ENVIRONMENT_OPTIONS, run.data.run.environment)}`}
             actions={
               <>
                 <TutorialLaunchButton tutorialId="qa-runs-interpret" />
@@ -116,7 +118,13 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
                   value: `#${run.data.run.suiteId}`,
                   mono: true,
                 },
-                { label: "Ambiente", value: run.data.run.environment },
+                {
+                  label: "Ambiente",
+                  value: optionLabel(
+                    ENVIRONMENT_OPTIONS,
+                    run.data.run.environment,
+                  ),
+                },
                 { label: "Disparado por", value: run.data.run.triggeredBy },
                 {
                   label: "Duración",
@@ -141,7 +149,7 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
               </CardContent>
             </Card>
             <section data-tutorial-id="qa-run-steps">
-              <SectionHeader title="Steps ejecutados" />
+              <SectionHeader title="Pasos ejecutados" />
               <DataTable data={run.data.steps} columns={columns} />
             </section>
           </div>

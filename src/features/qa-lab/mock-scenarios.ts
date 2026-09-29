@@ -17,9 +17,9 @@ import type { Option } from "@/shared/lib/options";
 export const MOCK_SCENARIO_OPTIONS: Option[] = [
   {
     value: "",
-    label: "Sin forzar (default de la corrida)",
+    label: "Sin forzar (el de la corrida)",
     description:
-      "No manda x-mock-scenario: el emulador usa el escenario por defecto de la corrida (happy_path salvo que se haya fijado otro).",
+      "No fuerza nada: el simulador usa el escenario por defecto de la corrida («Camino feliz» salvo que se haya fijado otro).",
   },
   {
     value: "happy_path",
@@ -30,13 +30,13 @@ export const MOCK_SCENARIO_OPTIONS: Option[] = [
     value: "provider_down",
     label: "Proveedor caído",
     description:
-      "503 PROVIDER_UNAVAILABLE: el proveedor no está, no es un fallo del backend propio.",
+      "Responde 503, proveedor no disponible: el fallo es del proveedor, no de nuestro servidor.",
   },
   {
     value: "timeout",
-    label: "No contesta (timeout)",
+    label: "No contesta (tiempo agotado)",
     description:
-      "Se queda callado hasta que la llamada se rinde por su propio deadline.",
+      "Se queda callado hasta que la llamada se rinde por su propio tiempo límite.",
   },
   {
     value: "slow_response",
@@ -46,7 +46,7 @@ export const MOCK_SCENARIO_OPTIONS: Option[] = [
   },
   {
     value: "invalid_payload",
-    label: "Payload inválido",
+    label: "Datos de entrada no válidos",
     description:
       "El proveedor rechaza la entrada por formato o datos incompletos.",
   },
@@ -54,13 +54,13 @@ export const MOCK_SCENARIO_OPTIONS: Option[] = [
     value: "unauthorized",
     label: "Credencial rechazada",
     description:
-      "401 UNAUTHORIZED: las credenciales de Atlas contra ESE proveedor no sirven (no es la sesión del cliente final).",
+      "Responde 401, no autorizado: las credenciales de Atlas contra ESE proveedor no sirven (no es la sesión del cliente final).",
   },
   {
     value: "rate_limited",
     label: "Límite de cuota alcanzado",
     description:
-      "429 RATE_LIMITED con Retry-After: cuota del proveedor agotada.",
+      "Responde 429, demasiadas peticiones, con el tiempo de espera indicado: cuota del proveedor agotada.",
   },
   {
     value: "not_found",
@@ -99,7 +99,7 @@ export const MOCK_SCENARIO_OPTIONS: Option[] = [
     value: "provider_internal_error",
     label: "Error interno del proveedor",
     description:
-      "500 PROVIDER_INTERNAL_ERROR: el proveedor falló por su cuenta.",
+      "Responde 500, error interno del proveedor: falló por su cuenta.",
   },
   {
     value: "fraud_signal_high",
@@ -114,9 +114,9 @@ export const MOCK_SCENARIO_OPTIONS: Option[] = [
   },
   {
     value: "expired_token",
-    label: "Token expirado",
+    label: "Acceso vencido",
     description:
-      "El token de consentimiento o de sesión con el proveedor venció.",
+      "Venció el permiso de consentimiento o la sesión con el proveedor.",
   },
   {
     value: "revoked_consent",

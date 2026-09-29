@@ -20,7 +20,7 @@ export function buildRelatedEndpointColumns(
 ): ColumnDef<DataEntityImpact>[] {
   return [
     {
-      header: "Endpoint",
+      header: "Operación",
       accessorKey: "endpointId",
       cell: ({ row }) => (
         <EndpointCell
@@ -83,7 +83,7 @@ export function buildColumnCatalogColumns(): ColumnDef<DataEntityColumn>[] {
       cell: ({ row }) => formatBoolean(row.original.isNullable),
     },
     {
-      header: "PII",
+      header: "Datos personales",
       accessorKey: "containsPii",
       cell: ({ row }) => <PiiBadge value={Boolean(row.original.containsPii)} />,
     },

@@ -46,7 +46,7 @@ export const stressProfileSchema = z.object({
   endpointId: z
     .string()
     .trim()
-    .regex(/^[1-9][0-9]*$/, "Selecciona el endpoint objetivo."),
+    .regex(/^[1-9][0-9]*$/, "Selecciona la ruta objetivo."),
   code: z
     .string()
     .trim()
@@ -61,8 +61,8 @@ export const stressProfileSchema = z.object({
     .max(220, "Máximo 220 caracteres."),
   targetRps: numberField()
     .int("Debe ser un entero.")
-    .min(1, "Mínimo 1 RPS.")
-    .max(10000, "Máximo 10000 RPS."),
+    .min(1, "Mínimo 1 petición por segundo.")
+    .max(10000, "Máximo 10000 peticiones por segundo."),
   durationSeconds: numberField()
     .int("Debe ser un entero.")
     .min(5, "Mínimo 5 segundos.")

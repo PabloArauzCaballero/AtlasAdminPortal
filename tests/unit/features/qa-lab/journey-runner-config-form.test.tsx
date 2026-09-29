@@ -234,7 +234,7 @@ describe("JourneyRunnerConfigFields · volumen (personas simuladas)", () => {
     );
 
     expect(
-      screen.queryByRole("combobox", { name: "Escenario del mock" }),
+      screen.queryByRole("combobox", { name: "Escenario del simulador" }),
     ).not.toBeInTheDocument();
 
     rerender(
@@ -245,7 +245,7 @@ describe("JourneyRunnerConfigFields · volumen (personas simuladas)", () => {
     );
 
     expect(
-      screen.getByRole("combobox", { name: "Escenario del mock" }),
+      screen.getByRole("combobox", { name: "Escenario del simulador" }),
     ).toBeInTheDocument();
   });
 });

@@ -53,7 +53,7 @@ describe("QaLogDownload · descarga", () => {
     render(<QaLogDownload fileName="qa-run-42.log" lines={LINES} />);
 
     expect(
-      screen.getByRole("link", { name: "Descargar logs Pino" }),
+      screen.getByRole("link", { name: "Descargar el registro" }),
     ).toHaveAttribute("download", "qa-run-42.log");
   });
 
@@ -63,7 +63,7 @@ describe("QaLogDownload · descarga", () => {
     // deben salir del cliente.
     render(<QaLogDownload fileName="qa.log" lines={LINES} />);
     const href = screen
-      .getByRole("link", { name: "Descargar logs Pino" })
+      .getByRole("link", { name: "Descargar el registro" })
       .getAttribute("href") as string;
 
     expect(href).toMatch(/^blob:/);
@@ -75,7 +75,7 @@ describe("QaLogDownload · descarga", () => {
     // entrada se pierde al concatenar.
     render(<QaLogDownload fileName="qa.log" lines={LINES} />);
     const href = screen
-      .getByRole("link", { name: "Descargar logs Pino" })
+      .getByRole("link", { name: "Descargar el registro" })
       .getAttribute("href") as string;
     const blob = blobOf(href);
 
@@ -98,7 +98,7 @@ describe("QaLogDownload · descarga", () => {
       <QaLogDownload fileName="qa.log" lines={LINES} />,
     );
     const primero = screen
-      .getByRole("link", { name: "Descargar logs Pino" })
+      .getByRole("link", { name: "Descargar el registro" })
       .getAttribute("href");
 
     rerender(
@@ -107,7 +107,7 @@ describe("QaLogDownload · descarga", () => {
 
     expect(
       screen
-        .getByRole("link", { name: "Descargar logs Pino" })
+        .getByRole("link", { name: "Descargar el registro" })
         .getAttribute("href"),
     ).not.toBe(primero);
   });
@@ -118,7 +118,9 @@ describe("QaLogDownload · descarga", () => {
     // lleva `download` y jsdom se cuelga intentando navegar.
     render(<QaLogDownload fileName="qa.log" lines={LINES} />);
 
-    fireEvent.click(screen.getByRole("link", { name: "Descargar logs Pino" }));
+    fireEvent.click(
+      screen.getByRole("link", { name: "Descargar el registro" }),
+    );
 
     await waitFor(() => expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1));
   });
@@ -130,7 +132,9 @@ describe("QaLogDownload · copiar al portapapeles", () => {
     vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
     render(<QaLogDownload fileName="qa.log" lines={LINES} />);
 
-    await userEvent.click(screen.getByRole("button", { name: /Copiar logs/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Copiar el registro/ }),
+    );
 
     expect(writeText).toHaveBeenCalledWith(`${LINES.join("\n")}\n`);
   });
@@ -141,7 +145,9 @@ describe("QaLogDownload · copiar al portapapeles", () => {
     vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
     render(<QaLogDownload fileName="qa.log" lines={LINES} />);
 
-    await userEvent.click(screen.getByRole("button", { name: /Copiar logs/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Copiar el registro/ }),
+    );
     expect(
       await screen.findByRole("button", { name: /Copiado/ }),
     ).toBeInTheDocument();
@@ -149,7 +155,7 @@ describe("QaLogDownload · copiar al portapapeles", () => {
     await waitFor(
       () =>
         expect(
-          screen.getByRole("button", { name: /Copiar logs/ }),
+          screen.getByRole("button", { name: /Copiar el registro/ }),
         ).toBeInTheDocument(),
       { timeout: 4000 },
     );

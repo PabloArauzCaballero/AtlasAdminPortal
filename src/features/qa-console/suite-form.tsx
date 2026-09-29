@@ -91,7 +91,7 @@ export function SuiteForm({
 
         <Field
           label="Módulo"
-          tooltip="Módulo del backend que prueba; agrupa la cobertura por área. Ej.: internal-auth"
+          tooltip="Módulo del sistema que prueba; agrupa la cobertura por área. Ej.: internal-auth"
           hint="Módulo del sistema que cubre la suite."
           error={errors.module?.message}
         >
@@ -127,7 +127,7 @@ export function SuiteForm({
           <Field
             label="Ambientes"
             tooltip="Dónde se permite ejecutar la suite; producción sólo en modo lectura."
-            hint="Incluir PRODUCTION_READONLY exige marcar la suite como segura para producción."
+            hint="Incluir «Producción en solo lectura» exige marcar la suite como segura para producción."
             error={errors.environmentScope?.message}
           >
             <div className="flex flex-wrap gap-2">
@@ -162,13 +162,13 @@ export function SuiteForm({
           field={register("isEnabled")}
         />
         <SuiteToggle
-          label="Requiere seed data"
-          description="La suite asume datos sembrados; sin ellos los pasos fallan."
+          label="Requiere datos de ejemplo"
+          description="La suite necesita datos de ejemplo cargados; sin ellos los pasos fallan."
           field={register("requiresSeedData")}
         />
         <SuiteToggle
           label="Segura para producción"
-          description="Solo lectura y sin efectos secundarios. Requisito para PRODUCTION_READONLY."
+          description="Solo lectura y sin efectos secundarios. Requisito para «Producción en solo lectura»."
           field={register("isSafeForProduction")}
         />
         <SuiteToggle

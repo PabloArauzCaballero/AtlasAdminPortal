@@ -67,7 +67,7 @@ export function ErrorState({
           ) : null}
           {requestId ? (
             <p className="mt-2 font-mono text-xs text-red-700">
-              Request ID: {requestId}
+              Código de referencia: {requestId}
             </p>
           ) : null}
           {onRetry ? (

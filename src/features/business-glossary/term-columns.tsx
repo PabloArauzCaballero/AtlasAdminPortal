@@ -70,7 +70,7 @@ export function buildBusinessTermColumns(): ColumnDef<BusinessTerm>[] {
       cell: ({ row }) => <RelatedCount items={row.original.relatedColumns} />,
     },
     {
-      header: "Endpoints",
+      header: "Operaciones",
       id: "relatedEndpoints",
       cell: ({ row }) => <RelatedCount items={row.original.relatedEndpoints} />,
     },

@@ -99,8 +99,7 @@ export function LatencyDemoChart() {
       </svg>
       <p className="mt-1 text-[0.625rem] leading-4 text-atlas-muted">
         La línea roja es el umbral p95 ({P95_MS} ms). Los puntos rojos son
-        peticiones que lo superan: si aparecen bajo carga, el endpoint se
-        degrada.
+        peticiones que lo superan: si aparecen bajo carga, la ruta se degrada.
       </p>
     </div>
   );

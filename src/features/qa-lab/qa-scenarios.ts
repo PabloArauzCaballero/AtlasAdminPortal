@@ -76,7 +76,7 @@ export const QA_SCENARIOS: QaScenarioDefinition[] = [
     key: "missing_tenant",
     label: "Sin cabecera de empresa",
     description:
-      "Omite x-tenant-id, la cabecera que dice a qué empresa pertenece la petición.",
+      "Omite la cabecera que dice a qué empresa pertenece la petición.",
     expectedOutcome: "400, 403 o 422 si la operación exige empresa.",
     patch: { ...NORMAL, includeTenantHeader: false },
     expectedStatusCodes: "400, 403, 422",

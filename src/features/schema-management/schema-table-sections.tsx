@@ -75,7 +75,7 @@ export function ColumnsSection({
                       {column.isPii ? (
                         <Badge tone="pii">
                           <ShieldAlert className="h-3 w-3" aria-hidden />
-                          PII
+                          Datos personales
                         </Badge>
                       ) : null}
                       {column.isImmutable ? (

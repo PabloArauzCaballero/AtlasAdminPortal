@@ -53,7 +53,9 @@ function renderCard(props: Parameters<typeof ErrorHelpCard>[0]) {
 describe("ErrorHelpCard", () => {
   it("traduce un error conocido a explicación didáctica", () => {
     renderCard({ code: "HTTP_401" });
-    expect(screen.getByText("La API pidió autenticación")).toBeInTheDocument();
+    expect(
+      screen.getByText("El servidor pidió identificarse"),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Posibles causas/i)).toBeInTheDocument();
     expect(screen.getByText(/Cómo corregirlo/i)).toBeInTheDocument();
     expect(screen.getByText(/Acción recomendada:/i)).toBeInTheDocument();

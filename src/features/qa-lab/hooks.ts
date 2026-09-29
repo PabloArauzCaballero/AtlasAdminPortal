@@ -19,7 +19,7 @@ export function useEndpointRunMutation(endpoint?: EndpointItem) {
   return useMutation({
     mutationFn: (body: EndpointRunInput) => {
       if (!endpoint) {
-        throw new Error("Selecciona un endpoint antes de ejecutar.");
+        throw new Error("Selecciona una ruta antes de ejecutar.");
       }
       return executeEndpointDirectly(endpoint, body);
     },
@@ -30,7 +30,7 @@ export function useEndpointStressMutation(endpoint?: EndpointItem) {
   return useMutation({
     mutationFn: (body: EndpointStressRunInput) => {
       if (!endpoint) {
-        throw new Error("Selecciona un endpoint antes de ejecutar.");
+        throw new Error("Selecciona una ruta antes de ejecutar.");
       }
       return runStressBurst(endpoint, body);
     },
