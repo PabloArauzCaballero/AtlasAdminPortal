@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -171,13 +171,22 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
   /** Las dos pantallas públicas no montan el armazón y por eso no pintan explicación. */
   const PUBLICAS = new Set(["/internal/login", "/internal/recuperar-acceso"]);
 
+  /**
+   * Una ruta vieja conservada tras fusionar pantallas sólo llama a `redirect()`: no pinta nada, así
+   * que no es una pantalla que necesite explicación (la tiene su destino).
+   */
+  function esRedireccion(archivo: string): boolean {
+    const fuente = readFileSync(archivo, "utf8");
+    return /^\s*redirect\(/m.test(fuente) && !/return\s*\(?\s*</.test(fuente);
+  }
+
   function rutasDelPortal(dir: string, base: string): string[] {
     const rutas: string[] = [];
     for (const entrada of readdirSync(dir)) {
       const ruta = path.join(dir, entrada);
       if (statSync(ruta).isDirectory()) {
         rutas.push(...rutasDelPortal(ruta, base));
-      } else if (entrada === "page.tsx") {
+      } else if (entrada === "page.tsx" && !esRedireccion(ruta)) {
         const relativa = path.relative(base, path.dirname(ruta));
         // Un segmento dinámico (`[caseId]`) se prueba con un valor cualquiera.
         rutas.push(

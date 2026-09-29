@@ -3,11 +3,15 @@
 import { Select } from "@/shared/components/ui/input";
 import { FieldTooltip } from "@/shared/components/ui/field-tooltip";
 import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
+import { QaLabGuide } from "@/features/qa-lab/guide/qa-lab-guide-page";
 import Link from "next/link";
 import { GraduationCap, Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { useAuth } from "@/shared/auth/auth-context";
 import { tutorialCatalog } from "./catalog";
 import { learningPaths, pathTutorials } from "./learning-paths";
 import { TutorialListCard } from "./tutorial-list-card";
@@ -16,16 +20,67 @@ import { useTutorial } from "./tutorial-provider";
 
 const ALL = "Todos";
 
-/** Centro de aprendizaje de QA LAB: descubrir, buscar y retomar tutoriales. */
+const PATHS_TAB = "Recorridos";
+const GUIDE_TAB = "Guía de referencia";
+/** `?tab=guia` es el destino de la ruta vieja «Guía QA Lab». */
+const GUIDE_SLUG = "guia";
+/** Mismos permisos que tenía cada pantalla antes de unirlas. */
+const PATHS_PERMISSIONS = ["systems.endpoints.read", "systems.qa.read"];
+const GUIDE_PERMISSIONS = ["systems.endpoints.read"];
+
+/**
+ * «Aprender QA Lab»: los recorridos guiados y la guía de referencia, antes dos
+ * ítems del menú («Centro de aprendizaje» y «Guía QA Lab»).
+ */
 export function LearningCenterPage() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { permissions } = useAuth();
+  // La guía pide un permiso más estrecho que los recorridos: sin él, ni pestaña.
+  const canReadGuide = GUIDE_PERMISSIONS.some((permission) =>
+    permissions.includes(permission),
+  );
+  const active =
+    canReadGuide && params.get("tab") === GUIDE_SLUG ? GUIDE_TAB : PATHS_TAB;
+  const selectTab = (tab: string) => {
+    router.replace(
+      tab === GUIDE_TAB ? `${pathname}?tab=${GUIDE_SLUG}` : pathname,
+      { scroll: false },
+    );
+  };
   return (
-    <PermissionGate permissions={["systems.endpoints.read", "systems.qa.read"]}>
-      <AuthorizedLearningCenter />
+    <PermissionGate permissions={PATHS_PERMISSIONS}>
+      <PageHeader
+        eyebrow="QA Console"
+        title="Aprender QA Lab"
+        description="Aprende QA LAB paso a paso con recorridos guiados sobre las pantallas reales, o consulta la guía de referencia: cómo probar la API como si fueras el negocio y qué barreras impiden romper producción."
+        actions={
+          <Link href="/internal/qa/lab">
+            <Button variant="primary">Abrir el lab</Button>
+          </Link>
+        }
+      />
+      <DetailTabs
+        tabs={canReadGuide ? [PATHS_TAB, GUIDE_TAB] : [PATHS_TAB]}
+        active={active}
+        onChange={selectTab}
+      />
+      {active === GUIDE_TAB ? (
+        <PermissionGate permissions={GUIDE_PERMISSIONS}>
+          <QaLabGuide />
+        </PermissionGate>
+      ) : (
+        <PermissionGate permissions={PATHS_PERMISSIONS}>
+          <LearningPaths />
+        </PermissionGate>
+      )}
     </PermissionGate>
   );
 }
 
-function AuthorizedLearningCenter() {
+/** Pestaña «Recorridos»: descubrir, buscar y retomar tutoriales. Tu avance se guarda en este navegador. */
+function LearningPaths() {
   const { startPath } = useTutorial();
   const [query, setQuery] = useState("");
   const [module, setModule] = useState(ALL);
@@ -50,17 +105,6 @@ function AuthorizedLearningCenter() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="QA Console"
-        title="Centro de aprendizaje"
-        description="Aprende QA LAB paso a paso: elige un objetivo, sigue un recorrido sugerido (al terminar cada tutorial te ofrece el siguiente) o retoma donde lo dejaste. Tu avance se guarda en este navegador."
-        actions={
-          <Link href="/internal/qa/lab">
-            <Button variant="primary">Abrir el lab</Button>
-          </Link>
-        }
-      />
-
       <div className="space-y-8">
         <TutorialObjectiveLauncher />
 
