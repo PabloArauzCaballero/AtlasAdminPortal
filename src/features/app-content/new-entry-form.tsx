@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiErrorText } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { useSaveAppContent } from "./hooks";
+import type { PreviewDraft } from "./phone-preview";
 import type { ContentSurface } from "./types";
 
 /** Lo que acepta el servidor como clave: la app busca por ella, así que sin espacios ni tildes. */
@@ -22,13 +23,32 @@ const KEY_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 export function NewEntryForm({
   surface,
   onClose,
-}: Readonly<{ surface: ContentSurface; onClose: () => void }>) {
+  onDraftChange,
+}: Readonly<{
+  surface: ContentSurface;
+  onClose: () => void;
+  onDraftChange: (draft: PreviewDraft | null) => void;
+}>) {
   const mutation = useSaveAppContent();
   const [contentKey, setContentKey] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
   const [isActive, setIsActive] = useState(true);
+
+  // El celular enseña lo que se escribe, sin esperar a guardar.
+  useEffect(() => {
+    onDraftChange({
+      title,
+      subtitle,
+      body,
+      bullets: [],
+      actionKind: null,
+      actionLabel: "",
+      isActive,
+    });
+  }, [title, subtitle, body, isActive, onDraftChange]);
+  useEffect(() => () => onDraftChange(null), [onDraftChange]);
 
   const key = contentKey.trim();
   const keyError =

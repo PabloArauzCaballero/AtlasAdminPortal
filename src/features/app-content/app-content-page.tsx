@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FileText, Plus } from "lucide-react";
 import { apiErrorText } from "@/shared/api/errors";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -14,6 +14,7 @@ import {
 import { useAppContent } from "./hooks";
 import { EntryCard } from "./entry-card";
 import { NewEntryForm } from "./new-entry-form";
+import { PhonePreview, type PreviewDraft } from "./phone-preview";
 import { APP_CONTENT_MANAGE, SURFACES, surfaceOption } from "./surfaces";
 import type { ContentSurface } from "./types";
 
@@ -40,7 +41,23 @@ export function AppContentPage() {
   const content = useAppContent(surface);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [draft, setDraft] = useState<PreviewDraft | null>(null);
   const current = surfaceOption(surface);
+  const published = useMemo<PreviewDraft[]>(
+    () =>
+      (content.data?.items ?? [])
+        .filter((entry) => entry.isActive)
+        .map((entry) => ({
+          title: entry.title ?? "",
+          subtitle: entry.subtitle ?? "",
+          body: entry.bodyMd ?? "",
+          bullets: entry.bullets,
+          actionKind: entry.actionKind,
+          actionLabel: entry.actionLabel ?? "",
+          isActive: true,
+        })),
+    [content.data],
+  );
 
   return (
     <>
@@ -77,69 +94,82 @@ export function AppContentPage() {
         ))}
       </div>
 
-      {!current.readByApp ? (
-        <p
-          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
-          data-testid="surface-not-read"
-        >
-          {current.whenEmpty}
-        </p>
-      ) : null}
-
-      <PermissionGate permissions={APP_CONTENT_MANAGE} fallback={null}>
-        {creating ? (
-          <div className="mb-4">
-            <NewEntryForm
-              key={surface}
-              surface={surface}
-              onClose={() => setCreating(false)}
-            />
-          </div>
-        ) : (
-          <div className="mb-4">
-            <Button
-              variant="secondary"
-              onClick={() => setCreating(true)}
-              data-testid="app-content-new-button"
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="min-w-0">
+          {!current.readByApp ? (
+            <p
+              className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+              data-testid="surface-not-read"
             >
-              <Plus className="h-4 w-4" aria-hidden />
-              Nueva pieza en {current.label}
-            </Button>
-          </div>
-        )}
-      </PermissionGate>
+              {current.whenEmpty}
+            </p>
+          ) : null}
 
-      {content.isLoading ? <LoadingSkeleton rows={4} /> : null}
+          <PermissionGate permissions={APP_CONTENT_MANAGE} fallback={null}>
+            {creating ? (
+              <div className="mb-4">
+                <NewEntryForm
+                  key={surface}
+                  surface={surface}
+                  onClose={() => setCreating(false)}
+                  onDraftChange={setDraft}
+                />
+              </div>
+            ) : (
+              <div className="mb-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => setCreating(true)}
+                  data-testid="app-content-new-button"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nueva pieza en {current.label}
+                </Button>
+              </div>
+            )}
+          </PermissionGate>
 
-      {content.error ? (
-        <ErrorState
-          title="No pudimos cargar el contenido"
-          description={apiErrorText(
-            content.error,
-            "Reintenta en unos segundos.",
-          )}
-        />
-      ) : null}
+          {content.isLoading ? <LoadingSkeleton rows={4} /> : null}
 
-      {content.data ? (
-        <div className="flex flex-col gap-4" data-testid="app-content-list">
-          {content.data.items.map((entry) => (
-            <EntryCard
-              key={entry.contentId}
-              entry={entry}
-              editing={editing === entry.contentId}
-              onEdit={() => setEditing(entry.contentId)}
-              onClose={() => setEditing(null)}
-            />
-          ))}
-          {content.data.items.length === 0 && current.readByApp ? (
-            <EmptyState
-              title="Todavía no hay contenido para esta pantalla"
-              description={current.whenEmpty}
+          {content.error ? (
+            <ErrorState
+              title="No pudimos cargar el contenido"
+              description={apiErrorText(
+                content.error,
+                "Reintenta en unos segundos.",
+              )}
             />
           ) : null}
+
+          {content.data ? (
+            <div className="flex flex-col gap-4" data-testid="app-content-list">
+              {content.data.items.map((entry) => (
+                <EntryCard
+                  key={entry.contentId}
+                  entry={entry}
+                  editing={editing === entry.contentId}
+                  onEdit={() => setEditing(entry.contentId)}
+                  onClose={() => setEditing(null)}
+                  onDraftChange={setDraft}
+                />
+              ))}
+              {content.data.items.length === 0 && current.readByApp ? (
+                <EmptyState
+                  title="Todavía no hay contenido para esta pantalla"
+                  description={current.whenEmpty}
+                />
+              ) : null}
+            </div>
+          ) : null}
         </div>
-      ) : null}
+        <div className="lg:sticky lg:top-4">
+          <PhonePreview
+            surfaceLabel={current.label}
+            draft={draft}
+            published={published}
+          />
+        </div>
+      </div>
     </>
   );
 }

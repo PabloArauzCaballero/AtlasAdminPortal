@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { apiErrorText } from "@/shared/api/errors";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { BulletsEditor } from "./bullets-editor";
 import { useSaveAppContent } from "./hooks";
+import type { PreviewDraft } from "./phone-preview";
 import { APP_CONTENT_MANAGE } from "./surfaces";
 import type { AppContentEntry, ContentBullet } from "./types";
 
@@ -25,11 +26,13 @@ export function EntryCard({
   editing,
   onEdit,
   onClose,
+  onDraftChange,
 }: Readonly<{
   entry: AppContentEntry;
   editing: boolean;
   onEdit: () => void;
   onClose: () => void;
+  onDraftChange: (draft: PreviewDraft | null) => void;
 }>) {
   const mutation = useSaveAppContent();
   const [title, setTitle] = useState(entry.title ?? "");
@@ -39,6 +42,34 @@ export function EntryCard({
   const [actionLabel, setActionLabel] = useState(entry.actionLabel ?? "");
   const [actionValue, setActionValue] = useState(entry.actionValue ?? "");
   const [isActive, setIsActive] = useState(entry.isActive);
+
+  // Sólo la tarjeta que se está editando alimenta el celular; al cerrarla lo suelta.
+  useEffect(() => {
+    if (!editing) return;
+    onDraftChange({
+      title,
+      subtitle,
+      body,
+      bullets,
+      actionKind: entry.actionKind,
+      actionLabel,
+      isActive,
+    });
+  }, [
+    editing,
+    title,
+    subtitle,
+    body,
+    bullets,
+    actionLabel,
+    isActive,
+    entry.actionKind,
+    onDraftChange,
+  ]);
+  useEffect(() => {
+    if (!editing) return;
+    return () => onDraftChange(null);
+  }, [editing, onDraftChange]);
 
   const save = () => {
     mutation.mutate(
