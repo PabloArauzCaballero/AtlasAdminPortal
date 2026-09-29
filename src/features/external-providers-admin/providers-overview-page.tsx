@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
@@ -17,6 +16,7 @@ import {
 import { ProvidersDashboard } from "./dashboard/providers-dashboard";
 import { buildProviderColumns, type ProviderRow } from "./provider-columns";
 import { ProviderDetailDrawer } from "./provider-detail-drawer";
+import { ProvidersCatalogTable } from "./providers-catalog-table";
 import { Inbox, KeyRound, Plug, ScrollText, TriangleAlert } from "lucide-react";
 
 /**
@@ -150,11 +150,7 @@ export function ProvidersOverviewPage() {
         />
       ) : null}
       {!isLoading && rows.length > 0 ? (
-        <DataTable
-          data={rows}
-          columns={columns}
-          emptyTitle="No hay proveedores registrados."
-        />
+        <ProvidersCatalogTable rows={rows} columns={columns} />
       ) : null}
       {open ? (
         // `key` obliga a remontar al cambiar de proveedor: sin él, React reusa

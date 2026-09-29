@@ -79,6 +79,19 @@ const eslintConfig = [
       // defecto es 2 y no llega a ese texto: se sube a 3, no se retuerce el
       // marcado para contentar a la regla.
       "jsx-a11y/label-has-associated-control": ["error", { depth: 3 }],
+      // WCAG 2.1.1: una región con desplazamiento (`overflow-auto`) tiene que poder enfocarse con
+      // el teclado, o quien no usa ratón no lee lo que se sale. axe lo exige como
+      // `scrollable-region-focusable`. La regla sólo admitía `tabpanel`; se admite también
+      // `region`, que es el rol que lleva la tabla de `DataTable`. Cualquier otro elemento no
+      // interactivo con tabIndex sigue siendo error.
+      "jsx-a11y/no-noninteractive-tabindex": [
+        "error",
+        {
+          tags: [],
+          roles: ["tabpanel", "region"],
+          allowExpressionValues: true,
+        },
+      ],
     },
   },
   {

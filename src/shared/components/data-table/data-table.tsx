@@ -82,7 +82,18 @@ export function DataTable<T>({
             </span>
           </div>
         </div>
-        <div className="atlas-scrollbar atlas-table-scroll max-h-[560px] overflow-auto">
+        {/*
+         * Enfocable con el teclado: la región se desplaza (`overflow-auto`) y, en una tabla cuyas
+         * celdas no traen enlaces ni botones —las cifras de Inicio, por ejemplo—, no había nada
+         * enfocable dentro, así que quien no usa ratón no podía leer las columnas que se salen.
+         * axe lo marca como `scrollable-region-focusable`.
+         */}
+        <div
+          role="region"
+          aria-label="Tabla de registros"
+          tabIndex={0}
+          className="atlas-scrollbar atlas-table-scroll max-h-[560px] overflow-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
+        >
           {/*
            * `select-text` explícito: los botones que hay dentro de muchas celdas —el nombre que
            * abre el detalle, el ordenador de la cabecera— heredan el `user-select: none` que el

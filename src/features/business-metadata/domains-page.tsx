@@ -1,17 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { useDomainOverview } from "@/features/systems/hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -23,7 +19,8 @@ import {
   type UrlTab,
 } from "@/shared/components/layout/url-tabs";
 import { GlossaryTermsTab } from "@/features/business-glossary/glossary-terms-tab";
-import { DomainCard } from "./domain-card";
+import { DomainsTable } from "./domains-table";
+import { UnassignedModulesTable } from "./unassigned-modules-table";
 
 /**
  * Dominios del negocio.
@@ -88,31 +85,10 @@ function AuthorizedBusinessDomainsPage() {
 }
 
 function DomainsTab() {
-  const [q, setQ] = useState("");
   const overview = useDomainOverview();
-
-  const domains = useMemo(() => {
-    const items = overview.data?.items ?? [];
-    const needle = q.trim().toLowerCase();
-    if (!needle) return items;
-    return items.filter(
-      (domain) =>
-        domain.domainCode.toLowerCase().includes(needle) ||
-        domain.domainName.toLowerCase().includes(needle) ||
-        (domain.description ?? "").toLowerCase().includes(needle) ||
-        domain.modules.some((module) => module.includes(needle)),
-    );
-  }, [overview.data, q]);
 
   return (
     <>
-      <FilterBar
-        search={q}
-        searchPlaceholder="Buscar dominio, nombre, descripción o módulo…"
-        searchTooltip="Filtra los dominios ya calculados por el servidor (son pocos y llegan todos): código, nombre, descripción y módulos."
-        onSearchChange={setQ}
-        onClear={() => setQ("")}
-      />
       {overview.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {overview.error ? (
         <ErrorState
@@ -159,56 +135,24 @@ function DomainsTab() {
           </section>
 
           {overview.data.unassigned.tables > 0 ? (
-            <Card>
-              <CardHeader>
-                <SectionHeader
-                  title="Tablas sin dominio"
-                  description="Lo que falta clasificar, por módulo. Mientras no tengan dominio, sus endpoints tampoco aparecen en ninguna ficha."
-                  className="mb-0"
-                />
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-wrap gap-2 text-xs">
-                  {overview.data.unassigned.modules.map((entry) => (
-                    <li
-                      key={entry.module}
-                      className="rounded-md bg-atlas-soft px-2 py-1"
-                    >
-                      <Link
-                        href={`/internal/data-catalog/tables?q=${encodeURIComponent(entry.module)}`}
-                        className="font-mono text-atlas-accent underline"
-                      >
-                        {entry.module}
-                      </Link>{" "}
-                      · <strong>{formatNumber(entry.tables)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <section>
+              <SectionHeader
+                title="Tablas sin dominio"
+                description="Lo que falta clasificar, por módulo. Mientras no tengan dominio, sus endpoints tampoco aparecen en ninguna ficha."
+              />
+              <UnassignedModulesTable
+                modules={overview.data.unassigned.modules}
+              />
+            </section>
           ) : null}
 
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Resumen por dominio"
-                description="Cada card cruza tablas, endpoints y suites para detectar cobertura y huecos."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent>
-              {domains.length === 0 ? (
-                <p className="text-sm text-atlas-muted">
-                  Ningún dominio coincide con la búsqueda.
-                </p>
-              ) : null}
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                {domains.map((domain) => (
-                  <DomainCard key={domain.domainCode} domain={domain} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <section>
+            <SectionHeader
+              title="Resumen por dominio"
+              description="Cada fila cruza tablas, endpoints y suites para detectar cobertura y huecos."
+            />
+            <DomainsTable domains={overview.data.items} />
+          </section>
         </div>
       ) : null}
     </>

@@ -393,11 +393,10 @@ test("Proveedores externos — tablero de actividad y catálogo", async ({
    * La invariante de esta pantalla: un proveedor en modo simulado local no puede afirmar que
    * responde. El backend devuelve `UP` y `0 ms` sin haber llamado a nadie.
    */
-  const tarjetaWhatsapp = page
-    .locator("div")
-    .filter({ hasText: /^WHATSAPP_GENERIC/ })
+  const filaWhatsapp = page
+    .getByRole("row", { name: /WHATSAPP_GENERIC/ })
     .first();
-  await expect(tarjetaWhatsapp.getByText("Sin llamada")).toBeVisible();
+  await expect(filaWhatsapp.getByText("Sin llamada")).toBeVisible();
 
   /*
    * La tabla no puede expulsar columnas fuera de la pantalla. `DataTable` dimensiona por
@@ -407,8 +406,8 @@ test("Proveedores externos — tablero de actividad y catálogo", async ({
    * miden lo mismo, no ajustando anchos —eso vuelve a romperse con la siguiente columna—.
    */
   const anchoVentana = page.viewportSize()?.width ?? 1440;
-  // La ÚLTIMA tabla de la página es la del catálogo; la primera es «Últimas llamadas», que también
-  // tiene una cabecera «Proveedor».
+  // La ÚLTIMA tabla de la página es la del catálogo; antes van «Actividad por proveedor» y «Últimas
+  // llamadas», que también tienen una cabecera «Proveedor».
   const catalogo = page.locator("table").last();
   for (const cabecera of [
     "Proveedor",

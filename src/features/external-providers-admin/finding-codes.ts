@@ -107,7 +107,7 @@ const BLOQUEOS: Record<string, string> = {
 };
 
 /** Estados de respuesta de una solicitud. */
-const ESTADOS: Record<string, Explicacion> = {
+export const ESTADOS: Record<string, Explicacion> = {
   COMPLETED: {
     label: "Completada",
     summary: "El proveedor respondió con datos.",

@@ -5,10 +5,14 @@ import { Hourglass } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { MetricCard } from "@/shared/components/layout/metric-card";
-import { PageHeader } from "@/shared/components/layout/page-header";
+import {
+  PageHeader,
+  SectionHeader,
+} from "@/shared/components/layout/page-header";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { Badge, MethodBadge } from "@/shared/components/ui/badges";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -19,6 +23,26 @@ import type { PendingWorkFlow } from "./types";
 import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 
 const VENTANAS = [7, 30, 90];
+const PAGE_SIZE = 20;
+
+const STATE_OPTIONS = [
+  {
+    value: "pending",
+    label: "Con pendientes",
+    description: "Tienen eventos encolados que nadie ha recogido todavía.",
+  },
+  {
+    value: "failed",
+    label: "Con fallidos",
+    description: "Tienen eventos que el consumidor intentó y no pudo procesar.",
+  },
+  {
+    value: "skipped",
+    label: "Saltados por el consumidor",
+    description:
+      "El consumidor corre y los pendientes son más viejos que su última pasada: la avería más engañosa.",
+  },
+];
 
 /**
  * El mapa de Flujos acababa en el endpoint. Esta vista enseña lo que un flujo deja encargado al
@@ -35,7 +59,16 @@ export function PendingWorkPage() {
 
 function AuthorizedPendingWorkPage() {
   const [ventana, setVentana] = useState(30);
-  const query = usePendingWork(ventana);
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [state, setState] = useState("");
+  const query = usePendingWork({
+    windowDays: ventana,
+    q: q.trim(),
+    state,
+    page,
+    limit: PAGE_SIZE,
+  });
   const data = query.data;
   const diagnostico = data ? DIAGNOSIS[data.diagnosis] : null;
   const columns = useMemo<ColumnDef<PendingWorkFlow>[]>(
@@ -82,6 +115,8 @@ function AuthorizedPendingWorkPage() {
     ],
     [],
   );
+  const serverColumns = useMemo(() => withoutClientSorting(columns), [columns]);
+  const hayFiltro = Boolean(q.trim() || state);
 
   return (
     <>
@@ -95,7 +130,10 @@ function AuthorizedPendingWorkPage() {
             name="ventana"
             ariaLabel="Ventana"
             value={String(ventana)}
-            onChange={(valor) => setVentana(Number(valor))}
+            onChange={(valor) => {
+              setVentana(Number(valor));
+              setPage(1);
+            }}
             options={VENTANAS.map((dias) => ({
               value: String(dias),
               label: `Últimos ${dias} días`,
@@ -149,41 +187,75 @@ function AuthorizedPendingWorkPage() {
       ) : null}
       {data ? (
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <h2 className="text-sm font-semibold">Flujos que encolan</h2>
-              {data.truncated ? (
-                <p role="status" className="mt-1 text-xs text-amber-800">
-                  {`Sólo se enseñan las ${data.limit ?? data.flows.length} rutas con el pendiente más antiguo: hay más que encolan trabajo. Los totales de arriba sí cuentan todo el outbox.`}
-                </p>
-              ) : null}
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={data.flows}
-                columns={columns}
-                emptyTitle="Ningún flujo encoló trabajo en la ventana"
-                emptyDescription="No hay eventos del outbox atribuibles a una petición en estos días."
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <h2 className="text-sm font-semibold">
-                Eventos de dominio: quién los consume
-              </h2>
-            </CardHeader>
-            <CardContent>
-              {data.domainEvents ? (
-                <DomainEventsTable domainEvents={data.domainEvents} />
-              ) : (
-                <p className="text-xs text-atlas-muted">
-                  Esta versión del servicio no informa quién consume cada evento
-                  de dominio. La pantalla sigue siendo útil sin ese bloque.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <section>
+            <SectionHeader
+              title="Flujos que encolan"
+              description="Una fila por ruta que dejó trabajo encargado. Van primero las de pendiente más antiguo."
+            />
+            {data.truncated ? (
+              <p role="status" className="mb-3 text-xs text-amber-800">
+                {`Sólo se enseñan las ${data.limit ?? data.flows.length} rutas con el pendiente más antiguo: hay más que encolan trabajo. Los totales de arriba sí cuentan todo el outbox.`}
+              </p>
+            ) : null}
+            <FilterBar
+              search={q}
+              searchPlaceholder="Buscar por método, ruta o evento…"
+              searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el método, la ruta y los códigos de los eventos que encola cada flujo."
+              onSearchChange={(value) => {
+                setQ(value);
+                setPage(1);
+              }}
+              onFilterChange={(_name, value) => {
+                setState(value);
+                setPage(1);
+              }}
+              onClear={() => {
+                setQ("");
+                setState("");
+                setPage(1);
+              }}
+              filters={[
+                {
+                  name: "state",
+                  label: "Situación",
+                  value: state,
+                  tooltip:
+                    "Deja sólo las rutas con pendientes, con fallidos o cuyos pendientes el consumidor ha visto y dejado atrás.",
+                  options: STATE_OPTIONS,
+                },
+              ]}
+            />
+            <DataTable
+              data={data.flows}
+              columns={serverColumns}
+              meta={data.meta}
+              onPageChange={setPage}
+              emptyTitle={
+                hayFiltro
+                  ? "Ningún flujo coincide con la búsqueda o el filtro"
+                  : "Ningún flujo encoló trabajo en la ventana"
+              }
+              emptyDescription={
+                hayFiltro
+                  ? "Quita el texto o el filtro para volver a ver todas las rutas."
+                  : "No hay eventos del outbox atribuibles a una petición en estos días."
+              }
+            />
+          </section>
+          <section>
+            <SectionHeader
+              title="Eventos de dominio: quién los consume"
+              description="Qué eventos de dominio acaban de verdad en un aviso."
+            />
+            {data.domainEvents ? (
+              <DomainEventsTable domainEvents={data.domainEvents} />
+            ) : (
+              <p className="text-xs text-atlas-muted">
+                Esta versión del servicio no informa quién consume cada evento
+                de dominio. La pantalla sigue siendo útil sin ese bloque.
+              </p>
+            )}
+          </section>
         </div>
       ) : null}
     </>

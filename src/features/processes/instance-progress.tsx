@@ -5,7 +5,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { useInstanceProgress } from "./hooks";
 import { actorLabel, clientLabel, STAGE_STATE } from "./labels";
-import { StageScreen } from "./process-stages";
+import { StageScreen } from "./stage-screen";
 
 /**
  * Dónde va un caso: cada etapa del proceso marcada como superada, actual o sin dato.

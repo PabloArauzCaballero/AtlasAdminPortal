@@ -1,5 +1,5 @@
 import { HttpResponse, http } from "msw";
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -28,6 +28,7 @@ vi.mock("@/shared/auth/auth-context", () => ({
 
 const { BusinessDomainsPage } =
   await import("@/features/business-metadata/domains-page");
+const { elegirOpcion } = await import("../../shared/option-select-helpers");
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
@@ -119,10 +120,20 @@ describe("BusinessDomainsPage — el mapa lo calcula el backend", () => {
     await waitFor(() =>
       expect(screen.getByTestId("domain-RIESGO_CREDITO")).toBeInTheDocument(),
     );
-    const card = screen.getByTestId("domain-RIESGO_CREDITO");
-    expect(card).toHaveTextContent("Endpoints: 57");
-    expect(card).toHaveTextContent("Tablas: 18");
-    expect(card).toHaveTextContent("Críticos: 9");
+    const fila = screen.getByTestId("domain-RIESGO_CREDITO").closest("tr")!;
+    const celdas = within(fila)
+      .getAllByRole("cell")
+      .map((celda) => celda.textContent);
+    // Endpoints, Tablas, Suites, PII, Críticos y En revisión, cada cifra en su columna.
+    expect(celdas).toEqual(
+      expect.arrayContaining(["57", "18", "1", "2", "9", "3"]),
+    );
+    const cabeceras = within(fila.closest("table")!)
+      .getAllByRole("columnheader")
+      .map((th) => th.textContent);
+    expect(celdas[cabeceras.indexOf("Endpoints")]).toBe("57");
+    expect(celdas[cabeceras.indexOf("Tablas")]).toBe("18");
+    expect(celdas[cabeceras.indexOf("Críticos")]).toBe("9");
     // Los totales globales salen del backend: 432 endpoints, no 100.
     expect(screen.getByText("432")).toBeInTheDocument();
   });
@@ -138,9 +149,63 @@ describe("BusinessDomainsPage — el mapa lo calcula el backend", () => {
   it("enseña lo que falta clasificar, por módulo", async () => {
     renderWithProviders(<BusinessDomainsPage />);
     await waitFor(() =>
-      expect(screen.getByText("Tablas sin dominio")).toBeInTheDocument(),
+      expect(
+        screen.getByRole("heading", { name: "Tablas sin dominio" }),
+      ).toBeInTheDocument(),
     );
-    expect(screen.getByText("operations")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "operations" })).toHaveAttribute(
+      "href",
+      "/internal/data-catalog/tables?q=operations",
+    );
+  });
+
+  it("los dominios van en tabla con cabeceras, buscador y filtros que recortan", async () => {
+    renderWithProviders(<BusinessDomainsPage />);
+    await screen.findByTestId("domain-RIESGO_CREDITO");
+    const tabla = screen.getByTestId("domain-RIESGO_CREDITO").closest("table")!;
+    expect(
+      within(tabla)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent)
+        .filter(Boolean),
+    ).toEqual([
+      "Dominio",
+      "Revisión",
+      "Descripción",
+      "Endpoints",
+      "Tablas",
+      "Suites",
+      "PII",
+      "Críticos",
+      "En revisión",
+      "Módulos",
+      "Ver",
+    ]);
+    const buscador = screen.getAllByRole("textbox", {
+      name: /Buscar dominio, nombre, descripción o módulo/,
+    })[0]!;
+    fireEvent.change(buscador, { target: { value: "credit" } });
+    await waitFor(() =>
+      expect(screen.queryByTestId("domain-PLATAFORMA")).toBeNull(),
+    );
+    expect(screen.getByTestId("domain-RIESGO_CREDITO")).toBeInTheDocument();
+    fireEvent.change(buscador, { target: { value: "no-existe-este-dominio" } });
+    expect(
+      await screen.findByText("Ningún dominio coincide con la búsqueda."),
+    ).toBeInTheDocument();
+  });
+
+  it("el filtro de datos personales deja sólo los dominios con PII", async () => {
+    renderWithProviders(<BusinessDomainsPage />);
+    await screen.findByTestId("domain-RIESGO_CREDITO");
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Datos personales/ }),
+      "yes",
+    );
+    await waitFor(() =>
+      expect(screen.queryByTestId("domain-PLATAFORMA")).toBeNull(),
+    );
+    expect(screen.getByTestId("domain-RIESGO_CREDITO")).toBeInTheDocument();
   });
 
   it("sin el permiso no dispara ninguna petición", async () => {

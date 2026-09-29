@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -20,6 +25,7 @@ export function useFlows(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.flows(query),
     queryFn: () => listFlows(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -74,6 +80,7 @@ export function useFlowFindings(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.flowFindings(query),
     queryFn: () => listFlowFindings(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -81,6 +88,7 @@ export function useFlowScreens(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.flowScreens(query),
     queryFn: () => listFlowScreens(query),
+    placeholderData: keepPreviousData,
   });
 }
 

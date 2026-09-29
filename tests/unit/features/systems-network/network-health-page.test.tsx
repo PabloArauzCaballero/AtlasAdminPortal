@@ -1,4 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
+import {
+  buscar,
+  esperarFilas,
+  esTablaHomogenea,
+  filasDeDatos,
+  filtrarPor,
+} from "../../shared/tabla-helpers";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
@@ -90,6 +97,11 @@ function renderWith(blocks: NetworkBlockHealth[], federateData?: unknown) {
   return render(<NetworkHealthPage />);
 }
 
+/** La fila (`<tr>`) de un sistema, localizada por la marca de su primera celda. */
+function fila(systemCode: string): HTMLElement {
+  return screen.getByTestId(`network-block-${systemCode}`).closest("tr")!;
+}
+
 /**
  * Lo que Pablo vio en TEST el 2026-09-28: una ruta de API en la cabecera, «NEVER_RUN» en el aviso y
  * «Endpoints 0» en un sistema que nadie había medido. La pantalla tiene que hablar en lenguaje de
@@ -124,7 +136,7 @@ describe("Salud de la red", () => {
 
   it("un cero que nadie midió se lee «Sin medir», y lo medido se enseña tal cual", () => {
     renderWith(neverRun);
-    const self = screen.getByTestId("network-block-ATLAS_BACKEND");
+    const self = fila("ATLAS_BACKEND");
     expect(within(self).getByText("Sin medir")).toBeTruthy();
     expect(within(self).getByText("220")).toBeTruthy();
   });
@@ -140,9 +152,46 @@ describe("Salud de la red", () => {
         },
       }),
     ]);
-    const card = screen.getByTestId("network-block-DECISION_ENGINE");
+    const card = fila("DECISION_ENGINE");
     expect(within(card).queryByText("Sin medir")).toBeNull();
     expect(within(card).getAllByText("0").length).toBeGreaterThan(0);
+  });
+
+  it("los sistemas van en una tabla con cabeceras, buscador y filtros que recortan", async () => {
+    renderWith(neverRun);
+    esTablaHomogenea(
+      [
+        "Sistema",
+        "Estado en vivo",
+        "Endpoints",
+        "Tablas",
+        "Catálogo",
+        "Si falta",
+      ],
+      /Buscar por sistema, propósito o mensaje/,
+    );
+    expect(filasDeDatos()).toHaveLength(3);
+    await buscar(/Buscar por sistema, propósito o mensaje/, "ERP");
+    await esperarFilas(1);
+    expect(filasDeDatos()[0]).toHaveTextContent("ERP");
+    await buscar(/Buscar por sistema, propósito o mensaje/, "no-existe");
+    expect(
+      await screen.findByText("Ningún sistema coincide con la búsqueda."),
+    ).toBeTruthy();
+  });
+
+  it("el filtro de catálogo separa los sistemas al día de los que no", async () => {
+    renderWith([
+      block({
+        systemCode: "ATLAS_BACKEND",
+        kind: "SELF",
+        catalog: { federationStatus: "SELF_INTROSPECTED" },
+      }),
+      block({ systemCode: "ERP_BACKEND", name: "ATLAS ERP Backend" }),
+    ]);
+    await filtrarPor(/^Catálogo/, "stale");
+    await esperarFilas(1);
+    expect(filasDeDatos()[0]).toHaveTextContent("ERP");
   });
 
   it("el aviso nombra los sistemas y traduce su estado", () => {
@@ -165,7 +214,7 @@ describe("Salud de la red", () => {
         },
       }),
     ]);
-    const card = screen.getByTestId("network-block-ERP_BACKEND");
+    const card = fila("ERP_BACKEND");
     expect(within(card).getByText("Falta configurar")).toBeTruthy();
     expect(
       within(card).getByText("Detalle técnico").closest("details")?.textContent,

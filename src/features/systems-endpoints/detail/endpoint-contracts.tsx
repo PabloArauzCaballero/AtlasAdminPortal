@@ -18,7 +18,7 @@ export function EndpointContracts({
           crudo visible al cliente.
         </p>
       </div>
-      <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+      <div className="space-y-6">
         <ContractTable
           title="Payload mínimo"
           value={endpoint.minPayloadSchema}

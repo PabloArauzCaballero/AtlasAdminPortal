@@ -24,6 +24,7 @@ import type {
   SystemsDashboard,
   ToolHealth,
   TrafficLatencyReport,
+  TrafficRoutesQuery,
   TrafficLatencyTimeseries,
   ActiveArtifactReport,
   FederationOutcome,
@@ -130,9 +131,12 @@ export async function getImpactByTable(schemaName: string, tableName: string) {
   return normalizeTableImpact(response);
 }
 
-export function getTrafficLatencyReport(windowHours: number) {
+export function getTrafficLatencyReport(
+  windowHours: number,
+  routes: TrafficRoutesQuery = {},
+) {
   return apiRequest<TrafficLatencyReport>("/systems/reports/traffic-latency", {
-    query: { windowHours },
+    query: { windowHours, ...routes },
   });
 }
 

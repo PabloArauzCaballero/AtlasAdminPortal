@@ -92,13 +92,25 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
       page.getByRole("heading", { name: "Salud de la red" }),
     ).toBeVisible();
 
+    // Una tabla con una fila por sistema: el estado vivo y cuánto aporta cada uno al catálogo
+    // van en sus columnas. Que los contadores no sean cero es la prueba de que la federación corrió
+    // de verdad y no sólo respondió 200.
+    await expect(page.getByRole("table")).toBeVisible();
+    for (const cabecera of [
+      "Sistema",
+      "Estado en vivo",
+      "Endpoints",
+      "Tablas",
+    ]) {
+      await expect(
+        page.getByRole("columnheader", { name: cabecera }),
+      ).toBeVisible();
+    }
     for (const code of ["ATLAS_BACKEND", "DECISION_ENGINE", "ERP_BACKEND"]) {
-      const card = page.getByTestId(`network-block-${code}`);
-      await expect(card).toBeVisible();
-      // Cada tarjeta declara su estado vivo y cuánto aporta al catálogo. Que los contadores no
-      // sean cero es la prueba de que la federación corrió de verdad y no sólo respondió 200.
-      await expect(card).toContainText("Endpoints");
-      await expect(card).toContainText("Tablas");
+      const fila = page
+        .getByRole("row")
+        .filter({ has: page.getByTestId(`network-block-${code}`) });
+      await expect(fila).toBeVisible();
     }
 
     // La navegación tiene que llevar a la pestaña, no sólo la URL escrita a mano.

@@ -12,7 +12,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { NetworkBlockCard } from "./network-block-card";
+import { NetworkBlocksTable } from "./network-blocks-table";
 import {
   blockDisplayName,
   catalogStatusCopy,
@@ -155,13 +155,7 @@ function AuthorizedNetworkHealthPage() {
         </div>
       ) : null}
 
-      {report ? (
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {blocks.map((block) => (
-            <NetworkBlockCard key={block.systemCode} block={block} />
-          ))}
-        </div>
-      ) : null}
+      {report ? <NetworkBlocksTable blocks={blocks} /> : null}
     </>
   );
 }

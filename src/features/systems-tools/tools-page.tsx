@@ -47,7 +47,7 @@ export const TOOL_STATUS_OPTIONS: Option[] = [
   {
     value: "DISABLED",
     label: "Desactivada",
-    description: "Apagada a propósito.",
+    description: "Apagada a propósito: no se llama ni se monitorea.",
   },
 ];
 

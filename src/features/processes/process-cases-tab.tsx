@@ -92,11 +92,29 @@ export function ProcessCasesTab({ code }: Readonly<{ code: string }>) {
               setSearch(value);
               setPage(1);
             }}
+            onFilterChange={(_name, value) => {
+              setStatus(value);
+              setPage(1);
+            }}
             onClear={() => {
               setSearch("");
               setStatus("");
               setPage(1);
             }}
+            filters={[
+              {
+                name: "status",
+                label: "Estado",
+                value: status,
+                tooltip:
+                  "Deja sólo los casos en ese estado. Los estados y sus cuentas salen del servidor, sobre todos los casos del proceso.",
+                options: data.byStatus.map((row) => ({
+                  value: row.status,
+                  label: row.status,
+                  description: `${row.total} casos ${row.open ? "en curso" : "cerrados"} con este estado.`,
+                })),
+              },
+            ]}
           />
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
             <InstancesList

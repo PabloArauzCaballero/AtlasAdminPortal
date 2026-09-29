@@ -163,6 +163,15 @@ export type TrafficLatencyReport = {
   /** Rutas distintas en la ventana y si la tabla enseña sólo las de más tráfico (desde 2026-09-29). */
   routesTotal?: number;
   routesTruncated?: boolean;
+  /** Con `limit`: la paginación de `routes`, filtrada por `q` y `method` (desde 2026-09-29). */
+  meta?: PaginationMeta;
+};
+
+export type TrafficRoutesQuery = {
+  q?: string;
+  method?: string;
+  page?: number;
+  limit?: number;
 };
 
 export type TrafficLatencyBucket = {
