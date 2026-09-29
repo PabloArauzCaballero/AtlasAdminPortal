@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { ClipboardCheck, RefreshCw } from "lucide-react";
-import {
-  useReviewQueue,
-  useReviewTargetMutation,
-} from "@/features/systems/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useReviewTargetMutation } from "@/features/systems/hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
-import { MetricCard } from "@/shared/components/layout/metric-card";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import {
   buildDataImpactColumns,
@@ -25,7 +23,11 @@ import {
 import { buildColumnReviewColumns } from "./review-column-columns";
 import { ReviewDecisionDialog } from "./review-decision-dialog";
 import { reviewOptions, typeOptions } from "./review-options";
-import { ReviewTableCard } from "./review-table-card";
+import { REVIEW_FAMILIES } from "./review-families";
+import {
+  ReviewFamilySection,
+  type ReviewFilters,
+} from "./review-family-section";
 import type { ReviewDecisionInput } from "@/features/systems/types";
 import type { PendingReview } from "./types";
 
@@ -41,14 +43,15 @@ export function ReviewQueuePage() {
 }
 
 function AuthorizedReviewQueuePage() {
-  const [page, setPage] = useState(1);
   const [type, setType] = useState("all");
-  const [module, setModule] = useState("");
-  const [reviewStatus, setReviewStatus] = useState("NEEDS_REVIEW");
+  const [filters, setFilters] = useState<ReviewFilters>({
+    q: "",
+    reviewStatus: "NEEDS_REVIEW",
+  });
   const [pendingReview, setPendingReview] = useState<PendingReview | null>(
     null,
   );
-  const queue = useReviewQueue({ page, limit: 10, type, module, reviewStatus });
+  const queryClient = useQueryClient();
   const reviewMutation = useReviewTargetMutation();
   const { hasPermission } = useAuth();
   const canReview = hasPermission("systems.reviewQueue.resolve");
@@ -56,13 +59,19 @@ function AuthorizedReviewQueuePage() {
   const columns = useMemo(
     () => ({
       endpoints: buildEndpointColumns(setPendingReview, canReview),
-      entities: buildEntityColumns(setPendingReview, canReview),
-      dataImpacts: buildDataImpactColumns(setPendingReview, canReview),
-      fieldImpacts: buildFieldImpactColumns(setPendingReview, canReview),
-      tools: buildToolColumns(setPendingReview, canReview),
-      dataColumns: buildColumnReviewColumns(setPendingReview, canReview),
+      data_entities: buildEntityColumns(setPendingReview, canReview),
+      data_impacts: buildDataImpactColumns(setPendingReview, canReview),
+      field_impacts: buildFieldImpactColumns(setPendingReview, canReview),
+      tool_requirements: buildToolColumns(setPendingReview, canReview),
+      data_column_impacts: buildColumnReviewColumns(
+        setPendingReview,
+        canReview,
+      ),
     }),
     [canReview],
+  );
+  const visible = REVIEW_FAMILIES.filter(
+    (family) => type === "all" || family.type === type,
   );
 
   function confirmReview(body: ReviewDecisionInput) {
@@ -76,20 +85,21 @@ function AuthorizedReviewQueuePage() {
       { onSuccess: () => setPendingReview(null) },
     );
   }
-  const dataColumns = queue.data?.dataColumnImpacts ?? { items: [], total: 0 };
 
   return (
     <>
       <PageHeader
         icon={ClipboardCheck}
-        eyebrow="Cola de revisión"
-        title="Cola de revisión"
+        eyebrow="Systems Ops"
+        title="Revisión del catálogo"
         description="Confirma o descarta lo que el escáner detectó: rutas, tablas, columnas, impactos y herramientas. Cada decisión guarda su motivo."
         actions={
           <Button
-            onClick={() => void queue.refetch()}
-            isLoading={queue.isFetching}
-            loadingText="Actualizando…"
+            onClick={() =>
+              void queryClient.invalidateQueries({
+                queryKey: ["systems", "review-queue"],
+              })
+            }
           >
             <RefreshCw className="h-4 w-4" />
             Actualizar
@@ -97,111 +107,58 @@ function AuthorizedReviewQueuePage() {
         }
       />
       <BusinessContextNote>
-        El catálogo de endpoints y tablas se llena automáticamente escaneando el
-        código (auto-detectado), pero eso puede equivocarse. Esta cola existe
-        para que una persona confirme o corrija esas detecciones antes de que el
-        resto de la plataforma (QA, gobierno, reportes) confíe ciegamente en
-        datos sin revisar.
+        El catálogo de rutas y tablas se llena automáticamente escaneando el
+        código, y eso puede equivocarse. Aquí una persona confirma o corrige
+        esas detecciones antes de que QA, gobierno o reportes confíen en ellas.
+        No es la revisión de análisis de flujos (esa es otra cola).
       </BusinessContextNote>
       <FilterBar
-        search={module}
-        searchPlaceholder="Filtrar por módulo…"
+        search={filters.q}
+        searchPlaceholder="Buscar ruta, tabla, columna, campo o herramienta…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en las seis familias: rutas (código, ruta, módulo, método), tablas (nombre, entidad, esquema, módulo), columnas, campos y herramientas (código, nombre, proveedor). En los impactos busca por la ruta o la tabla a la que apuntan."
         filters={[
-          { name: "type", label: "Tipo", value: type, options: typeOptions },
+          {
+            name: "type",
+            label: "Tipo",
+            value: type,
+            options: typeOptions,
+            tooltip:
+              "Qué familia de detecciones enseñar; «Todos» pinta las seis.",
+          },
           {
             name: "reviewStatus",
             label: "Estado revisión",
-            value: reviewStatus,
+            value: filters.reviewStatus,
             options: reviewOptions,
+            tooltip: "En qué punto de la revisión está cada detección.",
           },
         ]}
-        onSearchChange={(value) => {
-          setModule(value);
-          setPage(1);
-        }}
+        onSearchChange={(value) =>
+          setFilters((current) => ({ ...current, q: value }))
+        }
         onFilterChange={(name, value) => {
-          if (name === "type") setType(value);
-          if (name === "reviewStatus") setReviewStatus(value);
-          setPage(1);
+          if (name === "type") setType(value || "all");
+          if (name === "reviewStatus")
+            setFilters((current) => ({
+              ...current,
+              reviewStatus: value || "NEEDS_REVIEW",
+            }));
         }}
         onClear={() => {
           setType("all");
-          setModule("");
-          setReviewStatus("NEEDS_REVIEW");
-          setPage(1);
+          setFilters({ q: "", reviewStatus: "NEEDS_REVIEW" });
         }}
       />
-      {queue.isLoading ? <LoadingSkeleton rows={8} /> : null}
-      {queue.error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(queue.error)
-              ? queue.error.message
-              : "No se pudo cargar cola de revisión."
-          }
-          requestId={
-            isAtlasApiError(queue.error) ? queue.error.requestId : undefined
-          }
-          onRetry={() => void queue.refetch()}
-        />
-      ) : null}
-      {queue.data ? (
-        <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-3 xl:grid-cols-6">
-            <MetricCard label="Endpoints" value={queue.data.endpoints.total} />
-            <MetricCard label="Tablas" value={queue.data.dataEntities.total} />
-            <MetricCard label="Columnas" value={dataColumns.total} />
-            <MetricCard
-              label="Impactos tabla"
-              value={queue.data.dataEntityImpacts.total}
-            />
-            <MetricCard
-              label="Impactos campo"
-              value={queue.data.fieldImpacts.total}
-            />
-            <MetricCard
-              label="Herramientas"
-              value={queue.data.toolRequirements.total}
-            />
-          </section>
-          <ReviewTableCard
-            title="Endpoints"
-            data={queue.data.endpoints.items}
-            columns={columns.endpoints}
-            onPageChange={setPage}
+      <div className="space-y-6">
+        {visible.map((family) => (
+          <ReviewFamilySection
+            key={family.type}
+            family={family}
+            filters={filters}
+            columns={columns[family.type] as ColumnDef<unknown>[]}
           />
-          <ReviewTableCard
-            title="Tablas / data entities"
-            data={queue.data.dataEntities.items}
-            columns={columns.entities}
-            onPageChange={setPage}
-          />
-          <ReviewTableCard
-            title="Columnas de datos"
-            data={dataColumns.items}
-            columns={columns.dataColumns}
-            onPageChange={setPage}
-          />
-          <ReviewTableCard
-            title="Impactos endpoint-tabla"
-            data={queue.data.dataEntityImpacts.items}
-            columns={columns.dataImpacts}
-            onPageChange={setPage}
-          />
-          <ReviewTableCard
-            title="Impactos endpoint-campo"
-            data={queue.data.fieldImpacts.items}
-            columns={columns.fieldImpacts}
-            onPageChange={setPage}
-          />
-          <ReviewTableCard
-            title="Requerimientos de herramientas"
-            data={queue.data.toolRequirements.items}
-            columns={columns.tools}
-            onPageChange={setPage}
-          />
-        </div>
-      ) : null}
+        ))}
+      </div>
       <ReviewDecisionDialog
         pending={pendingReview}
         isLoading={reviewMutation.isPending}
@@ -214,7 +171,7 @@ function AuthorizedReviewQueuePage() {
             description={
               isAtlasApiError(reviewMutation.error)
                 ? reviewMutation.error.message
-                : "No se pudo actualizar revisión."
+                : "No se pudo guardar la decisión."
             }
             requestId={
               isAtlasApiError(reviewMutation.error)

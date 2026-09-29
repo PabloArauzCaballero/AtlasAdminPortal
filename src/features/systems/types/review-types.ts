@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from "@/shared/api/types";
+import type { PaginatedResponse, PaginationMeta } from "@/shared/api/types";
 import type {
   DataEntity,
   DataEntityImpact,
@@ -32,7 +32,12 @@ export type ActionLog = {
   occurredAt: string | null;
 };
 
-export type ReviewQueueBucket<T> = { items: T[]; total: number };
+/** Una familia de la cola. `meta` llega desde el 2026-09-29; un servidor anterior sólo manda `total`. */
+export type ReviewQueueBucket<T> = {
+  items: T[];
+  total: number;
+  meta?: PaginationMeta;
+};
 
 /** Una columna detectada por el escáner, tal como la devuelve la cola (`mapDataField`). */
 export type ReviewQueueColumn = {
