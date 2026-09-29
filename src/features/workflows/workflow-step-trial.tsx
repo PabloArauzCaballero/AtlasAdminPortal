@@ -18,7 +18,6 @@ import type { RoutedWorkflowStep } from "./step-endpoint";
 const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 /** Techo duro de repeticiones: este panel prueba un paso, no reemplaza el stress del QA Lab. */
 const MAX_REPEAT = 50;
-
 /**
  * Prueba del paso desde el propio lienzo: rellenar los parámetros de ruta, ver
  * el cuerpo que el catálogo declara y mandarlo.
@@ -33,9 +32,9 @@ const MAX_REPEAT = 50;
  * `runWorkflowStepTrial` — mismo canal, misma sesión, mismo host propio del portal — así que
  * repetir no abre ninguna puerta que la prueba de un solo tiro no tuviera ya.
  */
-export function WorkflowStepTrial({
-  step,
-}: Readonly<{ step: RoutedWorkflowStep }>) {
+type Props = Readonly<{ step: RoutedWorkflowStep }>;
+
+export function WorkflowStepTrial({ step }: Props) {
   const params = useMemo(
     () => pathParamNames(step.routePath),
     [step.routePath],
