@@ -1,26 +1,22 @@
+import {
+  redirectTarget,
+  type RedirectSearchParams,
+} from "@/shared/lib/redirect-target";
+
 /**
- * La URL de destino de una ruta retirada, con TODOS sus parámetros.
- *
- * Una pantalla fusionada deja su ruta vieja como redirección: un marcador o un enlace profundo
- * (`/internal/lineage/impact?q=loans`) tiene que llegar a la misma búsqueda en la pantalla nueva, no
- * a la pantalla vacía. `forced` fija la pestaña de destino y gana sobre lo que trajera la URL.
+ * Como `redirectTarget` (parámetros de la ruta vieja intactos), más la pestaña de destino: la
+ * pantalla fusionada abre en la vista que sustituye a la ruta vieja. `forced` gana sobre lo que
+ * trajera la URL (`/internal/lineage/impact?vista=x` sigue llevando a `?vista=impacto`).
  */
 export function redirectWithParams(
   target: string,
-  current: Record<string, string | string[] | undefined>,
+  current: RedirectSearchParams,
   forced: Record<string, string> = {},
 ): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(current)) {
-    if (key in forced || value === undefined) continue;
-    for (const item of Array.isArray(value) ? value : [value])
-      params.append(key, item);
-  }
-  for (const [key, value] of Object.entries(forced)) params.set(key, value);
-  const query = params.toString();
-  return query ? `${target}?${query}` : target;
+  const kept = Object.fromEntries(
+    Object.entries(current).filter(([key]) => !(key in forced)),
+  );
+  return redirectTarget(target, { ...kept, ...forced });
 }
 
-export type RouteSearchParams = Promise<
-  Record<string, string | string[] | undefined>
->;
+export type RouteSearchParams = Promise<RedirectSearchParams>;
