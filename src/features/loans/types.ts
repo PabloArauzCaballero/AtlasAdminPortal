@@ -97,6 +97,8 @@ export type LoanPortfolioFilters = {
   customerId?: string;
   creditApplicationId?: string;
   loanCode?: string;
+  /** Parte del código del préstamo o del cliente (desde 2026-09-29; un servidor anterior lo ignora). */
+  q?: string;
   page: number;
   pageSize: number;
 };
