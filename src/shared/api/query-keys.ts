@@ -55,6 +55,13 @@ export const queryKeys = {
   tool: (toolId: string) => ["systems", "tool", toolId] as const,
   domains: (params: unknown) => ["systems", "domains", params] as const,
   domainOverview: ["systems", "domains", "overview"] as const,
+  catalogSummary: ["systems", "catalog", "summary"] as const,
+  businessTermFacets: [
+    "internal",
+    "business-metadata",
+    "glossary",
+    "facets",
+  ] as const,
   domain: (domainCode: string) => ["systems", "domain", domainCode] as const,
   reviewQueue: (params: unknown) =>
     ["systems", "review-queue", params] as const,

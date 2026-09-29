@@ -19,7 +19,7 @@ export const breadcrumbLabels: Record<string, string> = {
   "data-catalog": "Catálogo de datos",
   "data-quality": "Calidad de datos",
   definitions: "Definiciones del motor",
-  domains: "Dominios",
+  domains: "Dominios y glosario",
   // Sin esta entrada la miga de pan escribía el segmento crudo de la ruta: «events».
   events: "Eventos de dominio",
   "partner-contracts": "Contrato de comercios",
@@ -37,7 +37,7 @@ export const breadcrumbLabels: Record<string, string> = {
   health: "Salud",
   issues: "Issues de calidad",
   lab: "Laboratorio",
-  lineage: "Relaciones",
+  lineage: "Lineage",
   "my-notifications": "Mis notificaciones",
   "merchant-users": "Usuarios de comercio",
   operations: "Operaciones",

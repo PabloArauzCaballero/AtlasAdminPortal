@@ -34,19 +34,28 @@ const STATIC_ROUTES: Route[] = [
     heading: /artefactos/i,
   },
   { path: "/internal/data-catalog/tables", heading: /cat[áa]logo|entidades/i },
-  { path: "/internal/business-metadata/glossary", heading: /glosario/i },
-  { path: "/internal/business-metadata/domains", heading: /dominios/i },
+  // Redirige a «Dominios y glosario» (pestaña Términos).
+  {
+    path: "/internal/business-metadata/glossary",
+    heading: /dominios y glosario/i,
+  },
+  {
+    path: "/internal/business-metadata/domains",
+    heading: /dominios y glosario/i,
+  },
   {
     path: "/internal/business-metadata/definitions",
     heading: /definiciones del motor/i,
   },
-  { path: "/internal/lineage", heading: /lineage/i },
-  { path: "/internal/lineage/official", heading: /lineage oficial/i },
-  { path: "/internal/lineage/impact", heading: /impacto/i },
+  { path: "/internal/lineage", heading: /^lineage$/i },
+  // Redirigen a las pestañas de Lineage.
+  { path: "/internal/lineage/official", heading: /^lineage$/i },
+  { path: "/internal/lineage/impact", heading: /^lineage$/i },
   { path: "/internal/governance", heading: /gobierno/i },
   // #59 renombró el h1 a «Registro de datos personales» (sin la sigla) y nadie tocó esta lista:
   // el barrido de dev llevaba desde entonces rojo en esta vista.
-  { path: "/internal/governance/pii", heading: /datos personales/i },
+  // Redirige a la pestaña «Datos personales» de Gobierno de datos.
+  { path: "/internal/governance/pii", heading: /gobierno de datos/i },
   { path: "/internal/governance/policies", heading: /pol[íi]ticas/i },
   { path: "/internal/data-quality/rules", heading: /reglas/i },
   { path: "/internal/data-quality/issues", heading: /incidencias|issues/i },
@@ -65,7 +74,8 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/jobs", heading: /^jobs$/i },
   { path: "/internal/notifications", heading: /notificaciones/i },
   { path: "/internal/my-notifications", heading: /mis notificaciones/i },
-  { path: "/internal/exports", heading: /exportaciones/i },
+  // Redirige al catálogo de datos, que tiene el botón «Descargar JSON».
+  { path: "/internal/exports", heading: /cat[áa]logo de datos/i },
   { path: "/internal/schema/versions", heading: /versiones de esquema/i },
   { path: "/internal/schema/change-log", heading: /change log/i },
   { path: "/internal/risk-policy/current", heading: /pol[íi]tica de riesgo/i },

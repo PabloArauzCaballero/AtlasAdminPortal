@@ -8,7 +8,6 @@ export const operationsModuleExplanation: ModuleExplanation = {
     "/internal/jobs",
     "/internal/notifications",
     "/internal/my-notifications",
-    "/internal/exports",
     "/internal/files",
     "/internal/support",
     "/internal/views",
@@ -160,12 +159,6 @@ export const operationsModuleExplanation: ModuleExplanation = {
         "Bandeja personal alimentada por el mismo feed de la campana; marca leído por ítem o en bloque y se sincroniza con la salud de herramientas.",
       business:
         "El historial personal de avisos: qué me notificaron, cuándo, y qué sigue pendiente de atender.",
-    },
-    "/internal/exports": {
-      systems:
-        "Solicitudes de exportación con estado, alcance y descarga controlada; cada export queda auditado.",
-      business:
-        "Sacar datos de la plataforma de forma trazable: quién exportó qué y para qué, sin copias silenciosas.",
     },
   },
 };

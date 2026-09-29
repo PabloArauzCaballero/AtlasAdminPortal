@@ -22,19 +22,19 @@ export type GovernedViewKey =
   | "endpoint-coverage"
   | "audit-events";
 
+/** Un desplegable de la vista. Sus valores los publica el servidor (`/internal/views/:view/facets`). */
 export type GovernedViewFilter = {
   name: string;
   label: string;
-  /** `text` va al buscador; el resto se ofrece como desplegable con los valores de la página. */
-  kind: "text" | "facet";
-  /** Campo de la fila del que salen las opciones, cuando no se llama como el filtro. */
-  field?: string;
+  kind: "facet";
 };
 
 export type GovernedViewDefinition = {
   key: GovernedViewKey;
   label: string;
   description: string;
+  /** Por qué columnas busca `q` en ESTA vista (lo que declara el servidor en `admin-read.views.ts`). */
+  search: string;
   /** Los filtros que el esquema Zod del backend admite. Mandar otro devuelve 400: son `.strict()`. */
   filters: GovernedViewFilter[];
 };
@@ -44,6 +44,11 @@ export type GovernedViewRow = JsonRecord;
 export type GovernedViewMeta = PaginationMeta & {
   /** Qué columnas trae esta respuesta. Es lo que dibuja la tabla. */
   selectedFields?: string[];
+};
+
+export type GovernedViewFacets = {
+  view: GovernedViewKey;
+  facets: Record<string, string[]>;
 };
 
 export type GovernedViewResponse = {
@@ -57,22 +62,10 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Clientes",
     description:
       "Ficha resumida por cliente: estado de ciclo de vida, última decisión de riesgo y qué tiene abierto.",
+    search: "código o nombre del cliente",
     filters: [
-      { name: "q", label: "Buscar", kind: "text" },
-      // El filtro se llama `status`/`riskBand`, pero la fila trae `lifecycleStatus`/
-      // `latestRiskBand`: sin `field` las opciones salían siempre vacías.
-      {
-        name: "status",
-        label: "Estado",
-        kind: "facet",
-        field: "lifecycleStatus",
-      },
-      {
-        name: "riskBand",
-        label: "Banda de riesgo",
-        kind: "facet",
-        field: "latestRiskBand",
-      },
+      { name: "status", label: "Estado", kind: "facet" },
+      { name: "riskBand", label: "Banda de riesgo", kind: "facet" },
     ],
   },
   {
@@ -80,6 +73,7 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Decisiones de riesgo",
     description:
       "Cada evaluación con su modelo, su score y si exigió revisión manual o disparó un corte duro.",
+    search: "tipo de evaluación, versión de modelo o de reglas",
     filters: [
       { name: "status", label: "Estado", kind: "facet" },
       { name: "riskBand", label: "Banda", kind: "facet" },
@@ -91,6 +85,7 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Cola operativa",
     description:
       "Lo que espera intervención humana, de todos los orígenes a la vez: revisiones, casos y alertas.",
+    search: "motivo o identificador del elemento",
     filters: [
       { name: "type", label: "Tipo", kind: "facet" },
       { name: "status", label: "Estado", kind: "facet" },
@@ -103,6 +98,7 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Salud de proveedores",
     description:
       "El último sondeo de cada proveedor externo: en qué modo respondió, con cuánta latencia y con qué error.",
+    search: "código, nombre o error del proveedor",
     filters: [
       { name: "healthStatus", label: "Salud", kind: "facet" },
       { name: "providerStatus", label: "Estado del proveedor", kind: "facet" },
@@ -113,6 +109,7 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Entrega de notificaciones",
     description:
       "Qué se envió, por qué canal y en cuántos intentos. El último código de error explica lo que no llegó.",
+    search: "plantilla o último código de error",
     filters: [
       { name: "status", label: "Estado", kind: "facet" },
       { name: "channel", label: "Canal", kind: "facet" },
@@ -124,13 +121,19 @@ export const GOVERNED_VIEWS: GovernedViewDefinition[] = [
     label: "Cobertura de endpoints",
     description:
       "Qué endpoints hay, cuáles tocan datos personales o son destructivos, y cuáles están listos para publicar.",
-    filters: [],
+    search: "ruta o método",
+    filters: [
+      { name: "module", label: "Módulo", kind: "facet" },
+      { name: "riskLevel", label: "Riesgo", kind: "facet" },
+      { name: "reviewStatus", label: "Revisión", kind: "facet" },
+    ],
   },
   {
     key: "audit-events",
     label: "Eventos de auditoría",
     description:
       "El rastro unificado: quién actuó, sobre qué y cuándo, sin entrar a cada tabla de origen.",
+    search: "tipo de evento, tipo o id del objetivo, o tabla de origen",
     filters: [
       { name: "eventType", label: "Tipo de evento", kind: "facet" },
       { name: "actorType", label: "Tipo de actor", kind: "facet" },

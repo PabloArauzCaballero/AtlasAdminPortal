@@ -1,11 +1,17 @@
 ﻿"use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
   getDomain,
+  getCatalogSummary,
   getDomainOverview,
   getTool,
   inferDataImpacts,
@@ -84,6 +90,7 @@ export function useEndpoints(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.endpoints(query),
     queryFn: () => listEndpoints(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -107,6 +114,7 @@ export function useDataEntities(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.dataEntities(query),
     queryFn: () => listDataEntities(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -207,6 +215,14 @@ export function useDomains(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.domains(query),
     queryFn: () => listDomains(query),
+  });
+}
+
+/** Cifras del catálogo entero (`GET /systems/catalog/summary`), no de una página. */
+export function useCatalogSummary() {
+  return useQuery({
+    queryKey: queryKeys.catalogSummary,
+    queryFn: getCatalogSummary,
   });
 }
 

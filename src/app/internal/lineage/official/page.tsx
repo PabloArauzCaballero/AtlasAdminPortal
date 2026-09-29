@@ -1,5 +1,16 @@
-import { LineageOfficialPage } from "@/features/lineage-official/lineage-official-page";
+import { redirect } from "next/navigation";
+import {
+  redirectWithParams,
+  type RouteSearchParams,
+} from "@/shared/lib/redirect-with-params";
 
-export default function Page() {
-  return <LineageOfficialPage />;
+/** «Lineage oficial» es ahora la pestaña «Grafo» de Lineage; los marcadores siguen funcionando. */
+export default async function Page({
+  searchParams,
+}: Readonly<{ searchParams: RouteSearchParams }>) {
+  redirect(
+    redirectWithParams("/internal/lineage", await searchParams, {
+      vista: "grafo",
+    }),
+  );
 }

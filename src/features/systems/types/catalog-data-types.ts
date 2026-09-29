@@ -45,43 +45,63 @@ export type DataEntity = {
   containsDeviceData: boolean;
   containsLocationData: boolean;
   isAuditCritical: boolean;
-  isAppendOnly?: boolean | null;
-  allowsUpdates?: boolean | null;
-  allowsDeletes?: boolean | null;
-  allowsHardDeletes?: boolean | null;
-  requiresApproval?: boolean | null;
   retentionPolicyCode: string | null;
   status: string;
   detectedFrom: string | null;
   confidenceLevel: string | null;
   reviewStatus: ReviewStatus;
   columns?: DataEntityColumn[];
-  governanceConfig?: Record<string, unknown> | null;
 };
 
+export type DataEntityStatus =
+  "ACTIVE" | "DISABLED" | "DEPRECATED" | "DEPRECATED_CANDIDATE";
+
+/**
+ * Cuerpo de `PATCH /systems/data-entities/:id/metadata`, EXACTAMENTE lo que el esquema del servidor
+ * admite (es `.strict()`: un campo de más es un 400). Todo es opcional: se manda sólo lo que cambió.
+ */
 export type DataEntityMetadataInput = {
-  entityName: string;
-  businessPurpose: string;
-  dataOwner: string;
-  module: string;
-  retentionPolicyCode: string;
-  status: string;
-  containsPii: boolean;
-  containsFinancialData: boolean;
-  containsRiskData: boolean;
-  containsLegalData: boolean;
-  containsDeviceData: boolean;
-  containsLocationData: boolean;
-  isAuditCritical: boolean;
-  governance: {
-    mutationMode: string;
-    appendOnly: boolean;
-    updatesAllowed: boolean;
-    deletesAllowed: boolean;
-    hardDeleteAllowed: boolean;
-    approvalRequired: boolean;
-    notes: string;
+  businessPurpose?: string;
+  dataOwner?: string;
+  retentionPolicyCode?: string | null;
+  status?: DataEntityStatus;
+  reviewStatus?: ReviewStatus;
+  containsPii?: boolean;
+  containsFinancialData?: boolean;
+  containsRiskData?: boolean;
+  containsLegalData?: boolean;
+  containsDeviceData?: boolean;
+  containsLocationData?: boolean;
+  isAuditCritical?: boolean;
+};
+
+/** Cifras del catálogo contadas en el servidor (`GET /systems/catalog/summary`). */
+export type CatalogSummary = {
+  generatedAt: string;
+  tables: {
+    total: number;
+    withPurpose: number;
+    pii: number;
+    financial: number;
+    risk: number;
+    financialOrRisk: number;
+    legal: number;
+    deviceOrLocation: number;
+    auditCritical: number;
+    personalData: number;
+    pendingReview: number;
   };
+  endpoints: {
+    total: number;
+    withPurpose: number;
+    testableFromPortal: number;
+    pii: number;
+    personalData: number;
+    destructive: number;
+    highOrCritical: number;
+    pendingReview: number;
+  };
+  testSuites: { total: number; enabled: number };
 };
 
 export type TableImpact = {

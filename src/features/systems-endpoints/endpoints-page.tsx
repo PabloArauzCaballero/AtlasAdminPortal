@@ -1,5 +1,7 @@
 "use client";
 
+import { ExportDownloadButton } from "@/features/data-exports/export-download-button";
+
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -183,10 +185,16 @@ function AuthorizedEndpointsPage() {
         icon={Route}
         title="Catálogo de endpoints"
         description="Rutas de LOS TRES bloques del ecosistema, desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
+        actions={
+          <ExportDownloadButton
+            downloadUrl="/api/v1/systems/endpoints"
+            fileName="catalogo-de-endpoints"
+          />
+        }
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por ruta, módulo o propósito…"
+        searchPlaceholder="Buscar por código, ruta, nombre de ruta o propósito…"
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);

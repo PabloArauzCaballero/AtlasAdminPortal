@@ -1,5 +1,7 @@
 "use client";
 
+import { ExportDownloadButton } from "@/features/data-exports/export-download-button";
+
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -156,6 +158,12 @@ function AuthorizedDataEntitiesPage() {
         icon={Database}
         title="Catálogo de datos"
         description="Tablas y entidades de LOS TRES bloques del ecosistema, desde `/systems/data-entities`."
+        actions={
+          <ExportDownloadButton
+            downloadUrl="/api/v1/systems/data-entities"
+            fileName="catalogo-de-datos"
+          />
+        }
       />
       <BusinessContextNote>
         Cada fila es una tabla real de la base de datos. Este catálogo existe
@@ -168,7 +176,8 @@ function AuthorizedDataEntitiesPage() {
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar tabla, esquema, entidad, módulo u owner…"
+        searchPlaceholder="Buscar tabla, esquema, entidad, modelo, módulo o responsable…"
+        searchTooltip="Busca en el servidor en el nombre de la tabla, la entidad, el modelo, el esquema, el módulo y el responsable."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
