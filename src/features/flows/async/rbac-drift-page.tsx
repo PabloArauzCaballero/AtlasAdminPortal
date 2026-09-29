@@ -48,7 +48,7 @@ function AuthorizedRbacDriftPage() {
     <>
       <PageHeader
         icon={ShieldAlert}
-        eyebrow="Systems Ops · Flujos"
+        eyebrow="Systems Ops · Mapa de rutas"
         title="Deriva de permisos"
         description="Pantallas cuyo menú exige un permiso que la API no aplica en las llamadas que se hicieron desde ellas. Sólo «Sin guarda» es una avería; «Sólo rol» y «Pública» son otra conversación."
       />
