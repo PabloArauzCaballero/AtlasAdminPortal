@@ -4,7 +4,6 @@ import { CHANNEL_OPTIONS } from "./notification-options";
 import { useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
-import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -13,7 +12,7 @@ import {
   useCustomerPreferences,
   useUpdateCustomerPreferencesMutation,
 } from "./hooks";
-import { NotificationChannelBadge } from "./notification-columns";
+import { PreferencesTable } from "./preferences-table";
 import type { NotificationChannel, PreferenceInput } from "./types";
 
 const emptyDraft: PreferenceInput = {
@@ -128,71 +127,12 @@ function PreferencesEditor({ customerId }: Readonly<{ customerId: string }>) {
           }
         />
       ) : null}
-      {items.length === 0 ? (
-        <p className="text-sm text-atlas-muted">
-          El cliente #{customerId} no tiene preferencias registradas todavía.
-        </p>
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-atlas-border bg-white shadow-card">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-atlas-muted">
-              <tr>
-                <th className="px-4 py-2.5 text-left">Evento</th>
-                <th className="px-4 py-2.5 text-left">Canal</th>
-                <th className="px-4 py-2.5 text-left">Obligatorio</th>
-                <th className="px-4 py-2.5 text-left">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2.5 font-mono text-xs">
-                    {item.eventCode}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <NotificationChannelBadge value={item.channel} />
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {item.isRequired ? (
-                      <Badge tone="warning">Obligatorio</Badge>
-                    ) : (
-                      <span className="text-atlas-muted">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <PermissionGate
-                      permissions={["notifications.messages.manage"]}
-                      fallback={
-                        <Badge tone={item.isEnabled ? "success" : "muted"}>
-                          {item.isEnabled ? "Activo" : "Inactivo"}
-                        </Badge>
-                      }
-                    >
-                      <button
-                        type="button"
-                        disabled={item.isRequired || update.isPending}
-                        title={
-                          item.isRequired
-                            ? "Este evento es obligatorio y no se puede desactivar."
-                            : undefined
-                        }
-                        onClick={() =>
-                          toggleEnabled(item.eventCode, item.channel)
-                        }
-                        className="rounded-full px-2.5 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        <Badge tone={item.isEnabled ? "success" : "muted"}>
-                          {item.isEnabled ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </button>
-                    </PermissionGate>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <PreferencesTable
+        items={items}
+        customerId={customerId}
+        pending={update.isPending}
+        onToggle={(item) => toggleEnabled(item.eventCode, item.channel)}
+      />
       <PermissionGate
         permissions={["notifications.messages.manage"]}
         fallback={null}
