@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -197,9 +198,13 @@ function RuntimeJobResult({ run }: Readonly<{ run: RuntimeJobRun }>) {
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge tone="success">{run.status}</Badge>
         {run.jobRunId ? (
-          <span className="text-atlas-muted">
-            Job run <span className="font-mono text-xs">#{run.jobRunId}</span>
-          </span>
+          <Link
+            className="text-atlas-accent underline"
+            href={`/internal/jobs/${run.jobRunId}`}
+          >
+            Ver la corrida{" "}
+            <span className="font-mono text-xs">#{run.jobRunId}</span>
+          </Link>
         ) : null}
       </div>
       <JsonViewer value={run.result} title="Resultado" />

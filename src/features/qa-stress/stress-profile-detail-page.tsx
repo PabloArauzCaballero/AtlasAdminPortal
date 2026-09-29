@@ -6,7 +6,12 @@ import Link from "next/link";
 import {
   useQueueStressRunMutation,
   useStressProfile,
+  useStressRunCapabilities,
 } from "@/features/systems/hooks";
+import {
+  QueuedStressRunLink,
+  StressConsumerNotice,
+} from "./stress-consumer-notice";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
@@ -46,6 +51,8 @@ function AuthorizedStressProfileDetailPage({
 }: Readonly<{ profileId: string }>) {
   const profile = useStressProfile(profileId);
   const queueMutation = useQueueStressRunMutation(profileId);
+  const capabilities = useStressRunCapabilities();
+  const consumerOff = capabilities.data?.consumerEnabled === false;
   const { hasPermission } = useAuth();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -99,7 +106,10 @@ function AuthorizedStressProfileDetailPage({
   const productionAllowedByProfile =
     profile.data?.environmentScope.includes("PRODUCTION_READONLY") ?? false;
   const queueDisabled =
-    !canExecute || !profile.data?.isEnabled || productionSelected;
+    !canExecute ||
+    !profile.data?.isEnabled ||
+    productionSelected ||
+    consumerOff;
 
   return (
     <>
@@ -138,11 +148,13 @@ function AuthorizedStressProfileDetailPage({
                   variant="primary"
                   disabled={queueDisabled}
                   title={
-                    productionSelected
-                      ? "El servicio interno bloquea stress en producción."
-                      : !canExecute
-                        ? "Necesitas systems.stress.execute."
-                        : undefined
+                    consumerOff
+                      ? (capabilities.data?.disabledReason ?? undefined)
+                      : productionSelected
+                        ? "El servicio interno bloquea stress en producción."
+                        : !canExecute
+                          ? "Necesitas systems.stress.execute."
+                          : undefined
                   }
                   onClick={openConfirm}
                 >
@@ -152,6 +164,7 @@ function AuthorizedStressProfileDetailPage({
             }
           />
           <div className="space-y-6">
+            <StressConsumerNotice capabilities={capabilities.data} />
             <StressProfileSummary profile={profile.data} />
             <Card>
               <CardContent className="space-y-4">
@@ -237,8 +250,8 @@ function AuthorizedStressProfileDetailPage({
             }
             description={
               advanced.dryRun
-                ? `Se encolará un plan de stress en ${environment}. No se ejecuta carga real desde la interfaz.`
-                : `Se encolará un plan de stress REAL en ${environment}: el worker mandará tráfico de verdad contra ${advanced.baseUrl.trim() || "el host del endpoint del perfil"}.`
+                ? `Se encolará un ensayo en ${environment}: el consumidor de estrés de Core sólo comprueba que la petición se puede construir, sin mandar tráfico.`
+                : `Se encolará una corrida REAL en ${environment}: el consumidor de estrés de Core mandará tráfico de verdad contra ${advanced.baseUrl.trim() || "el host del endpoint del perfil"}.`
             }
             confirmText="Encolar"
             isLoading={queueMutation.isPending}
@@ -267,7 +280,14 @@ function AuthorizedStressProfileDetailPage({
             </div>
           ) : null}
           {queueMutation.data ? (
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
+              <QueuedStressRunLink
+                jobRunId={
+                  typeof queueMutation.data.run?.jobRunId === "string"
+                    ? queueMutation.data.run.jobRunId
+                    : undefined
+                }
+              />
               <JsonViewer title="Run encolado" value={queueMutation.data} />
             </div>
           ) : null}

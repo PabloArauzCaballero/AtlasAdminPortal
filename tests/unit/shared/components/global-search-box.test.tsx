@@ -105,7 +105,8 @@ describe("GlobalSearchBox · debounce", () => {
 
     expect(apiRequest).toHaveBeenCalledTimes(1);
     expect(apiRequest).toHaveBeenCalledWith("/internal/search", {
-      query: { q: "endpoints", limit: 50 },
+      // Sin `kind`: hasta 2 de cada tipo (endpoint, tabla, regla, reporte).
+      query: { q: "endpoints", page: 1, limit: 2 },
     });
   });
 

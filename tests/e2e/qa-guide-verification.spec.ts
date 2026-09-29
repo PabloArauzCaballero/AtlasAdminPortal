@@ -3,7 +3,8 @@ import { clickAndNavigate } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
 
 /**
- * Verificación E2E real de la Guía del QA Lab (/internal/qa/guia) contra el
+ * Verificación E2E real de la Guía del QA Lab (pestaña «Guía de referencia» de
+ * /internal/qa/aprender; la ruta vieja /internal/qa/guia redirige) contra el
  * backend levantado (:3005) + DB seedeada. Comprueba en navegador de verdad lo
  * que jsdom no puede: render bajo el shell autenticado, scroll-spy con
  * IntersectionObserver, el SVG del gráfico animándose, y el portapapeles real.
@@ -41,7 +42,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
       if (m.type() === "error") consoleErrors.push(m.text());
     });
     page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${e.message}`));
-    const res = await page.goto(url("/internal/qa/guia"), {
+    const res = await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
     expect(res?.status(), "status de la guía").toBeLessThan(500);
@@ -50,7 +51,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Guía del Laboratorio de testing",
+        name: "Aprender QA Lab",
       }),
     ).toBeVisible();
     expect(page.url(), "no rebota a login").not.toContain("/internal/login");
@@ -71,7 +72,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   });
 
   test("índice lateral navega por anclas (scroll-spy)", async ({ page }) => {
-    await page.goto(url("/internal/qa/guia"), {
+    await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
 
@@ -92,7 +93,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   });
 
   test("matriz de escenarios reacciona al click", async ({ page }) => {
-    await page.goto(url("/internal/qa/guia"), {
+    await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
 
@@ -106,7 +107,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
   test("el gráfico de stress avanza al simular la corrida (screenshot)", async ({
     page,
   }) => {
-    await page.goto(url("/internal/qa/guia"), {
+    await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
 
@@ -126,7 +127,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     context,
   }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await page.goto(url("/internal/qa/guia"), {
+    await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
 
@@ -137,19 +138,21 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     expect(clip).toContain("{{customerId}}");
   });
 
-  // La cabecera del lab ya no repite la guía: vive en el menú QA, junto al lab.
+  // La guía es una pestaña de «Aprender QA Lab», que vive en el menú QA junto al lab.
   test("el menú QA lleva del lab a la guía", async ({ page }) => {
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
     await clickAndNavigate(
       page,
-      page.getByRole("link", { name: "Guía QA Lab" }).first(),
-      /\/internal\/qa\/guia$/,
-      "la guía no abrió tras el clic en el menú QA",
+      page.getByRole("link", { name: "Aprender QA Lab" }).first(),
+      /\/internal\/qa\/aprender$/,
+      "Aprender QA Lab no abrió tras el clic en el menú QA",
     );
+    await page.getByRole("button", { name: "Guía de referencia" }).click();
+    await expect(page).toHaveURL(/\/internal\/qa\/aprender\?tab=guia$/);
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Guía del Laboratorio de testing",
+        name: "Aprender QA Lab",
       }),
     ).toBeVisible();
   });

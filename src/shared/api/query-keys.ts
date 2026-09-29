@@ -89,7 +89,8 @@ export const queryKeys = {
   riskAssessmentExplanation: (runId: string) =>
     ["operations", "risk-assessment", runId, "explanation"] as const,
   releaseReadiness: ["internal", "release-readiness"] as const,
-  globalSearch: (q: string) => ["internal", "search", q] as const,
+  globalSearch: (q: string, kind: string, page: number, limit: number) =>
+    ["internal", "search", q, kind, page, limit] as const,
   dataQualityIssues: (params: unknown) =>
     ["operations", "data-quality", "issues", params] as const,
   dataQualityRules: (params: unknown) =>

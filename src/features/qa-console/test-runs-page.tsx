@@ -1,6 +1,6 @@
 "use client";
 
-import { RUN_STATUS_OPTIONS } from "./qa-options";
+import { ENVIRONMENT_OPTIONS, RUN_STATUS_OPTIONS } from "./qa-options";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -33,8 +33,10 @@ export function TestRunsPage() {
 
 function AuthorizedTestRunsPage() {
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
-  const runs = useTestRuns({ page, limit: 20, status });
+  const [environment, setEnvironment] = useState("");
+  const runs = useTestRuns({ page, limit: 20, q, status, environment });
 
   const columns = useMemo<ColumnDef<TestRun>[]>(
     () => [
@@ -97,7 +99,7 @@ function AuthorizedTestRunsPage() {
       <PageHeader
         icon={FlaskConical}
         title="Runs QA registrados en backend"
-        description="Historial dinámico desde `/systems/test-runs`. ¿Quieres ejecutar requests directos contra otra URL?"
+        description="Cada ejecución de una suite de pruebas: contra qué ambiente, cuánto tardó y si pasó. ¿Quieres probar peticiones sueltas contra otra URL?"
         actions={
           <div className="flex gap-2">
             <TutorialLaunchButton tutorialId="qa-runs-interpret" />
@@ -108,16 +110,22 @@ function AuthorizedTestRunsPage() {
         }
       />
       <FilterBar
-        search=""
-        searchPlaceholder="Búsqueda por suite pendiente del servicio interno"
-        searchTooltip="Todavía no filtra: el servicio interno no admite buscar corridas por suite."
-        onSearchChange={() => undefined}
+        search={q}
+        searchPlaceholder="Buscar por suite o n.º de corrida…"
+        searchTooltip="Busca el texto en el código o el nombre de la suite; si escribes un número, también la corrida con ese número."
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
         onFilterChange={(name, value) => {
           if (name === "status") setStatus(value);
+          if (name === "environment") setEnvironment(value);
           setPage(1);
         }}
         onClear={() => {
+          setQ("");
           setStatus("");
+          setEnvironment("");
           setPage(1);
         }}
         filters={[
@@ -128,6 +136,13 @@ function AuthorizedTestRunsPage() {
               "Resultado de la corrida; FAILED es lo que conviene revisar primero.",
             value: status,
             options: statusOptions,
+          },
+          {
+            name: "environment",
+            label: "Ambiente",
+            tooltip: "Entorno contra el que se ejecutó la suite.",
+            value: environment,
+            options: ENVIRONMENT_OPTIONS,
           },
         ]}
       />
