@@ -1,9 +1,8 @@
-import { CircleCheck, CircleDashed } from "lucide-react";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { formatDateTime } from "@/shared/lib/format";
-import { DOC_CHECKS } from "./labels";
+import { DocChecksTable } from "./doc-checks-table";
 import type { ProcessDetail } from "./types";
 
 const short = (hash: string | null) => (hash ? hash.slice(0, 12) : "—");
@@ -19,47 +18,18 @@ export function ProcessDocumentation({
   const sameVersion =
     process.databaseHash !== null && process.databaseHash === process.codeHash;
   return (
-    <div className="mb-6 grid gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <SectionHeader
-            title="Documentación"
-            description={
-              doc.complete
-                ? "Cumple las cinco comprobaciones."
-                : "Le falta algo para contar como documentado."
-            }
-          />
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-3">
-            {DOC_CHECKS.map((check) => {
-              const ok = doc[check.key];
-              const Icon = ok ? CircleCheck : CircleDashed;
-              return (
-                <li key={check.key} className="flex items-start gap-2">
-                  <Icon
-                    className={
-                      ok
-                        ? "mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
-                        : "mt-0.5 h-4 w-4 shrink-0 text-amber-600"
-                    }
-                    aria-label={ok ? "Cumple" : "Falta"}
-                  />
-                  <span>
-                    <span className="block text-sm font-medium text-atlas-text">
-                      {check.label}
-                    </span>
-                    <span className="block text-xs text-atlas-muted">
-                      {check.hint}
-                    </span>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </CardContent>
-      </Card>
+    <div className="mb-6 space-y-6">
+      <section>
+        <SectionHeader
+          title="Documentación"
+          description={
+            doc.complete
+              ? "Cumple las cinco comprobaciones."
+              : "Le falta algo para contar como documentado."
+          }
+        />
+        <DocChecksTable documentation={doc} />
+      </section>
       <Card>
         <CardHeader>
           <SectionHeader
