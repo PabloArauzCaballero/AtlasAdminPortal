@@ -178,7 +178,8 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
    */
   function esRedireccion(archivo: string): boolean {
     const fuente = readFileSync(archivo, "utf8");
-    const formaA = /^\s*redirect\(/m.test(fuente) && !/return\s*\(?\s*</.test(fuente);
+    const formaA =
+      /^\s*redirect\(/m.test(fuente) && !/return\s*\(?\s*</.test(fuente);
     const formaB = /\bredirect\(/.test(fuente) && !/<[A-Za-z]/.test(fuente);
     return formaA || formaB;
   }
