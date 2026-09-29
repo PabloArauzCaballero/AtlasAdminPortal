@@ -17,7 +17,7 @@ export async function globalSearch(
 ): Promise<GlobalSearchResponse> {
   // Sin `kind` (sugerencias de la barra superior) trae hasta `limit` de CADA tipo.
   const payload = await apiRequest<unknown>("/internal/search", {
-    query: { q, kind: kind ?? undefined, page, limit },
+    query: kind ? { q, kind, page, limit } : { q, page, limit },
   });
   return normalizeSearchPayload(payload);
 }
