@@ -76,6 +76,7 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/my-notifications", heading: /mis notificaciones/i },
   // Redirige al catálogo de datos, que tiene el botón «Descargar JSON».
   { path: "/internal/exports", heading: /cat[áa]logo de datos/i },
+  // «Formularios» se quitó (2026-09-29): redirige a «Versiones de esquema» (ya probado abajo).
   { path: "/internal/schema/versions", heading: /versiones de esquema/i },
   { path: "/internal/schema/change-log", heading: /change log/i },
   { path: "/internal/risk-policy/current", heading: /pol[íi]tica de riesgo/i },
