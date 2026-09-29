@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExploradorDeExpedientesPage } from "@/features/files/files-explorer-page";
@@ -107,5 +107,42 @@ describe("ExploradorDeExpedientesPage", () => {
         expect.objectContaining({ subjectType: "partner", page: 1 }),
       ),
     );
+  });
+
+  it("el buscador viaja como q y promete lo que el servidor busca: código, nombre y NIT", async () => {
+    pintar();
+    await screen.findByText("Andina");
+    const buscador = screen.getByRole("textbox", {
+      name: /código de cliente, nombre o NIT del comercio/i,
+    });
+    fireEvent.change(buscador, { target: { value: "andi" } });
+    await waitFor(() =>
+      expect(vi.mocked(listarExpedientes)).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: "andi", page: 1 }),
+      ),
+    );
+  });
+
+  it("mientras llega la respuesta de una búsqueda el buscador sigue montado (no se sustituye la página por un esqueleto)", async () => {
+    pintar();
+    await screen.findByText("Andina");
+    const buscador = screen.getByRole("textbox", {
+      name: /código de cliente, nombre o NIT del comercio/i,
+    });
+    vi.mocked(listarExpedientes).mockReturnValue(new Promise(() => undefined));
+    fireEvent.change(buscador, { target: { value: "xyz" } });
+    await waitFor(() =>
+      expect(vi.mocked(listarExpedientes)).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: "xyz" }),
+      ),
+    );
+    expect(
+      screen.getByRole("textbox", {
+        name: /código de cliente, nombre o NIT del comercio/i,
+      }),
+    ).toBe(buscador);
+    expect(buscador).toHaveValue("xyz");
+    // y la tabla anterior sigue a la vista hasta que llegue la nueva
+    expect(screen.getByText("Andina")).toBeInTheDocument();
   });
 });

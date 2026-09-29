@@ -78,7 +78,7 @@ export function TemplatesSection() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por código, título o asunto…"
-        searchTooltip="Busca en el servidor, en todas las plantillas: coincide con parte del código, de la plantilla del título o de la del asunto."
+        searchTooltip="Busca en el servidor, en todas las plantillas: coincide con parte del código, del título o del asunto de la plantilla."
         filters={[
           {
             name: "channel",

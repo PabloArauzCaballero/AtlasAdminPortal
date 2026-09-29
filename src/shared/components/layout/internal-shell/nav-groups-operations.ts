@@ -3,7 +3,6 @@ import {
   FolderTree,
   Gauge,
   Landmark,
-  LifeBuoy,
   ListChecks,
   MailCheck,
   Megaphone,
@@ -13,10 +12,10 @@ import {
   Stamp,
   Store,
   Table2,
-  UserCog,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
 import { paymentClaimsNavItem } from "./nav-items-payment-claims";
+import { supportNavItems } from "./nav-items-support";
 import {
   CAMPAIGN_READ_ROLE_LIST,
   INTERNAL_PORTAL_ROLE_LIST,
@@ -25,7 +24,6 @@ import {
   OPERATIONS_CASE_ROLE_LIST,
   PARTNER_OPERATIONS_ROLE_LIST,
   RUNTIME_JOB_ROLE_LIST,
-  SUPPORT_ADMIN_ROLE_LIST,
   WORK_QUEUE_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
 
@@ -53,24 +51,10 @@ export const navGroupOperations: InternalNavGroup = {
       permissions: [],
       roles: WORK_QUEUE_ROLE_LIST,
     },
-    {
-      label: "Soporte",
-      href: "/internal/support",
-      icon: LifeBuoy,
-      // Mismo criterio que "Cola de trabajo": el backend gatea por @Roles y, además, exige un
-      // perfil de agente vivo que no vive en el catálogo de permisos. Se deja visible porque un
-      // ítem oculto no explica nada; la pantalla sí dice qué falta y dónde habilitarlo.
-      permissions: [],
-    },
-    {
-      label: "Agentes de soporte",
-      href: "/internal/support/agents",
-      icon: UserCog,
-      // Habilitar agentes decide quién puede leer expedientes de soporte —con la conversación
-      // completa dentro—, así que el backend lo restringe a admin y platform_admin.
-      permissions: [],
-      roles: SUPPORT_ADMIN_ROLE_LIST,
-    },
+    // Soporte, Base de conocimiento y Agentes de soporte viven en `nav-items-support.ts`: una sola
+    // fuente para el menú y para el asistente. «Base de conocimiento» existía como pantalla y sólo
+    // estaba en la copia del asistente: en el menú real no había cómo llegar a ella.
+    ...supportNavItems,
     {
       label: "Archivos",
       href: "/internal/files",

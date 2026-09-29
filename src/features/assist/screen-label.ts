@@ -3,7 +3,6 @@ import {
   navGroups,
   navItems,
 } from "@/shared/components/layout/internal-shell/nav-config";
-import { supportNavItems } from "@/shared/components/layout/internal-shell/nav-items-support";
 
 /**
  * «Dónde está la persona», dicho con el nombre que ve en el menú: `Operaciones › Cola de trabajo`.
@@ -55,11 +54,7 @@ function entradas(): Entrada[] {
           : `${grupo.label} › ${item.label}`,
     })),
   );
-  const operaciones = supportNavItems.map((item) => ({
-    href: item.href,
-    label: `${OPERACIONES} › ${item.label}`,
-  }));
-  return [...sueltos, ...agrupados, ...operaciones, ...SIN_ITEM_EN_MENU];
+  return [...sueltos, ...agrupados, ...SIN_ITEM_EN_MENU];
 }
 
 const ENTRADAS = entradas();

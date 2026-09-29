@@ -140,6 +140,16 @@ describe("AppSidebar · filtrado por rol", () => {
   });
 });
 
+describe("AppSidebar · soporte", () => {
+  it("«Base de conocimiento» está en el menú real (antes sólo existía en la copia del asistente) y respeta sus roles", () => {
+    renderSidebar({ permissions: [], roles: ["risk_analyst"] });
+    expect(verEnlace("Base de conocimiento")).toBe(true);
+
+    renderSidebar({ permissions: [], roles: ["fraud_analyst"] });
+    expect(verEnlace("Base de conocimiento")).toBe(false);
+  });
+});
+
 describe("AppSidebar · grupos", () => {
   it("un grupo sin ningún ítem visible desaparece entero", () => {
     // No debe quedar la cabecera "Systems Ops" abriendo un cajón vacío.

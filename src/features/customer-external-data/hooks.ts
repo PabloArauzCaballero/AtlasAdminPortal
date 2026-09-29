@@ -93,7 +93,7 @@ export function useGrantConsentMutation() {
       customerId: string;
       purpose: string;
       providerCode?: string;
-      accepted: boolean;
+      accepted: true;
     }) => grantConsent(input),
   );
 }
