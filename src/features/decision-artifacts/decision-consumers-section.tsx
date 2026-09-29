@@ -2,12 +2,11 @@
 
 import { ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { engineUrl } from "@/shared/decision-engine/engine-links";
 import type { DecisionArtifactBinding } from "./types";
 
 const API_DOCS =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1$/, "") ?? "";
-const ENGINE_URL =
-  process.env.NEXT_PUBLIC_DECISION_ENGINE_URL ?? "http://localhost:5173";
 
 /**
  * Quién llama a esta decisión y en qué punto del recorrido ocurre.
@@ -19,6 +18,9 @@ const ENGINE_URL =
 export function DecisionConsumersSection({
   binding,
 }: Readonly<{ binding: DecisionArtifactBinding }>) {
+  // Sin `NEXT_PUBLIC_DECISION_ENGINE_URL` no hay enlace: antes caía a `http://localhost:5173`, que en
+  // producción lleva a una pantalla que no existe. Es el mismo criterio del resto de saltos al Motor.
+  const ejecucionesUrl = engineUrl("/executions");
   return (
     <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
       <Card testId="decision-endpoints">
@@ -70,15 +72,17 @@ export function DecisionConsumersSection({
               </li>
             ))}
           </ol>
-          <a
-            href={`${ENGINE_URL}/executions`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs text-atlas-accent hover:underline"
-          >
-            Ver las ejecuciones de esta política en el motor
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-          </a>
+          {ejecucionesUrl ? (
+            <a
+              href={ejecucionesUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs text-atlas-accent hover:underline"
+            >
+              Ver las ejecuciones de esta política en el motor
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            </a>
+          ) : null}
         </CardContent>
       </Card>
     </div>

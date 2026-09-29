@@ -137,8 +137,3 @@ export type CatalogIngestionResult = {
   status: string;
   stagingItemsCreated: number;
 };
-
-export type ActivateRulesetInput = {
-  activationReason: string;
-  effectiveFrom?: string;
-};
