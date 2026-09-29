@@ -133,8 +133,11 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
       waitUntil: "domcontentloaded",
     });
 
-    await page.getByRole("button", { name: /^Copiar/ }).click();
-    await expect(page.getByText(/Copiado/)).toBeVisible();
+    // Las tablas de la guía también traen su botón «Copiar» (copia la tabla): se acota a la sección
+    // del journey, que es la del botón que copia el array de pasos.
+    const journey = page.locator("#journey");
+    await journey.getByRole("button", { name: /^Copiar/ }).click();
+    await expect(journey.getByText(/Copiado/)).toBeVisible();
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toContain('"customerId": "data.customerId"');
     expect(clip).toContain("{{customerId}}");
