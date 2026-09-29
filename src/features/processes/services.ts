@@ -11,6 +11,13 @@ import type {
 export const PROCESSES_PERMISSION = "workflows.read";
 
 /**
+ * El mapa de rutas (`/internal/flows`) y la ficha técnica de un flujo exigen OTRO permiso. Los roles
+ * de operación tienen `workflows.read` pero no éste: el enlace sólo se enseña a quien lo tiene, porque
+ * a los demás les llevaba a «acceso restringido».
+ */
+export const FLOWS_PERMISSION = "systems.flows.read";
+
+/**
  * La sección Procesos sólo LEE: todas las rutas son `GET /internal/processes…` con sesión interna
  * y el permiso `workflows.read`. El código de proceso viaja codificado aunque el backend ya lo
  * valide con `^[a-z][a-z0-9_]+$`: la URL la escribe quien pega un enlace, no sólo la tabla.

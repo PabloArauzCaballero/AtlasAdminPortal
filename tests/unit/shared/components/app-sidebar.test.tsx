@@ -70,10 +70,11 @@ describe("AppSidebar · filtrado por permisos", () => {
   });
 
   it("un ítem con varios permisos se abre con cualquiera de ellos", () => {
-    // "Panel de control" declara systems.endpoints.read y systems.tools.health.read.
-    renderSidebar({ permissions: ["systems.tools.health.read"] });
+    // «Panel de control» (que era el ejemplo) se fusionó con Inicio; «Sync catálogo» declara
+    // varios permisos de sistemas y basta con el último.
+    renderSidebar({ permissions: ["systems.tools.inferRequirements"] });
 
-    expect(verEnlace("Panel de control")).toBe(true);
+    expect(verEnlace("Sync catálogo")).toBe(true);
   });
 
   it("un ítem con permissions: [] es visible sin ningún permiso", () => {
@@ -166,9 +167,38 @@ describe("AppSidebar · grupos", () => {
     renderSidebar({ permissions: ["workflows.read"] });
 
     expect(verGrupo("Procesos")).toBe(true);
-    expect(verEnlace("Catálogo de procesos")).toBe(true);
+    expect(verEnlace("Procesos")).toBe(true);
     // No cuelga de Systems Ops: quien sólo lee procesos no ve ese grupo.
     expect(verGrupo("Systems Ops")).toBe(false);
+  });
+
+  it("tras la fusión, Systems Ops no lista «Procesos de negocio», «Panel de control» ni «Salud herramientas»", () => {
+    renderSidebar({
+      permissions: [
+        "systems.flows.read",
+        "systems.endpoints.read",
+        "systems.tools.read",
+        "systems.tools.health.read",
+        "systems.reviewQueue.read",
+      ],
+    });
+
+    for (const retirado of [
+      "Procesos de negocio",
+      "Panel de control",
+      "Salud herramientas",
+      "Flujos",
+      "Cola de revisión",
+      "Revisión de flujos",
+    ])
+      expect(verEnlace(retirado), retirado).toBe(false);
+    for (const nuevo of [
+      "Mapa de rutas",
+      "Revisión del catálogo",
+      "Revisión de análisis de flujos",
+      "Herramientas",
+    ])
+      expect(verEnlace(nuevo), nuevo).toBe(true);
   });
 
   it("sin workflows.read el grupo Procesos no aparece", () => {

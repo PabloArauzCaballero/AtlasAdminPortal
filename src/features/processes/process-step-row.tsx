@@ -8,7 +8,14 @@ import { WiringBadge } from "./wiring-badge";
  * Un paso de una etapa. Arriba, en lenguaje de negocio: qué se hace y si tiene pantalla. El método
  * y la ruta van plegados en «Detalle técnico», para quien tenga que buscarlo en el código.
  */
-export function ProcessStepRow({ step }: Readonly<{ step: ProcessStep }>) {
+export function ProcessStepRow({
+  step,
+  onOpenFlow,
+}: Readonly<{
+  step: ProcessStep;
+  /** Sólo llega si quien mira tiene permiso sobre el mapa de rutas; sin él no hay enlace ni ficha. */
+  onOpenFlow?: (flowId: string) => void;
+}>) {
   const unwired = step.wiring === "unwired";
   return (
     <li
@@ -36,6 +43,12 @@ export function ProcessStepRow({ step }: Readonly<{ step: ProcessStep }>) {
         <span className="flex shrink-0 flex-wrap items-center gap-1">
           <WiringBadge value={step.wiring} />
           {step.risk ? <RiskBadge value={step.risk} /> : null}
+          {step.verification === "VERIFIED" ? (
+            <Badge tone="success">verificado</Badge>
+          ) : null}
+          {step.testStatus === "UNTESTED" ? (
+            <Badge tone="muted">sin prueba</Badge>
+          ) : null}
         </span>
       </div>
       {unwired ? (
@@ -86,7 +99,17 @@ export function ProcessStepRow({ step }: Readonly<{ step: ProcessStep }>) {
               <dd>
                 {step.callers.length
                   ? step.callers.map(clientLabel).join(", ")
-                  : "Nadie, según el mapa de Flujos"}
+                  : "Nadie, según el mapa de rutas"}
+              </dd>
+            </>
+          ) : null}
+          {step.testStatus ? (
+            <>
+              <dt>Prueba automática</dt>
+              <dd>
+                {step.testStatus === "TESTED"
+                  ? "Tiene una prueba que lo ejercita"
+                  : "Ninguna prueba lo ejercita"}
               </dd>
             </>
           ) : null}
@@ -98,15 +121,22 @@ export function ProcessStepRow({ step }: Readonly<{ step: ProcessStep }>) {
               </dd>
             </>
           ) : null}
-          {step.flowId ? (
+          {step.flowId && onOpenFlow ? (
             <>
-              <dt>En Flujos</dt>
-              <dd>
+              <dt>Mapa de rutas</dt>
+              <dd className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="text-atlas-accent underline"
+                  onClick={() => onOpenFlow(step.flowId as string)}
+                >
+                  Ver ficha técnica
+                </button>
                 <Link
                   className="text-atlas-accent underline"
-                  href={`/internal/flows?flow=${step.flowId}`}
+                  href={`/internal/flows?flow=${encodeURIComponent(step.flowId)}`}
                 >
-                  Abrir el flujo
+                  Abrir en el mapa de rutas
                 </Link>
               </dd>
             </>

@@ -24,6 +24,16 @@ export type ProcessWiringSummary = {
   personSteps: number;
 };
 
+/**
+ * Pasos HTTP del proceso con flujo en el catálogo, cuántos son de riesgo crítico y cuántos están
+ * verificados con uso real. Opcional: un servidor anterior al 2026-09-29 no lo manda.
+ */
+export type ProcessFlowStats = {
+  linked: number;
+  critical: number;
+  verified: number;
+};
+
 export type ProcessListItem = {
   processId: string;
   code: string;
@@ -38,6 +48,7 @@ export type ProcessListItem = {
   stepCount: number;
   documentation: ProcessDocumentation;
   wiring: ProcessWiringSummary;
+  flowStats?: ProcessFlowStats;
   hasInstances: boolean;
 };
 
@@ -87,6 +98,8 @@ export type ProcessStep = {
   flowId: string | null;
   verification: string | null;
   risk: string | null;
+  /** `TESTED` | `UNTESTED` según el mapa de rutas; `null` si el paso no tiene flujo (o el servidor es anterior). */
+  testStatus?: string | null;
   callers: string[];
 };
 
@@ -125,6 +138,7 @@ export type ProcessDetail = {
   stages: ProcessStage[];
   documentation: ProcessDocumentation;
   wiring: ProcessWiringSummary;
+  flowStats?: ProcessFlowStats;
   codeHash: string;
   databaseHash: string | null;
 };

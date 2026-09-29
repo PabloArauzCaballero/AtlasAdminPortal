@@ -6,10 +6,18 @@ import { setStoredInternalSession } from "@/shared/auth/session-storage";
 import { makeSession, makeUser } from "../../../helpers/session-fixtures";
 import { makeDetail, makeItem } from "./fixtures";
 
+const nav = vi.hoisted(() => ({
+  replace: vi.fn(),
+  params: new URLSearchParams(),
+}));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/internal/procesos",
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/internal/procesos/account_signup_to_login",
+  useRouter: () => ({ push: vi.fn(), replace: nav.replace, prefetch: vi.fn() }),
+  useSearchParams: () => nav.params,
+}));
+vi.mock("@/features/flows/flow-detail-drawer", () => ({
+  FlowDetailDrawer: ({ flowId }: { flowId: string | null }) =>
+    flowId ? <div data-testid="ficha-tecnica">{flowId}</div> : null,
 }));
 vi.mock("@/shared/auth/auth-service", () => ({
   logoutInternal: vi.fn(),
@@ -41,6 +49,8 @@ const unwiredItem = makeItem({
 });
 
 beforeEach(() => {
+  nav.replace.mockReset();
+  nav.params = new URLSearchParams();
   hooks.useProcesses.mockReturnValue({
     isLoading: false,
     error: null,
@@ -126,25 +136,18 @@ describe("Procesos · listado", () => {
   });
 });
 
-describe("Procesos · ficha", () => {
-  it("destaca arriba los pasos sin pantalla y los marca en rojo en su etapa", () => {
-    renderAs(<ProcessDetailPage code="account_signup_to_login" />, [
-      "workflows.read",
-    ]);
-    const aviso = screen.getByRole("status");
-    expect(aviso).toHaveTextContent("1 paso sin pantalla");
-    expect(aviso).toHaveTextContent("Cerrar el contacto");
-    const paso = screen.getByTestId("paso-close_contact");
-    expect(within(paso).getByText("Sin pantalla")).toBeInTheDocument();
-    expect(
-      within(screen.getByTestId("paso-resend_code")).getByText("Con pantalla"),
-    ).toBeInTheDocument();
-  });
+/** Abre la ficha en una pestaña (`?tab=`), como llega desde un enlace o tras pulsarla. */
+function renderTab(tab: string | null, permissions = ["workflows.read"]) {
+  nav.params = new URLSearchParams(tab ? `tab=${tab}` : "");
+  return renderAs(
+    <ProcessDetailPage code="account_signup_to_login" />,
+    permissions,
+  );
+}
 
-  it("contesta las cinco preguntas y enlaza la pantalla del portal interno", () => {
-    renderAs(<ProcessDetailPage code="account_signup_to_login" />, [
-      "workflows.read",
-    ]);
+describe("Procesos · ficha", () => {
+  it("abre en Resumen con las cinco preguntas y los contadores del servidor", () => {
+    renderTab(null);
     for (const pregunta of [
       "¿Por qué existe?",
       "¿Quién lo empieza y quién lo cierra?",
@@ -153,22 +156,45 @@ describe("Procesos · ficha", () => {
       "¿Cómo se sabe que va bien?",
     ])
       expect(screen.getByText(pregunta)).toBeInTheDocument();
+    // Los contadores salen de `flowStats` del servidor (fixture: 3 con flujo, 2 críticos, 1 verificado).
+    expect(screen.getByText("Críticos").closest("section")).toHaveTextContent("2");
+    expect(screen.getByText("Con flujo en el mapa").closest("section")).toHaveTextContent("3");
+    expect(screen.queryByTestId("etapa-contacts")).not.toBeInTheDocument();
+  });
+
+  it("cambiar de pestaña la deja en la URL (`?tab=`) para poder compartirla", async () => {
+    const user = userEvent.setup();
+    renderTab(null);
+    await user.click(screen.getByRole("button", { name: "Casos en curso" }));
+    expect(nav.replace).toHaveBeenCalledWith(
+      "/internal/procesos/account_signup_to_login?tab=casos",
+      { scroll: false },
+    );
+  });
+
+  it("Documentación y cableado destaca los pasos sin pantalla", () => {
+    renderTab("documentacion");
+    const aviso = screen.getByRole("status");
+    expect(aviso).toHaveTextContent("1 paso sin pantalla");
+    expect(aviso).toHaveTextContent("Cerrar el contacto");
+  });
+
+  it("Pasos y flujos marca cada paso y enlaza la pantalla del portal interno", () => {
+    renderTab("pasos");
+    const paso = screen.getByTestId("paso-close_contact");
+    expect(within(paso).getByText("Sin pantalla")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("paso-resend_code")).getByText("Con pantalla"),
+    ).toBeInTheDocument();
     const etapa = screen.getByTestId("etapa-contacts");
     expect(
       within(etapa).getByRole("link", { name: /abrir la pantalla/i }),
     ).toHaveAttribute("href", "/internal/operations/pending-contacts");
-    expect(
-      screen.getByRole("link", { name: "Casos en curso" }),
-    ).toHaveAttribute(
-      "href",
-      "/internal/procesos/account_signup_to_login/instancias",
-    );
   });
 
-  it("la ruta técnica queda dentro del detalle plegado, no en el texto de negocio", () => {
-    renderAs(<ProcessDetailPage code="account_signup_to_login" />, [
-      "workflows.read",
-    ]);
+  it("con permiso del mapa de rutas enlaza el flujo y abre su ficha técnica", async () => {
+    const user = userEvent.setup();
+    renderTab("pasos", ["workflows.read", "systems.flows.read"]);
     const paso = screen.getByTestId("paso-resend_code");
     const detalle = within(paso)
       .getByText("Detalle técnico")
@@ -180,9 +206,44 @@ describe("Procesos · ficha", () => {
     );
     expect(
       within(detalle as HTMLElement).getByRole("link", {
-        name: "Abrir el flujo",
+        name: "Abrir en el mapa de rutas",
       }),
     ).toHaveAttribute("href", "/internal/flows?flow=flow_abc123def456");
+    await user.click(
+      within(detalle as HTMLElement).getByRole("button", {
+        name: "Ver ficha técnica",
+      }),
+    );
+    expect(screen.getByTestId("ficha-tecnica")).toHaveTextContent(
+      "flow_abc123def456",
+    );
+  });
+
+  it("sin systems.flows.read no enseña enlaces al mapa de rutas (llevaban a «acceso restringido»)", () => {
+    renderTab("pasos");
+    const paso = screen.getByTestId("paso-resend_code");
+    expect(
+      within(paso).queryByRole("link", { name: /mapa de rutas/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(paso).queryByRole("button", { name: "Ver ficha técnica" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("un paso sin prueba automática lo dice", () => {
+    const detail = makeDetail();
+    const step = detail.stages[0]!.steps[0]!;
+    step.testStatus = "UNTESTED";
+    hooks.useProcess.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: detail,
+      refetch: vi.fn(),
+    });
+    renderTab("pasos");
+    expect(
+      within(screen.getByTestId(`paso-${step.code}`)).getByText("sin prueba"),
+    ).toBeInTheDocument();
   });
 
   it("un código que no existe se explica en vez de romper la pantalla", async () => {
@@ -208,9 +269,7 @@ describe("Procesos · ficha", () => {
       data: makeDetail({ databaseHash: "bbbbbbbbbbbb" }),
       refetch: vi.fn(),
     });
-    renderAs(<ProcessDetailPage code="account_signup_to_login" />, [
-      "workflows.read",
-    ]);
+    renderTab("documentacion");
     expect(
       screen.getByText("La base tiene una versión anterior"),
     ).toBeInTheDocument();

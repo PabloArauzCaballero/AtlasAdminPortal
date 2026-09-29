@@ -11,7 +11,7 @@ const nav = vi.hoisted(() => ({
   params: new URLSearchParams(),
 }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/internal/procesos/account_signup_to_login/instancias",
+  usePathname: () => "/internal/procesos/account_signup_to_login",
   useRouter: () => ({ push: vi.fn(), replace: nav.replace, prefetch: vi.fn() }),
   useSearchParams: () => nav.params,
 }));
@@ -25,10 +25,11 @@ const hooks = vi.hoisted(() => ({
   useProcess: vi.fn(),
   useProcessInstances: vi.fn(),
   useInstanceProgress: vi.fn(),
+  useProcessWiring: vi.fn(),
 }));
 vi.mock("@/features/processes/hooks", () => hooks);
 
-import { ProcessInstancesPage } from "@/features/processes/process-instances-page";
+import { ProcessDetailPage } from "@/features/processes/process-detail-page";
 
 const SUPPORTED = {
   supported: true,
@@ -49,14 +50,15 @@ function renderPage() {
   );
   return render(
     <AuthProvider>
-      <ProcessInstancesPage code="account_signup_to_login" />
+      <ProcessDetailPage code="account_signup_to_login" />
     </AuthProvider>,
   );
 }
 
 beforeEach(() => {
   nav.replace.mockReset();
-  nav.params = new URLSearchParams();
+  // Los casos son ahora la pestaña «Casos en curso» de la ficha (antes `/instancias`).
+  nav.params = new URLSearchParams("tab=casos");
   hooks.useProcess.mockReturnValue({ data: makeDetail() });
   hooks.useProcessInstances.mockReturnValue({
     isLoading: false,
@@ -114,13 +116,13 @@ describe("Procesos · casos en curso", () => {
     renderPage();
     await user.click(screen.getByRole("button", { name: "Ver avance" }));
     expect(nav.replace).toHaveBeenCalledWith(
-      "/internal/procesos/account_signup_to_login/instancias?caso=101",
+      "/internal/procesos/account_signup_to_login?tab=casos&caso=101",
       { scroll: false },
     );
   });
 
   it("con un caso abierto enseña en qué etapa está y enlaza su pantalla con el id", () => {
-    nav.params = new URLSearchParams("caso=101");
+    nav.params = new URLSearchParams("tab=casos&caso=101");
     renderPage();
     const avance = screen.getByTestId("avance-del-caso");
     expect(within(avance).getByText("Está aquí")).toBeInTheDocument();

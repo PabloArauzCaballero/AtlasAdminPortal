@@ -100,14 +100,14 @@ describe("ViewExplainer · contenido", () => {
   });
 
   it("gana el prefijo de vista más largo", async () => {
-    // "/internal/systems/tools/health" matchea también "/internal/systems/tools";
+    // "/internal/flows/review" matchea también "/internal/flows";
     // debe ganar el específico o se explicaría la vista equivocada.
-    renderAt("/internal/systems/tools/health");
+    renderAt("/internal/flows/review");
 
     await userEvent.click(toggle());
 
     expect(
-      screen.getByText(/¿está funcionando lo que la operación necesita/),
+      screen.getByText(/El control humano sobre los flujos/),
     ).toBeInTheDocument();
   });
 

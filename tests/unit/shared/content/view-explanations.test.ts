@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -23,12 +23,12 @@ describe("resolveExplanation · rutas desconocidas", () => {
 
 describe("resolveExplanation · gana el prefijo más largo", () => {
   it("una vista más específica gana a la vista general del módulo", () => {
-    // `/internal/systems/tools/health` matchea tanto `/internal/systems/tools`
-    // como `/internal/systems/tools/health`: debe ganar la segunda.
-    const resolved = resolveExplanation("/internal/systems/tools/health");
+    // `/internal/flows/review` matchea tanto `/internal/flows` como
+    // `/internal/flows/review`: debe ganar la segunda.
+    const resolved = resolveExplanation("/internal/flows/review");
 
     expect(resolved?.module.module).toBe("Systems Ops");
-    expect(resolved?.view?.systems).toContain("Estado vivo por herramienta");
+    expect(resolved?.view?.systems).toContain("Los flujos de riesgo alto");
   });
 
   it("un módulo con prefijo más largo gana a otro módulo que también matchea", () => {
@@ -171,13 +171,22 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
   /** Las dos pantallas públicas no montan el armazón y por eso no pintan explicación. */
   const PUBLICAS = new Set(["/internal/login", "/internal/recuperar-acceso"]);
 
+  /**
+   * Una ruta vieja que sólo redirige (fusiones de pantallas) no pinta nada que explicar: quien la
+   * abre aterriza en otra pantalla, que es la que tiene que tener su texto.
+   */
+  function soloRedirige(pagina: string): boolean {
+    const codigo = readFileSync(pagina, "utf8");
+    return /\bredirect\(/.test(codigo) && !/<[A-Za-z]/.test(codigo);
+  }
+
   function rutasDelPortal(dir: string, base: string): string[] {
     const rutas: string[] = [];
     for (const entrada of readdirSync(dir)) {
       const ruta = path.join(dir, entrada);
       if (statSync(ruta).isDirectory()) {
         rutas.push(...rutasDelPortal(ruta, base));
-      } else if (entrada === "page.tsx") {
+      } else if (entrada === "page.tsx" && !soloRedirige(ruta)) {
         const relativa = path.relative(base, path.dirname(ruta));
         // Un segmento dinámico (`[caseId]`) se prueba con un valor cualquiera.
         rutas.push(
@@ -236,20 +245,17 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
 });
 
 describe("resolveExplanation · segmentos dinámicos", () => {
-  it("la ficha de un proceso y sus casos tienen texto propio aunque el código cambie", () => {
+  it("la ficha de un proceso tiene texto propio aunque el código cambie, y explica sus casos", () => {
     const lista = resolveExplanation("/internal/procesos");
     const ficha = resolveExplanation(
       "/internal/procesos/account_signup_to_login",
     );
-    const casos = resolveExplanation(
-      "/internal/procesos/account_signup_to_login/instancias",
-    );
 
     expect(lista?.module.module).toBe("Procesos");
     expect(ficha?.module.module).toBe("Procesos");
-    expect(casos?.module.module).toBe("Procesos");
-    expect(new Set([lista?.view, ficha?.view, casos?.view]).size).toBe(3);
-    expect(casos?.view?.business).toContain("casos");
+    expect(new Set([lista?.view, ficha?.view]).size).toBe(2);
+    // Los casos son una pestaña de la ficha desde la fusión de «Procesos ×3».
+    expect(ficha?.view?.business).toContain("casos");
   });
 
   it("un corchete sólo cubre un segmento que existe", () => {

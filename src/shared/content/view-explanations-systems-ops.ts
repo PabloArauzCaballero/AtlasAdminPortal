@@ -9,12 +9,6 @@ export const systemsOpsModuleExplanation: ModuleExplanation = {
   business:
     "Es el inventario operativo de la plataforma: permite saber qué existe, quién lo usa, qué rompe si falla y detectar incidentes antes de que un cliente los sufra. Sin este módulo, cada cambio o caída se descubriría a ciegas.",
   views: {
-    "/internal/flows/business": {
-      systems:
-        "Los procesos de negocio declarados en el catálogo, paso a paso y en orden, cada uno con el flujo que lo implementa, su riesgo, si se comprobó con uso real y si tiene prueba. Un paso sin flujo es una operación que el proceso promete y el código ya no tiene.",
-      business:
-        "Ver de un vistazo si un proceso completo (un alta, un crédito, un cobro) está cubierto de punta a punta o tiene huecos. No ejecuta ningún paso ni cambia el proceso: sólo lo describe.",
-    },
     "/internal/flows/gate": {
       systems:
         "Las condiciones que deben cumplirse antes de dar la documentación por certificada: flujos críticos verificados sobre su código actual, sin escrituras desprotegidas ni deriva de permisos grave, revisión sin pendientes de riesgo alto y el análisis de cada bloque cargado.",
@@ -43,31 +37,19 @@ export const systemsOpsModuleExplanation: ModuleExplanation = {
       systems:
         "Los flujos de riesgo alto cuyo análisis automático no basta y los ya aprobados cuyo código cambió desde entonces. Aprobar un flujo es aprobar ESE código: si cambia, vuelve a esta cola.",
       business:
-        "El control humano sobre los flujos que pueden mover dinero o datos sensibles. No es la cola de revisión del catálogo (esa está en «Cola de revisión») ni aprueba créditos ni clientes.",
+        "El control humano sobre los flujos que pueden mover dinero o datos sensibles. No es la revisión del catálogo (esa está en «Revisión del catálogo») ni aprueba créditos ni clientes.",
     },
     "/internal/flows": {
       systems:
-        "El inventario de flujos derivado del código: qué puede hacer cada tipo de usuario, por qué operación, con qué autorización, y qué le falta (contrato, pruebas, quién lo llama). Se regenera desde el análisis del código; abrir un flujo nunca lo ejecuta.",
+        "El mapa de rutas derivado del código: una fila por operación, con qué puede hacer cada tipo de usuario, con qué autorización, y qué le falta (contrato, pruebas, quién lo llama). Se regenera desde el análisis del código; abrir una ficha nunca ejecuta la operación. Los procesos de negocio que usan estas operaciones se ven en «Procesos».",
       business:
         "Responder «¿quién puede hacer qué y está protegido?» sin leer código. No es un registro de lo que pasó: para eso están la auditoría y los eventos.",
-    },
-    "/internal/systems/dashboard": {
-      systems:
-        "Consolida `/systems/dashboard` (contadores del catálogo) y `/systems/health/tools` (salud viva) en una sola pantalla con refresco automático.",
-      business:
-        "Vista de un vistazo para el equipo de plataforma: si algo crítico está caído o el catálogo quedó desactualizado, se ve aquí primero.",
     },
     "/internal/systems/endpoints": {
       systems:
         "Lista paginada del catálogo `system_endpoint_catalog`, con bloque, método, ruta, riesgo, PII y estado de revisión. Las rutas de este backend se descubren escaneando sus controladores; las del motor de decisión y el ERP llegan del manifiesto que cada uno publica sobre sí mismo.",
       business:
         "Inventario de todas las operaciones que expone el ECOSISTEMA, no sólo este backend: qué acciones existen en cada producto, cuáles tocan datos sensibles y cuáles requieren pruebas antes de un release.",
-    },
-    "/internal/systems/tools/health": {
-      systems:
-        "Estado vivo por herramienta (`isHealthy` de `/systems/health/tools`): probes reales a PostgreSQL/Redis y verificación de configuración para el resto. Es la misma señal que dispara las notificaciones de servicio caído/recuperado.",
-      business:
-        "Responde '¿está funcionando lo que la operación necesita ahora mismo?' — si el buró, WhatsApp o la base están caídos, aquí se confirma el incidente que avisó la campana.",
     },
     "/internal/systems/network-health": {
       systems:
@@ -83,13 +65,13 @@ export const systemsOpsModuleExplanation: ModuleExplanation = {
     },
     "/internal/systems/tools": {
       systems:
-        "Catálogo de herramientas técnicas (`system_tool_catalog`): tipo, proveedor, variables de entorno requeridas y criticidad. No muestra secretos.",
+        "Dos pestañas. «Catálogo»: las herramientas técnicas (`system_tool_catalog`) con tipo, proveedor, variables de entorno requeridas y criticidad, paginadas y con buscador por código, nombre, proveedor o tipo; no muestra secretos. «Salud» (permiso de salud de herramientas): el estado vivo de cada una, la misma señal que dispara los avisos de servicio caído.",
       business:
-        "Mapa de dependencias externas e internas: qué servicios de terceros usa la plataforma y cuáles son imprescindibles para operar.",
+        "Mapa de dependencias externas e internas: qué servicios de terceros usa la plataforma, cuáles son imprescindibles y si ahora mismo responden. Si el buró, WhatsApp o la base están caídos, en «Salud» se confirma el incidente que avisó la campana.",
     },
     "/internal/review-queue": {
       systems:
-        "Cola de ítems auto-detectados (endpoints, tablas, impactos, herramientas) con estado NEEDS_REVIEW; aprobar/rechazar actualiza `review_status` y registra el evento.",
+        "Seis familias de detecciones automáticas (rutas, tablas, columnas, impactos en tablas y campos, y herramientas), cada una paginada por su cuenta. El buscador busca en todas: en impactos y herramientas, por la ruta, la tabla o la herramienta a la que apuntan. Aprobar o rechazar actualiza el estado de revisión y guarda el motivo.",
       business:
         "Control humano sobre lo que detectan los escáneres automáticos: nada se da por confiable para QA, gobierno o reportes hasta que una persona lo valida.",
     },
@@ -102,7 +84,7 @@ export const homeModuleExplanation: ModuleExplanation = {
   prefixes: ["/internal"],
   exact: true,
   systems:
-    "El panel de entrada: reúne en tarjetas el estado de los sistemas, del catálogo, de las pruebas, del gobierno de datos, del linaje y de la auditoría, cada una con enlace a su sección.",
+    "El panel de entrada: reúne en tarjetas el estado de los sistemas, del catálogo, de las pruebas, del gobierno de datos, del linaje y de la auditoría, cada una con enlace a su sección. Quien tiene permiso de salud de herramientas ve además, arriba y en rojo, las herramientas críticas caídas.",
   business:
     "Saber en un minuto si hay algo caído, pendiente de revisar o desactualizado antes de ponerse a trabajar.",
   views: {
