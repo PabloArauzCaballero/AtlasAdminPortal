@@ -87,7 +87,7 @@ function AuthorizedPendingWorkPage() {
     <>
       <PageHeader
         icon={Hourglass}
-        eyebrow="Systems Ops · Flujos"
+        eyebrow="Systems Ops · Mapa de rutas"
         title="Trabajo pendiente"
         description="Lo que cada flujo deja encargado al responder (eventos del outbox), si alguien lo recoge y qué eventos de dominio terminan de verdad en un aviso."
         actions={
@@ -152,6 +152,11 @@ function AuthorizedPendingWorkPage() {
           <Card>
             <CardHeader>
               <h2 className="text-sm font-semibold">Flujos que encolan</h2>
+              {data.truncated ? (
+                <p role="status" className="mt-1 text-xs text-amber-800">
+                  {`Sólo se enseñan las ${data.limit ?? data.flows.length} rutas con el pendiente más antiguo: hay más que encolan trabajo. Los totales de arriba sí cuentan todo el outbox.`}
+                </p>
+              ) : null}
             </CardHeader>
             <CardContent>
               <DataTable

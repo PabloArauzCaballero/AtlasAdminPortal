@@ -46,7 +46,11 @@ export function StageScreen({
 /** Las etapas en su orden, cada una con quién actúa, desde dónde y sus pasos. */
 export function ProcessStages({
   stages,
-}: Readonly<{ stages: ProcessStage[] }>) {
+  onOpenFlow,
+}: Readonly<{
+  stages: ProcessStage[];
+  onOpenFlow?: (flowId: string) => void;
+}>) {
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -95,7 +99,11 @@ export function ProcessStages({
                   {stage.steps.length ? (
                     <ul className="mt-3 space-y-2">
                       {stage.steps.map((step) => (
-                        <ProcessStepRow key={step.code} step={step} />
+                        <ProcessStepRow
+                          key={step.code}
+                          step={step}
+                          onOpenFlow={onOpenFlow}
+                        />
                       ))}
                     </ul>
                   ) : (

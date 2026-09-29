@@ -1,6 +1,11 @@
 ﻿"use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -192,6 +197,8 @@ export function useTools(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.tools(query),
     queryFn: () => listTools(query),
+    // Cambiar de página o de filtro no vacía la tabla mientras llega la siguiente.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -265,10 +272,12 @@ export function useRefreshCatalogSeedMutation() {
   });
 }
 
-export function useReviewQueue(query: QueryParams) {
+export function useReviewQueue(query: QueryParams, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: queryKeys.reviewQueue(query),
     queryFn: () => listReviewQueue(query),
+    placeholderData: keepPreviousData,
   });
 }
 

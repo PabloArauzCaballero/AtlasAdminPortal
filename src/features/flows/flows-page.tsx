@@ -73,7 +73,11 @@ function AuthorizedFlowsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<Filters>(EMPTY);
+  // `?q=` permite llegar ya filtrado desde otra ficha (p. ej. «Ver en el mapa de rutas» de un endpoint).
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...EMPTY,
+    q: searchParams.get("q") ?? "",
+  }));
   const selectedFlowId = searchParams.get("flow");
 
   // El flujo abierto vive en la URL (`?flow=flow_…`) para que QA pueda pegar el enlace en un bug.
@@ -131,8 +135,8 @@ function AuthorizedFlowsPage() {
       <PageHeader
         icon={Waypoints}
         eyebrow="Systems Ops"
-        title="Flujos"
-        description="Mapa derivado del código: qué puede hacer cada usuario, por qué endpoint, con qué autorización, y qué falta (contrato, tests, callers). Se regenera desde el artefacto de flows:derive; abrir un flujo nunca lo ejecuta."
+        title="Mapa de rutas"
+        description="Una fila por operación de la plataforma, sacada del código: qué puede hacer cada usuario, con qué autorización, y qué le falta (contrato, pruebas, quién la llama). Abrir una ficha nunca ejecuta la operación. Los procesos de negocio que usan estas operaciones están en «Procesos»."
         actions={
           <div className="flex max-w-md flex-col items-end gap-1 text-right">
             <PermissionGate
@@ -182,7 +186,8 @@ function AuthorizedFlowsPage() {
       />
       <FilterBar
         search={filters.q}
-        searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
+        searchPlaceholder="Buscar por nombre, ruta, handler, controlador, módulo o slug…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, la ruta, el método y la clase del controlador, el módulo y el identificador legible del flujo."
         onSearchChange={(value) => setFilter("q", value)}
         onFilterChange={setFilter}
         onClear={() => {

@@ -1,41 +1,33 @@
 "use client";
 
-import { ListChecks } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { PermissionGate } from "@/shared/auth/permission-gate";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
-import { PageHeader } from "@/shared/components/layout/page-header";
 import {
   EmptyState,
   ErrorState,
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
-import { useProcess, useProcessInstances } from "./hooks";
+import { useProcessInstances } from "./hooks";
 import { InstanceProgress } from "./instance-progress";
 import { InstancesList, StatusCounts } from "./instances-list";
-import { BackToProcesses } from "./process-detail-page";
-import { PROCESSES_PERMISSION } from "./services";
 
 const PAGE_SIZE = 25;
 
-export function ProcessInstancesPage({ code }: Readonly<{ code: string }>) {
-  return (
-    <PermissionGate permissions={[PROCESSES_PERMISSION]}>
-      <AuthorizedInstances code={code} />
-    </PermissionGate>
-  );
-}
-
-function AuthorizedInstances({ code }: Readonly<{ code: string }>) {
+/**
+ * La pestaña «Casos en curso» de la ficha de un proceso (antes `/procesos/[code]/instancias`).
+ *
+ * Cuántos casos hay en cada estado y, al abrir uno, en qué etapa está. El caso abierto vive en la
+ * URL (`?caso=…`) junto a `?tab=casos`, así el enlace se puede pasar a otra persona.
+ */
+export function ProcessCasesTab({ code }: Readonly<{ code: string }>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  // El caso abierto vive en la URL (`?caso=…`) para poder pasar el enlace a otra persona.
   const selected = searchParams.get("caso");
   const openInstance = useCallback(
     (id: string | null) => {
@@ -49,7 +41,6 @@ function AuthorizedInstances({ code }: Readonly<{ code: string }>) {
     [pathname, router, searchParams],
   );
 
-  const process = useProcess(code);
   const instances = useProcessInstances(code, {
     status,
     search,
@@ -60,17 +51,6 @@ function AuthorizedInstances({ code }: Readonly<{ code: string }>) {
 
   return (
     <>
-      <div className="mb-3">
-        <BackToProcesses />
-      </div>
-      <PageHeader
-        icon={ListChecks}
-        eyebrow={process.data ? `Proceso ${process.data.processId}` : "Proceso"}
-        title={
-          process.data ? `Casos de «${process.data.name}»` : "Casos en curso"
-        }
-        description="Cuántos casos hay en cada estado y, al abrir uno, en qué etapa del proceso está."
-      />
       {instances.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {instances.error ? (
         <ErrorState
@@ -92,7 +72,6 @@ function AuthorizedInstances({ code }: Readonly<{ code: string }>) {
         <EmptyState
           title="Los casos de este proceso no se ven desde aquí"
           description={`${data.reason} Este portal sólo cuenta los casos que viven en el núcleo de Atlas.`}
-          action={<BackToProcesses />}
         />
       ) : null}
       {data?.supported ? (

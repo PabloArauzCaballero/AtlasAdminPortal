@@ -186,7 +186,8 @@ function AuthorizedEndpointsPage() {
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por ruta, módulo o propósito…"
+        searchPlaceholder="Buscar por ruta, módulo, propósito o método del controlador…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el código, la ruta, el nombre, el propósito, el módulo y el método del controlador."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);

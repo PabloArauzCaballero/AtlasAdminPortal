@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useEndpoint, useEndpointImpact } from "@/features/systems/hooks";
+import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
@@ -54,6 +55,7 @@ function AuthorizedEndpointDetailPage({
   const endpoint = useEndpoint(endpointId);
   const impact = useEndpointImpact(endpointId);
   const data = endpoint.data;
+  const canSeeFlows = useAuth().hasPermission("systems.flows.read");
   const columns = useMemo(
     () => ({
       dataImpact: buildDataImpactColumns(),
@@ -86,6 +88,15 @@ function AuthorizedEndpointDetailPage({
                 >
                   <Button variant="primary">Probar endpoint</Button>
                 </Link>
+                {canSeeFlows && data.endpoint.handlerName ? (
+                  // Enlace cruzado al mapa de rutas, sólo con su permiso: a los demás les llevaría a
+                  // «acceso restringido». Se busca por el método del controlador, que los dos guardan igual.
+                  <Link
+                    href={`/internal/flows?q=${encodeURIComponent(data.endpoint.handlerName)}`}
+                  >
+                    <Button>Ver en el mapa de rutas</Button>
+                  </Link>
+                ) : null}
                 <MethodBadge method={data.endpoint.method} />
                 <RiskBadge value={data.endpoint.riskLevel} />
                 <ReviewStatusBadge value={data.endpoint.reviewStatus} />

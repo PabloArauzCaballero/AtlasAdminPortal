@@ -23,12 +23,12 @@ describe("resolveExplanation · rutas desconocidas", () => {
 
 describe("resolveExplanation · gana el prefijo más largo", () => {
   it("una vista más específica gana a la vista general del módulo", () => {
-    // `/internal/systems/tools/health` matchea tanto `/internal/systems/tools`
-    // como `/internal/systems/tools/health`: debe ganar la segunda.
-    const resolved = resolveExplanation("/internal/systems/tools/health");
+    // `/internal/flows/review` matchea tanto `/internal/flows` como
+    // `/internal/flows/review`: debe ganar la segunda.
+    const resolved = resolveExplanation("/internal/flows/review");
 
     expect(resolved?.module.module).toBe("Systems Ops");
-    expect(resolved?.view?.systems).toContain("Estado vivo por herramienta");
+    expect(resolved?.view?.systems).toContain("Los flujos de riesgo alto");
   });
 
   it("un módulo con prefijo más largo gana a otro módulo que también matchea", () => {
@@ -173,11 +173,15 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
 
   /**
    * Una ruta vieja conservada tras fusionar pantallas sólo llama a `redirect()`: no pinta nada, así
-   * que no es una pantalla que necesite explicación (la tiene su destino).
+   * que no es una pantalla que necesite explicación (la tiene su destino). Vale cualquiera de las dos
+   * formas en que se escriben: `redirect(` al inicio de línea sin `return (<`, o `redirect(` sin JSX.
    */
   function esRedireccion(archivo: string): boolean {
     const fuente = readFileSync(archivo, "utf8");
-    return /^\s*redirect\(/m.test(fuente) && !/return\s*\(?\s*</.test(fuente);
+    const formaA =
+      /^\s*redirect\(/m.test(fuente) && !/return\s*\(?\s*</.test(fuente);
+    const formaB = /\bredirect\(/.test(fuente) && !/<[A-Za-z]/.test(fuente);
+    return formaA || formaB;
   }
 
   function rutasDelPortal(dir: string, base: string): string[] {
@@ -245,20 +249,17 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
 });
 
 describe("resolveExplanation · segmentos dinámicos", () => {
-  it("la ficha de un proceso y sus casos tienen texto propio aunque el código cambie", () => {
+  it("la ficha de un proceso tiene texto propio aunque el código cambie, y explica sus casos", () => {
     const lista = resolveExplanation("/internal/procesos");
     const ficha = resolveExplanation(
       "/internal/procesos/account_signup_to_login",
     );
-    const casos = resolveExplanation(
-      "/internal/procesos/account_signup_to_login/instancias",
-    );
 
     expect(lista?.module.module).toBe("Procesos");
     expect(ficha?.module.module).toBe("Procesos");
-    expect(casos?.module.module).toBe("Procesos");
-    expect(new Set([lista?.view, ficha?.view, casos?.view]).size).toBe(3);
-    expect(casos?.view?.business).toContain("casos");
+    expect(new Set([lista?.view, ficha?.view]).size).toBe(2);
+    // Los casos son una pestaña de la ficha desde la fusión de «Procesos ×3».
+    expect(ficha?.view?.business).toContain("casos");
   });
 
   it("un corchete sólo cubre un segmento que existe", () => {

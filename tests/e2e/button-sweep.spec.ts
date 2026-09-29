@@ -22,7 +22,8 @@ const DESTRUCTIVE =
 
 const ROUTES = [
   "/internal",
-  "/internal/systems/dashboard",
+  "/internal/procesos",
+  "/internal/flows",
   "/internal/systems/endpoints",
   "/internal/systems/tools",
   "/internal/systems/network-health",

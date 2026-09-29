@@ -42,6 +42,12 @@ export type PendingWorkResponse = {
   consumer: { lastRunAt: string | null; running: boolean };
   diagnosis: PendingWorkDiagnosis;
   flowsThatEnqueue: number;
+  /**
+   * El informe enseña como mucho `limit` rutas (las de pendiente más antiguo primero). Opcionales:
+   * un servidor anterior al 2026-09-29 no los manda y no se puede afirmar ni negar el corte.
+   */
+  truncated?: boolean;
+  limit?: number;
   pending: number;
   unattributedPending: number;
   pendingWithoutTenant: number;

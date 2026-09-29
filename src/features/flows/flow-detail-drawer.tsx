@@ -13,6 +13,7 @@ import { CopyButton } from "@/shared/components/ui/copy-button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
+import { useAuth } from "@/shared/auth/auth-context";
 import { useFlow } from "./hooks";
 import type { FlowDetail } from "./types";
 
@@ -113,6 +114,7 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
           </Link>
         </span>
       </Row>
+      <EndpointLink handler={flow.handler} />
       <Row label="Identidad">
         <span className="font-mono text-xs">{flow.id}</span> ·{" "}
         <span className="font-mono text-xs">{flow.slug}</span>
@@ -245,5 +247,25 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
         )}
       </Row>
     </dl>
+  );
+}
+
+/**
+ * Enlace cruzado a la ficha del catálogo de endpoints: los dos catálogos describen las mismas
+ * rutas desde lados distintos. Se busca por el método del controlador, que los dos guardan igual, y
+ * sólo se enseña a quien puede abrir Endpoints (`systems.endpoints.read`).
+ */
+function EndpointLink({ handler }: Readonly<{ handler: string }>) {
+  const { hasPermission } = useAuth();
+  if (!handler || !hasPermission("systems.endpoints.read")) return null;
+  return (
+    <Row label="Catálogo">
+      <Link
+        className="text-xs text-atlas-accent underline"
+        href={`/internal/systems/endpoints?q=${encodeURIComponent(handler)}`}
+      >
+        Ver en el catálogo de endpoints
+      </Link>
+    </Row>
   );
 }

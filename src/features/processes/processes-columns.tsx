@@ -113,6 +113,11 @@ export function buildProcessColumns(): ColumnDef<ProcessListItem>[] {
       ),
     },
     {
+      id: "flowStats",
+      header: "Operaciones",
+      cell: ({ row }) => <FlowStatsCell item={row.original} />,
+    },
+    {
       id: "documentation",
       header: "Documentación",
       cell: ({ row }) => <DocumentationCell item={row.original} />,
@@ -137,7 +142,7 @@ export function buildProcessColumns(): ColumnDef<ProcessListItem>[] {
           {row.original.hasInstances ? (
             <Link
               className="text-xs text-atlas-accent underline"
-              href={`/internal/procesos/${row.original.code}/instancias`}
+              href={`/internal/procesos/${row.original.code}?tab=casos`}
             >
               Casos en curso
             </Link>
@@ -146,4 +151,23 @@ export function buildProcessColumns(): ColumnDef<ProcessListItem>[] {
       ),
     },
   ];
+}
+
+/**
+ * Críticos y verificados de cada proceso, del servidor (`flowStats`). Es lo que antes sólo enseñaba
+ * «Procesos de negocio». Sin el dato (servidor anterior) se dice «—», no un cero.
+ */
+function FlowStatsCell({ item }: Readonly<{ item: ProcessListItem }>) {
+  const stats = item.flowStats;
+  if (!stats) return <span className="text-atlas-muted">—</span>;
+  return (
+    <span className="flex flex-wrap gap-1 text-xs">
+      {stats.critical ? (
+        <Badge tone="critical">{`${stats.critical} críticos`}</Badge>
+      ) : null}
+      <Badge tone={stats.verified ? "success" : "muted"}>
+        {`${stats.verified} verificados`}
+      </Badge>
+    </span>
+  );
 }

@@ -210,6 +210,15 @@ function AuthorizedActiveArtifactsPage() {
         </div>
       ) : null}
 
+      {report?.status === "OK" && report.truncated ? (
+        <p
+          role="status"
+          className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+        >
+          {`Lista incompleta: el motor tiene ${report.deploymentsTotal ?? "más"} despliegues activos y sólo se leen los primeros 100 (su tope por página). Los filtros de abajo sólo buscan en lo que llegó.`}
+        </p>
+      ) : null}
+
       {report && report.status === "OK" ? (
         <p className="animate-fade-in text-xs text-atlas-muted">
           {formatDateTime(report.generatedAt)} · {items.length} despliegue(s)

@@ -29,6 +29,7 @@ export function makeItem(
       syncedAt: "2026-09-26T10:00:00.000Z",
     },
     wiring: { wired: 2, unwired: 0, unknown: 0, personSteps: 2 },
+    flowStats: { linked: 2, critical: 0, verified: 2 },
     hasInstances: true,
     ...overrides,
   };
@@ -107,6 +108,7 @@ export function makeDetail(
     ],
     documentation: makeItem().documentation,
     wiring: { wired: 1, unwired: 1, unknown: 0, personSteps: 2 },
+    flowStats: { linked: 3, critical: 2, verified: 1 },
     codeHash: "aaaaaaaaaaaaaaaa",
     databaseHash: "aaaaaaaaaaaaaaaa",
     ...overrides,

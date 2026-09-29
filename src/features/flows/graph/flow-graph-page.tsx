@@ -64,7 +64,7 @@ function AuthorizedFlowGraphPage() {
     <>
       <PageHeader
         icon={Waypoints}
-        eyebrow="Systems Ops · Flujos"
+        eyebrow="Systems Ops · Mapa de rutas"
         title={title}
         description={
           flowId

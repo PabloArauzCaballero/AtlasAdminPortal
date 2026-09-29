@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { FileText, RefreshCw, Table2, Terminal, Upload, X } from "lucide-react";
 import { useLogFileUpload } from "./use-log-file-upload";
+import { Pagination } from "@/shared/components/data-table/pagination";
 import { LogTerminal } from "./log-terminal";
 import { parseBackendLogBlock } from "./backend-log-line";
 import { useMongoLogs } from "@/features/systems/hooks";
@@ -194,12 +195,17 @@ export function MongoLogsSection() {
       ) : null}
 
       {logs.data && view === "terminal" ? (
-        <LogTerminal
-          title="atlas-backend — Archivo.log › mongo"
-          lines={terminalLines}
-          live={live}
-          emptyText="Sin logs sincronizados en MongoDB para el filtro aplicado."
-        />
+        <>
+          <LogTerminal
+            title="atlas-backend — Archivo.log › mongo"
+            lines={terminalLines}
+            live={live}
+            emptyText="Sin logs sincronizados en MongoDB para el filtro aplicado."
+          />
+          {/* La vista terminal enseña la misma página que la tabla: sin esto, lo que pasaba de la
+              primera página sólo se alcanzaba cambiando a «Tabla». */}
+          <Pagination meta={logs.data.meta} onPageChange={setPage} />
+        </>
       ) : null}
       {logs.data && view === "table" ? (
         <DataTable
