@@ -35,7 +35,7 @@ export function JourneysTab({
         <CardHeader>
           <SectionHeader
             title="Recorridos precargados"
-            description="Cada tarjeta es un recorrido completo del flujo. Ejecútalo con las personas que quieras: cada una tiene su cuenta y su sesión, y la corrida sigue aunque cierres la pestaña."
+            description="Cada fila es un recorrido completo del flujo. Ejecútalo con las personas que quieras: cada una tiene su cuenta y su sesión, y la corrida sigue aunque cierres la pestaña."
             className="mb-0"
           />
         </CardHeader>
