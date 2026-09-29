@@ -1,5 +1,6 @@
 import { apiRequest } from "@/shared/api/client";
 import type {
+  ContractTemplateQuery,
   PartnerContractDefault,
   PartnerContractTemplateList,
   PublishContractTemplate,
@@ -7,9 +8,19 @@ import type {
 
 const BASE = "/operations/partner-contract-templates";
 
-/** Todas las versiones, vigentes y archivadas: las archivadas son la prueba de qué regía cada día. */
-export function listContractTemplates() {
-  return apiRequest<PartnerContractTemplateList>(BASE);
+/**
+ * Las versiones, vigentes y archivadas: las archivadas son la prueba de qué regía cada día. Pagina,
+ * busca por código y nombre, y filtra por estado EN EL SERVIDOR.
+ */
+export function listContractTemplates(query: ContractTemplateQuery = {}) {
+  return apiRequest<PartnerContractTemplateList>(BASE, {
+    query: {
+      page: query.page,
+      limit: query.limit,
+      q: query.q?.trim() || undefined,
+      status: query.status || undefined,
+    },
+  });
 }
 
 /** Responde `{ template: null }` cuando el inquilino no publicó ninguno todavía. No es un error. */

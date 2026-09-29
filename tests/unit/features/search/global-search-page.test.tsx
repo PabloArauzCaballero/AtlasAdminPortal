@@ -1,5 +1,5 @@
 import { HttpResponse, http } from "msw";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -110,6 +110,45 @@ describe("GlobalSearchPage", () => {
         { scroll: false },
       ),
     );
+  });
+
+  it("los resultados son una tabla con cabeceras y un enlace por fila, no tarjetas sueltas", async () => {
+    renderWithProviders(<GlobalSearchPage />);
+    const tabla = await screen.findByRole("table");
+    for (const cabecera of [
+      "Tipo",
+      "Resultado",
+      "Detalle",
+      "Estado",
+      "Abrir",
+    ]) {
+      expect(
+        within(tabla).getByRole("columnheader", { name: cabecera }),
+      ).toBeInTheDocument();
+    }
+    const fila = within(tabla).getByText("Regla de la página 1").closest("tr");
+    expect(
+      within(fila as HTMLElement).getByRole("link", { name: "Abrir" }),
+    ).toHaveAttribute("href", "/internal/data-quality/rules/1");
+  });
+
+  it("una pestaña sin resultados dice que no hay, dentro de la tabla", async () => {
+    server.use(
+      http.get(`${API_BASE}/internal/search`, () =>
+        HttpResponse.json({
+          data: {
+            items: [],
+            totals: { endpoints: 0, tables: 0, qualityRules: 0, reports: 0 },
+            meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+          },
+        }),
+      ),
+    );
+    renderWithProviders(<GlobalSearchPage />);
+    expect(
+      await screen.findByText("Sin resultados de este tipo"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("no promete buscar clientes", async () => {

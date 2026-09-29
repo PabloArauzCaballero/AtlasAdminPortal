@@ -318,7 +318,7 @@ const VISTAS = [
     nombre: "consentimientos",
     ruta: "/internal/settings/consent-documents",
     lista: "consent-documents-list",
-    tarjeta: '[data-testid="consent-document-credit_bureau_query"]',
+    tarjeta: '[data-testid="consent-documents-list"] .bg-white',
     titulo: /Documentos de consentimiento/,
     editar: "edit-credit_bureau_query",
     campo: "body-credit_bureau_query",
@@ -328,7 +328,8 @@ const VISTAS = [
     nombre: "contenido-de-la-app",
     ruta: "/internal/settings/app-content",
     lista: "app-content-list",
-    tarjeta: '[data-testid="app-content-como_se_calcula_mi_linea"]',
+    // Ahora es una tabla: el fondo se mide en el contenedor blanco de la tabla.
+    tarjeta: '[data-testid="app-content-list"] .bg-white',
     titulo: /Contenido de la app/,
     editar: "edit-como_se_calcula_mi_linea",
     campo: "body-como_se_calcula_mi_linea",

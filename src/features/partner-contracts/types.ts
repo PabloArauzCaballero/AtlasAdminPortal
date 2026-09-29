@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
 /**
  * El contrato bajo el que se afilia un comercio.
  *
@@ -19,7 +21,27 @@ export type PartnerContractTemplate = {
   createdAt: string | null;
 };
 
-export type PartnerContractTemplateList = { items: PartnerContractTemplate[] };
+/** Cuántas versiones hay en todo el inquilino, sin filtros, y cuál es la vigente por defecto. */
+export type PartnerContractSummary = {
+  total: number;
+  active: number;
+  archived: number;
+  /** La versión vigente por defecto, sin su texto; `null` si nunca se publicó una. */
+  current: Omit<PartnerContractTemplate, "body"> | null;
+};
+
+export type PartnerContractTemplateList = {
+  items: PartnerContractTemplate[];
+  meta?: PaginationMeta;
+  summary?: PartnerContractSummary;
+};
+
+export type ContractTemplateQuery = {
+  page?: number;
+  limit?: number;
+  q?: string;
+  status?: string;
+};
 export type PartnerContractDefault = {
   template: PartnerContractTemplate | null;
 };

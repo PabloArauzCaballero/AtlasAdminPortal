@@ -1,9 +1,10 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "@/shared/api/client";
 import { ConsentDocumentsPage } from "@/features/consent-documents/consent-documents-page";
 import type { ConsentDocument } from "@/features/consent-documents/types";
 import { renderWithProviders } from "../../helpers/render-with-providers";
+import { elegirOpcion } from "../shared/option-select-helpers";
 
 vi.mock("@/shared/api/client", () => ({ apiRequest: vi.fn() }));
 
@@ -30,6 +31,23 @@ const document: ConsentDocument = {
   effectiveUntil: null,
   status: "published",
 };
+
+function listado(
+  items: ConsentDocument[],
+  total = items.length,
+  summary = { total, published: total, draft: 0, retired: 0 },
+) {
+  return {
+    items,
+    meta: {
+      page: 1,
+      limit: 20,
+      total,
+      totalPages: Math.ceil(total / 20) || 1,
+    },
+    summary,
+  };
+}
 
 async function openEditor() {
   await screen.findByText("Política de privacidad");
@@ -120,5 +138,84 @@ describe("ConsentDocumentsPage", () => {
       expect(screen.getByText("Política actualizada")).toBeInTheDocument(),
     );
     expect(screen.getByTestId("edit-privacy_policy")).toBeInTheDocument();
+  });
+
+  it("los documentos son una tabla con cabeceras y Editar texto en la columna de acciones", async () => {
+    request.mockResolvedValue(listado([document]));
+    renderWithProviders(<ConsentDocumentsPage />);
+
+    const tabla = await screen.findByRole("table");
+    for (const cabecera of [
+      "Documento",
+      "Versión",
+      "Idioma",
+      "Estado",
+      "Vigencia",
+      "Resumen",
+      "Texto",
+      "Acciones",
+    ]) {
+      expect(
+        within(tabla).getByRole("columnheader", { name: cabecera }),
+      ).toBeInTheDocument();
+    }
+    const fila = within(tabla)
+      .getByText("Política de privacidad")
+      .closest("tr");
+    expect(
+      within(fila as HTMLElement).getByTestId("edit-privacy_policy"),
+    ).toBeInTheDocument();
+    expect(within(fila as HTMLElement).getByText("v1")).toBeInTheDocument();
+  });
+
+  it("el buscador, el estado y la página viajan al servidor y las cifras salen del resumen", async () => {
+    const consultas: Array<Record<string, unknown>> = [];
+    request.mockImplementation((_path, options) => {
+      consultas.push((options?.query ?? {}) as Record<string, unknown>);
+      return Promise.resolve(
+        listado([document], 45, {
+          total: 45,
+          published: 30,
+          draft: 5,
+          retired: 10,
+        }),
+      );
+    });
+    renderWithProviders(<ConsentDocumentsPage />);
+    await screen.findByRole("table");
+    expect(screen.getByText("30")).toBeInTheDocument();
+    expect(screen.getByText("Retirados")).toBeInTheDocument();
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /código, título o resumen/i }),
+      { target: { value: "priva" } },
+    );
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({ q: "priva", page: 1 }),
+    );
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Estado/ }),
+      "retired",
+    );
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({ status: "retired", q: "priva" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({ page: 2, status: "retired" }),
+    );
+  });
+
+  it("sin coincidencias dice que nada coincide, distinto de «no hay documentos»", async () => {
+    request.mockResolvedValue(listado([]));
+    renderWithProviders(<ConsentDocumentsPage />);
+    await screen.findByText("Todavía no hay documentos publicados");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /código, título o resumen/i }),
+      { target: { value: "zzz" } },
+    );
+    expect(
+      await screen.findByText("Ningún documento coincide con la búsqueda."),
+    ).toBeInTheDocument();
   });
 });
