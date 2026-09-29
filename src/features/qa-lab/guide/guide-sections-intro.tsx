@@ -1,9 +1,8 @@
 "use client";
 
 import { FlaskConical, Gauge, KeyRound, Radar, Workflow } from "lucide-react";
-import { Badge } from "@/shared/components/ui/badges";
 import { FeatureCard, Note, Section } from "./guide-primitives";
-import { GuideScenarioMatrix } from "./guide-scenario-matrix";
+import { ScenarioTable, TargetsTable } from "./guide-tables";
 
 export function Panorama() {
   return (
@@ -72,55 +71,7 @@ export function Antes() {
         <strong>previsualización</strong> o vas en serio.
       </p>
 
-      <div className="atlas-table-scroll rounded-xl border border-atlas-border">
-        <table className="w-full min-w-[520px] border-collapse text-sm">
-          <thead>
-            <tr className="bg-atlas-soft text-left font-mono text-[0.6875rem] uppercase tracking-[0.06em] text-atlas-muted">
-              <th className="px-4 py-2.5">Ambiente</th>
-              <th className="px-4 py-2.5">Qué permite</th>
-              <th className="px-4 py-2.5">Base URL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TargetRow
-              badge={<Badge tone="success">Este mismo portal</Badge>}
-              perm={
-                <>
-                  La API del propio portal (lo correcto en un portal
-                  desplegado). Un cambio real exige teclear{" "}
-                  <code className="font-mono text-atlas-accent">EJECUTAR</code>.
-                </>
-              }
-              url="NEXT_PUBLIC_API_BASE_URL (p. ej. /api/v1 del portal)"
-            />
-            <TargetRow
-              badge={<Badge tone="success">LOCAL</Badge>}
-              perm="Tu máquina: todo, incluido un cambio real sin fricción extra. Sólo sirve si abriste el portal en tu ordenador."
-              url="localhost:3005/api/v1"
-            />
-            <TargetRow
-              badge={<Badge tone="info">STAGING</Badge>}
-              perm={
-                <>
-                  Funcional y stress reales; mutación exige teclear{" "}
-                  <code className="font-mono text-atlas-accent">EJECUTAR</code>.
-                </>
-              }
-              url="NEXT_PUBLIC_STAGING_API_BASE_URL"
-            />
-            <TargetRow
-              badge={<Badge tone="critical">PRODUCTION_READONLY</Badge>}
-              perm={
-                <>
-                  Solo dry-run. Toda ejecución real y todo stress quedan{" "}
-                  <strong>bloqueados</strong>.
-                </>
-              }
-              url="NEXT_PUBLIC_PROD_READONLY_API_BASE_URL"
-            />
-          </tbody>
-        </table>
-      </div>
+      <TargetsTable />
       <p className="text-sm text-atlas-muted">
         También puedes fijar un <strong>host manual</strong> (validado como{" "}
         <code className="font-mono">http(s)://…</code>) o elegir una ruta base
@@ -159,20 +110,6 @@ export function Antes() {
   );
 }
 
-function TargetRow({
-  badge,
-  perm,
-  url,
-}: Readonly<{ badge: React.ReactNode; perm: React.ReactNode; url: string }>) {
-  return (
-    <tr className="border-t border-atlas-border align-top">
-      <td className="px-4 py-3">{badge}</td>
-      <td className="px-4 py-3 text-atlas-text">{perm}</td>
-      <td className="px-4 py-3 font-mono text-xs text-atlas-muted">{url}</td>
-    </tr>
-  );
-}
-
 export function Escenarios() {
   return (
     <Section
@@ -186,9 +123,9 @@ export function Escenarios() {
         <code className="font-mono">x-tenant-id</code> a mano: eliges un{" "}
         <strong>escenario</strong> y el lab aplica el patch de headers correcto.
         Sirve para probar el camino feliz y, sobre todo, los caminos de rechazo.
-        Haz clic en cada escenario para ver qué cambia.
+        La tabla enseña, por escenario, qué cabecera se cambia y qué se espera.
       </p>
-      <GuideScenarioMatrix />
+      <ScenarioTable />
 
       <h3 className="pt-2 text-base font-semibold text-atlas-text">
         El contrato de respuesta

@@ -3,10 +3,8 @@
 import { ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { engineUrl } from "@/shared/decision-engine/engine-links";
+import { ConsumerEndpointsTable } from "./consumer-endpoints-table";
 import type { DecisionArtifactBinding } from "./types";
-
-const API_DOCS =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1$/, "") ?? "";
 
 /**
  * Quién llama a esta decisión y en qué punto del recorrido ocurre.
@@ -33,24 +31,7 @@ export function DecisionConsumersSection({
           </p>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-3">
-            {(binding.consumerEndpoints ?? []).map((endpoint) => (
-              <li key={`${endpoint.method}-${endpoint.path}`}>
-                <a
-                  href={`${API_DOCS}/docs`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono text-xs text-atlas-accent hover:underline"
-                >
-                  {endpoint.method} {endpoint.path}
-                  <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                </a>
-                <p className="mt-0.5 text-xs text-atlas-muted">
-                  {endpoint.purpose}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <ConsumerEndpointsTable endpoints={binding.consumerEndpoints ?? []} />
         </CardContent>
       </Card>
 

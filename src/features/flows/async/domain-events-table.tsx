@@ -2,15 +2,56 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { DataTable } from "@/shared/components/data-table/data-table";
+import {
+  LocalListTable,
+  type LocalListFilter,
+} from "@/shared/components/data-table/local-list-table";
 import { Badge } from "@/shared/components/ui/badges";
 import { CONSUMER, fecha } from "./labels";
-import type { PendingWorkResponse, DomainEventRow } from "./types";
+import type {
+  DomainEventConsumer,
+  DomainEventRow,
+  PendingWorkResponse,
+} from "./types";
 
 /**
  * Qué eventos de dominio acaban en un aviso, probado por el vínculo real mensaje → evento y por la
  * entrega. Las cuatro cuentas van separadas a propósito: «tiene mensaje» no es «le llegó a alguien».
  */
+const FILTERS: LocalListFilter<DomainEventRow>[] = [
+  {
+    name: "consumer",
+    label: "Desenlace",
+    tooltip:
+      "Deja sólo los eventos con ese desenlace: avisan, generan mensajes que no salen, no están registrados…",
+    options: (Object.keys(CONSUMER) as DomainEventConsumer[]).map((value) => ({
+      value,
+      label: CONSUMER[value].label,
+      description: CONSUMER[value].hint,
+    })),
+    test: (row, value) => row.consumer === value,
+  },
+  {
+    name: "registered",
+    label: "Registro",
+    tooltip:
+      "Separa los eventos que están en el registro actual de eventos de los que no.",
+    options: [
+      {
+        value: "yes",
+        label: "Registrados",
+        description: "El código está en el registro de eventos actual.",
+      },
+      {
+        value: "no",
+        label: "No registrados",
+        description: "El código ya no está —o nunca estuvo— en el registro.",
+      },
+    ],
+    test: (row, value) => (value === "yes") === row.registered,
+  },
+];
+
 export function DomainEventsTable({
   domainEvents,
 }: Readonly<{
@@ -80,11 +121,16 @@ export function DomainEventsTable({
           ? " La consulta vino cortada: faltan códigos."
           : ""}
       </p>
-      <DataTable
-        data={domainEvents.rows}
+      <LocalListTable
+        rows={domainEvents.rows}
         columns={columns}
+        searchText={(row) => `${row.eventCode} ${row.aggregateTypes.join(" ")}`}
+        searchPlaceholder="Buscar por evento o agregado…"
+        searchTooltip="Recorre todos los códigos de evento de la ventana, que llegan enteros del servidor (la lista de arriba avisa si vino cortada): coincide con parte del código del evento o del tipo de agregado."
+        filters={FILTERS}
         emptyTitle="Sin eventos de dominio en la ventana"
         emptyDescription="Ningún flujo publicó eventos de dominio en estos días."
+        emptyFilteredTitle="Ningún evento coincide con la búsqueda."
       />
     </>
   );

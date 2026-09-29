@@ -1,21 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FileText } from "lucide-react";
-import { useConsentDocuments, useUpdateConsentDocument } from "./hooks";
+import { useConsentDocuments } from "./hooks";
+import { ConsentDocumentEditor } from "./consent-document-editor";
+import { buildConsentDocumentColumns } from "./consent-document-columns";
 import type { ConsentDocument } from "./types";
-import { Badge } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Field, Input, Textarea } from "@/shared/components/ui/input";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingSkeleton,
-} from "@/shared/components/ui/states";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { MetricCard } from "@/shared/components/layout/metric-card";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAuth } from "@/shared/auth/auth-context";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { formatNumber } from "@/shared/lib/format";
+
+const POR_PAGINA = 20;
+
+const ESTADO_OPTIONS = [
+  {
+    value: "published",
+    label: "Vigentes",
+    description: "Lo que el cliente acepta hoy.",
+  },
+  {
+    value: "draft",
+    label: "Borradores",
+    description: "Texto escrito que todavía no rige.",
+  },
+  {
+    value: "retired",
+    label: "Retirados",
+    description: "Versiones que ya no se ofrecen y se conservan como prueba.",
+  },
+];
 
 /**
  * El texto que el cliente acepta, editable sin desplegar.
@@ -33,8 +51,21 @@ import { isAtlasApiError } from "@/shared/api/errors";
  * pedirse la aceptación. El backend lo impone, y aquí ni siquiera se ofrecen esos campos.
  */
 export function ConsentDocumentsPage() {
-  const documents = useConsentDocuments();
-  const [editing, setEditing] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("");
+  const documents = useConsentDocuments({ page, limit: POR_PAGINA, q, status });
+  const [editing, setEditing] = useState<ConsentDocument | null>(null);
+  // Corregir un texto legal es `governance.policies.manage`; el backend lo exige. Sin él, el botón
+  // sólo llevaba a un «No pudimos guardar» sin explicación.
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission("governance.policies.manage");
+  const columns = useMemo(
+    () => buildConsentDocumentColumns(canEdit, setEditing),
+    [canEdit],
+  );
+  const hayFiltros = q.trim() !== "" || status !== "";
+  const summary = documents.data?.summary;
 
   return (
     <>
@@ -45,218 +76,99 @@ export function ConsentDocumentsPage() {
         description="Lo que el cliente acepta al registrarse. El texto se edita aquí y llega a la app sin desplegar nada."
       />
 
-      {documents.isLoading ? <LoadingSkeleton rows={5} /> : null}
+      {editing ? (
+        <div className="mb-4">
+          <ConsentDocumentEditor
+            key={editing.id}
+            document={editing}
+            onClose={() => setEditing(null)}
+          />
+        </div>
+      ) : null}
 
-      {documents.error ? (
-        <ErrorState
-          title="No pudimos cargar los documentos"
-          description={
-            isAtlasApiError(documents.error)
-              ? documents.error.message
-              : "Reintenta en unos segundos."
-          }
-          requestId={
-            isAtlasApiError(documents.error)
-              ? documents.error.requestId
-              : undefined
-          }
-          // Sin esto, el error decía «reintenta» y no había con qué: había que recargar la página.
-          onRetry={() => void documents.refetch()}
+      {summary ? (
+        <section className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <MetricCard label="Documentos" value={formatNumber(summary.total)} />
+          <MetricCard
+            label="Vigentes"
+            value={formatNumber(summary.published)}
+          />
+          <MetricCard label="Borradores" value={formatNumber(summary.draft)} />
+          <MetricCard label="Retirados" value={formatNumber(summary.retired)} />
+        </section>
+      ) : null}
+
+      <div className="space-y-4">
+        <FilterBar
+          search={q}
+          searchPlaceholder="Buscar por código, título o resumen…"
+          searchTooltip="Busca en el servidor, en todos los documentos: coincide con parte del código, del título o del resumen."
+          filters={[
+            {
+              name: "status",
+              label: "Estado",
+              tooltip:
+                "Vigente es lo que el cliente acepta hoy; retirado es una versión anterior que se conserva como prueba.",
+              value: status,
+              options: ESTADO_OPTIONS,
+            },
+          ]}
+          onSearchChange={(value) => {
+            setQ(value);
+            setPage(1);
+          }}
+          onFilterChange={(name, value) => {
+            if (name === "status") setStatus(value);
+            setPage(1);
+          }}
+          onClear={() => {
+            setQ("");
+            setStatus("");
+            setPage(1);
+          }}
         />
-      ) : null}
 
-      {documents.data ? (
-        <div
-          className="flex flex-col gap-4"
-          data-testid="consent-documents-list"
-        >
-          {documents.data.items.map((document) => (
-            <DocumentCard
-              key={document.id}
-              document={document}
-              editing={editing === document.id}
-              onEdit={() => setEditing(document.id)}
-              onClose={() => setEditing(null)}
+        {documents.isLoading ? <LoadingSkeleton rows={5} /> : null}
+
+        {documents.error ? (
+          <ErrorState
+            title="No pudimos cargar los documentos"
+            description={
+              isAtlasApiError(documents.error)
+                ? documents.error.message
+                : "Reintenta en unos segundos."
+            }
+            requestId={
+              isAtlasApiError(documents.error)
+                ? documents.error.requestId
+                : undefined
+            }
+            // Sin esto, el error decía «reintenta» y no había con qué: había que recargar la página.
+            onRetry={() => void documents.refetch()}
+          />
+        ) : null}
+
+        {documents.data ? (
+          <div data-testid="consent-documents-list">
+            <DataTable
+              data={documents.data.items}
+              columns={columns}
+              meta={documents.data.meta}
+              onPageChange={setPage}
+              emptyTitle={
+                hayFiltros
+                  ? "Ningún documento coincide con la búsqueda."
+                  : "Todavía no hay documentos publicados"
+              }
+              emptyDescription={
+                hayFiltros
+                  ? "Prueba con otro texto o quita el filtro de estado."
+                  : "Cuando se publique un consentimiento aparecerá aquí para poder corregir su texto."
+              }
             />
-          ))}
-          {documents.data.items.length === 0 ? (
-            <EmptyState
-              title="Todavía no hay documentos publicados"
-              description="Cuando se publique un consentimiento aparecerá aquí para poder corregir su texto."
-            />
-          ) : null}
-        </div>
-      ) : null}
+          </div>
+        ) : null}
+      </div>
     </>
-  );
-}
-
-/**
- * El estado se pinta con el tono del sistema, no con un color inventado por la pantalla.
- *
- * `published` es lo que el cliente está aceptando ahora mismo y por eso va en verde; `retired`
- * describe algo que ya no se ofrece y se apaga en gris; cualquier otro estado —un borrador— avisa
- * en ámbar de que hay texto escrito que todavía no rige.
- */
-/** El estado en palabras: «published» o «retired» es el código de la base, no lo que se lee. */
-export function statusLabel(status: string | null): string {
-  if (status === "published") return "Vigente";
-  if (status === "retired") return "Retirado";
-  if (status === "draft") return "Borrador";
-  return "Sin estado";
-}
-
-function statusTone(status: string | null): "success" | "muted" | "warning" {
-  if (status === "published") return "success";
-  if (status === "retired") return "muted";
-  return "warning";
-}
-
-function DocumentCard({
-  document,
-  editing,
-  onEdit,
-  onClose,
-}: Readonly<{
-  document: ConsentDocument;
-  editing: boolean;
-  onEdit: () => void;
-  onClose: () => void;
-}>) {
-  const mutation = useUpdateConsentDocument();
-  // Corregir un texto legal es `governance.policies.manage`; el backend lo exige. Sin él, el botón
-  // sólo llevaba a un «No pudimos guardar» sin explicación.
-  const { hasPermission } = useAuth();
-  const canEdit = hasPermission("governance.policies.manage");
-  const [title, setTitle] = useState(document.title ?? "");
-  const [summary, setSummary] = useState(document.summary ?? "");
-  const [body, setBody] = useState(document.bodyMarkdown ?? "");
-
-  const save = () => {
-    mutation.mutate(
-      {
-        id: document.id,
-        body: { title, summary, bodyMarkdown: body },
-      },
-      { onSuccess: onClose },
-    );
-  };
-
-  return (
-    <Card testId={`consent-document-${document.documentCode}`}>
-      <CardContent>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold text-atlas-text">
-              {document.title ?? document.documentCode}
-            </h3>
-            <p className="mt-1 font-mono text-xs text-atlas-muted">
-              {document.documentCode} · versión {document.versionCode} ·{" "}
-              {document.language}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge tone={statusTone(document.status)}>
-              {statusLabel(document.status)}
-            </Badge>
-            {!editing && canEdit ? (
-              <Button
-                variant="secondary"
-                onClick={onEdit}
-                data-testid={`edit-${document.documentCode}`}
-              >
-                Editar texto
-              </Button>
-            ) : null}
-          </div>
-        </div>
-
-        {!editing ? (
-          <>
-            {document.summary ? (
-              <p className="mt-3 text-sm leading-6 text-atlas-text">
-                {document.summary}
-              </p>
-            ) : null}
-            {/*
-              El cuerpo se muestra recortado. Quien administra necesita reconocer el documento de un
-              vistazo; leerlo entero es lo que hace el modo edición, donde además se puede corregir.
-
-              El recorte se DEGRADA en vez de cortarse a hachazos: el degradado sobre el borde
-              inferior dice que el texto sigue. Con `overflow-hidden` a secas la última línea
-              quedaba partida por la mitad y parecía un fallo de renderizado.
-            */}
-            <div className="relative mt-3">
-              <pre className="max-h-32 overflow-hidden whitespace-pre-wrap rounded-lg border border-atlas-border bg-atlas-soft p-3 font-mono text-xs leading-5 text-atlas-muted">
-                {document.bodyMarkdown ?? "(sin texto)"}
-              </pre>
-              <div className="pointer-events-none absolute inset-x-px bottom-px h-10 rounded-b-lg bg-gradient-to-t from-atlas-soft to-transparent" />
-            </div>
-          </>
-        ) : (
-          <div className="mt-4 flex flex-col gap-3">
-            <Field
-              tooltip="Nombre del documento legal tal como lo ve el cliente al aceptarlo."
-              label="Título"
-            >
-              <Input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                data-testid={`title-${document.documentCode}`}
-              />
-            </Field>
-
-            <Field
-              tooltip="Frase breve que explica al cliente de qué trata el documento."
-              label="Resumen"
-            >
-              <Input
-                value={summary}
-                onChange={(event) => setSummary(event.target.value)}
-                data-testid={`summary-${document.documentCode}`}
-              />
-            </Field>
-
-            <Field
-              tooltip="Texto íntegro que acepta el cliente; aquí sólo se corrige la redacción."
-              label="Texto del documento"
-              hint="Se corrige la redacción, nunca el fondo: un cambio de fondo se publica como versión nueva."
-            >
-              <Textarea
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                rows={12}
-                data-testid={`body-${document.documentCode}`}
-                className="font-mono text-xs leading-5"
-              />
-            </Field>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="primary"
-                onClick={save}
-                isLoading={mutation.isPending}
-                loadingText="Guardando…"
-                disabled={title.trim().length < 3}
-                data-testid={`save-${document.documentCode}`}
-              >
-                Guardar
-              </Button>
-              <Button variant="ghost" onClick={onClose}>
-                Cancelar
-              </Button>
-            </div>
-
-            {mutation.error ? (
-              <p className="text-xs font-medium text-red-600">
-                {isAtlasApiError(mutation.error)
-                  ? mutation.error.message
-                  : "No pudimos guardar. Revisa el texto e intenta otra vez."}
-              </p>
-            ) : null}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }

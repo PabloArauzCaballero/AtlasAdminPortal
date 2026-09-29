@@ -69,12 +69,12 @@ function toneOf(badge: HTMLElement): string {
  *
  * El veredicto global y el de cada paso usan los mismos literales ("OK"), y el
  * `JsonViewer` del final repite el resultado crudo, así que hay que separar el
- * badge de cabecera (fuera de la lista) de los de cada `<li>`.
+ * badge de cabecera (fuera de la tabla) de los de cada fila.
  */
 function toneOfVerdict(text: string): string {
   const badges = screen
     .getAllByText(text)
-    .filter((element) => isBadge(element) && !element.closest("li"));
+    .filter((element) => isBadge(element) && !element.closest("table"));
   if (badges.length !== 1) {
     throw new Error(
       `Se esperaba un único veredicto "${text}", hay ${badges.length}.`,
@@ -84,7 +84,7 @@ function toneOfVerdict(text: string): string {
 }
 
 function toneOfStepBadge(text: string, stepIndex = 0): string {
-  const badges = within(screen.getAllByRole("listitem")[stepIndex])
+  const badges = within(screen.getAllByRole("row")[stepIndex + 1])
     .getAllByText(text)
     .filter(isBadge);
   return toneOf(badges[0]);
@@ -126,6 +126,27 @@ describe("JourneyStepResults · veredicto global", () => {
   });
 });
 
+describe("JourneyStepResults · tabla de pasos", () => {
+  it("es una tabla con cabeceras, no una lista de tarjetas", () => {
+    render(<JourneyStepResults result={runResult([stepResult()])} />);
+
+    expect(
+      within(screen.getByRole("table"))
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["N.º", "Paso", "Resultado", "HTTP", "Latencia", "Detalle"]);
+    expect(screen.queryByRole("listitem")).toBeNull();
+  });
+
+  it("un journey sin pasos dice que no ejecutó ninguno", () => {
+    render(<JourneyStepResults result={runResult([])} />);
+
+    expect(
+      screen.getByText("El journey no ejecutó ningún paso."),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("JourneyStepResults · por paso", () => {
   it("numera los pasos en el orden de ejecución", () => {
     render(
@@ -137,8 +158,11 @@ describe("JourneyStepResults · por paso", () => {
       />,
     );
 
-    expect(screen.getByText("1. Login")).toBeInTheDocument();
-    expect(screen.getByText("2. Onboarding")).toBeInTheDocument();
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(within(rows[0]).getByText("1")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("Login")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("2")).toBeInTheDocument();
+    expect(within(rows[1]).getByText("Onboarding")).toBeInTheDocument();
   });
 
   it("un paso fallido se marca ERROR en rojo y muestra el motivo", () => {

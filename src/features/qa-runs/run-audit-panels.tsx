@@ -9,8 +9,7 @@ import {
   ErrorState,
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
-import { formatDateTime } from "@/shared/lib/format";
-import { describeRunEvent } from "./run-events";
+import { RunEventsTable } from "./run-events-table";
 import { useQaRunEvents, useQaRunEvidence } from "./run-hooks";
 import { errorProps, verdictView } from "./run-status";
 import type { QaRunStatus } from "./types";
@@ -98,27 +97,7 @@ function RunEventsList({
         description="La corrida aún no registró ningún hito. Si está en cola, aparecerán al arrancar."
       />
     );
-  return (
-    <ol className="space-y-1 text-sm" aria-live={live ? "polite" : undefined}>
-      {items.map((event) => {
-        const view = describeRunEvent(event);
-        return (
-          <li
-            key={event.sequence}
-            className="flex flex-wrap items-baseline gap-x-2 border-b border-atlas-border/60 py-1 last:border-0"
-          >
-            <span className="font-mono text-xs tabular-nums text-atlas-muted">
-              #{event.sequence} · {formatDateTime(event.createdAt)}
-            </span>
-            <span className="font-medium text-atlas-text">{view.label}</span>
-            {view.detail ? (
-              <span className="text-xs text-atlas-muted">{view.detail}</span>
-            ) : null}
-          </li>
-        );
-      })}
-    </ol>
-  );
+  return <RunEventsTable events={items} live={live} />;
 }
 
 /**

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "@/shared/api/client";
 import { AtlasApiError } from "@/shared/api/errors";
 import { renderWithProviders } from "../../helpers/render-with-providers";
+import { elegirOpcion } from "../shared/option-select-helpers";
 
 const mockUseAuth = vi.fn();
 vi.mock("@/shared/auth/auth-context", () => ({
@@ -16,6 +17,45 @@ const { NotificationPoliciesPage } =
   await import("@/features/notification-policies/notification-policies-page");
 
 const request = vi.mocked(apiRequest);
+
+function pieza(contentKey: string, title: string) {
+  return {
+    contentId: contentKey,
+    surface: "faq",
+    contentKey,
+    locale: "es-BO",
+    title,
+    subtitle: null,
+    bodyMd: null,
+    bullets: [],
+    metadata: {},
+    actionKind: null,
+    actionLabel: null,
+    actionValue: null,
+    resolvedAction: null,
+    displayOrder: 1,
+    isActive: true,
+    publishedAt: null,
+    updatedAt: null,
+  };
+}
+
+function listado(
+  items: unknown[],
+  total: number,
+  summary = { total, visible: total, hidden: 0 },
+) {
+  return {
+    items,
+    meta: {
+      page: 1,
+      limit: 20,
+      total,
+      totalPages: Math.ceil(total / 20) || 1,
+    },
+    summary,
+  };
+}
 
 function asManager() {
   mockUseAuth.mockReturnValue({
@@ -170,6 +210,139 @@ describe("Contenido de la app", () => {
       expect(await screen.findByText(donde)).toBeInTheDocument();
       expect(screen.queryByTestId("surface-not-read")).not.toBeInTheDocument();
     }
+  });
+
+  it("la colección es una tabla con cabeceras y Editar en la columna de acciones", async () => {
+    asManager();
+    request.mockResolvedValue(listado([pieza("faq.uno", "Una pregunta")], 1));
+    renderWithProviders(<AppContentPage />);
+
+    const tabla = await screen.findByRole("table");
+    for (const cabecera of [
+      "Pieza",
+      "Orden",
+      "Texto",
+      "Botón",
+      "Estado",
+      "Acciones",
+    ]) {
+      expect(
+        within(tabla).getByRole("columnheader", { name: cabecera }),
+      ).toBeInTheDocument();
+    }
+    const fila = within(tabla).getByText("Una pregunta").closest("tr");
+    expect(
+      within(fila as HTMLElement).getByTestId("edit-faq.uno"),
+    ).toBeInTheDocument();
+    expect(
+      within(fila as HTMLElement).getByText("visible"),
+    ).toBeInTheDocument();
+  });
+
+  it("el buscador, la visibilidad y la página viajan al servidor y el resumen sale del servidor", async () => {
+    asManager();
+    const consultas: Array<Record<string, unknown>> = [];
+    request.mockImplementation((_path, options) => {
+      const query = (options?.query ?? {}) as Record<string, unknown>;
+      consultas.push(query);
+      return Promise.resolve(
+        listado([pieza("faq.uno", "Una pregunta")], 45, {
+          total: 45,
+          visible: 40,
+          hidden: 5,
+        }),
+      );
+    });
+    renderWithProviders(<AppContentPage />);
+    await screen.findByRole("table");
+    expect(screen.getByText("40")).toBeInTheDocument();
+    expect(screen.getByText("Visibles en la app")).toBeInTheDocument();
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /título, clave o texto/i }),
+      { target: { value: "línea" } },
+    );
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({
+        surface: "faq",
+        q: "línea",
+        page: 1,
+      }),
+    );
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Visibilidad/ }),
+      "false",
+    );
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({ active: "false", q: "línea" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await waitFor(() =>
+      expect(consultas.at(-1)).toMatchObject({ page: 2, active: "false" }),
+    );
+  });
+
+  it("sin coincidencias dice que nada coincide, y sin piezas dice lo que ve el cliente", async () => {
+    asManager();
+    request.mockResolvedValue(listado([], 0));
+    renderWithProviders(<AppContentPage />);
+    expect(
+      await screen.findByText("Todavía no hay contenido para esta pantalla"),
+    ).toBeInTheDocument();
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /título, clave o texto/i }),
+      { target: { value: "zzz" } },
+    );
+    expect(
+      await screen.findByText("Ninguna pieza coincide con la búsqueda."),
+    ).toBeInTheDocument();
+  });
+
+  it("un error del servidor se ve con Reintentar", async () => {
+    asManager();
+    request.mockRejectedValue(
+      new AtlasApiError({ status: 500, code: "X", message: "caído" }),
+    );
+    renderWithProviders(<AppContentPage />);
+    expect(
+      await screen.findByRole("button", { name: /reintentar/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("Editar abre el formulario encima de la tabla y el celular enseña lo que se escribe", async () => {
+    asManager();
+    request.mockResolvedValue(listado([pieza("faq.uno", "Una pregunta")], 1));
+    renderWithProviders(<AppContentPage />);
+    fireEvent.click(await screen.findByTestId("edit-faq.uno"));
+
+    const titulo = await screen.findByTestId("title-faq.uno");
+    fireEvent.change(titulo, { target: { value: "Título nuevo" } });
+    expect(screen.getByTestId("app-content-phone")).toHaveTextContent(
+      "Título nuevo",
+    );
+    expect(request).not.toHaveBeenCalledWith(
+      "/operations/app-content",
+      expect.objectContaining({ method: "PUT" }),
+    );
+    fireEvent.click(screen.getByText("Cancelar"));
+    await waitFor(() =>
+      expect(screen.queryByTestId("title-faq.uno")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("el celular enseña lo publicado de la pantalla, no lo que filtra la tabla", async () => {
+    asManager();
+    const consultas: Array<Record<string, unknown>> = [];
+    request.mockImplementation((_path, options) => {
+      const query = (options?.query ?? {}) as Record<string, unknown>;
+      consultas.push(query);
+      return Promise.resolve(listado([pieza("faq.uno", "Una pregunta")], 1));
+    });
+    renderWithProviders(<AppContentPage />);
+    await screen.findByRole("table");
+    expect(consultas.some((q) => q.active === "true" && q.limit === 100)).toBe(
+      true,
+    );
   });
 
   it("un 403 dice que falta un permiso, no que se reintente", async () => {

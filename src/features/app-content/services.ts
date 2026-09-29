@@ -1,9 +1,21 @@
 import { apiRequest } from "@/shared/api/client";
-import type { AppContentList, AppContentUpsert } from "./types";
+import type {
+  AppContentList,
+  AppContentQuery,
+  AppContentUpsert,
+} from "./types";
 
-export function listAppContent(surface?: string) {
-  const query = surface ? `?surface=${encodeURIComponent(surface)}` : "";
-  return apiRequest<AppContentList>(`/operations/app-content${query}`);
+/** El listado paginado del portal: el buscador y la visibilidad viajan al servidor. */
+export function listAppContent(surface?: string, query: AppContentQuery = {}) {
+  return apiRequest<AppContentList>("/operations/app-content", {
+    query: {
+      surface,
+      page: query.page,
+      limit: query.limit,
+      q: query.q?.trim() || undefined,
+      active: query.active || undefined,
+    },
+  });
 }
 
 /**

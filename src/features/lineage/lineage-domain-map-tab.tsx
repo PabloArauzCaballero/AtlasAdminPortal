@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDomainOverview } from "@/features/systems/hooks";
-import { DomainCard } from "@/features/business-metadata/domain-card";
+import { DomainsTable } from "@/features/business-metadata/domains-table";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
@@ -65,15 +65,7 @@ export function LineageDomainMapTab() {
         </Link>
         .
       </p>
-      {items.length === 0 ? (
-        <p className="text-sm text-atlas-muted">No hay dominios catalogados.</p>
-      ) : (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {items.map((domain) => (
-            <DomainCard key={domain.domainCode} domain={domain} />
-          ))}
-        </div>
-      )}
+      <DomainsTable domains={items} />
     </div>
   );
 }

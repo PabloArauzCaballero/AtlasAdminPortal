@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
 export type ContentSurface =
   "onboarding" | "home" | "faq" | "help" | "legal" | "profile" | "credit";
 
@@ -30,7 +32,25 @@ export type AppContentEntry = {
   updatedAt: string | null;
 };
 
-export type AppContentList = { items: AppContentEntry[] };
+/** Cuántas piezas tiene la pantalla elegida, sin filtros: no cambia al buscar ni al paginar. */
+export type AppContentSummary = {
+  total: number;
+  visible: number;
+  hidden: number;
+};
+
+export type AppContentList = {
+  items: AppContentEntry[];
+  meta?: PaginationMeta;
+  summary?: AppContentSummary;
+};
+
+export type AppContentQuery = {
+  page?: number;
+  limit?: number;
+  q?: string;
+  active?: "true" | "false" | "";
+};
 
 export type AppContentUpsert = {
   surface: ContentSurface;

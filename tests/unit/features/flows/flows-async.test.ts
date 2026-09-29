@@ -21,16 +21,24 @@ beforeEach(() => {
 describe("servicios de trabajo pendiente y deriva", () => {
   it("pide el trabajo pendiente con la ventana elegida", async () => {
     apiRequest.mockResolvedValueOnce({});
-    await getPendingWork(7);
+    await getPendingWork({
+      windowDays: 7,
+      q: "loans",
+      state: "failed",
+      page: 2,
+      limit: 20,
+    });
     expect(apiRequest).toHaveBeenCalledWith("/systems/flows/pending-work", {
-      query: { windowDays: 7 },
+      query: { windowDays: 7, q: "loans", state: "failed", page: 2, limit: 20 },
     });
   });
 
   it("pide la deriva de permisos", async () => {
     apiRequest.mockResolvedValueOnce({});
-    await getRbacDrift();
-    expect(apiRequest).toHaveBeenCalledWith("/systems/flows/rbac-drift");
+    await getRbacDrift({ q: "x", severity: "SIN_GUARDA", page: 3, limit: 20 });
+    expect(apiRequest).toHaveBeenCalledWith("/systems/flows/rbac-drift", {
+      query: { q: "x", severity: "SIN_GUARDA", page: 3, limit: 20 },
+    });
   });
 });
 

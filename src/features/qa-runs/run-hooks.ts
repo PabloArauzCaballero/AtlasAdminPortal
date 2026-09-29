@@ -152,7 +152,7 @@ export function useQaRuns(
 
 export function useQaRunPersonas(
   runId: string | null | undefined,
-  query: { page: number; limit: number; status?: string },
+  query: { page: number; limit: number; status?: string; q?: string },
   live: boolean,
 ) {
   return useQuery({

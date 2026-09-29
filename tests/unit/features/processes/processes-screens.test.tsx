@@ -1,10 +1,16 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/shared/auth/auth-context";
 import { setStoredInternalSession } from "@/shared/auth/session-storage";
 import { makeSession, makeUser } from "../../../helpers/session-fixtures";
 import { makeDetail, makeItem } from "./fixtures";
+import {
+  buscar,
+  esperarFilas,
+  filasDeDatos,
+  filtrarPor,
+} from "../../shared/tabla-helpers";
 
 const nav = vi.hoisted(() => ({
   replace: vi.fn(),
@@ -183,40 +189,66 @@ describe("Procesos · ficha", () => {
     expect(aviso).toHaveTextContent("Cerrar el contacto");
   });
 
-  it("Pasos y flujos marca cada paso y enlaza la pantalla del portal interno", () => {
+  it("Pasos y flujos es una tabla: una fila por paso, con su cableado y la pantalla de la etapa", () => {
     renderTab("pasos");
-    const paso = screen.getByTestId("paso-close_contact");
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("table"))
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent)
+        .filter(Boolean),
+    ).toEqual([
+      "Etapa",
+      "Quién actúa",
+      "Pantalla",
+      "Paso",
+      "Cableado",
+      "Riesgo y prueba",
+      "Cómo se hace",
+      "Bloque",
+      "Quién la llama",
+      "Mapa de rutas",
+    ]);
+    const paso = screen.getByTestId("paso-close_contact").closest("tr")!;
     expect(within(paso).getByText("Sin pantalla")).toBeInTheDocument();
+    const otro = screen.getByTestId("paso-resend_code").closest("tr")!;
+    expect(within(otro).getByText("Con pantalla")).toBeInTheDocument();
     expect(
-      within(screen.getByTestId("paso-resend_code")).getByText("Con pantalla"),
-    ).toBeInTheDocument();
-    const etapa = screen.getByTestId("etapa-contacts");
-    expect(
-      within(etapa).getByRole("link", { name: /abrir la pantalla/i }),
+      within(otro).getByRole("link", { name: /abrir la pantalla/i }),
     ).toHaveAttribute("href", "/internal/operations/pending-contacts");
+    expect(
+      within(otro).getByText("Contactos pendientes", { exact: false }),
+    ).toBeInTheDocument();
+  });
+
+  it("el buscador y el filtro de cableado recortan los pasos", async () => {
+    renderTab("pasos");
+    await buscar(/Buscar por etapa, paso, descripción o ruta/, "reenviar");
+    await esperarFilas(1);
+    expect(filasDeDatos()[0]).toHaveTextContent("Reenviar el código");
+    await buscar(/Buscar por etapa, paso, descripción o ruta/, "");
+    await esperarFilas(2);
+    await filtrarPor(/^Cableado/, "unwired");
+    await esperarFilas(1);
+    expect(filasDeDatos()[0]).toHaveTextContent("Cerrar el contacto");
+    await buscar(/Buscar por etapa, paso, descripción o ruta/, "zzz");
+    expect(
+      await screen.findByText("Ningún paso coincide con la búsqueda."),
+    ).toBeInTheDocument();
   });
 
   it("con permiso del mapa de rutas enlaza el flujo y abre su ficha técnica", async () => {
     const user = userEvent.setup();
     renderTab("pasos", ["workflows.read", "systems.flows.read"]);
-    const paso = screen.getByTestId("paso-resend_code");
-    const detalle = within(paso)
-      .getByText("Detalle técnico")
-      .closest("details");
-    expect(detalle).not.toBeNull();
-    expect(detalle).not.toHaveAttribute("open");
-    expect(detalle).toHaveTextContent(
+    const paso = screen.getByTestId("paso-resend_code").closest("tr")!;
+    expect(paso).toHaveTextContent(
       "/customer-onboarding/:id/contact-verification/request",
     );
     expect(
-      within(detalle as HTMLElement).getByRole("link", {
-        name: "Abrir en el mapa de rutas",
-      }),
+      within(paso).getByRole("link", { name: "Abrir en el mapa de rutas" }),
     ).toHaveAttribute("href", "/internal/flows?flow=flow_abc123def456");
     await user.click(
-      within(detalle as HTMLElement).getByRole("button", {
-        name: "Ver ficha técnica",
-      }),
+      within(paso).getByRole("button", { name: "Ver ficha técnica" }),
     );
     expect(screen.getByTestId("ficha-tecnica")).toHaveTextContent(
       "flow_abc123def456",
@@ -225,7 +257,7 @@ describe("Procesos · ficha", () => {
 
   it("sin systems.flows.read no enseña enlaces al mapa de rutas (llevaban a «acceso restringido»)", () => {
     renderTab("pasos");
-    const paso = screen.getByTestId("paso-resend_code");
+    const paso = screen.getByTestId("paso-resend_code").closest("tr")!;
     expect(
       within(paso).queryByRole("link", { name: /mapa de rutas/i }),
     ).not.toBeInTheDocument();
@@ -246,8 +278,40 @@ describe("Procesos · ficha", () => {
     });
     renderTab("pasos");
     expect(
-      within(screen.getByTestId(`paso-${step.code}`)).getByText("sin prueba"),
+      within(screen.getByTestId(`paso-${step.code}`).closest("tr")!).getByText(
+        "sin prueba",
+      ),
     ).toBeInTheDocument();
+  });
+
+  it("una etapa sin pasos sale con una fila que lo dice", () => {
+    const detail = makeDetail();
+    detail.stages[0]!.steps = [];
+    hooks.useProcess.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: detail,
+      refetch: vi.fn(),
+    });
+    renderTab("pasos");
+    expect(
+      screen.getByText("Esta etapa no declara pasos."),
+    ).toBeInTheDocument();
+  });
+
+  it("Documentación y cableado lista las cinco comprobaciones en una tabla", async () => {
+    renderTab("documentacion");
+    const tabla = screen.getAllByRole("table")[0]!;
+    expect(
+      within(tabla)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent),
+    ).toEqual(["Comprobación", "Estado", "Qué se mira"]);
+    expect(within(tabla).getAllByRole("row")).toHaveLength(6);
+    await buscar(/Buscar por comprobación o por lo que se mira/, "dueño");
+    await waitFor(() =>
+      expect(within(tabla).getAllByRole("row")).toHaveLength(2),
+    );
   });
 
   it("un código que no existe se explica en vez de romper la pantalla", async () => {

@@ -4,6 +4,7 @@ import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
+import { ConsistencyFindingsTable } from "./consistency-findings-table";
 import { useWorkflowConsistency } from "./hooks";
 import type { WorkflowConsistencyFinding } from "./types";
 
@@ -65,40 +66,7 @@ export function WorkflowConsistencyPanel({
               {`${hallazgos.length} hallazgo(s) · ${datos.workflowCode ?? workflowCode} ${datos.version ?? ""}`}
             </span>
           </div>
-          {hallazgos.length ? (
-            <ul className="space-y-2">
-              {hallazgos.map((hallazgo, indice) => (
-                <li
-                  key={`${hallazgo.code ?? "hallazgo"}-${indice}`}
-                  className="rounded-md border border-atlas-border p-2 text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      tone={
-                        String(hallazgo.severity).toLowerCase() === "error"
-                          ? "critical"
-                          : "warning"
-                      }
-                    >
-                      {hallazgo.severity ?? "aviso"}
-                    </Badge>
-                    <span className="font-mono">{hallazgo.code ?? "—"}</span>
-                    {hallazgo.stepCode ? (
-                      <span className="text-atlas-muted">{`paso ${hallazgo.stepCode}`}</span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-atlas-muted">
-                    {hallazgo.message ?? ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-atlas-muted">
-              Cada paso del flujo apunta a una ruta que existe y con el rol que
-              declara.
-            </p>
-          )}
+          <ConsistencyFindingsTable findings={hallazgos} />
         </div>
       ) : null}
     </section>

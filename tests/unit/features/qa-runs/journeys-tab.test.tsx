@@ -1,7 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
+import { elegirOpcion } from "../../shared/option-select-helpers";
 import { capabilitiesFixture, templateFixture } from "./qa-runs-fixtures";
 
 vi.setConfig({ testTimeout: 30000 });
@@ -53,17 +54,36 @@ function render_() {
   );
 }
 
+/** La fila (`tr`) de un recorrido o campaña: el testid vive en su primera celda. */
+function rowOf(testId: string): HTMLElement {
+  const row = screen.getByTestId(testId).closest("tr");
+  if (!row) throw new Error(`«${testId}» no está dentro de una fila de tabla`);
+  return row;
+}
+
 describe("JourneysTab · UI/contrato con respuestas simuladas del contrato QA", () => {
-  it("abre con el catálogo precargado y el editor manual plegado", async () => {
+  it("abre con el catálogo precargado como tabla y el editor manual plegado", async () => {
     render_();
 
-    // El nombre sale también en la campaña que lo agrupa: se busca dentro de su tarjeta.
-    const card = await screen.findByTestId(
-      "qa-template-account_signup_to_login",
-    );
+    await screen.findByTestId("qa-template-account_signup_to_login");
+    const table = screen.getAllByRole("table")[0];
+    const headers = within(table)
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers).toEqual([
+      "Recorrido",
+      "Estado",
+      "Alcance",
+      "Actúan",
+      "Desenlace",
+      "Datos",
+      "Acciones",
+    ]);
+    const row = rowOf("qa-template-account_signup_to_login");
     expect(
-      within(card).getByText("Alta de cuenta hasta el login"),
+      within(row).getByText("Alta de cuenta hasta el login"),
     ).toBeInTheDocument();
+    expect(within(row).getByText("Lista")).toBeInTheDocument();
     expect(screen.queryByText("EDITOR MANUAL")).not.toBeInTheDocument();
 
     await userEvent.click(
@@ -72,9 +92,82 @@ describe("JourneysTab · UI/contrato con respuestas simuladas del contrato QA", 
     expect(screen.getByText("EDITOR MANUAL")).toBeInTheDocument();
   });
 
-  it("enseña las campañas con el nombre del recorrido y su reparto de personas", async () => {
+  it("el buscador del catálogo recorta las filas por nombre, código o descripción", async () => {
     render_();
-    const campaign = await screen.findByTestId("qa-campaign-regression_normal");
+    await screen.findByTestId("qa-template-account_signup_to_login");
+    expect(
+      screen.getByTestId("qa-template-customer_credit_decision"),
+    ).toBeInTheDocument();
+
+    await userEvent.type(
+      screen.getByLabelText("Buscar por nombre, código o descripción…"),
+      "crédito",
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("qa-template-account_signup_to_login"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByTestId("qa-template-customer_credit_decision"),
+    ).toBeInTheDocument();
+
+    await userEvent.clear(
+      screen.getByLabelText("Buscar por nombre, código o descripción…"),
+    );
+    await userEvent.type(
+      screen.getByLabelText("Buscar por nombre, código o descripción…"),
+      "zzz-nada",
+    );
+    expect(
+      await screen.findByText("Ningún recorrido coincide con la búsqueda."),
+    ).toBeInTheDocument();
+  });
+
+  it("el filtro de estado deja sólo las recetas bloqueadas", async () => {
+    render_();
+    await screen.findByTestId("qa-template-account_signup_to_login");
+
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: "Estado" }),
+      "BLOCKED",
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("qa-template-account_signup_to_login"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByTestId("qa-template-customer_credit_decision"),
+    ).toBeInTheDocument();
+  });
+
+  it("un catálogo vacío dice que no hay recorridos, no que nada coincide", async () => {
+    api.listQaTemplates.mockResolvedValue([]);
+    render_();
+    expect(
+      await screen.findByText("Sin recorridos precargados"),
+    ).toBeInTheDocument();
+  });
+
+  it("si el catálogo falla, muestra el error con «Reintentar»", async () => {
+    api.listQaTemplates.mockRejectedValueOnce(new Error("caído"));
+    render_();
+    expect(
+      await screen.findByText("No se pudo leer el catálogo de recorridos"),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getAllByRole("button", { name: /Reintentar/ })[0],
+    );
+    expect(
+      await screen.findByTestId("qa-template-account_signup_to_login"),
+    ).toBeInTheDocument();
+  });
+
+  it("enseña las campañas como tabla con el nombre del recorrido y su reparto de personas", async () => {
+    render_();
+    await screen.findByTestId("qa-campaign-regression_normal");
+    const campaign = rowOf("qa-campaign-regression_normal");
 
     expect(within(campaign).getByText("Regresión normal")).toBeInTheDocument();
     expect(
@@ -89,28 +182,38 @@ describe("JourneysTab · UI/contrato con respuestas simuladas del contrato QA", 
     expect(api.listQaCampaigns).toHaveBeenCalledTimes(1);
   });
 
+  it("el buscador de campañas encuentra por el nombre de uno de sus recorridos", async () => {
+    render_();
+    await screen.findByTestId("qa-campaign-regression_normal");
+    await userEvent.type(
+      screen.getByLabelText("Buscar campaña o recorrido…"),
+      "zzz-nada",
+    );
+    expect(
+      await screen.findByText("Ninguna campaña coincide con la búsqueda."),
+    ).toBeInTheDocument();
+  });
+
   it("una plantilla bloqueada enseña su motivo y no ofrece ejecutar", async () => {
     render_();
-    const card = await screen.findByTestId(
-      "qa-template-customer_credit_decision",
-    );
+    await screen.findByTestId("qa-template-customer_credit_decision");
+    const row = rowOf("qa-template-customer_credit_decision");
 
-    expect(within(card).getByText("Bloqueada")).toBeInTheDocument();
+    expect(within(row).getByText("Bloqueada")).toBeInTheDocument();
     expect(
-      within(card).getByText(/Falta el usuario interno de QA/),
+      within(row).getByText(/Falta el usuario interno de QA/),
     ).toBeInTheDocument();
     expect(
-      within(card).getByRole("button", { name: /^Ejecutar$/ }),
+      within(row).getByRole("button", { name: /^Ejecutar$/ }),
     ).toBeDisabled();
   });
 
   it("Ejecutar abre el lanzamiento con esa plantilla y datos normales", async () => {
     render_();
-    const card = await screen.findByTestId(
-      "qa-template-account_signup_to_login",
-    );
+    await screen.findByTestId("qa-template-account_signup_to_login");
+    const row = rowOf("qa-template-account_signup_to_login");
     await userEvent.click(
-      within(card).getByRole("button", { name: /^Ejecutar$/ }),
+      within(row).getByRole("button", { name: /^Ejecutar$/ }),
     );
 
     const dialog = await screen.findByRole("dialog");

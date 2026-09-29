@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
 /** `GET /systems/flows/pending-work`: lo que un flujo deja encargado al responder, y quién lo recoge. */
 export type PendingWorkDiagnosis = "SIN_CONSUMIDOR" | "SALTADOS" | "AL_DIA";
 
@@ -56,6 +58,14 @@ export type PendingWorkResponse = {
   skipped: string[];
   failing: string[];
   flows: PendingWorkFlow[];
+  /** Con `limit`, la paginación de `flows` y las cuentas del conjunto sin filtrar (desde 2026-09-29). */
+  meta?: PaginationMeta;
+  summary?: {
+    flows: number;
+    withPending: number;
+    withFailed: number;
+    skipped: number;
+  };
   /**
    * Opcional a propósito: un backend una versión por detrás no manda este bloque, y la pantalla lo
    * declaraba obligatorio. El resultado era una pantalla EN BLANCO —«Cannot read properties of
@@ -90,10 +100,51 @@ export type RbacDriftScreen = {
   }>;
 };
 
+/** Una llamada de una pantalla, ya aplanada: la fila de la tabla de deriva. */
+export type RbacDriftItem = {
+  clientCode: string;
+  route: string;
+  navPermissions: string[];
+  navRoles: string[];
+  flowId: string;
+  method: string;
+  path: string;
+  severity: RbacDriftSeverity;
+  roles: string[];
+};
+
+export type RbacDriftSummary = {
+  screensWithDrift: number;
+  calls: number;
+  bySeverity: Record<RbacDriftSeverity, number>;
+  /** Clientes con deriva en el conjunto entero: las opciones del filtro «Cliente». */
+  clients: string[];
+};
+
+export type RbacDriftQuery = {
+  q?: string;
+  severity?: string;
+  clientCode?: string;
+  page?: number;
+  limit?: number;
+};
+
 export type RbacDriftResponse = {
+  /** Paginado y filtrado en el servidor (desde 2026-09-29). Un Core anterior no lo manda. */
+  items?: RbacDriftItem[];
+  meta?: PaginationMeta;
+  summary?: RbacDriftSummary;
   /** Clientes cuyas pantallas llaman a otro bloque: aquí no se mide su deriva. */
   notMeasured?: string[];
   screensWithObservedEdges: number;
   truncated: boolean;
   screens: RbacDriftScreen[];
+};
+
+export type PendingWorkQuery = {
+  windowDays: number;
+  q?: string;
+  state?: string;
+  page?: number;
+  limit?: number;
 };

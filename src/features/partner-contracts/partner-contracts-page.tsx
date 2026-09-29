@@ -9,14 +9,32 @@ import { useAuth } from "@/shared/auth/auth-context";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Card } from "@/shared/components/ui/card";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { buildContractColumns } from "./contract-columns";
 import { useContractTemplates, useSetDefaultContractTemplate } from "./hooks";
 import type { PartnerContractTemplate } from "./types";
-import { TarjetaContrato, DialogoPublicar } from "./partner-contracts-pieces";
+import { DialogoPublicar } from "./partner-contracts-pieces";
+
+const POR_PAGINA = 20;
+
+const ESTADO_OPTIONS = [
+  {
+    value: "active",
+    label: "Vigentes",
+    description: "Las que rigen hoy o pueden marcarse como vigentes.",
+  },
+  {
+    value: "archived",
+    label: "Archivadas",
+    description: "Las que rigieron antes: son la prueba de qué regía cada día.",
+  },
+];
 
 /**
  * El contrato bajo el que se afilia un comercio.
@@ -53,17 +71,33 @@ function AuthorizedPartnerContractsPage() {
   const [porDefecto, setPorDefecto] = useState<PartnerContractTemplate | null>(
     null,
   );
+  const [viendo, setViendo] = useState<PartnerContractTemplate | null>(null);
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("");
 
-  const plantillas = useContractTemplates();
+  const plantillas = useContractTemplates({
+    page,
+    limit: POR_PAGINA,
+    q,
+    status,
+  });
   const marcar = useSetDefaultContractTemplate();
   // Publicar o cambiar el vigente exige `governance.policies.manage` en el backend.
   const puedeGestionar = useAuth().hasPermission("governance.policies.manage");
 
-  const items = useMemo(() => plantillas.data?.items ?? [], [plantillas.data]);
-  const vigente = useMemo(
-    () => items.find((item) => item.isDefault && item.status === "active"),
-    [items],
+  // La vigente y las cifras salen del resumen del servidor: con paginación una página no las sabe.
+  const summary = plantillas.data?.summary;
+  const vigente = summary?.current ?? null;
+  const columns = useMemo(
+    () =>
+      buildContractColumns({
+        onView: setViendo,
+        onMarkDefault: puedeGestionar ? setPorDefecto : undefined,
+      }),
+    [puedeGestionar],
   );
+  const hayFiltros = q.trim() !== "" || status !== "";
 
   return (
     <>
@@ -109,7 +143,7 @@ function AuthorizedPartnerContractsPage() {
             />
             <MetricCard
               label="Versiones publicadas"
-              value={formatNumber(items.length)}
+              value={formatNumber(summary?.total ?? 0)}
             />
             <MetricCard
               label="En vigor desde"
@@ -137,25 +171,68 @@ function AuthorizedPartnerContractsPage() {
             </div>
           ) : null}
 
-          {items.length === 0 ? (
-            <Card className="p-5">
-              <p className="text-sm text-atlas-muted">
-                Todavía no se publicó ninguna versión.
-              </p>
-            </Card>
-          ) : null}
+          <FilterBar
+            search={q}
+            searchPlaceholder="Buscar por código o nombre del contrato…"
+            searchTooltip="Busca en el servidor, en todas las versiones: coincide con parte del código o del nombre del contrato."
+            filters={[
+              {
+                name: "status",
+                label: "Estado",
+                tooltip:
+                  "Vigentes son las que pueden regir; archivadas, las que rigieron antes y se conservan como prueba.",
+                value: status,
+                options: ESTADO_OPTIONS,
+              },
+            ]}
+            onSearchChange={(value) => {
+              setQ(value);
+              setPage(1);
+            }}
+            onFilterChange={(name, value) => {
+              if (name === "status") setStatus(value);
+              setPage(1);
+            }}
+            onClear={() => {
+              setQ("");
+              setStatus("");
+              setPage(1);
+            }}
+          />
 
-          {items.map((plantilla) => (
-            <TarjetaContrato
-              key={plantilla.templateId}
-              plantilla={plantilla}
-              onMarcar={
-                puedeGestionar ? () => setPorDefecto(plantilla) : undefined
-              }
-            />
-          ))}
+          <DataTable
+            data={plantillas.data.items}
+            columns={columns}
+            meta={plantillas.data.meta}
+            onPageChange={setPage}
+            emptyTitle={
+              hayFiltros
+                ? "Ninguna versión coincide con la búsqueda."
+                : "Todavía no se publicó ninguna versión."
+            }
+            emptyDescription={
+              hayFiltros
+                ? "Prueba con otro texto o quita el filtro de estado."
+                : "Cuando se publique la primera versión del contrato aparecerá aquí."
+            }
+          />
         </div>
       ) : null}
+
+      <DrawerPanel
+        open={viendo !== null}
+        title={
+          viendo ? `${viendo.name} · v${viendo.version}` : "Texto del contrato"
+        }
+        onClose={() => setViendo(null)}
+      >
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-wide text-atlas-muted">
+          {viendo?.templateCode}
+        </p>
+        <pre className="whitespace-pre-wrap rounded-md bg-atlas-soft p-3 text-xs text-atlas-text">
+          {viendo?.body}
+        </pre>
+      </DrawerPanel>
 
       <DialogoPublicar
         open={publicando}

@@ -1,3 +1,5 @@
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/shared/components/data-table/data-table";
 import type { QaRunStepCounts, QaRunSummary } from "./types";
 
 /**
@@ -63,38 +65,61 @@ export function stepTone(
   return "none";
 }
 
-/** Tabla compacta de pasos de la receta con su distribución. */
+const COUNT_COLUMNS: Array<{
+  key:
+    | "passed"
+    | "failed"
+    | "skipped"
+    | "notApplicable"
+    | "indeterminate"
+    | "cancelled";
+  header: string;
+  className?: string;
+}> = [
+  { key: "passed", header: "Aprobaron", className: "text-emerald-700" },
+  { key: "failed", header: "Fallaron", className: "text-red-700" },
+  { key: "skipped", header: "Omitidos" },
+  { key: "notApplicable", header: "No aplica" },
+  { key: "indeterminate", header: "Sin conclusión" },
+  { key: "cancelled", header: "Cancelados" },
+];
+
+const COLUMNS: ColumnDef<QaRunStepCounts>[] = [
+  {
+    id: "step",
+    header: "Paso",
+    accessorFn: (step) => step.stepKey,
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.original.stepKey}</span>
+    ),
+  },
+  ...COUNT_COLUMNS.map(
+    ({ key, header, className }): ColumnDef<QaRunStepCounts> => ({
+      id: key,
+      header,
+      accessorFn: (step) => step[key],
+      cell: ({ row }) => (
+        <span className={`tabular-nums ${className ?? ""}`}>
+          {row.original[key]}
+        </span>
+      ),
+    }),
+  ),
+];
+
+/**
+ * Resultado por paso de la receta, con su distribución. Los pasos llegan enteros dentro del
+ * resumen de la corrida (son los de la receta, no crecen con las personas), así que no hay
+ * paginación ni buscador propios.
+ */
 export function RunStepCounts({ run }: Readonly<{ run: QaRunSummary }>) {
   if (run.steps.length === 0) return null;
   return (
-    <div className="atlas-scrollbar overflow-x-auto">
-      <table className="w-full text-left text-xs">
-        <caption className="sr-only">Resultado por paso</caption>
-        <thead className="text-atlas-muted">
-          <tr>
-            <th className="py-1 pr-3 font-medium">Paso</th>
-            <th className="py-1 pr-3 font-medium">Aprobaron</th>
-            <th className="py-1 pr-3 font-medium">Fallaron</th>
-            <th className="py-1 pr-3 font-medium">Omitidos</th>
-            <th className="py-1 pr-3 font-medium">No aplica</th>
-            <th className="py-1 pr-3 font-medium">Sin conclusión</th>
-            <th className="py-1 font-medium">Cancelados</th>
-          </tr>
-        </thead>
-        <tbody className="tabular-nums">
-          {run.steps.map((step) => (
-            <tr key={step.stepKey} className="border-t border-atlas-border">
-              <td className="py-1 pr-3 font-mono">{step.stepKey}</td>
-              <td className="py-1 pr-3 text-emerald-700">{step.passed}</td>
-              <td className="py-1 pr-3 text-red-700">{step.failed}</td>
-              <td className="py-1 pr-3">{step.skipped}</td>
-              <td className="py-1 pr-3">{step.notApplicable}</td>
-              <td className="py-1 pr-3">{step.indeterminate}</td>
-              <td className="py-1">{step.cancelled}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <section aria-label="Resultado por paso" className="space-y-2">
+      <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-atlas-muted">
+        Resultado por paso
+      </h3>
+      <DataTable data={run.steps} columns={COLUMNS} />
+    </section>
   );
 }

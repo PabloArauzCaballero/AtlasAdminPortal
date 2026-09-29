@@ -300,9 +300,13 @@ test("Procesos — la ficha destaca los pasos sin pantalla", async ({ page }) =>
   await page.getByRole("button", { name: "Documentación y cableado" }).click();
   await expect(page.getByRole("status")).toContainText("1 paso sin pantalla");
   await page.getByRole("button", { name: "Pasos y flujos" }).click();
+  // «Pasos y flujos» es una tabla con una fila por paso; la pantalla de la etapa va en su columna.
+  await expect(page.getByRole("table")).toBeVisible();
   await expect(
     page
-      .getByTestId("etapa-contacts")
+      .getByRole("row")
+      .filter({ has: page.getByTestId("etapa-contacts") })
+      .first()
       .getByRole("link", { name: /abrir la pantalla/i }),
   ).toHaveAttribute("href", "/internal/operations/pending-contacts");
   await capturar(page, "ficha");

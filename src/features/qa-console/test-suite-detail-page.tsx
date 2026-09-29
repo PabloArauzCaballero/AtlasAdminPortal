@@ -6,9 +6,7 @@ import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
-import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -16,6 +14,7 @@ import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { SuiteConfigTable } from "./suite-config-table";
 import { SuiteExecutionPanel } from "./suite-execution-panel";
 import { SuiteForm } from "./suite-form";
 import { SuiteStepsSection } from "./suite-steps-section";
@@ -133,23 +132,7 @@ function AuthorizedTestSuiteDetailPage({
             <SuiteStepsSection suiteId={suiteId} steps={suite.data.steps} />
           ) : null}
           {activeTab === "Config" ? (
-            <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
-              {suite.data.steps.map((step) => (
-                <Card key={step.stepId}>
-                  <CardContent>
-                    <JsonViewer
-                      title={`${step.stepOrder}. ${step.name}`}
-                      value={{
-                        defaultPayload: step.defaultPayload,
-                        assertions: step.assertions,
-                        extractors: step.extractors,
-                        configSchema: step.configSchema,
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <SuiteConfigTable steps={suite.data.steps} />
           ) : null}
           {activeTab === "Ejecución" ? (
             <SuiteExecutionPanel suite={suite.data.suite} suiteId={suiteId} />

@@ -46,8 +46,8 @@ vi.mock("next/navigation", () => ({
 const { LearningCenterPage } =
   await import("@/features/qa-tutorials/learning-center-page");
 const QaLabGuidePage = () => <LearningCenterPage />;
-const { GuideScenarioMatrix } =
-  await import("@/features/qa-lab/guide/guide-scenario-matrix");
+const { ScenarioTable, TargetsTable, DialsTable } =
+  await import("@/features/qa-lab/guide/guide-tables");
 const { GuideStressChart } =
   await import("@/features/qa-lab/guide/guide-stress-chart");
 const { GuideJourneyDiagram } =
@@ -155,38 +155,71 @@ describe("QaLabGuidePage · estructura completa", () => {
   });
 });
 
-describe("GuideScenarioMatrix · matriz interactiva de headers", () => {
-  it("arranca en el escenario de payload válido", () => {
-    renderWithProviders(<GuideScenarioMatrix />);
+describe("ScenarioTable · matriz de escenarios y cabeceras como tabla", () => {
+  it("tiene cabeceras de columna y una fila por escenario", () => {
+    renderWithProviders(<ScenarioTable />);
 
+    const table = screen.getByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual([
+      "Escenario",
+      "Qué cambia",
+      "Authorization",
+      "x-tenant-id",
+      "x-idempotency-key",
+      "Resultado esperado",
+    ]);
+    // 1 fila de cabecera + los 8 escenarios del lab.
+    expect(within(table).getAllByRole("row")).toHaveLength(9);
     expect(
       screen.getByText(/Respuesta correcta según lo que declara el catálogo\./),
     ).toBeInTheDocument();
   });
 
-  it("al elegir 'Sin autenticación' muestra su resultado y el header omitido", async () => {
-    renderWithProviders(<GuideScenarioMatrix />);
+  it("«Sin identificarse» enseña su resultado y el header omitido, sin hacer clic", () => {
+    renderWithProviders(<ScenarioTable />);
 
-    await userEvent.click(
-      screen.getByRole("button", { name: /Sin identificarse/ }),
-    );
-
+    const row = screen
+      .getByText(/Sin identificarse/)
+      .closest("tr") as HTMLElement;
     expect(
-      screen.getByText(/401 si la operación exige sesión\./),
+      within(row).getByText(/401 si la operación exige sesión\./),
     ).toBeInTheDocument();
-    expect(screen.getByText("Authorization: ninguno")).toBeInTheDocument();
+    expect(within(row).getByText("ninguno")).toBeInTheDocument();
   });
 
-  it("el escenario personalizado avisa que todo es manual", async () => {
-    renderWithProviders(<GuideScenarioMatrix />);
+  it("el escenario personalizado avisa que todo es manual", () => {
+    renderWithProviders(<ScenarioTable />);
 
-    await userEvent.click(
-      screen.getByRole("button", { name: /Personalizado/ }),
-    );
+    const row = screen.getByText(/Personalizado/).closest("tr") as HTMLElement;
+    expect(within(row).getAllByText("a mano")).toHaveLength(3);
+  });
+});
 
+describe("TargetsTable y DialsTable · referencia de la guía", () => {
+  it("los ambientes son una tabla con sus cabeceras", () => {
+    renderWithProviders(<TargetsTable />);
+    const table = screen.getByRole("table");
     expect(
-      screen.getByText("Cada header se controla a mano"),
-    ).toBeInTheDocument();
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["Ambiente", "Qué permite", "Base URL"]);
+    expect(within(table).getAllByRole("row")).toHaveLength(5);
+  });
+
+  it("los diales de carga son una tabla con su rango", () => {
+    renderWithProviders(<DialsTable />);
+    const table = screen.getByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["Dial", "Qué controla", "Rango"]);
+    expect(within(table).getByText("1 – 10.000")).toBeInTheDocument();
   });
 });
 

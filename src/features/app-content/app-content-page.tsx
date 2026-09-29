@@ -2,21 +2,37 @@
 
 import { useMemo, useState } from "react";
 import { FileText, Plus } from "lucide-react";
-import { apiErrorText } from "@/shared/api/errors";
+import { apiErrorText, isAtlasApiError } from "@/shared/api/errors";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingSkeleton,
-} from "@/shared/components/ui/states";
-import { useAppContent } from "./hooks";
-import { EntryCard } from "./entry-card";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { formatNumber } from "@/shared/lib/format";
+import { useAppContent, usePublishedAppContent } from "./hooks";
+import { EntryEditor } from "./entry-editor";
+import { buildEntryColumns } from "./entry-columns";
 import { NewEntryForm } from "./new-entry-form";
 import { PhonePreview, type PreviewDraft } from "./phone-preview";
 import { APP_CONTENT_MANAGE, SURFACES, surfaceOption } from "./surfaces";
-import type { ContentSurface } from "./types";
+import type { AppContentEntry, ContentSurface } from "./types";
+
+const POR_PAGINA = 20;
+
+const VISIBILIDAD_OPTIONS = [
+  {
+    value: "true",
+    label: "Visibles",
+    description: "Las que la app enseña hoy.",
+  },
+  {
+    value: "false",
+    label: "Ocultas",
+    description: "Guardadas, pero la app no las enseña.",
+  },
+];
 
 /**
  * Lo que el cliente lee en la app, editable sin desplegar.
@@ -38,14 +54,25 @@ import type { ContentSurface } from "./types";
  */
 export function AppContentPage() {
   const [surface, setSurface] = useState<ContentSurface>("faq");
-  const content = useAppContent(surface);
-  const [editing, setEditing] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [visibilidad, setVisibilidad] = useState<"true" | "false" | "">("");
+  const content = useAppContent(surface, {
+    page,
+    limit: POR_PAGINA,
+    q,
+    active: visibilidad,
+  });
+  const publishedContent = usePublishedAppContent(surface);
+  const [editing, setEditing] = useState<AppContentEntry | null>(null);
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState<PreviewDraft | null>(null);
   const current = surfaceOption(surface);
+  const columns = useMemo(() => buildEntryColumns(setEditing), []);
+  // El celular enseña lo PUBLICADO de la pantalla, no la página ni el filtro de la tabla.
   const published = useMemo<PreviewDraft[]>(
     () =>
-      (content.data?.items ?? [])
+      (publishedContent.data?.items ?? [])
         .filter((entry) => entry.isActive)
         .map((entry) => ({
           title: entry.title ?? "",
@@ -56,8 +83,10 @@ export function AppContentPage() {
           actionLabel: entry.actionLabel ?? "",
           isActive: true,
         })),
-    [content.data],
+    [publishedContent.data],
   );
+  const hayFiltros = q.trim() !== "" || visibilidad !== "";
+  const summary = content.data?.summary;
 
   return (
     <>
@@ -79,6 +108,10 @@ export function AppContentPage() {
             onClick={() => {
               setSurface(option.value);
               setCreating(false);
+              setEditing(null);
+              setPage(1);
+              setQ("");
+              setVisibilidad("");
             }}
             title={option.hint}
             data-testid={`surface-${option.value}`}
@@ -129,38 +162,104 @@ export function AppContentPage() {
             )}
           </PermissionGate>
 
-          {content.isLoading ? <LoadingSkeleton rows={4} /> : null}
-
-          {content.error ? (
-            <ErrorState
-              title="No pudimos cargar el contenido"
-              description={apiErrorText(
-                content.error,
-                "Reintenta en unos segundos.",
-              )}
-            />
-          ) : null}
-
-          {content.data ? (
-            <div className="flex flex-col gap-4" data-testid="app-content-list">
-              {content.data.items.map((entry) => (
-                <EntryCard
-                  key={entry.contentId}
-                  entry={entry}
-                  editing={editing === entry.contentId}
-                  onEdit={() => setEditing(entry.contentId)}
-                  onClose={() => setEditing(null)}
-                  onDraftChange={setDraft}
-                />
-              ))}
-              {content.data.items.length === 0 && current.readByApp ? (
-                <EmptyState
-                  title="Todavía no hay contenido para esta pantalla"
-                  description={current.whenEmpty}
-                />
-              ) : null}
+          {editing ? (
+            <div className="mb-4">
+              <EntryEditor
+                key={editing.contentId}
+                entry={editing}
+                onClose={() => setEditing(null)}
+                onDraftChange={setDraft}
+              />
             </div>
           ) : null}
+
+          {summary ? (
+            <section className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <MetricCard
+                label={`Piezas en ${current.label}`}
+                value={formatNumber(summary.total)}
+              />
+              <MetricCard
+                label="Visibles en la app"
+                value={formatNumber(summary.visible)}
+              />
+              <MetricCard
+                label="Ocultas"
+                value={formatNumber(summary.hidden)}
+              />
+            </section>
+          ) : null}
+
+          <div className="space-y-4">
+            <FilterBar
+              search={q}
+              searchPlaceholder="Buscar por título, clave o texto…"
+              searchTooltip="Busca en el servidor, en todas las piezas de esta pantalla: coincide con parte de la clave, del título, del subtítulo, del texto o de la etiqueta del botón."
+              filters={[
+                {
+                  name: "active",
+                  label: "Visibilidad",
+                  tooltip:
+                    "Si la app enseña la pieza hoy o la tiene guardada sin publicar.",
+                  value: visibilidad,
+                  options: VISIBILIDAD_OPTIONS,
+                },
+              ]}
+              onSearchChange={(value) => {
+                setQ(value);
+                setPage(1);
+              }}
+              onFilterChange={(name, value) => {
+                if (name === "active")
+                  setVisibilidad(value as "true" | "false" | "");
+                setPage(1);
+              }}
+              onClear={() => {
+                setQ("");
+                setVisibilidad("");
+                setPage(1);
+              }}
+            />
+
+            {content.isLoading ? <LoadingSkeleton rows={4} /> : null}
+
+            {content.error ? (
+              <ErrorState
+                title="No pudimos cargar el contenido"
+                description={apiErrorText(
+                  content.error,
+                  "Reintenta en unos segundos.",
+                )}
+                requestId={
+                  isAtlasApiError(content.error)
+                    ? content.error.requestId
+                    : undefined
+                }
+                onRetry={() => void content.refetch()}
+              />
+            ) : null}
+
+            {content.data ? (
+              <div data-testid="app-content-list">
+                <DataTable
+                  data={content.data.items}
+                  columns={columns}
+                  meta={content.data.meta}
+                  onPageChange={setPage}
+                  emptyTitle={
+                    hayFiltros
+                      ? "Ninguna pieza coincide con la búsqueda."
+                      : "Todavía no hay contenido para esta pantalla"
+                  }
+                  emptyDescription={
+                    hayFiltros
+                      ? "Prueba con otro texto o quita el filtro de visibilidad."
+                      : current.whenEmpty
+                  }
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
         <div className="lg:sticky lg:top-4">
           <PhonePreview

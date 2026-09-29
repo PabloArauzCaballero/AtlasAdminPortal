@@ -14,12 +14,11 @@ import {
 } from "@/shared/components/layout/page-header";
 
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime } from "@/shared/lib/format";
 import { FlowDetailDrawer } from "./flow-detail-drawer";
 import { FlowsFindingsTable } from "./flows-findings-table";
+import { FlowsHeaderActions } from "./flows-header-actions";
 import {
   useFlowImports,
   useFlowModules,
@@ -28,7 +27,15 @@ import {
   useVerifyFlowsMutation,
 } from "./hooks";
 import { groupCount } from "./services";
-import { FLOW_CLIENTS, FLOW_RISKS, FLOW_SYSTEMS, type Flow } from "./types";
+import type { Flow } from "./types";
+import {
+  CLIENT_OPTIONS,
+  RISK_OPTIONS,
+  SYSTEM_OPTIONS,
+  TESTED_OPTIONS,
+  VERIFICATION_OPTIONS,
+  WITH_FINDINGS_OPTIONS,
+} from "./filter-options";
 import { buildFlowColumns } from "./flows-columns";
 import { FlowsSummaryTiles } from "./flows-summary-tiles";
 import { FlowCatalogNotLoaded } from "./flow-catalog-not-loaded";
@@ -137,44 +144,7 @@ function AuthorizedFlowsPage() {
         eyebrow="Systems Ops"
         title="Mapa de rutas"
         description="Una fila por operación de la plataforma, sacada del código: qué puede hacer cada usuario, con qué autorización, y qué le falta (contrato, pruebas, quién la llama). Abrir una ficha nunca ejecuta la operación. Los procesos de negocio que usan estas operaciones están en «Procesos»."
-        actions={
-          <div className="flex max-w-md flex-col items-end gap-1 text-right">
-            <PermissionGate
-              permissions={["systems.flows.analyze"]}
-              fallback={null}
-            >
-              <Button
-                variant="primary"
-                disabled={verify.isPending}
-                onClick={() =>
-                  verify.mutate({ systemCode: "ATLAS_BACKEND", windowDays: 30 })
-                }
-                title="Cruza el catálogo con las corridas reales de system_action_logs (30 días) y recalcula la frescura contra el commit desplegado"
-              >
-                {verify.isPending ? "Verificando…" : "Verificar con corridas"}
-              </Button>
-            </PermissionGate>
-            {verify.data ? (
-              <span
-                className="text-xs text-atlas-muted"
-                data-testid="verify-result"
-              >
-                {verify.data.verified} verificados · {verify.data.broken} rotos
-                · {verify.data.unverified} sin corridas ·{" "}
-                {verify.data.routesWithRuns} rutas con tráfico
-              </span>
-            ) : null}
-            {lastImport ? (
-              <span className="text-xs text-atlas-muted">
-                Última carga: {lastImport.systemCode} @{" "}
-                <span className="font-mono">
-                  {lastImport.analyzedCommit?.slice(0, 7) ?? "—"}
-                </span>{" "}
-                · {formatDateTime(lastImport.createdAt)}
-              </span>
-            ) : null}
-          </div>
-        }
+        actions={<FlowsHeaderActions verify={verify} lastImport={lastImport} />}
       />
       <FlowCatalogNotLoaded />
       <FlowsSummaryTiles
@@ -187,7 +157,7 @@ function AuthorizedFlowsPage() {
       <FilterBar
         search={filters.q}
         searchPlaceholder="Buscar por nombre, ruta, handler, controlador, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, la ruta, el método y la clase del controlador, el módulo y el identificador legible del flujo."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, el identificador legible, la ruta, el handler, la clase del controlador y el módulo del flujo."
         onSearchChange={(value) => setFilter("q", value)}
         onFilterChange={setFilter}
         onClear={() => {
@@ -199,43 +169,57 @@ function AuthorizedFlowsPage() {
             name: "systemCode",
             label: "Bloque",
             value: filters.systemCode,
-            options: FLOW_SYSTEMS.map(option),
+            tooltip:
+              "Deja sólo los flujos del bloque elegido: núcleo, motor, ERP o tableros.",
+            options: SYSTEM_OPTIONS,
           },
           {
             name: "module",
             label: "Módulo",
             value: filters.module,
+            tooltip:
+              "Deja sólo los flujos de un módulo. Las opciones salen del servidor y se acotan al bloque elegido.",
             options: moduleOptions,
           },
           {
             name: "risk",
             label: "Riesgo",
             value: filters.risk,
-            options: FLOW_RISKS.map(option),
+            tooltip:
+              "Deja sólo los flujos con ese nivel de riesgo, calculado según lo que escriben.",
+            options: RISK_OPTIONS,
+          },
+          {
+            name: "verification",
+            label: "Verificación",
+            value: filters.verification,
+            tooltip:
+              "Deja sólo los flujos según lo que dicen las corridas reales: verificados, sin verificar o rotos.",
+            options: VERIFICATION_OPTIONS,
           },
           {
             name: "caller",
             label: "Cliente",
             value: filters.caller,
-            options: [...FLOW_CLIENTS, ...FLOW_SYSTEMS].map(option),
+            tooltip:
+              "Deja sólo los flujos que llama ese cliente: un portal, la app del cliente u otro bloque.",
+            options: CLIENT_OPTIONS,
           },
           {
             name: "tested",
             label: "Tests",
             value: filters.tested,
-            options: [
-              { label: "Con test", value: "true" },
-              { label: "Sin test", value: "false" },
-            ],
+            tooltip:
+              "Separa los flujos que una prueba automática ejercita de los que no.",
+            options: TESTED_OPTIONS,
           },
           {
             name: "withFindings",
             label: "Hallazgos",
             value: filters.withFindings,
-            options: [
-              { label: "Con hallazgos", value: "true" },
-              { label: "Sin hallazgos", value: "false" },
-            ],
+            tooltip:
+              "Separa los flujos con hallazgos abiertos de los detectores de los limpios.",
+            options: WITH_FINDINGS_OPTIONS,
           },
         ]}
       />
@@ -267,17 +251,13 @@ function AuthorizedFlowsPage() {
           }
         />
       ) : null}
-      <Card className="mt-6">
-        <CardHeader>
-          <SectionHeader
-            title="Hallazgos"
-            description="Lo que los detectores encontraron al cruzar código, contrato, clientes y tests. Los falsos positivos conocidos están documentados en la herramienta."
-          />
-        </CardHeader>
-        <CardContent>
-          <FlowsFindingsTable />
-        </CardContent>
-      </Card>
+      <section className="mt-6">
+        <SectionHeader
+          title="Hallazgos"
+          description="Lo que los detectores encontraron al cruzar código, contrato, clientes y tests. Los falsos positivos conocidos están documentados en la herramienta."
+        />
+        <FlowsFindingsTable />
+      </section>
       {summary.error && !summary.isLoading ? (
         <div className="mt-4">
           <Button onClick={() => void summary.refetch()}>

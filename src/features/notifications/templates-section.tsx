@@ -1,21 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
-import { Pagination } from "@/shared/components/data-table/pagination";
-import { Badge } from "@/shared/components/ui/badges";
+import { DataTable } from "@/shared/components/data-table/data-table";
 import { Button } from "@/shared/components/ui/button";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingSkeleton,
-} from "@/shared/components/ui/states";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { safeText } from "@/shared/lib/format";
 import { useNotificationTemplates } from "./hooks";
-import { NotificationChannelBadge } from "./notification-columns";
 import { CHANNEL_OPTIONS } from "./notification-options";
+import { buildTemplateColumns } from "./template-columns";
 import { TemplateForm } from "./template-form";
 import type { NotificationTemplate } from "./types";
 
@@ -56,6 +50,9 @@ export function TemplatesSection() {
   const [editing, setEditing] = useState<NotificationTemplate | "new" | null>(
     null,
   );
+
+  const columns = useMemo(() => buildTemplateColumns(setEditing), []);
+  const hayFiltros = q.trim() !== "" || channel !== "" || active !== "";
 
   return (
     <div className="space-y-4">
@@ -128,68 +125,24 @@ export function TemplatesSection() {
           onRetry={() => void templates.refetch()}
         />
       ) : null}
-      {templates.data && templates.data.items.length === 0 ? (
-        <EmptyState
-          title="Ninguna plantilla coincide."
-          description="Prueba con otra búsqueda o quita los filtros de canal y estado."
+      {templates.data ? (
+        <DataTable
+          data={templates.data.items}
+          columns={columns}
+          meta={templates.data.meta ?? undefined}
+          onPageChange={setPage}
+          emptyTitle={
+            hayFiltros
+              ? "Ninguna plantilla coincide con la búsqueda."
+              : "Todavía no hay plantillas."
+          }
+          emptyDescription={
+            hayFiltros
+              ? "Prueba con otra búsqueda o quita los filtros de canal y estado."
+              : "Las plantillas se crean con «Nueva plantilla»."
+          }
         />
       ) : null}
-      {templates.data && templates.data.items.length > 0 ? (
-        <>
-          <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {templates.data.items.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onEdit={() => setEditing(template)}
-              />
-            ))}
-          </div>
-          {templates.data.meta ? (
-            <Pagination meta={templates.data.meta} onPageChange={setPage} />
-          ) : null}
-        </>
-      ) : null}
     </div>
-  );
-}
-
-function TemplateCard({
-  template,
-  onEdit,
-}: Readonly<{ template: NotificationTemplate; onEdit: () => void }>) {
-  return (
-    <article className="flex flex-col rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
-      <div className="flex items-start justify-between gap-2">
-        <code className="font-mono text-sm font-semibold text-atlas-text">
-          {template.code}
-        </code>
-        <Badge tone={template.isActive ? "success" : "muted"}>
-          {template.isActive ? "activa" : "inactiva"}
-        </Badge>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        <NotificationChannelBadge value={template.channel} />
-        <Badge tone="muted">{template.locale}</Badge>
-        <Badge tone="muted">v{template.version}</Badge>
-        {template.category ? (
-          <Badge tone="muted">{template.category}</Badge>
-        ) : null}
-      </div>
-      <p className="mt-3 text-xs leading-5 text-atlas-muted">
-        {safeText(template.titleTemplate)}
-      </p>
-      <p className="mt-1 line-clamp-2 text-xs text-atlas-text">
-        {template.bodyTemplate}
-      </p>
-      <PermissionGate
-        permissions={["notifications.templates.manage"]}
-        fallback={null}
-      >
-        <Button className="mt-3 self-start" onClick={onEdit}>
-          Editar
-        </Button>
-      </PermissionGate>
-    </article>
   );
 }

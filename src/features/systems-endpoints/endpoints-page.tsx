@@ -25,20 +25,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatBoolean, formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Route } from "lucide-react";
-
-const riskOptions = [
-  { label: "Riesgo bajo", value: "LOW" },
-  { label: "Riesgo medio", value: "MEDIUM" },
-  { label: "Riesgo alto", value: "HIGH" },
-  { label: "Riesgo crítico", value: "CRITICAL" },
-];
-
-const reviewOptions = [
-  { label: "Auto detectado", value: "AUTO_DETECTED" },
-  { label: "Necesita revisión", value: "NEEDS_REVIEW" },
-  { label: "Aprobado", value: "APPROVED" },
-  { label: "Rechazado", value: "REJECTED" },
-];
+import { reviewOptions, riskOptions } from "./endpoint-options";
 
 export function EndpointsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -71,6 +58,7 @@ function AuthorizedEndpointsPage() {
       (blocks.data ?? []).map((item) => ({
         label: `${item.name} (${item.endpoints})`,
         value: item.systemCode,
+        description: `Sólo las rutas del bloque ${item.name}: ${item.endpoints} en el catálogo.`,
       })),
     [blocks.data],
   );
@@ -218,18 +206,24 @@ function AuthorizedEndpointsPage() {
             name: "block",
             label: "Bloque",
             value: block,
+            tooltip:
+              "Deja sólo las rutas de un bloque de Atlas. Los bloques y sus cuentas salen del servidor, aunque alguno aún no aporte rutas.",
             options: blockOptions,
           },
           {
             name: "riskLevel",
             label: "Riesgo",
             value: riskLevel,
+            tooltip:
+              "Deja sólo las rutas con ese nivel de riesgo, según lo que hacen con los datos.",
             options: riskOptions,
           },
           {
             name: "reviewStatus",
             label: "Revisión",
             value: reviewStatus,
+            tooltip:
+              "Deja sólo las rutas cuya ficha está en ese estado de revisión humana.",
             options: reviewOptions,
           },
         ]}
@@ -256,6 +250,12 @@ function AuthorizedEndpointsPage() {
           columns={columns}
           meta={endpoints.data.meta}
           onPageChange={setPage}
+          emptyTitle={
+            q || riskLevel || reviewStatus || block
+              ? "Ninguna ruta coincide con la búsqueda o los filtros."
+              : "No hay rutas en el catálogo."
+          }
+          emptyDescription="Quita el texto o los filtros, o carga el catálogo desde Salud de la red."
         />
       ) : null}
     </>

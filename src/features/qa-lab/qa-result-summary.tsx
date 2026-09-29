@@ -1,4 +1,5 @@
 import { Badge, StatusBadge } from "@/shared/components/ui/badges";
+import { QaChecksTable } from "./qa-checks-table";
 import type { DirectRunResult, DirectStressResult } from "./types";
 
 export function RunResultSummary({
@@ -26,14 +27,9 @@ export function RunResultSummary({
         <p className="mt-2 text-sm font-medium text-red-700">{result.error}</p>
       ) : null}
       {result.assertions?.items.length ? (
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-atlas-muted">
-          {result.assertions.items.map((item) => (
-            <li key={item.name} className={item.passed ? "" : "text-amber-700"}>
-              {item.name}: {item.actual} / {item.expected} -{" "}
-              {item.passed ? "OK" : "revisar"}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3">
+          <QaChecksTable items={result.assertions.items} />
+        </div>
       ) : null}
       {result.warnings?.length ? (
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-amber-700">
@@ -71,14 +67,9 @@ export function StressResultSummary({
       </div>
       <p className="mt-2 break-all text-xs text-atlas-muted">{result.url}</p>
       {result.thresholds.length ? (
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-atlas-muted">
-          {result.thresholds.map((item) => (
-            <li key={item.name}>
-              {item.name}: {item.actual} / {item.expected} —{" "}
-              {item.passed ? "OK" : "revisar"}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-3">
+          <QaChecksTable items={result.thresholds} />
+        </div>
       ) : null}
       {result.warnings.length ? (
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-amber-700">

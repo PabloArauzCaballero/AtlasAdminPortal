@@ -1,29 +1,18 @@
 "use client";
 
-import { Badge } from "@/shared/components/ui/badges";
 import { MetricCard } from "@/shared/components/layout/metric-card";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
-import { explainFinding, explainStatus, SEVERIDADES } from "../finding-codes";
+import { formatNumber } from "@/shared/lib/format";
 import type {
   IdempotencyAudit,
   RetentionPreview,
   SanitizationAudit,
-  Severity,
 } from "../types";
 import {
-  EmptyGood,
-  GateBanner,
-  ReportShell,
-  SimpleTable,
-  Td,
-  Tr,
-} from "./report-shell";
-
-function severidad(value: string) {
-  return (
-    SEVERIDADES[value as Severity] ?? { label: value, tone: "default" as const }
-  );
-}
+  IdempotencyFindingsTable,
+  SanitizationFindingsTable,
+} from "./findings-tables";
+import { RetentionCandidatesTable } from "./findings-tables-quality";
+import { GateBanner, ReportShell } from "./report-shell";
 
 export function IdempotencyAuditView({
   query,
@@ -61,36 +50,7 @@ export function IdempotencyAuditView({
             failText="Hay llaves reutilizadas con contenido distinto: revisar quién las genera."
           />
 
-          {data.findings.length === 0 ? (
-            <EmptyGood>
-              No se encontró ninguna repetición en la ventana revisada.
-            </EmptyGood>
-          ) : (
-            <SimpleTable
-              headers={["Gravedad", "Qué pasó", "Veces", "Solicitudes"]}
-              align={{ 2: "right" }}
-            >
-              {data.findings.map((finding) => {
-                const explicacion = explainFinding(finding.code);
-                const tono = severidad(finding.severity);
-                return (
-                  <Tr key={finding.keyHash}>
-                    <Td>
-                      <Badge tone={tono.tone}>{tono.label}</Badge>
-                    </Td>
-                    <Td>
-                      <p className="font-medium text-atlas-text">
-                        {explicacion.label}
-                      </p>
-                      <p className="text-atlas-muted">{explicacion.summary}</p>
-                    </Td>
-                    <Td right>{finding.occurrences}</Td>
-                    <Td muted>{finding.requestIds.join(", ")}</Td>
-                  </Tr>
-                );
-              })}
-            </SimpleTable>
-          )}
+          <IdempotencyFindingsTable findings={data.findings} />
 
           <div className="rounded-xl border border-atlas-border bg-white p-4 shadow-subtle">
             <h4 className="mb-2 text-sm font-semibold text-atlas-text">
@@ -136,44 +96,7 @@ export function RetentionPreviewView({
             {data.note ? (
               <p className="text-sm text-atlas-muted">{data.note}</p>
             ) : null}
-            {candidatos.length === 0 ? (
-              <EmptyGood>
-                No hay ninguna consulta lo bastante antigua para purgarse.
-              </EmptyGood>
-            ) : (
-              <SimpleTable
-                headers={[
-                  "Solicitud",
-                  "Cliente",
-                  "Cuándo se pidió",
-                  "Cómo acabó",
-                  "Qué se haría",
-                ]}
-              >
-                {candidatos.map((candidato) => (
-                  <Tr key={candidato.requestId}>
-                    <Td>{candidato.requestId}</Td>
-                    <Td muted>{candidato.customerId ?? "—"}</Td>
-                    <Td muted>{formatDateTime(candidato.requestedAt)}</Td>
-                    <Td>
-                      {candidato.responseStatus ? (
-                        <Badge
-                          tone={
-                            explainStatus(candidato.responseStatus).tone ??
-                            "default"
-                          }
-                        >
-                          {explainStatus(candidato.responseStatus).label}
-                        </Badge>
-                      ) : (
-                        "—"
-                      )}
-                    </Td>
-                    <Td muted>{candidato.action ?? "—"}</Td>
-                  </Tr>
-                ))}
-              </SimpleTable>
-            )}
+            <RetentionCandidatesTable candidates={candidatos} />
           </>
         );
       }}
@@ -217,37 +140,7 @@ export function SanitizationAuditView({
             failText="Hay respuestas guardadas con claves sensibles sin tachar."
           />
 
-          {data.findings.length === 0 ? (
-            <EmptyGood>La muestra revisada está limpia.</EmptyGood>
-          ) : (
-            <SimpleTable
-              headers={[
-                "Gravedad",
-                "Clave encontrada",
-                "Respuesta",
-                "Solicitud",
-              ]}
-            >
-              {data.findings.map((finding) => {
-                const tono = severidad(finding.severity);
-                return (
-                  <Tr key={finding.responseId}>
-                    <Td>
-                      <Badge tone={tono.tone}>{tono.label}</Badge>
-                    </Td>
-                    <Td>
-                      <span className="font-mono text-xs">{finding.key}</span>
-                      <p className="text-atlas-muted">
-                        {explainFinding(finding.code).summary}
-                      </p>
-                    </Td>
-                    <Td muted>{finding.responseId}</Td>
-                    <Td muted>{finding.providerRequestId}</Td>
-                  </Tr>
-                );
-              })}
-            </SimpleTable>
-          )}
+          <SanitizationFindingsTable findings={data.findings} />
         </>
       )}
     </ReportShell>

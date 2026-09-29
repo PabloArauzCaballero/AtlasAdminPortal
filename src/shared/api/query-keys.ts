@@ -26,9 +26,10 @@ export const queryKeys = {
   flowScreens: (params: unknown) =>
     ["systems", "flows-screens", params] as const,
   flowImports: ["systems", "flows-imports"] as const,
-  flowPendingWork: (windowDays: number) =>
-    ["systems", "flows-pending-work", windowDays] as const,
-  flowRbacDrift: ["systems", "flows-rbac-drift"] as const,
+  flowPendingWork: (query: unknown) =>
+    ["systems", "flows-pending-work", query] as const,
+  flowRbacDrift: (query: unknown) =>
+    ["systems", "flows-rbac-drift", query] as const,
   flowDocumentationGate: ["systems", "flows-documentation-gate"] as const,
   flowReviewQueue: (params: unknown) =>
     ["systems", "flows-review-queue", params] as const,

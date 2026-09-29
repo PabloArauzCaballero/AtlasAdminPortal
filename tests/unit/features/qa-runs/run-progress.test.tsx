@@ -144,7 +144,30 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
     renderWithProviders(<RunProgress runId="run-1" />);
 
     const cause = await screen.findByText(/422 VALIDATION_ERROR/);
-    const table = screen.getByRole("table", { name: "Resultado por paso" });
+    const table = screen.getByRole("region", { name: "Resultado por paso" });
+    const steps = within(table).getByRole("table");
+    expect(
+      within(steps)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual([
+      "Paso",
+      "Aprobaron",
+      "Fallaron",
+      "Omitidos",
+      "No aplica",
+      "Sin conclusión",
+      "Cancelados",
+    ]);
+    const causes = within(
+      screen.getByRole("region", { name: "Causas raíz" }),
+    ).getByRole("table");
+    expect(
+      within(causes)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["Paso", "Motivo", "Personas"]);
+    expect(within(causes).getByText("3 personas")).toBeInTheDocument();
     expect(
       cause.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();

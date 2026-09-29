@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "@/shared/api/client";
@@ -10,9 +10,10 @@ import { renderWithProviders } from "../../../helpers/render-with-providers";
 import { elegirOpcion } from "../../shared/option-select-helpers";
 
 vi.mock("@/shared/api/client", () => ({ apiRequest: vi.fn() }));
+const sesion = vi.hoisted(() => ({ permissions: [] as string[] }));
 vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => ({
-    permissions: [],
+    permissions: sesion.permissions,
     roles: [],
     hasPermission: () => true,
     hasAnyRole: () => true,
@@ -67,6 +68,7 @@ const plantilla = (pagina: number) => ({
 beforeEach(() => {
   for (const clave of Object.keys(consultas)) delete consultas[clave];
   falla = false;
+  sesion.permissions = [];
   request.mockReset();
   request.mockImplementation(async (path, options) => {
     const query = (options?.query ?? {}) as Record<string, unknown>;
@@ -171,6 +173,50 @@ describe("Plantillas de notificación", () => {
     await waitFor(() =>
       expect(ultima(RUTA)).toMatchObject({ page: 2, q: "otp" }),
     );
+  });
+
+  it("las plantillas son una tabla con cabeceras, no un muro de tarjetas", async () => {
+    sesion.permissions = ["notifications.templates.manage"];
+    renderWithProviders(<TemplatesSection />);
+    const tabla = await screen.findByRole("table");
+    for (const cabecera of [
+      "Código",
+      "Canal",
+      "Versión",
+      "Estado",
+      "Acciones",
+    ]) {
+      expect(
+        within(tabla).getByRole("columnheader", { name: cabecera }),
+      ).toBeInTheDocument();
+    }
+    const fila = within(tabla).getByText("PLANTILLA_1").closest("tr");
+    expect(fila).not.toBeNull();
+    expect(
+      within(fila as HTMLElement).getByRole("button", { name: "Editar" }),
+    ).toBeInTheDocument();
+  });
+
+  it("sin coincidencias dice que nada coincide, no que no hay plantillas", async () => {
+    request.mockImplementation(async (path, options) => {
+      const query = (options?.query ?? {}) as Record<string, unknown>;
+      (consultas[path] ??= []).push(query);
+      return {
+        data: [],
+        pagination: { page: 1, limit: 12, total: 0, totalPages: 0 },
+      };
+    });
+    renderWithProviders(<TemplatesSection />);
+    expect(
+      await screen.findByText("Todavía no hay plantillas."),
+    ).toBeInTheDocument();
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /código, título o asunto/i }),
+      { target: { value: "zzz" } },
+    );
+    expect(
+      await screen.findByText("Ninguna plantilla coincide con la búsqueda."),
+    ).toBeInTheDocument();
   });
 
   it("el canal viaja al servidor", async () => {
