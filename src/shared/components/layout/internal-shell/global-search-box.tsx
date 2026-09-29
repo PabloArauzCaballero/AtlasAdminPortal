@@ -37,7 +37,13 @@ export function GlobalSearchBox() {
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const debouncedQ = useDebouncedValue(q, 350);
-  const suggestions = useGlobalSearch(open ? debouncedQ.trim() : "");
+  // Sin tipo: hasta 2 de cada uno (endpoint, tabla, regla, reporte), 6 como mucho.
+  const suggestions = useGlobalSearch(
+    open ? debouncedQ.trim() : "",
+    null,
+    1,
+    2,
+  );
   // Un resultado sin destino interno seguro no se ofrece como sugerencia: en un
   // desplegable no hay forma útil de mostrarlo como texto no navegable.
   const safeSuggestions = (suggestions.data?.items ?? [])
