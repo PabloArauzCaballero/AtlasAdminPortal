@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
@@ -17,11 +18,23 @@ import type { AudienceSegment } from "./types";
  */
 export function SegmentsSection() {
   const [status, setStatus] = useState<"active" | "archived">("active");
-  const segments = useAudienceSegments(status);
+  const [q, setQ] = useState("");
+  const segments = useAudienceSegments(status, q);
   const columns = useMemo(() => buildSegmentColumns(), []);
 
   return (
     <div className="space-y-4">
+      {/*
+       * El estado NO va en la barra de filtros: su opción «sin filtrar» promete «todas las filas» y
+       * el servidor siempre devuelve un estado (activos por defecto). Es un conmutador de dos vistas.
+       */}
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar segmento por nombre o descripción…"
+        searchTooltip="Busca en el servidor, por partes, en el nombre y la descripción del segmento. La lista es completa: no se pagina."
+        onSearchChange={setQ}
+        onClear={() => setQ("")}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-atlas-muted">
           {status === "active"
@@ -58,9 +71,11 @@ export function SegmentsSection() {
           data={segments.data}
           columns={columns}
           emptyTitle={
-            status === "active"
-              ? "No hay segmentos guardados."
-              : "No hay segmentos archivados."
+            q
+              ? "Ningún segmento coincide con la búsqueda."
+              : status === "active"
+                ? "No hay segmentos guardados."
+                : "No hay segmentos archivados."
           }
           emptyDescription="Los segmentos se guardan desde el ERP al definir la audiencia de una campaña."
         />

@@ -95,5 +95,7 @@ export type ProviderRequestsPage = {
   total: number;
   limit: number;
   offset: number;
+  /** El contrato canónico; un Core anterior no lo trae y se calcula desde `offset`. */
+  meta?: { page: number; limit: number; total: number; totalPages: number };
   requests: ProviderRequestRow[];
 };

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { QueryParams } from "@/shared/api/types";
 import {
   approveProvisioningRequest,
@@ -17,6 +22,7 @@ export function useMerchantUsers(query: QueryParams) {
   return useQuery({
     queryKey: [...RAIZ, query],
     queryFn: () => listMerchantUsers(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -48,6 +54,7 @@ export function useProvisioningRequests(query: QueryParams) {
   return useQuery({
     queryKey: [...COLA, query],
     queryFn: () => listProvisioningRequests(query),
+    placeholderData: keepPreviousData,
   });
 }
 

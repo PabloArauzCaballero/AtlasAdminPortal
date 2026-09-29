@@ -16,8 +16,13 @@ export type InternalUserListItem = {
   permissions: string[];
 };
 
+/**
+ * `meta` es el contrato canónico de `GET /internal/users` (`page`, `limit`, `total`,
+ * `totalPages`). Es opcional sólo para no romper contra un backend anterior que no lo mande.
+ */
 export type InternalUsersListResponse = {
   items: InternalUserListItem[];
+  meta?: PaginationMeta;
   pagination?: PaginationMeta;
 };
 

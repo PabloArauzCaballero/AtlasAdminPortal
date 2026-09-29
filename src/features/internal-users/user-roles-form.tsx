@@ -20,7 +20,7 @@ export function UserRolesForm({
   user,
 }: Readonly<{ user: InternalUserListItem }>) {
   const { user: sessionUser } = useAuth();
-  const roles = useInternalRoles({ page: 1, limit: 100 });
+  const roles = useInternalRoles();
   const mutation = useUpdateInternalUserRolesMutation(user.id);
   const [selected, setSelected] = useState(() => new Set(user.roles));
   const [reason, setReason] = useState("");

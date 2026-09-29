@@ -1,23 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { UseQueryResult } from "@tanstack/react-query";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useAuth } from "@/shared/auth/auth-context";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Card } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { useApproveRequestMutation, useRejectRequestMutation } from "./hooks";
+import {
+  useApproveRequestMutation,
+  useProvisioningRequests,
+  useRejectRequestMutation,
+} from "./hooks";
+import { PROVISIONING_STATUS_OPTIONS, paginationOf } from "./labels";
 import { buildRequestColumns } from "./merchant-user-columns";
 import {
   CredencialEntregadaDialog,
   ProvisioningDecisionDialog,
 } from "./provisioning-decision-dialog";
 import type {
-  MerchantProvisioningList,
   MerchantProvisioningRequest,
   MerchantProvisioningResult,
 } from "./types";
+
+const POR_PAGINA = 10;
 
 /**
  * La cola de accesos que el ERP ha pedido.
@@ -26,14 +32,24 @@ import type {
  * de una tabla paginada de consulta la escondía tras el desplazamiento en cuanto hubiera una
  * veintena de identidades.
  *
- * La consulta se recibe por props. El contador «Por atender» de la cabecera ya NO sale de ella:
- * contaba las pendientes entre las 50 primeras peticiones sin filtrar, y con más de 50 mentía. Lo
- * pide aparte, filtrado por estado, y las dos consultas cuelgan de la misma clave, así que decidir
- * invalida ambas a la vez.
+ * Paginada en el servidor y filtrada por estado —por defecto, las PENDIENTES—, con buscador por
+ * correo, nombre, cuenta o sucursal. Antes traía las 50 primeras mezclando pendientes y resueltas
+ * sin pie de página: la número 51 no se podía atender desde aquí. Para ver en qué quedó una
+ * petición ya resuelta se elige su estado en el filtro.
+ *
+ * El contador «Por atender» de la cabecera no sale de esta tabla: lo pide aparte, filtrado por
+ * estado, y las dos consultas cuelgan de la misma clave, así que decidir invalida ambas a la vez.
  */
-export function ProvisioningQueue({
-  query,
-}: Readonly<{ query: UseQueryResult<MerchantProvisioningList> }>) {
+export function ProvisioningQueue() {
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("pending");
+  const query = useProvisioningRequests({
+    page,
+    limit: POR_PAGINA,
+    ...(status ? { status } : {}),
+    ...(q.trim() ? { q: q.trim() } : {}),
+  });
   const [decision, setDecision] = useState<{
     peticion: MerchantProvisioningRequest;
     accion: "aprobar" | "rechazar";
@@ -70,6 +86,35 @@ export function ProvisioningQueue({
         datos; rechazar devuelve el motivo al ERP.
       </p>
 
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por correo, nombre, cuenta o sucursal…"
+        searchTooltip="Busca en el servidor, en todas las peticiones: coincide con parte del correo, del nombre de la persona, del nombre de la cuenta B2B o de la sucursal."
+        filters={[
+          {
+            name: "status",
+            label: "Estado",
+            value: status,
+            options: PROVISIONING_STATUS_OPTIONS,
+            allLabel: "Todas las peticiones",
+            tooltip:
+              "Por defecto, las pendientes: lo que falta por atender. Elige otro estado para ver en qué quedó una petición.",
+          },
+        ]}
+        onSearchChange={(valor) => {
+          setQ(valor);
+          setPage(1);
+        }}
+        onFilterChange={(nombre, valor) => {
+          if (nombre === "status") setStatus(valor);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setStatus("pending");
+          setPage(1);
+        }}
+      />
       {query.isLoading ? <LoadingSkeleton rows={4} /> : null}
       {query.error ? (
         <ErrorState
@@ -88,7 +133,13 @@ export function ProvisioningQueue({
         <DataTable
           data={items}
           columns={columns}
-          emptyTitle="No hay accesos pedidos."
+          meta={paginationOf(query.data)}
+          onPageChange={setPage}
+          emptyTitle={
+            status === "pending"
+              ? "No hay accesos pendientes."
+              : "Ninguna petición coincide con estos filtros."
+          }
           emptyDescription="Cuando el ERP registre a alguien en el CRM de un comercio, su petición aparecerá aquí."
         />
       ) : null}

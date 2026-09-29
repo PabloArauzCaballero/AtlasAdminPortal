@@ -1,11 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useInternalRoles } from "./hooks";
+import { filterRoles } from "./catalog-filter";
 import type { InternalRole } from "./types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -25,7 +27,11 @@ export function RolesPage() {
 }
 
 function AuthorizedRolesPage() {
-  const roles = useInternalRoles({ page: 1, limit: 100 });
+  // Catálogo completo: el servidor no pagina los roles ni lee `page`/`limit`.
+  const roles = useInternalRoles();
+  const [q, setQ] = useState("");
+  const todos = useMemo(() => roles.data?.items ?? [], [roles.data]);
+  const visibles = useMemo(() => filterRoles(todos, q), [todos, q]);
   const columns = useMemo<ColumnDef<InternalRole>[]>(
     () => [
       {
@@ -70,7 +76,14 @@ function AuthorizedRolesPage() {
         icon={ShieldCheck}
         eyebrow="RBAC"
         title="Roles internos"
-        description="Los roles que se pueden asignar a una cuenta interna y cuántos permisos da cada uno. Para ver quién tiene un rol, abre Usuarios internos."
+        description={`Catálogo completo${roles.data ? ` (${formatNumber(todos.length)} roles)` : ""}: los roles que se pueden asignar a una cuenta interna y cuántos permisos da cada uno. Para ver quién tiene un rol, abre Usuarios internos y filtra por él.`}
+      />
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por código, nombre o descripción del rol…"
+        searchTooltip="Recorre el catálogo completo de roles, que llega entero del servidor: coincide con parte del código, del nombre o de la descripción."
+        onSearchChange={setQ}
+        onClear={() => setQ("")}
       />
       {roles.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {roles.error ? (
@@ -88,10 +101,13 @@ function AuthorizedRolesPage() {
       ) : null}
       {roles.data ? (
         <DataTable
-          data={roles.data.items}
+          data={visibles}
           columns={columns}
-          meta={roles.data.pagination}
-          emptyTitle="No hay roles internos registrados."
+          emptyTitle={
+            todos.length === 0
+              ? "No hay roles internos registrados."
+              : "Ningún rol coincide con la búsqueda."
+          }
         />
       ) : null}
     </>

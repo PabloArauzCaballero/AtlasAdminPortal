@@ -66,12 +66,14 @@ export function cancelCampaign(campaignId: string, reason: string) {
   });
 }
 
+/** La lista es COMPLETA (el servidor no la pagina); `q` busca por nombre o descripción. */
 export async function listAudienceSegments(
   status: "active" | "archived",
+  q = "",
 ): Promise<AudienceSegment[]> {
   const response = await apiRequest<{ data: AudienceSegment[] }>(
     "/operations/notifications/audience-segments",
-    { query: { status } },
+    { query: { status, ...(q ? { q } : {}) } },
   );
   return response.data;
 }

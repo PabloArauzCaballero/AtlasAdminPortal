@@ -1,14 +1,14 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   DataTable,
   type AtlasColumnMeta,
 } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime } from "@/shared/lib/format";
 import type { Option } from "@/shared/lib/options";
@@ -30,14 +30,7 @@ const EQUIPO = Object.fromEntries(
   EQUIPO_OPTIONS.map((opcion) => [opcion.value, opcion.label]),
 );
 
-const TODOS: Option = {
-  value: "",
-  label: "Todos",
-  description: "Sin filtrar por este dato: se ven todos los artículos.",
-};
-
 export const ESTADO_ARTICULO_OPTIONS: Option[] = [
-  TODOS,
   {
     value: "PUBLISHED",
     label: "Publicados",
@@ -67,22 +60,22 @@ export const ESTADO_ARTICULO_OPTIONS: Option[] = [
 
 /**
  * Todos los artículos, en cualquier estado y para cualquier audiencia, con la acción de redactar su
- * siguiente versión. La búsqueda es por la clave del artículo, que es lo que el servidor filtra.
+ * siguiente versión. La búsqueda viaja al servidor y coincide con la clave del artículo o con el
+ * título de su versión vigente.
  */
 export function KnowledgeArticlesSection({
   onNuevaVersion,
 }: Readonly<{
   onNuevaVersion: (article: { articleId: string; articleKey: string }) => void;
 }>) {
-  const [texto, setTexto] = useState("");
+  const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [audience, setAudience] = useState("");
   const [page, setPage] = useState(1);
-  const search = useDeferredValue(texto.trim());
   const articulos = useKnowledgeArticles({
     status,
     audience,
-    search,
+    search: search.trim(),
     page,
     pageSize: POR_PAGINA,
   });
@@ -91,9 +84,15 @@ export function KnowledgeArticlesSection({
     () => [
       {
         header: "Artículo",
+        enableSorting: false,
         accessorKey: "articleKey",
         cell: ({ row }) => (
           <div className="min-w-0">
+            {row.original.currentTitle ? (
+              <p className="max-w-[36ch] truncate text-sm font-medium text-atlas-text">
+                {row.original.currentTitle}
+              </p>
+            ) : null}
             <p className="max-w-[36ch] truncate font-mono text-xs text-atlas-text">
               {row.original.articleKey}
             </p>
@@ -107,6 +106,7 @@ export function KnowledgeArticlesSection({
       },
       {
         header: "Quién lo lee",
+        enableSorting: false,
         accessorKey: "audience",
         cell: ({ row }) => (
           <Badge tone="muted">
@@ -116,6 +116,7 @@ export function KnowledgeArticlesSection({
       },
       {
         header: "Estado",
+        enableSorting: false,
         accessorKey: "status",
         cell: ({ row }) => {
           const estado = ESTADO_VERSION[row.original.status];
@@ -128,17 +129,20 @@ export function KnowledgeArticlesSection({
       },
       {
         header: "Útil / no útil",
+        enableSorting: false,
         id: "utilidad",
         cell: ({ row }) =>
           `${row.original.helpfulCount} / ${row.original.notHelpfulCount}`,
       },
       {
         header: "Próxima revisión",
+        enableSorting: false,
         accessorKey: "nextReviewAt",
         cell: ({ row }) => formatDateTime(row.original.nextReviewAt),
       },
       {
         header: "Acción",
+        enableSorting: false,
         id: "accion",
         meta: { pinRight: true } satisfies AtlasColumnMeta,
         cell: ({ row }) => (
@@ -165,49 +169,44 @@ export function KnowledgeArticlesSection({
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-semibold text-atlas-text">Artículos</h2>
-      <div className="grid gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle sm:grid-cols-3">
-        <Field
-          label="Buscar por clave"
-          tooltip="Parte de la clave del artículo, por ejemplo «codigo» encuentra «no-me-llega-el-codigo»."
-        >
-          <Input
-            type="search"
-            value={texto}
-            onChange={(event) => {
-              setTexto(event.target.value);
-              setPage(1);
-            }}
-          />
-        </Field>
-        <Field
-          label="Estado"
-          tooltip="En qué punto está el artículo: publicado, en revisión, retirado u otro."
-        >
-          <Select
-            name="estado-articulo"
-            options={ESTADO_ARTICULO_OPTIONS}
-            value={status}
-            onChange={(valor) => {
-              setStatus(valor);
-              setPage(1);
-            }}
-          />
-        </Field>
-        <Field
-          label="Quién lo lee"
-          tooltip="Filtra por la audiencia del artículo: público, clientes, comercios o equipo interno."
-        >
-          <Select
-            name="audiencia-articulo"
-            options={[TODOS, ...AUDIENCIA_OPTIONS]}
-            value={audience}
-            onChange={(valor) => {
-              setAudience(valor);
-              setPage(1);
-            }}
-          />
-        </Field>
-      </div>
+      <FilterBar
+        search={search}
+        searchPlaceholder="Buscar por clave o título…"
+        searchTooltip="Busca en el servidor: coincide con parte de la clave del artículo (p. ej. «codigo» encuentra «no-me-llega-el-codigo») o del título de su versión vigente."
+        filters={[
+          {
+            name: "status",
+            label: "Estado",
+            value: status,
+            options: ESTADO_ARTICULO_OPTIONS,
+            tooltip:
+              "En qué punto está el artículo: publicado, en revisión, retirado u otro.",
+          },
+          {
+            name: "audience",
+            label: "Quién lo lee",
+            value: audience,
+            options: AUDIENCIA_OPTIONS,
+            tooltip:
+              "Filtra por la audiencia del artículo: público, clientes, comercios o equipo interno.",
+          },
+        ]}
+        onSearchChange={(valor) => {
+          setSearch(valor);
+          setPage(1);
+        }}
+        onFilterChange={(nombre, valor) => {
+          if (nombre === "status") setStatus(valor);
+          if (nombre === "audience") setAudience(valor);
+          setPage(1);
+        }}
+        onClear={() => {
+          setSearch("");
+          setStatus("");
+          setAudience("");
+          setPage(1);
+        }}
+      />
 
       {articulos.isLoading ? <LoadingSkeleton rows={4} /> : null}
       {articulos.error ? (

@@ -25,7 +25,8 @@ export function grantConsent(body: {
   customerId: string;
   purpose: string;
   providerCode?: string;
-  accepted: boolean;
+  /** El servidor sólo admite `true` (Core #125): retirar un consentimiento es «revocar». */
+  accepted: true;
 }) {
   return apiRequest<JsonRecord>("/external-data/consents", {
     method: "POST",

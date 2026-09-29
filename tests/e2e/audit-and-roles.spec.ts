@@ -87,7 +87,9 @@ test.describe("auditoría y RBAC", () => {
     // recorrer la primera página: el listado crece con cada alta —las pruebas de mensajería crean
     // una cuenta por corrida— y una fila que se sale de la página no es un defecto del portal.
     const email = process.env.TEST_EMAIL ?? "";
-    await page.getByPlaceholder(/buscar usuario/i).fill(email);
+    await page
+      .getByPlaceholder(/buscar por correo, nombre, departamento/i)
+      .fill(email);
     await settled(page);
     const selfRow = page.getByRole("row", { name: new RegExp(email, "i") });
     await expect(selfRow).toBeVisible();

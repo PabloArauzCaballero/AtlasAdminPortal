@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -42,10 +47,11 @@ export function useCampaignMessages(campaignId: string, query: QueryParams) {
   });
 }
 
-export function useAudienceSegments(status: "active" | "archived") {
+export function useAudienceSegments(status: "active" | "archived", q = "") {
   return useQuery({
-    queryKey: queryKeys.notificationSegments(status),
-    queryFn: () => listAudienceSegments(status),
+    queryKey: [...queryKeys.notificationSegments(status), q],
+    queryFn: () => listAudienceSegments(status, q),
+    placeholderData: keepPreviousData,
   });
 }
 

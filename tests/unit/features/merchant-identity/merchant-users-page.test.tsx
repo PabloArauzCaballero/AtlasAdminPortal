@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -18,6 +19,7 @@ vi.mock("@/shared/auth/auth-context", () => ({
 
 const { MerchantUsersPage } =
   await import("@/features/merchant-identity/merchant-users-page");
+const { elegirOpcion } = await import("../../shared/option-select-helpers");
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
@@ -126,5 +128,79 @@ describe("MerchantUsersPage", () => {
     expect(
       within(fila).getByText("Sin permiso para cambiarlo"),
     ).toBeInTheDocument();
+  });
+
+  const consulta = (ruta: string) =>
+    peticiones.filter((u) => u.pathname.endsWith(ruta)).at(-1);
+
+  it("el buscador de identidades viaja como q, no como el correo exacto", async () => {
+    renderWithProviders(<MerchantUsersPage />);
+    await screen.findByText("Ana Comercio");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: /Buscar por correo, nombre o código/,
+      }),
+      { target: { value: "comer" } },
+    );
+    await waitFor(() =>
+      expect(consulta("/merchant/users")?.searchParams.get("q")).toBe("comer"),
+    );
+    expect(consulta("/merchant/users")?.searchParams.get("email")).toBeNull();
+  });
+
+  it("la cola de peticiones nace en «pendientes» y su buscador viaja como q", async () => {
+    renderWithProviders(<MerchantUsersPage />);
+    await screen.findByText("Ana Comercio");
+    await waitFor(() =>
+      expect(
+        consulta("/merchant/users/provisioning-requests")?.searchParams.get(
+          "status",
+        ),
+      ).toBe("pending"),
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: /correo, nombre, cuenta o sucursal/i,
+      }),
+      { target: { value: "sucre" } },
+    );
+    await waitFor(() =>
+      expect(
+        consulta("/merchant/users/provisioning-requests")?.searchParams.get(
+          "q",
+        ),
+      ).toBe("sucre"),
+    );
+  });
+
+  it("suspender exige un motivo de 8 caracteres y el motivo viaja en el PATCH", async () => {
+    let cuerpo: Record<string, unknown> | null = null;
+    server.use(
+      http.patch(`${API_BASE}/merchant/users/5/status`, async ({ request }) => {
+        cuerpo = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ data: { ...USUARIO, status: "suspended" } });
+      }),
+    );
+    renderWithProviders(<MerchantUsersPage />);
+    const fila = (await screen.findByText("Ana Comercio")).closest("tr")!;
+    await elegirOpcion(
+      within(fila).getByLabelText(/Cambiar estado de Ana Comercio/),
+      "suspended",
+    );
+    const confirmar = await screen.findByRole("button", { name: "Cambiar" });
+    expect(confirmar).toBeDisabled();
+    await userEvent.type(screen.getByLabelText(/^Motivo/), "corto");
+    expect(confirmar).toBeDisabled();
+    await userEvent.type(
+      screen.getByLabelText(/^Motivo/),
+      " y ya es suficiente",
+    );
+    await userEvent.click(confirmar);
+    await waitFor(() =>
+      expect(cuerpo).toEqual({
+        status: "suspended",
+        reason: "corto y ya es suficiente",
+      }),
+    );
   });
 });

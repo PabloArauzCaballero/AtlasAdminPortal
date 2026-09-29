@@ -12,22 +12,21 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Card } from "@/shared/components/ui/card";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import {
   useMerchantUserCount,
   useMerchantUsers,
   usePendingProvisioningCount,
-  useProvisioningRequests,
   useSetMerchantUserStatusMutation,
 } from "./hooks";
 import {
   MERCHANT_USER_STATUS_OPTIONS,
   formatCount,
-  merchantUserStatusLabel,
+  paginationOf,
 } from "./labels";
 import { buildIdentityColumns } from "./merchant-user-columns";
 import { ProvisioningQueue } from "./provisioning-queue";
+import { StatusChangeDialog } from "./status-change-dialog";
 import type { MerchantUserProfile } from "./types";
 
 /**
@@ -59,7 +58,7 @@ export function MerchantUsersPage() {
 function AuthorizedMerchantUsersPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
-  const [email, setEmail] = useState("");
+  const [q, setQ] = useState("");
   const [cambio, setCambio] = useState<{
     usuario: MerchantUserProfile;
     destino: string;
@@ -69,11 +68,10 @@ function AuthorizedMerchantUsersPage() {
     page,
     limit: 25,
     ...(status ? { status } : {}),
-    ...(email ? { email } : {}),
+    // `q` busca en correo, nombre y código de usuario (ILIKE en el servidor). Antes se mandaba
+    // `email`, que exige el correo EXACTO: escribir la mitad no encontraba a nadie.
+    ...(q.trim() ? { q: q.trim() } : {}),
   });
-  // Sin filtro de estado: la cola enseña lo pendiente Y lo ya resuelto, porque «¿en qué quedó lo
-  // que pedí?» se pregunta tanto como «¿qué me falta por atender?».
-  const peticiones = useProvisioningRequests({ page: 1, limit: 50 });
   const cambiarEstado = useSetMerchantUserStatusMutation();
   const pendientes = usePendingProvisioningCount();
   const activas = useMerchantUserCount("active");
@@ -97,7 +95,6 @@ function AuthorizedMerchantUsersPage() {
       ? cambiarEstado.error.message
       : "No se pudo cambiar el estado del acceso."
     : null;
-  const destino = cambio ? merchantUserStatusLabel(cambio.destino) : "";
 
   return (
     <>
@@ -124,7 +121,7 @@ function AuthorizedMerchantUsersPage() {
         <MetricCard
           label="Identidades"
           value={formatCount({ ...usuarios, total: usuarios.data?.total })}
-          hint={status || email ? "Con los filtros de la tabla." : "Todas."}
+          hint={status || q ? "Con los filtros de la tabla." : "Todas."}
         />
         <MetricCard
           label="Activas"
@@ -145,7 +142,7 @@ function AuthorizedMerchantUsersPage() {
         />
       </section>
 
-      <ProvisioningQueue query={peticiones} />
+      <ProvisioningQueue />
 
       <Card className="p-5">
         <h2 className="mb-1 text-base font-semibold text-atlas-text">
@@ -156,8 +153,9 @@ function AuthorizedMerchantUsersPage() {
           acceso en la siguiente rotación del token; el historial se conserva.
         </p>
         <FilterBar
-          search={email}
-          searchPlaceholder="Buscar por correo…"
+          search={q}
+          searchPlaceholder="Buscar por correo, nombre o código…"
+          searchTooltip="Busca en el servidor, en todas las identidades: coincide con parte del correo, del nombre o del código de usuario."
           filters={[
             {
               name: "status",
@@ -169,7 +167,7 @@ function AuthorizedMerchantUsersPage() {
             },
           ]}
           onSearchChange={(valor) => {
-            setEmail(valor);
+            setQ(valor);
             setPage(1);
           }}
           onFilterChange={(nombre, valor) => {
@@ -177,7 +175,7 @@ function AuthorizedMerchantUsersPage() {
             setPage(1);
           }}
           onClear={() => {
-            setEmail("");
+            setQ("");
             setStatus("");
             setPage(1);
           }}
@@ -202,15 +200,7 @@ function AuthorizedMerchantUsersPage() {
           <DataTable
             data={items}
             columns={columns}
-            meta={{
-              page: usuarios.data.page,
-              limit: usuarios.data.limit,
-              total: usuarios.data.total,
-              totalPages: Math.max(
-                1,
-                Math.ceil(usuarios.data.total / usuarios.data.limit),
-              ),
-            }}
+            meta={paginationOf(usuarios.data)}
             onPageChange={setPage}
             emptyTitle="Ninguna identidad concedida todavía."
             emptyDescription="Las que se concedan desde la cola de arriba aparecerán aquí."
@@ -218,28 +208,29 @@ function AuthorizedMerchantUsersPage() {
         ) : null}
       </Card>
 
-      <ConfirmDialog
-        open={cambio !== null}
-        title={`Cambiar el acceso a «${destino}»`}
-        description={`${cambio?.usuario.fullName ?? ""} pasará a «${destino.toLowerCase()}». Suspender o dar de baja corta su acceso al portal del comercio; su historial se conserva.${errorDeCambio ? ` · No se cambió: ${errorDeCambio}` : ""}`}
-        confirmText="Cambiar"
-        isLoading={cambiarEstado.isPending}
-        onCancel={() => {
-          cambiarEstado.reset();
-          setCambio(null);
-        }}
-        onConfirm={() => {
-          if (!cambio) return;
-          // En error el diálogo sigue abierto con el motivo; sólo el éxito lo cierra.
-          cambiarEstado
-            .mutateAsync({
-              merchantUserId: cambio.usuario.id,
-              status: cambio.destino,
-            })
-            .then(() => setCambio(null))
-            .catch(() => undefined);
-        }}
-      />
+      {cambio ? (
+        <StatusChangeDialog
+          usuario={cambio.usuario}
+          destino={cambio.destino}
+          isPending={cambiarEstado.isPending}
+          error={errorDeCambio}
+          onCancel={() => {
+            cambiarEstado.reset();
+            setCambio(null);
+          }}
+          onConfirm={(reason) => {
+            // En error el diálogo sigue abierto con el motivo; sólo el éxito lo cierra.
+            cambiarEstado
+              .mutateAsync({
+                merchantUserId: cambio.usuario.id,
+                status: cambio.destino,
+                ...(reason ? { reason } : {}),
+              })
+              .then(() => setCambio(null))
+              .catch(() => undefined);
+          }}
+        />
+      ) : null}
     </>
   );
 }

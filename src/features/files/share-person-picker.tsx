@@ -1,11 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/shared/api/query-keys";
+import { InternalUserSearchCombobox } from "@/features/internal-users/internal-user-search-combobox";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { Field, Input, Select } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
 import { useVisibilidad } from "./hooks";
-import { listarPersonasInternas } from "./services";
 
 /** El permiso que exige `GET /internal/users`. Sin él se cae al identificador escrito a mano. */
 const PERMISO_DE_PERSONAS = "internal.users.read";
@@ -13,9 +11,10 @@ const PERMISO_DE_PERSONAS = "internal.users.read";
 /**
  * Elegir a la persona interna que recibe el acceso.
  *
- * Con permiso para ver el personal, un desplegable con nombre y correo; sin él, el campo de
- * identificador de antes, pero diciendo de dónde sacarlo. Nunca se inventa la lista: si no se
- * puede pedir, no se finge que se eligió a alguien.
+ * Con permiso para ver el personal, un buscador que pregunta al SERVIDOR por nombre o correo
+ * (sólo cuentas activas: una cuenta suspendida o dada de baja no puede entrar, y darle acceso sólo
+ * ensucia la lista); sin él, el campo de identificador de antes, pero diciendo de dónde sacarlo.
+ * Nunca se inventa la lista: si no se puede pedir, no se finge que se eligió a alguien.
  */
 export function SelectorDePersona({
   value,
@@ -35,50 +34,15 @@ export function SelectorDePersona({
   );
   return (
     <PermissionGate permissions={[PERMISO_DE_PERSONAS]} fallback={manual}>
-      <ListaDePersonas value={value} onChange={onChange} manual={manual} />
-    </PermissionGate>
-  );
-}
-
-function ListaDePersonas({
-  value,
-  onChange,
-  manual,
-}: Readonly<{
-  value: string;
-  onChange: (valor: string) => void;
-  manual: React.ReactNode;
-}>) {
-  const personas = useQuery({
-    queryKey: queryKeys.internalUsers({ limit: 100 }),
-    queryFn: listarPersonasInternas,
-  });
-
-  if (personas.isLoading)
-    return <p className="text-sm text-slate-500">Cargando personas…</p>;
-  const elegibles = (personas.data?.items ?? []).filter(
-    // Una cuenta dada de baja no puede entrar: darle acceso sólo ensucia la lista.
-    (persona) => persona.status !== "disabled",
-  );
-  if (personas.error || elegibles.length === 0) return <>{manual}</>;
-
-  return (
-    <Field
-      label="Persona"
-      tooltip="Sólo esta persona recibe el acceso; el resto de su rol sigue como estaba."
-    >
-      <Select
-        name="principalId"
+      <InternalUserSearchCombobox
         value={value}
         onChange={onChange}
-        placeholder="Elige a una persona"
-        options={elegibles.map((persona) => ({
-          value: persona.id,
-          label: persona.fullName,
-          description: persona.email, // sin-ayuda: el correo identifica a la persona, no es una definición
-        }))}
+        label="Persona"
+        tooltip="Sólo esta persona recibe el acceso; el resto de su rol sigue como estaba. Búscala por nombre o correo."
+        hint="Sólo cuentas activas."
+        fallback={manual}
       />
-    </Field>
+    </PermissionGate>
   );
 }
 

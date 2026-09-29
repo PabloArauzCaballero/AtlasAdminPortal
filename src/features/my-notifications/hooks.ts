@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -19,6 +24,7 @@ export function useMyNotifications(
     queryKey: queryKeys.myNotifications(query),
     queryFn: () => listMyNotifications(query),
     enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
   });
 }
 

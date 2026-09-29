@@ -260,21 +260,3 @@ export function revocar(expedienteId: string, nodoId: string, grantId: string) {
 }
 
 export type { Actividad, Concesion, Contactos, Espectador, Expediente, Nodo };
-
-/**
- * Las personas internas, para elegir a quién dar acceso por su nombre y no por su identificador.
- *
- * Se pide aquí y no con el hook de `internal-users` porque un feature no importa los internals de
- * otro (`check:source-boundaries`). Es la misma ruta y la misma consulta: comparten caché.
- * El backend no filtra por texto; 100 es su máximo por página y el selector busca en lo traído.
- */
-export function listarPersonasInternas() {
-  return apiRequest<{
-    items: Array<{
-      id: string;
-      fullName: string;
-      email: string;
-      status: string;
-    }>;
-  }>("/internal/users", { query: { limit: 100 } });
-}

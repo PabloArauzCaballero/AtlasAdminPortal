@@ -85,6 +85,11 @@ export type KnowledgeArticleRow = {
   helpfulCount: number;
   notHelpfulCount: number;
   updatedAt: string | null;
+  /**
+   * El título de la versión vigente. Opcional: lo manda el servidor desde el 2026-09-29 y un
+   * artículo sin versión vigente no lo tiene.
+   */
+  currentTitle?: string | null;
 };
 
 /** Una versión en la cola de trabajo; el texto completo sólo viene en su ficha. */

@@ -70,7 +70,7 @@ export function UserCreateForm() {
       <CardHeader>
         <SectionHeader
           title="Crear usuario interno"
-          description="El administrador no elige la contraseña: se genera una provisional al azar y se envía al correo de la persona. En su primer acceso deberá cambiarla y confirmar con un código de un solo uso que también le llega por correo."
+          description="El administrador no elige la contraseña: se genera una provisional al azar y Atlas pide su envío al correo de la persona. Este portal no puede confirmar que el correo llegue. En su primer acceso deberá cambiarla y confirmar con un código de un solo uso, también por correo."
           className="mb-0"
         />
       </CardHeader>
@@ -217,8 +217,12 @@ export function createErrorMessage(error: unknown): string {
  *
  * Hasta el 2026-09-17 esta pantalla la mostraba una vez, con botón de copiar, para que el
  * administrador la pasara «por otro canal». Eso dejaba la contraseña en la pantalla, en el
- * portapapeles y en la captura que alguien hiciera para no perderla. Atlas ya se la manda a la
- * persona por correo, así que aquí sólo se explica qué le va a llegar y qué hacer si no llega.
+ * portapapeles y en la captura que alguien hiciera para no perderla. Atlas PIDE que se le mande a
+ * la persona por correo, así que aquí sólo se explica qué le va a llegar y qué hacer si no llega.
+ *
+ * No dice «se envió» ni «la recibe»: el alta responde igual se entregue o no el correo (el envío
+ * que falla sólo queda en el registro del servidor), así que la pantalla dice lo que sabe —que se
+ * pidió—, igual que el aviso de acceso concedido a un comercio.
  *
  * `data-testid="temporary-password"` desapareció con ella: el E2E de mensajería genera ahora su
  * propia contraseña y da de alta al usuario por la misma llamada que hace este formulario.
@@ -237,7 +241,7 @@ export function UsuarioCreadoAviso({
       <CardHeader>
         <SectionHeader
           title="Usuario creado"
-          description={`Atlas envía la contraseña provisional a ${email}. Este portal no la muestra: la persona la recibe por correo.`}
+          description={`Se pidió el envío de la contraseña provisional a ${email}. Este portal no la muestra y no puede confirmar que el correo llegó: el servidor pide el envío y, si falla, sólo lo apunta en su registro.`}
           className="mb-0"
         />
       </CardHeader>
@@ -256,8 +260,9 @@ export function UsuarioCreadoAviso({
            * Lo que sí funciona es la recuperación por correo de la pantalla de acceso.
            */}
           <li>
-            Si el correo no llega, la persona puede pedir uno nuevo con
-            «¿Olvidaste tu contraseña?» en la pantalla de acceso.
+            Si el correo no llega —puede que el envío haya fallado—, la persona
+            puede pedir uno nuevo con «¿Olvidaste tu contraseña?» en la pantalla
+            de acceso.
           </li>
           <li>
             Si la dirección está mal escrita, desactiva la cuenta desde{" "}

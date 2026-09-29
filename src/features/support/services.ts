@@ -10,7 +10,6 @@ import type {
   EscalateInput,
   LinkCaseInput,
   ResolveInput,
-  InternalUserForDesk,
   SupportAgentProfile,
   SupportCaseDetail,
   SupportCaseListResponse,
@@ -109,16 +108,6 @@ export function listSupportAgents() {
   return apiRequest<{ agents: SupportAgentProfile[] }>(
     "/internal/support/desk/agents",
   );
-}
-
-/**
- * Las personas del equipo interno, para elegir a quién sumar a la mesa sin teclear su número.
- * Sólo los campos que el selector usa; exige poder leer usuarios internos.
- */
-export function listInternalUsersForDesk() {
-  return apiRequest<{ items: InternalUserForDesk[] }>("/internal/users", {
-    query: { limit: 100 },
-  });
 }
 
 export function createSupportAgent(body: CreateAgentInput) {
