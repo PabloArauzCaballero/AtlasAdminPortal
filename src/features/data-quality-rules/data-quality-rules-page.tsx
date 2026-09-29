@@ -1,5 +1,7 @@
 "use client";
 
+import { ExportDownloadButton } from "@/features/data-exports/export-download-button";
+
 import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -56,6 +58,12 @@ function AuthorizedDataQualityRulesPage() {
         eyebrow="Reglas de calidad"
         title="Reglas de calidad"
         description="Catálogo de reglas de calidad: qué comprueban, su severidad, si están activas y cuántas incidencias tienen pendientes."
+        actions={
+          <ExportDownloadButton
+            downloadUrl="/api/v1/internal/data-quality/rules"
+            fileName="reglas-de-calidad"
+          />
+        }
       />
       <FilterBar
         search={q}

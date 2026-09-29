@@ -43,7 +43,7 @@ function AuthorizedDataEntityMetadataPage({
         icon={Tags}
         eyebrow="Formulario de catálogo"
         title="Configurar tabla"
-        description="Define metadata de negocio y reglas operativas para que el servicio interno las aplique desde backend."
+        description="Edita la ficha de la tabla en el catálogo de datos: propósito, responsable, retención, estado y clasificación. Es documentación; no cambia cómo se escribe en la tabla."
         actions={
           <Link href={`/internal/data-catalog/tables/${entityId}`}>
             <Button>

@@ -8,6 +8,8 @@ export type BusinessTerm = {
   domain: string | null;
   owner: string | null;
   status: string;
+  /** Dominio, tabla o campo. Lo declara el servidor; un Core anterior no lo manda. */
+  type?: BusinessTermType;
   relatedTables?: string[];
   relatedColumns?: string[];
   relatedEndpoints?: string[];
@@ -40,3 +42,9 @@ export type BusinessTermDetail = BusinessTerm & {
 };
 
 export type BusinessTermListResponse = PaginatedResponse<BusinessTerm>;
+
+export type BusinessTermType = "domain" | "table" | "field";
+
+export type FacetCount = { value: string; total: number };
+
+export type BusinessTermFacets = { domains: FacetCount[]; types: FacetCount[] };

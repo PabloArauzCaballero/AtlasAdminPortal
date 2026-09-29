@@ -11,6 +11,16 @@ import {
   vi,
 } from "vitest";
 
+const nav = vi.hoisted(() => ({
+  params: new URLSearchParams(),
+  replace: vi.fn(),
+}));
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => nav.params,
+  usePathname: () => "/internal/business-metadata/domains",
+  useRouter: () => ({ replace: nav.replace, push: vi.fn(), prefetch: vi.fn() }),
+}));
+
 const mockUseAuth = vi.fn();
 vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => mockUseAuth(),

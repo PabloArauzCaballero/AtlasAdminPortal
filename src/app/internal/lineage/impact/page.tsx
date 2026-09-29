@@ -1,5 +1,16 @@
-import { LineageImpactPage } from "@/features/lineage-official/lineage-impact-page";
+import { redirect } from "next/navigation";
+import {
+  redirectWithParams,
+  type RouteSearchParams,
+} from "@/shared/lib/redirect-with-params";
 
-export default function Page() {
-  return <LineageImpactPage />;
+/** «Impacto lineage» es ahora la pestaña «Relaciones e impacto» de Lineage. */
+export default async function Page({
+  searchParams,
+}: Readonly<{ searchParams: RouteSearchParams }>) {
+  redirect(
+    redirectWithParams("/internal/lineage", await searchParams, {
+      vista: "impacto",
+    }),
+  );
 }

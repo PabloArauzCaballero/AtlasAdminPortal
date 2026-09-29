@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useDomainOverview } from "@/features/systems/hooks";
-import type { DomainOverviewItem } from "@/features/systems/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
@@ -13,11 +12,18 @@ import {
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { ReviewStatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Boxes } from "lucide-react";
+import {
+  UrlTabPanel,
+  UrlTabs,
+  useUrlTab,
+  type UrlTab,
+} from "@/shared/components/layout/url-tabs";
+import { GlossaryTermsTab } from "@/features/business-glossary/glossary-terms-tab";
+import { DomainCard } from "./domain-card";
 
 /**
  * Dominios del negocio.
@@ -33,6 +39,18 @@ import { Boxes } from "lucide-react";
  * Ahora lo calcula el backend, entero, con la relación que sí existe: cada tabla lleva su dominio
  * y cada endpoint declara qué tablas toca. Aquí sólo se pinta y se filtra.
  */
+export const DOMAIN_TABS: readonly UrlTab[] = [
+  { value: "dominios", label: "Dominios" },
+  { value: "terminos", label: "Términos" },
+];
+
+/**
+ * «Dominios y glosario»: los dominios con sus cifras y los términos (tablas y campos documentados).
+ *
+ * Eran dos entradas del menú sobre la misma fuente —el glosario se fabrica con dominios, tablas y
+ * campos del catálogo—. `/internal/business-metadata/glossary` redirige aquí con `?tab=terminos`.
+ * Las dos pestañas piden `businessMetadata.read`, el permiso que tenían las dos pantallas.
+ */
 export function BusinessDomainsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -45,6 +63,31 @@ export function BusinessDomainsPage() {
 }
 
 function AuthorizedBusinessDomainsPage() {
+  const tab = useUrlTab("tab", DOMAIN_TABS);
+  return (
+    <>
+      <PageHeader
+        icon={Boxes}
+        eyebrow="Metadata de negocio"
+        title="Dominios y glosario"
+        description="Cada dominio con sus tablas, las rutas que las tocan y sus suites, y el glosario de tablas y campos documentados. Las cifras las calcula el servidor sobre el catálogo completo."
+      />
+      <BusinessContextNote>
+        Atlas está dividido en dominios de negocio (onboarding, riesgo,
+        cobranza, cumplimiento, etc.), cada uno con sus propias tablas, rutas y
+        reglas. Esta vista responde &quot;¿qué parte del negocio toca esta ruta
+        o esta tabla?&quot; y &quot;¿qué significa este dato?&quot; sin tener
+        que preguntarle a quien escribió el código.
+      </BusinessContextNote>
+      <UrlTabs param="tab" tabs={DOMAIN_TABS} label="Dominios y glosario" />
+      <UrlTabPanel param="tab" value={tab}>
+        {tab === "terminos" ? <GlossaryTermsTab /> : <DomainsTab />}
+      </UrlTabPanel>
+    </>
+  );
+}
+
+function DomainsTab() {
   const [q, setQ] = useState("");
   const overview = useDomainOverview();
 
@@ -63,23 +106,10 @@ function AuthorizedBusinessDomainsPage() {
 
   return (
     <>
-      <PageHeader
-        icon={Boxes}
-        eyebrow="Metadata de negocio"
-        title="Dominios del sistema"
-        description="Cada dominio con sus tablas, los endpoints que las tocan y sus suites. Las cifras las calcula el backend sobre el catálogo completo."
-      />
-      <BusinessContextNote>
-        Atlas está dividido en dominios de negocio (onboarding, riesgo,
-        cobranza, cumplimiento, etc.), cada uno con sus propias tablas,
-        endpoints y reglas. Esta vista existe para responder &quot;¿qué parte
-        del negocio toca este endpoint o esta tabla?&quot; sin tener que
-        preguntarle a quien escribió el código. Un endpoint pertenece a los
-        dominios de las tablas que toca.
-      </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar dominio o módulo…"
+        searchPlaceholder="Buscar dominio, nombre, descripción o módulo…"
+        searchTooltip="Filtra los dominios ya calculados por el servidor (son pocos y llegan todos): código, nombre, descripción y módulos."
         onSearchChange={setQ}
         onClear={() => setQ("")}
       />
@@ -182,79 +212,5 @@ function AuthorizedBusinessDomainsPage() {
         </div>
       ) : null}
     </>
-  );
-}
-
-function DomainCard({ domain }: Readonly<{ domain: DomainOverviewItem }>) {
-  const primaryModule = domain.modules[0] ?? domain.domainCode.toLowerCase();
-  return (
-    <article
-      data-testid={`domain-${domain.domainCode}`}
-      className="rounded-lg border border-atlas-border bg-white p-4 shadow-subtle"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-atlas-text">
-            {domain.domainName}
-          </h3>
-          <p className="font-mono text-[11px] uppercase tracking-wide text-atlas-muted">
-            {domain.domainCode}
-            {domain.ownerTeam ? ` · ${domain.ownerTeam}` : ""}
-          </p>
-        </div>
-        <ReviewStatusBadge
-          value={domain.pendingReview > 0 ? "NEEDS_REVIEW" : "APPROVED"}
-        />
-      </div>
-      <p className="mt-2 text-xs italic text-atlas-muted">
-        {domain.description?.trim() ||
-          "Sin descripción registrada en el catálogo de dominios."}
-      </p>
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-        <span className="rounded-md bg-atlas-soft p-2">
-          Endpoints: <strong>{formatNumber(domain.endpoints)}</strong>
-        </span>
-        <span className="rounded-md bg-atlas-soft p-2">
-          Tablas: <strong>{formatNumber(domain.tables)}</strong>
-        </span>
-        <span className="rounded-md bg-atlas-soft p-2">
-          Suites: <strong>{formatNumber(domain.testSuites)}</strong>
-        </span>
-        <span className="rounded-md bg-atlas-soft p-2">
-          PII: <strong>{formatNumber(domain.piiTables)}</strong>
-        </span>
-        <span className="rounded-md bg-atlas-soft p-2">
-          Críticos: <strong>{formatNumber(domain.criticalEndpoints)}</strong>
-        </span>
-        <span className="rounded-md bg-atlas-soft p-2">
-          Review: <strong>{formatNumber(domain.pendingReview)}</strong>
-        </span>
-      </div>
-      {domain.modules.length > 0 ? (
-        <p className="mt-3 font-mono text-[11px] text-atlas-muted">
-          {domain.modules.join(" · ")}
-        </p>
-      ) : null}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Link
-          href={`/internal/systems/endpoints?q=${encodeURIComponent(primaryModule)}`}
-          className="text-xs font-medium text-atlas-accent underline"
-        >
-          Endpoints
-        </Link>
-        <Link
-          href={`/internal/data-catalog/tables?q=${encodeURIComponent(primaryModule)}`}
-          className="text-xs font-medium text-atlas-accent underline"
-        >
-          Tablas
-        </Link>
-        <Link
-          href="/internal/review-queue"
-          className="text-xs font-medium text-atlas-accent underline"
-        >
-          Revisión
-        </Link>
-      </div>
-    </article>
   );
 }

@@ -12,9 +12,20 @@ import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { BooleanField } from "./boolean-field";
-import { metadataValuesFrom, mutationModes } from "./entity-metadata-values";
-import { firstMetadataError } from "./entity-metadata-schema";
+import {
+  BOOLEAN_FIELDS,
+  firstMetadataError,
+  metadataPatch,
+  metadataValuesFrom,
+  reviewStatusOptions,
+  statusOptions,
+  type EntityMetadataFormValues,
+} from "./entity-metadata-values";
 
+/**
+ * Ficha editable de una tabla del catálogo: propósito, responsable, retención, estado, revisión y
+ * clasificación de datos. Es lo que el servidor guarda; nada más. Se envía sólo lo que cambió.
+ */
 export function EntityMetadataForm({
   entity,
   isSaving,
@@ -26,96 +37,107 @@ export function EntityMetadataForm({
 }>) {
   const [values, setValues] = useState(() => metadataValuesFrom(entity));
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  // Validación en vivo: la confirmación solo se abre si la config es coherente,
-  // así el operador ve la incongruencia de gobierno antes de confirmar y no como
-  // un 400 opaco (o, peor, una regla mal guardada que el servicio sí obedece).
-  const validationError = firstMetadataError(values);
+  const validationError = firstMetadataError(entity, values);
+  const patch = metadataPatch(entity, values);
+  const hasChanges = Object.keys(patch).length > 0;
 
   return (
     <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
-      <MetadataSection values={values} onChange={setValues} />
-      <GovernanceSection values={values} onChange={setValues} />
+      <BusinessSection values={values} onChange={setValues} />
+      <ClassificationSection values={values} onChange={setValues} />
       {validationError ? (
-        <ErrorState
-          title="Configuración incoherente"
-          description={validationError}
-        />
+        <ErrorState title="Revisa la ficha" description={validationError} />
       ) : null}
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-3">
+        {!hasChanges ? (
+          <p className="text-sm text-atlas-muted" role="status">
+            No hay cambios que guardar.
+          </p>
+        ) : null}
         <Button
           variant="primary"
-          disabled={Boolean(validationError)}
+          disabled={Boolean(validationError) || !hasChanges}
           onClick={() => setConfirmOpen(true)}
         >
-          Guardar configuración
+          Guardar ficha
         </Button>
       </div>
       <ConfirmDialog
         open={confirmOpen}
-        title="Guardar metadata de tabla"
-        description="Se actualizará el catálogo y las reglas que el servicio interno debe obedecer para esta tabla."
+        title="Guardar ficha de la tabla"
+        description={`Se actualizará la ficha de ${entity.schemaName}.${entity.tableName} en el catálogo de datos (${Object.keys(patch).length} campo(s)).`}
         confirmText="Guardar"
         isLoading={isSaving}
         onCancel={() => setConfirmOpen(false)}
-        onConfirm={() => onSubmit(values)}
+        onConfirm={() => onSubmit(patch)}
       />
     </form>
   );
 }
 
-function MetadataSection({
-  values,
-  onChange,
-}: Readonly<{
-  values: DataEntityMetadataInput;
-  onChange: (values: DataEntityMetadataInput) => void;
-}>) {
+type SectionProps = Readonly<{
+  values: EntityMetadataFormValues;
+  onChange: (values: EntityMetadataFormValues) => void;
+}>;
+
+function BusinessSection({ values, onChange }: SectionProps) {
+  const set = (patch: Partial<EntityMetadataFormValues>) =>
+    onChange({ ...values, ...patch });
   return (
     <Card>
       <CardHeader>
-        <SectionHeader title="Metadata de negocio" className="mb-0" />
+        <SectionHeader title="Ficha de negocio" className="mb-0" />
       </CardHeader>
       <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <TextField
-          label="Nombre de negocio"
-          field="entityName"
-          values={values}
-          onChange={onChange}
-        />
-        <TextField
-          label="Módulo"
-          field="module"
-          values={values}
-          onChange={onChange}
-        />
-        <TextField
-          label="Owner"
-          field="dataOwner"
-          values={values}
-          onChange={onChange}
-        />
-        <TextField
-          label="Retención"
-          field="retentionPolicyCode"
-          values={values}
-          onChange={onChange}
-        />
-        <TextField
-          label="Estado"
-          field="status"
-          values={values}
-          onChange={onChange}
-        />
         <Field
-          tooltip="Para qué existe esta entidad en el negocio, en lenguaje de operación."
+          label="Responsable"
+          tooltip="Equipo o persona que responde por los datos de esta tabla (mínimo 2 caracteres)."
+        >
+          <Input
+            value={values.dataOwner}
+            onChange={(event) => set({ dataOwner: event.target.value })}
+          />
+        </Field>
+        <Field
+          label="Política de retención"
+          tooltip="Código de la política que dice cuánto tiempo se guardan estos datos. Déjalo vacío para quitarla."
+        >
+          <Input
+            value={values.retentionPolicyCode}
+            onChange={(event) =>
+              set({ retentionPolicyCode: event.target.value })
+            }
+          />
+        </Field>
+        <Field
+          label="Estado"
+          tooltip="Si la tabla está en uso, deshabilitada o en camino de retirarse."
+        >
+          <Select
+            name="status"
+            value={values.status}
+            onChange={(value) => set({ status: value })}
+            options={statusOptions}
+          />
+        </Field>
+        <Field
+          label="Revisión"
+          tooltip="En qué punto está la revisión humana de esta ficha."
+        >
+          <Select
+            name="reviewStatus"
+            value={values.reviewStatus}
+            onChange={(value) => set({ reviewStatus: value })}
+            options={reviewStatusOptions}
+          />
+        </Field>
+        <Field
           label="Propósito de negocio"
+          tooltip="Para qué existe esta tabla en el negocio, en lenguaje de operación (mínimo 3 caracteres)."
         >
           <Textarea
             value={values.businessPurpose}
-            onChange={(event) =>
-              onChange({ ...values, businessPurpose: event.target.value })
-            }
+            onChange={(event) => set({ businessPurpose: event.target.value })}
           />
         </Field>
       </CardContent>
@@ -123,110 +145,26 @@ function MetadataSection({
   );
 }
 
-function GovernanceSection({
-  values,
-  onChange,
-}: Readonly<{
-  values: DataEntityMetadataInput;
-  onChange: (values: DataEntityMetadataInput) => void;
-}>) {
-  const setGovernance = (
-    patch: Partial<DataEntityMetadataInput["governance"]>,
-  ) => onChange({ ...values, governance: { ...values.governance, ...patch } });
+function ClassificationSection({ values, onChange }: SectionProps) {
   return (
     <Card>
       <CardHeader>
         <SectionHeader
-          title="Reglas operativas que obedecerá el servicio"
+          title="Clasificación de los datos"
+          description="Qué tipo de información guarda la tabla. Lo usan gobierno de datos y el registro de datos personales."
           className="mb-0"
         />
       </CardHeader>
       <CardContent className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Field
-          tooltip="Cómo se permite cambiar los datos: sólo agregar, actualizar, libre o sólo lectura."
-          label="Modo de mutación"
-        >
-          <Select
-            name="mutationMode"
-            value={values.governance.mutationMode}
-            onChange={(valor) => setGovernance({ mutationMode: valor })}
-            options={mutationModes}
+        {BOOLEAN_FIELDS.map(([field, label]) => (
+          <BooleanField
+            key={field}
+            label={label}
+            value={values[field]}
+            onChange={(value) => onChange({ ...values, [field]: value })}
           />
-        </Field>
-        <BooleanField
-          label="Contiene PII"
-          value={values.containsPii}
-          onChange={(value) => onChange({ ...values, containsPii: value })}
-        />
-        <BooleanField
-          label="Append only"
-          value={values.governance.appendOnly}
-          onChange={(value) => setGovernance({ appendOnly: value })}
-        />
-        <BooleanField
-          label="Permite actualizar"
-          value={values.governance.updatesAllowed}
-          onChange={(value) => setGovernance({ updatesAllowed: value })}
-        />
-        <BooleanField
-          label="Permite eliminar"
-          value={values.governance.deletesAllowed}
-          onChange={(value) => setGovernance({ deletesAllowed: value })}
-        />
-        <BooleanField
-          label="Permite hard delete"
-          value={values.governance.hardDeleteAllowed}
-          onChange={(value) => setGovernance({ hardDeleteAllowed: value })}
-        />
-        <BooleanField
-          label="Requiere aprobación"
-          value={values.governance.approvalRequired}
-          onChange={(value) => setGovernance({ approvalRequired: value })}
-        />
-        <BooleanField
-          label="Auditoría crítica"
-          value={values.isAuditCritical}
-          onChange={(value) => onChange({ ...values, isAuditCritical: value })}
-        />
-        <Field
-          tooltip="Reglas o salvedades de gobierno de datos que deba conocer quien use la entidad."
-          label="Notas de gobierno"
-        >
-          <Textarea
-            value={values.governance.notes}
-            onChange={(event) => setGovernance({ notes: event.target.value })}
-          />
-        </Field>
+        ))}
       </CardContent>
     </Card>
-  );
-}
-
-function TextField({
-  label,
-  field,
-  values,
-  onChange,
-}: Readonly<{
-  label: string;
-  field: keyof Pick<
-    DataEntityMetadataInput,
-    "entityName" | "module" | "dataOwner" | "retentionPolicyCode" | "status"
-  >;
-  values: DataEntityMetadataInput;
-  onChange: (values: DataEntityMetadataInput) => void;
-}>) {
-  return (
-    <Field
-      tooltip={`Valor de «${label}» que se guarda en la metadata de la entidad.`}
-      label={label}
-    >
-      <Input
-        value={values[field]}
-        onChange={(event) =>
-          onChange({ ...values, [field]: event.target.value })
-        }
-      />
-    </Field>
   );
 }

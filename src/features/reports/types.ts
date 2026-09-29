@@ -65,4 +65,11 @@ export type ReportRunResult = {
   }>;
 };
 
-export type ReportListResponse = PaginatedResponse<ReportDefinition>;
+/**
+ * `facets`: valores de los filtros sobre el catálogo entero. `summary`: cifras de lo filtrado.
+ * Opcionales porque un Core anterior no los manda.
+ */
+export type ReportListResponse = PaginatedResponse<ReportDefinition> & {
+  facets?: { domains: string[]; statuses: string[] };
+  summary?: { total: number; active: number; critical: number };
+};

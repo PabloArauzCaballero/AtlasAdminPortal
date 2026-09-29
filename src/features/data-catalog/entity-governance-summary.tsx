@@ -33,27 +33,15 @@ export function EntityGovernanceSummary({
           },
         ]}
       />
+      {/*
+       * El bloque «Reglas operativas» (append only, update, delete, hard delete, aprobación) se
+       * retiró: el catálogo no guarda esas reglas y la pantalla las enseñaba como «No» para toda
+       * tabla. Una regla mostrada sin saberla es peor que no mostrarla.
+       */}
       <KeyValueSection
-        title="Reglas operativas"
-        description="Acciones que luego el backend debe permitir o bloquear."
+        title="Auditoría"
+        description="Si los cambios de esta tabla deben quedar trazados para auditoría."
         items={[
-          { label: "Append only", value: formatBoolean(entity.isAppendOnly) },
-          {
-            label: "Permite update",
-            value: formatBoolean(entity.allowsUpdates),
-          },
-          {
-            label: "Permite delete",
-            value: formatBoolean(entity.allowsDeletes),
-          },
-          {
-            label: "Permite hard delete",
-            value: formatBoolean(entity.allowsHardDeletes),
-          },
-          {
-            label: "Requiere aprobación",
-            value: formatBoolean(entity.requiresApproval),
-          },
           {
             label: "Auditoría crítica",
             value: formatBoolean(entity.isAuditCritical),

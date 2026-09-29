@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { useWholeCatalog } from "./hooks";
+import { useSearchParams } from "next/navigation";
+import { useDataEntities, useEndpoints } from "@/features/systems/hooks";
+import { serverPagedColumns } from "@/shared/components/data-table/server-columns";
 import type { DataEntity, EndpointItem } from "@/features/systems/types";
-import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
-import {
-  PageHeader,
-  SectionHeader,
-} from "@/shared/components/layout/page-header";
+import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import {
   BooleanBadge,
@@ -21,36 +19,33 @@ import {
   StatusBadge,
 } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { formatBoolean } from "@/shared/lib/format";
+import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { ShieldAlert } from "lucide-react";
 
-export function PiiRegistryPage() {
-  // El gate envuelve a un componente aparte a propósito. Si los hooks vivieran
-  // en este cuerpo, las queries saldrían durante el render, antes de que el gate
-  // pudiera decidir: un usuario sin `governance.data.read` dispararía igual las
-  // peticiones que traen datos personales. Ocultar la UI no es autorizar.
-  return (
-    <PermissionGate permissions={["governance.data.read"]}>
-      <AuthorizedPiiRegistryPage />
-    </PermissionGate>
-  );
-}
-
-function AuthorizedPiiRegistryPage() {
-  const [q, setQ] = useState("");
-  const catalog = useWholeCatalog(q);
-  const error = catalog.error;
-  const piiEntities = (catalog.data?.entities.items ?? []).filter(
-    (item) =>
-      item.containsPii ||
-      item.containsLegalData ||
-      item.containsLocationData ||
-      item.containsDeviceData,
-  );
-  const piiEndpoints = (catalog.data?.endpoints.items ?? []).filter(
-    (item) => item.containsPii || item.piiFields.length > 0,
-  );
+/**
+ * Pestaña «Datos personales» de Gobierno de datos (antes `/internal/governance/pii`, que redirige).
+ *
+ * Antes bajaba el catálogo ENTERO de tablas y rutas —página a página, unas 13 peticiones— en cada
+ * tecla del buscador y filtraba en el navegador. Ahora pide al servidor sólo lo que guarda o expone
+ * datos personales (`personalData=true`), con el buscador y la paginación en el servidor.
+ */
+export function PiiRegistryTab() {
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
+  const [tablesPage, setTablesPage] = useState(1);
+  const [routesPage, setRoutesPage] = useState(1);
+  const entities = useDataEntities({
+    personalData: "true",
+    q,
+    page: tablesPage,
+    limit: 20,
+  });
+  const endpoints = useEndpoints({
+    personalData: "true",
+    q,
+    page: routesPage,
+    limit: 20,
+  });
 
   const entityColumns = useMemo<ColumnDef<DataEntity>[]>(
     () => [
@@ -170,67 +165,101 @@ function AuthorizedPiiRegistryPage() {
   );
 
   return (
-    <>
-      <PageHeader
-        icon={ShieldAlert}
-        eyebrow="Gobierno"
-        title="Registro de datos personales"
-        description="Las tablas que guardan y las rutas que exponen datos personales o sensibles, según el catálogo real completo."
-      />
+    <div className="space-y-6">
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar tabla, ruta, dominio o campo…"
-        onSearchChange={setQ}
-        onClear={() => setQ("")}
+        searchPlaceholder="Buscar tabla, esquema, entidad, módulo, responsable o ruta…"
+        searchTooltip="Tablas: nombre, entidad, modelo, esquema, módulo y responsable. Rutas: código, ruta, nombre de ruta y propósito. Siempre dentro de lo que tiene datos personales."
+        onSearchChange={(value) => {
+          setQ(value);
+          setTablesPage(1);
+          setRoutesPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setTablesPage(1);
+          setRoutesPage(1);
+        }}
       />
-      {catalog.isLoading ? <LoadingSkeleton rows={6} /> : null}
-      {error ? (
-        <ErrorState
-          description={
-            isAtlasApiError(error)
-              ? error.message
-              : "No se pudo cargar el registro de datos personales."
+      <PiiCard
+        title="Tablas con datos personales"
+        description="Guardan datos personales, legales, de dispositivo o de ubicación."
+        query={entities}
+        columns={entityColumns}
+        onPageChange={setTablesPage}
+        emptyTitle="No hay tablas con datos personales para esta búsqueda."
+      />
+      <PiiCard
+        title="Rutas con datos personales"
+        description="Rutas que el catálogo marca con datos personales o que declaran campos personales."
+        query={endpoints}
+        columns={endpointColumns}
+        onPageChange={setRoutesPage}
+        emptyTitle="No hay rutas con datos personales para esta búsqueda."
+      />
+    </div>
+  );
+}
+
+type PagedQuery<T> = {
+  data?: { items: T[]; meta: Parameters<typeof DataTable<T>>[0]["meta"] };
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => unknown;
+};
+
+function PiiCard<T>({
+  title,
+  description,
+  query,
+  columns,
+  onPageChange,
+  emptyTitle,
+}: Readonly<{
+  title: string;
+  description: string;
+  query: PagedQuery<T>;
+  columns: ColumnDef<T>[];
+  onPageChange: (page: number) => void;
+  emptyTitle: string;
+}>) {
+  const total = query.data?.meta?.total;
+  return (
+    <Card>
+      <CardHeader>
+        <SectionHeader
+          title={
+            total === undefined ? title : `${title} (${formatNumber(total)})`
           }
-          requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => void catalog.refetch()}
+          description={description}
+          className="mb-0"
         />
-      ) : null}
-      {catalog.data ? (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Tablas sensibles"
-                description="Con datos personales, legales, de dispositivo o de ubicación."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={piiEntities}
-                columns={entityColumns}
-                emptyTitle="No hay tablas sensibles para esta búsqueda."
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Rutas con datos personales"
-                description="Rutas que el catálogo marca con datos personales o con campos personales."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={piiEndpoints}
-                columns={endpointColumns}
-                emptyTitle="No hay rutas con datos personales para esta búsqueda."
-              />
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-    </>
+      </CardHeader>
+      <CardContent>
+        {query.isLoading ? <LoadingSkeleton rows={4} /> : null}
+        {query.error ? (
+          <ErrorState
+            description={
+              isAtlasApiError(query.error)
+                ? query.error.message
+                : "No se pudo cargar el registro de datos personales."
+            }
+            requestId={
+              isAtlasApiError(query.error) ? query.error.requestId : undefined
+            }
+            onRetry={() => void query.refetch()}
+          />
+        ) : null}
+        {query.data ? (
+          <DataTable
+            data={query.data.items}
+            columns={serverPagedColumns(columns)}
+            meta={query.data.meta}
+            onPageChange={onPageChange}
+            emptyTitle={emptyTitle}
+          />
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

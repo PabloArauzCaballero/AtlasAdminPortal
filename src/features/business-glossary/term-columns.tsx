@@ -6,6 +6,17 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import type { BusinessTerm } from "./types";
 
+const TERM_TYPE_LABELS: Record<string, string> = {
+  domain: "Dominio",
+  table: "Tabla",
+  field: "Campo",
+};
+
+/** El tipo lo declara el servidor; con un Core anterior se deduce del prefijo del identificador. */
+function termType(term: BusinessTerm): string {
+  return term.type ?? term.termId.split(":")[0] ?? "";
+}
+
 export function buildBusinessTermColumns(): ColumnDef<BusinessTerm>[] {
   return [
     {
@@ -26,6 +37,11 @@ export function buildBusinessTermColumns(): ColumnDef<BusinessTerm>[] {
       cell: ({ row }) => (
         <span className="font-mono text-xs">{row.original.key}</span>
       ),
+    },
+    {
+      header: "Tipo",
+      id: "type",
+      cell: ({ row }) => TERM_TYPE_LABELS[termType(row.original)] ?? "—",
     },
     { header: "Dominio", accessorKey: "domain" },
     { header: "Dueño", accessorKey: "owner" },

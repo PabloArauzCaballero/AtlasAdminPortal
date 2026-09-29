@@ -73,6 +73,13 @@ function AuthorizedLineageNodeDetailPage({
             ]}
           />
           <StatusBadge value={data.status} />
+          {data.edgesTruncated ? (
+            <p className="text-xs text-atlas-muted" role="status">
+              Este nodo tiene más de 500 relaciones: se muestran las primeras
+              500. La pestaña «Relaciones e impacto» de Lineage las pagina
+              todas.
+            </p>
+          ) : null}
           <NodeTable
             title="Entradas"
             data={data.incomingEdges ?? []}

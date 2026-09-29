@@ -21,7 +21,7 @@ export type LineageEdge = {
 };
 
 /** Cuánto se muestra frente a cuánto existe. El backend lo declara para cada familia. */
-export type LineageCount = { shown: number; total: number };
+export type LineageCount = { shown: number; total: number; catalog?: number };
 
 export type LineageGraphSummary = {
   nodeCount?: number;
@@ -45,16 +45,28 @@ export type LineageNodeDetail = LineageNode & {
   incomingEdges?: LineageEdge[];
   outgoingEdges?: LineageEdge[];
   relatedNodes?: LineageNode[];
+  /** El servidor corta la ficha en 500 aristas y lo declara aquí. */
+  edgesTruncated?: boolean;
 };
 
 export type LineageImpactItem = {
   impactId: string;
   sourceNodeId: string;
   targetNodeId: string;
+  /** `impact` (endpoint → tabla) o `relationship` (tabla → tabla). Un Core anterior no lo manda. */
+  family?: "impact" | "relationship";
   impactType: string;
+  /** Sólo las aristas endpoint → tabla tienen severidad; una relación entre tablas llega `null`. */
   severity: string | null;
   description: string | null;
   path?: LineageNode[];
 };
 
-export type LineageImpactResponse = PaginatedResponse<LineageImpactItem>;
+export type LineageImpactSummary = {
+  bySeverity: Record<string, number>;
+  byFamily: Record<string, number>;
+};
+
+export type LineageImpactResponse = PaginatedResponse<LineageImpactItem> & {
+  summary?: LineageImpactSummary;
+};

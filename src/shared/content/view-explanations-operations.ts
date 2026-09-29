@@ -163,9 +163,9 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/exports": {
       systems:
-        "Solicitudes de exportación con estado, alcance y descarga controlada; cada export queda auditado.",
+        "Ruta retirada: redirige al catálogo de datos. Las descargas en JSON se hacen con el botón «Descargar JSON» de Endpoints, Catálogo de datos y Reglas de calidad, que baja el catálogo entero con la sesión de quien pulsa.",
       business:
-        "Sacar datos de la plataforma de forma trazable: quién exportó qué y para qué, sin copias silenciosas.",
+        "Los catálogos se descargan desde la pantalla de cada uno; aquí no hay un historial de exportaciones.",
     },
   },
 };

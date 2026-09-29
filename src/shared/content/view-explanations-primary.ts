@@ -22,15 +22,15 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/business-metadata/domains": {
         systems:
-          "Dominios de negocio del catálogo (`system_domain_catalog`): definición, alcance técnico, tablas ejemplo y casos de decisión.",
+          "Dos pestañas. «Dominios»: el mapa que calcula `/systems/domains/overview` sobre el catálogo completo (tablas, rutas, suites, PII y pendientes por dominio). «Términos»: el glosario de dominios, tablas y campos (`/internal/business-metadata/glossary`), paginado y filtrado en el servidor por texto, tipo y dominio; las opciones del filtro salen de `/glossary/facets`.",
         business:
-          "Agrupa los datos por área de negocio (identidad, riesgo, pagos…) para que cada dominio tenga dueño y propósito claros.",
+          "Agrupa los datos por área de negocio con dueño y propósito, y fija qué significa cada tabla y cada campo para que producto, riesgo y soporte hablen de lo mismo.",
       },
       "/internal/business-metadata/glossary": {
         systems:
-          "Términos de negocio versionados con su definición, sinónimos y vínculos a tablas/columnas del catálogo.",
+          "Ficha de un término del glosario (`/internal/business-metadata/terms/:termId`), resuelta por su tipo e identificador: tablas, columnas y rutas relacionadas, claves foráneas reales y restricciones. La lista `/glossary` redirige a la pestaña «Términos» de «Dominios y glosario».",
         business:
-          "Glosario único: cuando compliance, riesgo y producto hablan de 'onboarding aprobado', todos se refieren a lo mismo.",
+          "Qué significa un dato concreto, de qué tabla sale y quién lo usa, para decidir sin interpretarlo a ojo.",
       },
       "/internal/business-metadata/definitions": {
         systems:
@@ -60,23 +60,11 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
     business:
       "Responde '¿si toco esto, qué se rompe?': antes de cambiar una tabla o un proceso, muestra qué reportes, decisiones y módulos dependen de ella.",
     views: {
-      "/internal/lineage/official": {
-        systems:
-          "Vista curada del lineage con las relaciones aprobadas en revisión (no las inferidas pendientes).",
-        business:
-          "La versión confiable del mapa de dependencias, apta para auditoría y decisiones de arquitectura.",
-      },
-      "/internal/lineage/impact": {
-        systems:
-          "Cálculo de impacto transitivo: dado un nodo, recorre el grafo y lista todo lo afectado aguas abajo.",
-        business:
-          "Estimación rápida del radio de impacto de un cambio o incidente para planificar releases y comunicar riesgos.",
-      },
       "/internal/lineage": {
         systems:
-          "Explorador del grafo tabla↔tabla con filtros por esquema y módulo; cada nodo enlaza a su detalle de catálogo.",
+          "Cuatro pestañas sobre el mismo catálogo: «Grafo» (`/internal/lineage`, filtros de texto, módulo y tipo en el servidor, con aviso cuando se recorta), «Nodos» (tablas y rutas paginadas), «Relaciones e impacto» (`/internal/lineage/impact`: aristas endpoint→tabla con severidad y tabla→tabla sin ella, paginadas y contadas en el servidor) y «Mapa por dominio» (`/systems/domains/overview`).",
         business:
-          "Mapa navegable de cómo se conectan los datos de la plataforma, útil para entender flujos de punta a punta.",
+          "Responde '¿si toco esto, qué se rompe?': qué rutas leen o escriben cada tabla y qué tablas dependen de otras, antes de cambiar nada.",
       },
     },
   },
@@ -104,17 +92,11 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Donde cumplimiento atiende los pedidos de los clientes sobre sus datos antes de que venza el plazo legal. Marcar una solicitud como atendida deja constancia; no borra datos: la supresión se hace a mano respetando lo que la ley obliga a conservar.",
       },
-      "/internal/governance/pii": {
-        systems:
-          "Inventario de columnas marcadas como PII en el catálogo, con su clasificación y las políticas que las cubren.",
-        business:
-          "Vista de cumplimiento: dónde vive el dato personal y cómo está protegido, lista para una inspección.",
-      },
       "/internal/governance": {
         systems:
-          "Resumen del estado de gobierno: cobertura de políticas, PII detectada y pendientes de clasificación.",
+          "Dos pestañas. «Resumen»: cifras de `/systems/catalog/summary`, contadas en la base sobre el catálogo completo (PII, financiera, riesgo, legal, rutas destructivas o críticas, pendientes de revisión). «Datos personales»: tablas y rutas con `personalData=true`, paginadas y con buscador en el servidor.",
         business:
-          "Semáforo general de cumplimiento de datos para dirección y compliance.",
+          "Cuánta información sensible maneja Atlas, dónde vive y qué tan revisada está, lista para una inspección.",
       },
       "/internal/risk-policy/current": {
         systems:
