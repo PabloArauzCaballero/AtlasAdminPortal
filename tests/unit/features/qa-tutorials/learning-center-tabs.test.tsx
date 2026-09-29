@@ -18,15 +18,16 @@ vi.mock("@/features/qa-lab/guide/qa-lab-guide-page", () => ({
   QaLabGuide: () => <p>contenido de la guía</p>,
 }));
 vi.mock("@/features/qa-tutorials/tutorial-provider", () => ({
-  useTutorial: () => ({ startPath: vi.fn(), start: vi.fn() }),
+  useTutorial: () => ({
+    startPath: vi.fn(),
+    start: vi.fn(),
+    statusFor: () => "not-started",
+    percentFor: () => 0,
+  }),
 }));
 vi.mock("@/features/qa-tutorials/tutorial-objective-launcher", () => ({
   TutorialObjectiveLauncher: () => null,
 }));
-vi.mock("@/features/qa-tutorials/tutorial-list-card", () => ({
-  TutorialListCard: () => null,
-}));
-
 const { LearningCenterPage } =
   await import("@/features/qa-tutorials/learning-center-page");
 

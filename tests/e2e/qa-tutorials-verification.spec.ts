@@ -51,14 +51,19 @@ for (const tutorial of tutorialCatalog) {
   test(`recorre «${tutorial.title}» de punta a punta`, async () => {
     await resetProgress(page, tutorial);
     await page.goto("/internal/qa/aprender", { waitUntil: "domcontentloaded" });
-    const card = page.getByRole("article").filter({ hasText: tutorial.title });
+    // «Todos los tutoriales» es una tabla: cada tutorial es una fila con su acción en la última columna.
+    const card = page
+      .getByRole("region", { name: "Todos los tutoriales" })
+      .getByRole("row")
+      .filter({ hasText: tutorial.title });
     await card.getByRole("button", { name: /Iniciar tutorial/i }).click();
     await walkTutorial(page, tutorial);
     // Persistencia: tras recargar, la ficha figura «Completado».
     await page.goto("/internal/qa/aprender", { waitUntil: "domcontentloaded" });
     await expect(
       page
-        .getByRole("article")
+        .getByRole("region", { name: "Todos los tutoriales" })
+        .getByRole("row")
         .filter({ hasText: tutorial.title })
         .getByText("Completado"),
     ).toBeVisible();
