@@ -41,9 +41,10 @@ function AuthorizedStressProfilesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [matrixPage, setMatrixPage] = useState(1);
   const [creating, setCreating] = useState(false);
   const profiles = useStressProfiles({ page, limit: 20, q, status });
-  const matrix = useStressMatrix({ page: 1, limit: 10, q });
+  const matrix = useStressMatrix({ page: matrixPage, limit: 10, q });
 
   const profileColumns = useMemo<ColumnDef<StressProfile>[]>(
     () => [
@@ -179,10 +180,11 @@ function AuthorizedStressProfilesPage() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar perfil o endpoint…"
-        searchTooltip="Busca por nombre o código del perfil, o por la ruta del endpoint."
+        searchTooltip="Perfiles: código, nombre, notas o ruta del endpoint. Matriz de cobertura: ruta, código, nombre de ruta o propósito del endpoint."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
+          setMatrixPage(1);
         }}
         onFilterChange={(name, value) => {
           if (name === "status") setStatus(value);
@@ -192,6 +194,7 @@ function AuthorizedStressProfilesPage() {
           setQ("");
           setStatus("");
           setPage(1);
+          setMatrixPage(1);
         }}
         filters={[
           {
@@ -250,6 +253,7 @@ function AuthorizedStressProfilesPage() {
                   ? matrix.error.requestId
                   : undefined
               }
+              onRetry={() => void matrix.refetch()}
             />
           ) : null}
           {matrix.data ? (
@@ -257,6 +261,7 @@ function AuthorizedStressProfilesPage() {
               data={matrix.data.items}
               columns={matrixColumns}
               meta={matrix.data.meta}
+              onPageChange={setMatrixPage}
             />
           ) : null}
         </CardContent>

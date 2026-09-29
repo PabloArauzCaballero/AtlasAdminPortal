@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useAuth } from "@/shared/auth/auth-context";
+import { Pagination } from "@/shared/components/data-table/pagination";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
@@ -38,9 +39,14 @@ import type { PartnerQrPending } from "./types";
  * sin él, y una promesa que termina en 403 no es una promesa. El aviso para quien no lo tiene va
  * en palabras, sin el código del permiso.
  */
+const QR_POR_PAGINA = 10;
+
 export function PartnerQrReviewQueue() {
-  const cola = useQrPendingReview();
+  // Por páginas: antes llegaban TODOS los pendientes y cada tarjeta descargaba su imagen a la vez.
+  const [page, setPage] = useState(1);
+  const cola = useQrPendingReview({ page, limit: QR_POR_PAGINA });
   const items = cola.data?.items ?? [];
+  const meta = cola.data?.meta;
 
   return (
     <Card className="p-5">
@@ -80,6 +86,11 @@ export function PartnerQrReviewQueue() {
             </li>
           ))}
         </ul>
+      ) : null}
+      {meta && meta.totalPages > 1 ? (
+        <div className="mt-4">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
       ) : null}
     </Card>
   );

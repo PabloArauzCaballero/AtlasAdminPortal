@@ -1,9 +1,9 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
-import { getCustomerAuditFeed, listCustomerAuditEvents } from "./services";
-import type { CustomerAuditEventsQuery, CustomerAuditFeedPage } from "./types";
+import { getCustomerAuditFeed } from "./services";
+import type { CustomerAuditFeedPage } from "./types";
 
 export const CUSTOMER_AUDIT_PAGE_SIZE = 50;
 
@@ -23,17 +23,6 @@ export function useCustomerAuditFeed(customerId: string) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage: CustomerAuditFeedPage) =>
       lastPage.nextCursor ?? undefined,
-    enabled: Boolean(customerId),
-  });
-}
-
-export function useCustomerAuditEvents(
-  customerId: string,
-  query: CustomerAuditEventsQuery,
-) {
-  return useQuery({
-    queryKey: queryKeys.customerAuditEvents(customerId, query),
-    queryFn: () => listCustomerAuditEvents(customerId, query),
     enabled: Boolean(customerId),
   });
 }

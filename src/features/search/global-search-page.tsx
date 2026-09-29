@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGlobalSearch } from "./hooks";
-import type { GlobalSearchResult } from "./types";
+import type { GlobalSearchKind, GlobalSearchResult } from "./types";
+import type { PaginationMeta } from "@/shared/api/types";
+import { Pagination } from "@/shared/components/data-table/pagination";
+import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import {
   PageHeader,
@@ -38,11 +41,55 @@ export function GlobalSearchPage() {
   );
 }
 
+const KINDS: readonly GlobalSearchKind[] = [
+  "endpoint",
+  "table",
+  "quality_rule",
+  "report",
+];
+/** Clave de `totals` (la del backend) para cada tipo. */
+const TOTAL_KEY: Record<GlobalSearchKind, string> = {
+  endpoint: "endpoints",
+  table: "tables",
+  quality_rule: "qualityRules",
+  report: "reports",
+};
+
+function parseKind(value: string | null): GlobalSearchKind | null {
+  return KINDS.find((kind) => kind === value) ?? null;
+}
+
 function AuthorizedGlobalSearchPage() {
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const q = params.get("q")?.trim() ?? "";
-  const search = useGlobalSearch(q);
+  const chosenKind = parseKind(params.get("kind"));
+  const kind = chosenKind ?? "endpoint";
+  const [pageState, setPageState] = useState({ key: "", page: 1 });
+  // La página vuelve a 1 al cambiar de búsqueda o de pestaña.
+  const pageKey = `${q}|${kind}`;
+  const page = pageState.key === pageKey ? pageState.page : 1;
+  const search = useGlobalSearch(q, kind, page);
   const totals = useMemo(() => search.data?.totals ?? {}, [search.data]);
+
+  const selectKind = useCallback(
+    (next: GlobalSearchKind) => {
+      const query = new URLSearchParams(params.toString());
+      query.set("kind", next);
+      router.replace(`${pathname}?${query.toString()}`, { scroll: false });
+    },
+    [params, pathname, router],
+  );
+
+  // Sin pestaña elegida, se abre la primera que tenga resultados.
+  const firstWithResults = KINDS.find(
+    (each) => (totals[TOTAL_KEY[each]] ?? 0) > 0,
+  );
+  useEffect(() => {
+    if (chosenKind || !search.data || !firstWithResults) return;
+    if ((totals[TOTAL_KEY[kind]] ?? 0) === 0) selectKind(firstWithResults);
+  }, [chosenKind, search.data, firstWithResults, totals, kind, selectKind]);
 
   return (
     <>
@@ -50,7 +97,7 @@ function AuthorizedGlobalSearchPage() {
         icon={Search}
         eyebrow="Búsqueda"
         title="Búsqueda global"
-        description="Busca en el catálogo técnico del portal: endpoints, tablas, reglas de calidad y reportes. No busca clientes ni préstamos."
+        description="Busca en el catálogo técnico del portal: endpoints (ruta, nombre de ruta o módulo), tablas (tabla, entidad o módulo), reglas de calidad (código, nombre o tabla objetivo) y reportes. No busca clientes ni préstamos."
       />
       {!q ? (
         <EmptyState
@@ -73,7 +120,15 @@ function AuthorizedGlobalSearchPage() {
         />
       ) : null}
       {q && search.data ? (
-        <SearchResults q={q} results={search.data.items} totals={totals} />
+        <SearchResults
+          q={q}
+          kind={kind}
+          results={search.data.items.filter((item) => item.kind === kind)}
+          totals={totals}
+          meta={search.data.meta}
+          onKindChange={selectKind}
+          onPageChange={(next) => setPageState({ key: pageKey, page: next })}
+        />
       ) : null}
     </>
   );
@@ -81,23 +136,38 @@ function AuthorizedGlobalSearchPage() {
 
 function SearchResults({
   q,
+  kind,
   results,
   totals,
+  meta,
+  onKindChange,
+  onPageChange,
 }: Readonly<{
   q: string;
+  kind: GlobalSearchKind;
   results: GlobalSearchResult[];
   totals: Record<string, number>;
+  meta: PaginationMeta | null;
+  onKindChange: (kind: GlobalSearchKind) => void;
+  onPageChange: (page: number) => void;
 }>) {
+  const total = KINDS.reduce(
+    (sum, each) => sum + (totals[TOTAL_KEY[each]] ?? 0),
+    0,
+  );
+  const tabLabel = (each: GlobalSearchKind) =>
+    `${TOTAL_LABELS[TOTAL_KEY[each]]} (${formatNumber(totals[TOTAL_KEY[each]] ?? 0)})`;
+  const tabs = KINDS.map(tabLabel);
   return (
     <div className="space-y-6">
       <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-        <MetricCard label="Resultados" value={formatNumber(results.length)} />
-        {/* Los cuatro totales del backend, con nombre: `.slice(0, 3)` perdía siempre los reportes. */}
-        {Object.entries(totals).map(([key, value]) => (
+        {/* Conteos reales del servidor por tipo, no las filas de esta página. */}
+        <MetricCard label="Total" value={formatNumber(total)} />
+        {KINDS.map((each) => (
           <MetricCard
-            key={key}
-            label={TOTAL_LABELS[key] ?? key}
-            value={formatNumber(value)}
+            key={each}
+            label={TOTAL_LABELS[TOTAL_KEY[each]]}
+            value={formatNumber(totals[TOTAL_KEY[each]] ?? 0)}
           />
         ))}
       </section>
@@ -110,15 +180,25 @@ function SearchResults({
           />
         </CardHeader>
         <CardContent className="space-y-3">
+          <DetailTabs
+            tabs={tabs}
+            active={tabLabel(kind)}
+            onChange={(label) =>
+              onKindChange(KINDS[tabs.indexOf(label)] ?? kind)
+            }
+          />
           {results.length === 0 ? (
             <EmptyState
-              title="Sin resultados"
-              description="Prueba con otra ruta, tabla, regla de calidad o reporte."
+              title="Sin resultados de este tipo"
+              description="Prueba con otra pestaña u otro texto."
             />
           ) : null}
           {results.map((result) => (
             <ResultCard key={`${result.kind}-${result.id}`} result={result} />
           ))}
+          {meta && meta.total > 0 ? (
+            <Pagination meta={meta} onPageChange={onPageChange} />
+          ) : null}
         </CardContent>
       </Card>
     </div>

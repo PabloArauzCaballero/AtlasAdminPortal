@@ -1,9 +1,17 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import type { QueryParams } from "@/shared/api/types";
+import { queryKeys } from "@/shared/api/query-keys";
 import {
   getOutcomeDeliveryStatus,
   getPortfolioSummary,
+  getRatingScale,
   listExhaustedOutcomes,
   rateCustomer,
   rateLoan,
@@ -27,11 +35,12 @@ export function useOutcomeDeliveryStatus() {
 }
 
 /** `enabled: false` para quien el backend no deja leer la lista: no se pide para recibir un 403. */
-export function useExhaustedOutcomes(limit: number, enabled = true) {
+export function useExhaustedOutcomes(query: QueryParams, enabled = true) {
   return useQuery({
-    queryKey: [...RAIZ, "backlog", limit],
-    queryFn: () => listExhaustedOutcomes(limit),
+    queryKey: [...RAIZ, "backlog", query],
+    queryFn: () => listExhaustedOutcomes(query),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -58,4 +67,12 @@ export function useRateLoanMutation() {
 
 export function useRateCustomerMutation() {
   return useOperacion((customerId: string) => rateCustomer(customerId));
+}
+
+export function useRatingScale() {
+  return useQuery({
+    queryKey: queryKeys.carteraEscala,
+    queryFn: () => getRatingScale(),
+    staleTime: 5 * 60_000,
+  });
 }

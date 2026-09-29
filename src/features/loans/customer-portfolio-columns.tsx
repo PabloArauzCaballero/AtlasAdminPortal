@@ -182,8 +182,9 @@ export function buildLoanColumns(
         <Link
           className="font-mono text-xs underline"
           href={`/internal/operations/customers/${row.original.customerId}/investigation-summary`}
+          title={`Cliente #${row.original.customerId}`}
         >
-          #{row.original.customerId}
+          {row.original.customerCode ?? `#${row.original.customerId}`}
         </Link>
       ),
     });

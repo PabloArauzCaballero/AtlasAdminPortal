@@ -1,6 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { apiRequest } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -17,6 +23,8 @@ export function useStressProfiles(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.stressProfiles(query),
     queryFn: () => listStressProfiles(query),
+    // Cambiar de página o de filtro no vacía la tabla.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -32,6 +40,8 @@ export function useStressMatrix(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.stressMatrix(query),
     queryFn: () => listStressMatrix(query),
+    // Cambiar de página o de filtro no vacía la tabla.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -75,5 +85,27 @@ export function useStressRuns(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.stressRuns(query),
     queryFn: () => listStressRuns(query),
+    // Cambiar de página o de filtro no vacía la tabla.
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * ¿Hay consumidor que ejecute lo que se encola? Core sólo lo arranca con
+ * `RUNTIME_JOBS_STRESS_CONSUMER_ENABLED=true`; sin él la corrida se queda en
+ * `queued` para siempre. Contra un Core que no expone la ruta, la consulta
+ * falla y el portal no afirma nada (`consumerEnabled` queda desconocido).
+ */
+export type StressRunCapabilities = {
+  consumerEnabled: boolean;
+  disabledReason: string | null;
+};
+
+export function useStressRunCapabilities() {
+  return useQuery({
+    queryKey: ["systems", "stress-runs", "capabilities"],
+    queryFn: () =>
+      apiRequest<StressRunCapabilities>("/systems/stress-runs/capabilities"),
+    retry: false,
   });
 }

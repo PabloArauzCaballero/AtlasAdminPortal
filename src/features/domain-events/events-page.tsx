@@ -10,6 +10,7 @@ import {
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
@@ -54,6 +55,7 @@ function AuthorizedDomainEventsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [eventCode, setEventCode] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [publicando, setPublicando] = useState(false);
 
   const eventos = useDomainEvents({
@@ -61,10 +63,15 @@ function AuthorizedDomainEventsPage() {
     limit: LIMITE,
     ...(status ? { status } : {}),
     ...(eventCode ? { eventCode } : {}),
+    ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
   });
   const catalogo = useEventCatalog();
   const items = useMemo(() => eventos.data?.items ?? [], [eventos.data]);
-  const columns = useMemo(() => buildDomainEventColumns(), []);
+  const columns = useMemo(
+    () => withoutClientSorting(buildDomainEventColumns()),
+    [],
+  );
+  const porEstado = eventos.data?.summary?.byStatus;
 
   const definiciones = useMemo(() => catalogo.data ?? [], [catalogo.data]);
   const opcionesCodigo = useMemo(
@@ -81,24 +88,28 @@ function AuthorizedDomainEventsPage() {
         description="Qué publicó cada módulo, qué se procesó y qué quedó atascado. Reintentar y cancelar son decisiones de negocio y quedan auditadas."
       />
       <FilterBar
-        search={eventCode}
-        searchPlaceholder="Filtrar por código de evento…"
+        search={busqueda}
+        searchPlaceholder="Código, agregado o correlación…"
+        searchTooltip="Busca por parte del código del evento, del tipo de agregado o del id de correlación, sin distinguir mayúsculas. Para un código exacto del catálogo, usa el desplegable."
         filters={[
           {
             name: "status",
             label: "Estado",
             value: status,
             options: OPCIONES_ESTADO,
+            tooltip:
+              "Pendiente, en proceso, procesado, fallido o cancelado en el outbox.",
           },
           {
             name: "eventCode",
             label: "Código del catálogo",
             value: eventCode,
             options: opcionesCodigo,
+            tooltip: "Un código exacto del catálogo de eventos registrados.",
           },
         ]}
         onSearchChange={(value) => {
-          setEventCode(value);
+          setBusqueda(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
@@ -109,6 +120,7 @@ function AuthorizedDomainEventsPage() {
         onClear={() => {
           setStatus("");
           setEventCode("");
+          setBusqueda("");
           setPage(1);
         }}
       />
@@ -136,18 +148,12 @@ function AuthorizedDomainEventsPage() {
               value={formatNumber(eventos.data.meta.total)}
             />
             <MetricCard
-              label="Fallidos en esta página"
-              value={formatNumber(
-                items.filter((item) => item.status?.toLowerCase() === "failed")
-                  .length,
-              )}
+              label="Fallidos con esta búsqueda"
+              value={porEstado ? formatNumber(porEstado.failed ?? 0) : "—"}
             />
             <MetricCard
-              label="Pendientes en esta página"
-              value={formatNumber(
-                items.filter((item) => item.status?.toLowerCase() === "pending")
-                  .length,
-              )}
+              label="Pendientes con esta búsqueda"
+              value={porEstado ? formatNumber(porEstado.pending ?? 0) : "—"}
             />
             <MetricCard
               label="Definiciones del catálogo"

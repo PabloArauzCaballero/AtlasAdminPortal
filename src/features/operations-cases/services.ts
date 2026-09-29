@@ -11,6 +11,7 @@ import type {
   ManualReviewDecisionInput,
   PendingContactVerificationResponse,
   ResendContactVerificationInput,
+  ResendContactVerificationResult,
   ManualReviewDecisionResult,
   WorkQueueListResponse,
 } from "./types";
@@ -92,10 +93,11 @@ export function decideIdentityVerification(
   );
 }
 
-/** Correos y teléfonos declarados por clientes y todavía sin confirmar. */
-export function listPendingContactVerification() {
+/** Correos y teléfonos declarados por clientes y todavía sin confirmar, por páginas. */
+export function listPendingContactVerification(query: QueryParams) {
   return apiRequest<PendingContactVerificationResponse>(
     "/operations/customers/pending-contact-verification",
+    { query },
   );
 }
 
@@ -110,7 +112,7 @@ export function resendContactVerification(
   customerId: string,
   body: ResendContactVerificationInput,
 ) {
-  return apiRequest<{ verificationStatus?: string; nextStep?: string }>(
+  return apiRequest<ResendContactVerificationResult>(
     `/customer-onboarding/${customerId}/contact-verification/request`,
     {
       method: "POST",

@@ -82,9 +82,10 @@ function CreditProductsContent() {
         }
       />
       <BusinessContextNote>
-        La lista enseña los productos que hoy se ofrecen (activos y dentro de su
-        vigencia). Un producto nuevo nace en borrador y no aparece aquí hasta
-        que lo actives: al crearlo te ofrecemos activarlo en el momento.
+        La lista enseña TODO el catálogo: borradores, activos, suspendidos y
+        retirados. A los clientes sólo se les ofrecen los activos y dentro de su
+        vigencia. Un producto nuevo nace en borrador: al crearlo te ofrecemos
+        activarlo en el momento. Retirar es definitivo.
       </BusinessContextNote>
       {aviso ? (
         <p

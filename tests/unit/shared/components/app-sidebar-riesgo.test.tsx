@@ -50,15 +50,20 @@ describe("AppSidebar · Motor de decisiones", () => {
 });
 
 describe("AppSidebar · colas de casos", () => {
-  it("monta «Revisión manual» y «Casos de fraude» para operación", () => {
+  it("una sola «Cola de trabajo»: «Revisión manual» y «Casos de fraude» ya no son ítems (son pestañas)", () => {
     renderSidebar([], ["internal_operator"]);
-    expect(verEnlace("Revisión manual")).toBe(true);
-    expect(verEnlace("Casos de fraude")).toBe(true);
+    expect(verEnlace("Cola de trabajo")).toBe(true);
+    expect(verEnlace("Revisión manual")).toBe(false);
+    expect(verEnlace("Casos de fraude")).toBe(false);
   });
 
-  it("fraude ve su cola, no la de revisión manual que el backend le niega", () => {
+  it("fraude también ve la «Cola de trabajo» (dentro, sólo su pestaña)", () => {
     renderSidebar([], ["fraud_analyst"]);
-    expect(verEnlace("Casos de fraude")).toBe(true);
-    expect(verEnlace("Revisión manual")).toBe(false);
+    expect(verEnlace("Cola de trabajo")).toBe(true);
+  });
+
+  it("QA y el auditor no ven la cola: el backend les responde 403", () => {
+    renderSidebar([], ["readonly_auditor"]);
+    expect(verEnlace("Cola de trabajo")).toBe(false);
   });
 });

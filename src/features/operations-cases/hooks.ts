@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -21,10 +26,12 @@ import type {
   ResendContactVerificationInput,
 } from "./types";
 
+/** Cambiar de página, de pestaña o de filtro no vacía la tabla: se ve la anterior mientras llega. */
 export function useWorkQueue(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.workQueue(query),
     queryFn: () => listWorkQueue(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -37,10 +44,6 @@ export function useDecideManualReviewCaseMutation() {
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["operations", "work-queue"],
-        }),
-        // Las colas por cursor (revisión manual y fraude por separado) enseñan las mismas filas.
-        queryClient.invalidateQueries({
-          queryKey: ["operations", "case-queue"],
         }),
       ]);
     },
@@ -56,10 +59,6 @@ export function useDecideFraudCaseMutation() {
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["operations", "work-queue"],
-        }),
-        // Las colas por cursor (revisión manual y fraude por separado) enseñan las mismas filas.
-        queryClient.invalidateQueries({
-          queryKey: ["operations", "case-queue"],
         }),
       ]);
     },
@@ -119,10 +118,11 @@ export function useDecideIdentityMutation() {
   });
 }
 
-export function usePendingContactVerification() {
+export function usePendingContactVerification(query: QueryParams) {
   return useQuery({
-    queryKey: queryKeys.pendingContactVerification,
-    queryFn: () => listPendingContactVerification(),
+    queryKey: [...queryKeys.pendingContactVerification, query] as const,
+    queryFn: () => listPendingContactVerification(query),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -6,7 +6,6 @@
  * Viven aparte de `types.ts` a propósito: ese fichero lo reescribe otra rama (estados canónicos de
  * la revisión manual) y dos cambios en el mismo sitio a la vez chocarían.
  */
-import type { WorkQueueItem } from "./types";
 
 /** Un bloqueador de la habilitación: el código es contrato estable del servidor. */
 export type EligibilityBlocker = {
@@ -99,11 +98,3 @@ export type RiskAssessmentCreated = {
   riskLevel: string | null;
   manualReviewCaseId: string | null;
 };
-
-/** `GET /operations/manual-review-cases` y `GET /operations/fraud-cases`. */
-export type CaseCursorPage = {
-  items: WorkQueueItem[];
-  nextCursor: string | null;
-};
-
-export type CaseQueue = "manual_review" | "fraud";

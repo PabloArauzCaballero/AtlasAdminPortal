@@ -186,7 +186,7 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
     views: {
       "/internal/qa/aprender": {
         systems:
-          "Catálogo de recorridos guiados del laboratorio de pruebas, filtrable por tema y con buscador. Cada recorrido se sigue sobre las pantallas reales y el avance de cada persona se guarda para retomarlo.",
+          "Dos pestañas. «Recorridos»: catálogo de tutoriales guiados del laboratorio, filtrable por tema y con buscador; cada uno se sigue sobre las pantallas reales y el avance se guarda para retomarlo. «Guía de referencia»: los tres modos (funcional, stress, journey encadenado), la matriz de escenarios de headers, los umbrales de aprobación y las barreras de seguridad.",
         business:
           "Que alguien nuevo aprenda a probar la plataforma a su ritmo, sin depender de que otra persona le explique. No ejecuta pruebas por sí mismo ni deja evidencia de calidad: eso lo hacen el laboratorio y las ejecuciones.",
       },
@@ -195,12 +195,6 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
           "Ejecución ad-hoc de un endpoint catalogado: arma la request desde el contrato (payload mínimo, headers, roles) y muestra la respuesta cruda. En Journeys, cada corrida enseña su diario (`GET /systems/qa/runs/:runId/events`, sondeo por cursor) y su manifiesto de evidencia, y se listan las campañas precargadas.",
         business:
           "Reproducir un caso puntual en segundos — para soporte, debugging o validar un fix — sin herramientas externas.",
-      },
-      "/internal/qa/guia": {
-        systems:
-          "Guía didáctica del laboratorio: explica los tres modos (funcional, stress, journey encadenado), la matriz de escenarios de headers, los umbrales de aprobación y las barreras de seguridad, con un gráfico de stress simulado y el diagrama de encadenamiento de endpoints.",
-        business:
-          "Onboarding de quien va a probar la plataforma: reduce la curva de aprendizaje del QA Lab y estandariza cómo se valida antes de un release.",
       },
       "/internal/qa/suites": {
         systems:

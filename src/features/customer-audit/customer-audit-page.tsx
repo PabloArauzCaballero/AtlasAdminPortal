@@ -1,30 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
-import { CustomerAuditEventsSection } from "./customer-audit-events-section";
 import { CustomerAuditFeedSection } from "./customer-audit-feed-section";
 import { UserSearch } from "lucide-react";
 
-const FEED_TAB = "Feed de auditoría";
-const EVENTS_TAB = "Historial filtrado (deprecado)";
-const tabs = [FEED_TAB, EVENTS_TAB];
-
 /**
- * Las dos rutas del backend devuelven formas distintas de evento (el feed trae
- * `sourceTable`/`targetType`/`targetId` y no trae `summary`; la deprecada trae
- * `summary` y filtros). Se muestran en pestañas separadas, nunca mezcladas en una
- * sola lista, para no presentar como equivalentes datos que no lo son.
+ * Una sola fuente: el feed por cursor (`GET /operations/audit/customer/:id/feed`). La ruta anterior
+ * por offset está deprecada en el backend (pagina en memoria sobre 1000 filas por fuente, así que sus
+ * totales eran aproximados) y el portal ya no la llama (auditoría 2026-09-29, §5).
  */
 export function CustomerAuditPage({
   customerId,
 }: Readonly<{ customerId: string }>) {
-  const [activeTab, setActiveTab] = useState(tabs[0]);
-
   return (
     <PermissionGate permissions={["audit.events.read"]}>
       <PageHeader
@@ -44,18 +34,11 @@ export function CustomerAuditPage({
       <BusinessContextNote>
         Esta vista solo lee. Sirve para reconstruir qué le pasó a un cliente y
         quién lo hizo: cuándo cambió de estado, cuándo se autenticó, qué
-        consintió y qué decisiones de riesgo o fraude se tomaron sobre él. El
-        «Feed de auditoría» es la fuente completa; el «Historial filtrado» es la
-        ruta anterior, que el backend va a retirar y que solo conviene usar
-        cuando hace falta el resumen por evento o acotar por fechas.
+        consintió y qué decisiones de riesgo o fraude se tomaron sobre él. Se
+        recorre del más reciente al más antiguo, completo, sin totales
+        aproximados.
       </BusinessContextNote>
-      <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-      {activeTab === FEED_TAB ? (
-        <CustomerAuditFeedSection customerId={customerId} />
-      ) : null}
-      {activeTab === EVENTS_TAB ? (
-        <CustomerAuditEventsSection customerId={customerId} />
-      ) : null}
+      <CustomerAuditFeedSection customerId={customerId} />
     </PermissionGate>
   );
 }

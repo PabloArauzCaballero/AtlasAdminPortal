@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from "@/shared/api/types";
+import type { PaginatedResponse, PaginationMeta } from "@/shared/api/types";
 
 /**
  * Un expediente esperando verificación, tal y como lo publica
@@ -42,7 +42,10 @@ export type PartnerQueueItem = {
   [key: string]: unknown;
 };
 
-export type PartnerQueueResponse = PaginatedResponse<PartnerQueueItem>;
+/** `summary` es de TODA la cola (sin búsqueda ni página); ausente en un servidor anterior. */
+export type PartnerQueueResponse = PaginatedResponse<PartnerQueueItem> & {
+  summary?: { total: number; oldestSubmittedAt: string | null };
+};
 
 /** Un QR de cobro esperando revisión, tal y como lo publica `GET /operations/partners/qr-codes/pending`. */
 export type PartnerQrPending = {
@@ -64,7 +67,11 @@ export type PartnerQrPending = {
   } | null;
 };
 
-export type PartnerQrPendingResponse = { items: PartnerQrPending[] };
+/** `meta` desde 2026-09-29 (antes llegaba la cola entera, sin paginar). */
+export type PartnerQrPendingResponse = {
+  items: PartnerQrPending[];
+  meta?: PaginationMeta;
+};
 
 export type PartnerQrReviewed = {
   qrId: string;

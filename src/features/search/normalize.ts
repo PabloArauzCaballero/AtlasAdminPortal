@@ -1,11 +1,24 @@
 import { isSafeInternalPath } from "@/shared/lib/urls";
+import type { PaginationMeta } from "@/shared/api/types";
 import type { GlobalSearchResponse, GlobalSearchResult } from "./types";
 
 type UnknownRecord = Record<string, unknown>;
 
 export function normalizeSearchPayload(payload: unknown): GlobalSearchResponse {
   const items = extractItems(payload).map(normalizeResult);
-  return { items, totals: extractTotals(payload, items) };
+  return {
+    items,
+    totals: extractTotals(payload, items),
+    meta: extractMeta(payload),
+  };
+}
+
+function extractMeta(payload: unknown): PaginationMeta | null {
+  const meta = asRecord(asRecord(payload).meta);
+  const values = [meta.page, meta.limit, meta.total, meta.totalPages];
+  if (!values.every((value) => typeof value === "number")) return null;
+  const [page, limit, total, totalPages] = values as number[];
+  return { page, limit, total, totalPages };
 }
 
 function normalizeResult(value: unknown): GlobalSearchResult {

@@ -65,7 +65,10 @@ export function ProductStatusDialog({
         <h2 id={titleId} className="sr-only">
           {title}
         </h2>
-        <SectionHeader title={title} description="Cambio de estado auditado." />
+        <SectionHeader
+          title={title}
+          description="Queda en la auditoría operativa: quién, cuándo, de qué estado a cuál y el motivo."
+        />
         <p className="mb-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           {CONSEQUENCE[to]}
@@ -73,7 +76,7 @@ export function ProductStatusDialog({
         <Field
           label="Motivo"
           required
-          tooltip="Por qué cambia el producto de estado; queda escrito en su historial."
+          tooltip="Por qué cambia el producto de estado; queda registrado en la auditoría operativa junto a quién lo cambió y el estado anterior."
           error={errors.reasonCode?.message}
         >
           <FormSelect

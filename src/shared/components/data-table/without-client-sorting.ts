@@ -1,9 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 /**
- * `DataTable` ordena en el navegador (`getSortedRowModel`). Con paginación en el servidor, una
- * cabecera ordenable sólo reordena las 20 filas cargadas y parece un orden global que no es. Las
- * tablas paginadas en servidor pasan sus columnas por aquí: el orden lo decide AtlasBackend.
+ * Quita la ordenación de cabecera a las columnas de una tabla paginada EN EL SERVIDOR.
+ *
+ * `DataTable` ordena en el cliente (`getSortedRowModel`): con una página de 20 filas de un total de
+ * 500, la flecha de la cabecera sólo reordenaba esas 20 y parecía ordenar la cola entera. Mientras
+ * el servidor no ordene por columna, la tabla no lo promete.
  */
 export function withoutClientSorting<T>(
   columns: ColumnDef<T>[],

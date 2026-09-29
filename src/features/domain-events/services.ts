@@ -51,10 +51,12 @@ export function normalizeEventList(
   >;
   const total =
     typeof pagination.total === "number" ? pagination.total : items.length;
+  const summary = record.summary as DomainEventList["summary"] | undefined;
   const resolvedLimit =
     typeof pagination.limit === "number" ? pagination.limit : limit;
   return {
     items,
+    ...(summary?.byStatus ? { summary } : {}),
     meta: {
       page: typeof pagination.page === "number" ? pagination.page : page,
       limit: resolvedLimit,

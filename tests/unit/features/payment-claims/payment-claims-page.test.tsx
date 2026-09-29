@@ -19,8 +19,7 @@ vi.mock("@/shared/auth/auth-context", () => ({
 
 const { PaymentClaimsPage } =
   await import("@/features/payment-claims/payment-claims-page");
-const { formatAgeHours, isValidCustomerIdFilter } =
-  await import("@/features/payment-claims/labels");
+const { formatAgeHours } = await import("@/features/payment-claims/labels");
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
@@ -197,33 +196,32 @@ describe("PaymentClaimsPage", () => {
   });
 });
 
-describe("buscador por número de cliente", () => {
-  it("texto que no es número se avisa aquí y no llega a la API", async () => {
+describe("buscador multicampo (código de aviso, cliente o comercio)", () => {
+  it("lo escrito viaja al servidor como `q` —texto incluido— y no como customerId", async () => {
     const user = userEvent.setup();
     renderWithProviders(<PaymentClaimsPage />);
     await screen.findByText("PC-11");
     const antes = peticiones.length;
 
     await user.type(
-      screen.getByRole("textbox", { name: "N.º de cliente…" }),
-      "Ana",
+      screen.getByRole("textbox", {
+        name: /Código de aviso, de cliente o comercio/,
+      }),
+      "Tienda",
     );
-    expect(
-      await screen.findByText(/El número de cliente sólo lleva cifras/),
-    ).toBeInTheDocument();
-    expect(screen.queryByText("PC-11")).toBeNull();
+    await waitFor(() =>
+      expect(
+        peticiones
+          .slice(antes)
+          .some((p) => p.url.searchParams.get("q") === "Tienda"),
+      ).toBe(true),
+    );
     expect(
       peticiones
         .slice(antes)
         .some((p) => p.url.searchParams.get("customerId") !== null),
     ).toBe(false);
-  });
-
-  it("isValidCustomerIdFilter: vacío o entero positivo sin ceros delante", () => {
-    expect(isValidCustomerIdFilter("")).toBe(true);
-    expect(isValidCustomerIdFilter(" 9 ")).toBe(true);
-    expect(isValidCustomerIdFilter("09")).toBe(false);
-    expect(isValidCustomerIdFilter("C-9")).toBe(false);
+    expect(peticiones.at(-1)?.url.searchParams.get("page")).toBe("1");
   });
 });
 

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
@@ -130,6 +135,8 @@ export function useTestSuites(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.testSuites(query),
     queryFn: () => listTestSuites(query),
+    // Cambiar de página o de filtro no vacía la tabla.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -160,6 +167,8 @@ export function useTestRuns(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.testRuns(query),
     queryFn: () => listTestRuns(query),
+    // Cambiar de página o de filtro no vacía la tabla.
+    placeholderData: keepPreviousData,
   });
 }
 

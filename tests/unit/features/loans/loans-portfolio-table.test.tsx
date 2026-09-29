@@ -134,17 +134,18 @@ describe("LoansPortfolioTable — la cartera paginada en el servidor", () => {
     );
   });
 
-  it("busca por código exacto, sin espacios sobrantes", async () => {
+  it("busca por PARTE del código de préstamo o de cliente con `q` (antes: loanCode exacto)", async () => {
     const user = userEvent.setup();
     renderWithProviders(<LoansPortfolioTable />);
     await screen.findByText("LOAN-101");
     await user.type(
-      screen.getByRole("textbox", { name: /código de préstamo/ }),
-      " LOAN-7F3A ",
+      screen.getByRole("textbox", { name: /código de préstamo o de cliente/i }),
+      " cus-12 ",
     );
     await waitFor(() =>
-      expect(consultas.at(-1)).toMatchObject({ loanCode: "LOAN-7F3A" }),
+      expect(consultas.at(-1)).toMatchObject({ q: "cus-12", page: "1" }),
     );
+    expect(consultas.at(-1)).not.toHaveProperty("loanCode");
   });
 
   it("cumplimiento lista la cartera pero no ve «Abrir»: la ficha le respondería 403", async () => {
