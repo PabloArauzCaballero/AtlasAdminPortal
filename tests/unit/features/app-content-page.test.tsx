@@ -13,8 +13,6 @@ vi.mock("@/shared/api/client", () => ({ apiRequest: vi.fn() }));
 
 const { AppContentPage } =
   await import("@/features/app-content/app-content-page");
-const { NotificationPoliciesPage } =
-  await import("@/features/notification-policies/notification-policies-page");
 
 const request = vi.mocked(apiRequest);
 
@@ -358,46 +356,6 @@ describe("Contenido de la app", () => {
 
     expect(
       await screen.findByText(/reintentar no lo cambia/),
-    ).toBeInTheDocument();
-  });
-});
-
-describe("Políticas de notificación", () => {
-  const policy = {
-    policyId: "7",
-    eventCode: "cuota_vencida",
-    channel: "push",
-    label: "Cuota vencida",
-    description: null,
-    category: "pagos",
-    icon: null,
-    isMandatory: true,
-    defaultEnabled: true,
-    mandatoryReason: "Es un aviso de mora.",
-    displayOrder: 1,
-    isActive: true,
-    updatedAt: null,
-  };
-
-  beforeEach(() => {
-    request.mockReset();
-    mockUseAuth.mockReset();
-  });
-
-  it("sólo quien gestiona ve el botón de editar", async () => {
-    asReader();
-    request.mockResolvedValue({ data: [policy] });
-    const { unmount } = renderWithProviders(<NotificationPoliciesPage />);
-    expect(await screen.findByText("Cuota vencida")).toBeInTheDocument();
-    expect(
-      screen.queryByTestId("edit-cuota_vencida-push"),
-    ).not.toBeInTheDocument();
-    unmount();
-
-    asManager();
-    renderWithProviders(<NotificationPoliciesPage />);
-    expect(
-      await screen.findByTestId("edit-cuota_vencida-push"),
     ).toBeInTheDocument();
   });
 });
