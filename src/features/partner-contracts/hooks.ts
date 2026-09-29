@@ -1,18 +1,28 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   getDefaultContractTemplate,
   listContractTemplates,
   publishContractTemplate,
   setDefaultContractTemplate,
 } from "./services";
-import type { PublishContractTemplate } from "./types";
+import type { ContractTemplateQuery, PublishContractTemplate } from "./types";
 
 const KEY = ["partner-contract-templates"] as const;
 
-export function useContractTemplates() {
-  return useQuery({ queryKey: KEY, queryFn: listContractTemplates });
+export function useContractTemplates(query: ContractTemplateQuery = {}) {
+  return useQuery({
+    queryKey: [...KEY, "list", query],
+    queryFn: () => listContractTemplates(query),
+    // Cambiar de página o de filtro no vacía la tabla: se ve la anterior hasta que llega la nueva.
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useDefaultContractTemplate() {

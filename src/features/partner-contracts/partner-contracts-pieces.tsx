@@ -2,64 +2,16 @@
 
 import { useId, useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
-import { StatusBadge } from "@/shared/components/ui/badges";
-import { formatDateTime } from "@/shared/lib/format";
 import { usePublishContractTemplate } from "./hooks";
-import type { PartnerContractTemplate } from "./types";
 
 /**
- * Las dos piezas de la pantalla de contratos: la ficha de uno y el diálogo de publicar.
- *
- * Salen de `partner-contracts-page.tsx` porque la pantalla pasaba de las 300 líneas que admite
- * `yarn max-lines`. El corte deja arriba lo que ORQUESTA —qué se pide y qué se hace con la
- * respuesta— y aquí lo que se PINTA.
+ * Las piezas de la pantalla de contratos que no son la tabla: el diálogo de publicar y, en
+ * `contract-columns.tsx`, las columnas. Salieron de `partner-contracts-page.tsx` porque la pantalla
+ * pasaba de las 300 líneas que admite `yarn max-lines`.
  */
-export function TarjetaContrato({
-  plantilla,
-  onMarcar,
-}: Readonly<{ plantilla: PartnerContractTemplate; onMarcar?: () => void }>) {
-  const archivada = plantilla.status !== "active";
-  return (
-    <Card className="p-5" testId={`contrato-${plantilla.templateId}`}>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold text-atlas-text">
-            {`${plantilla.name} · v${plantilla.version}`}
-          </h2>
-          <p className="font-mono text-[11px] uppercase tracking-wide text-atlas-muted">
-            {plantilla.templateCode}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {plantilla.isDefault ? (
-            <StatusBadge value="VIGENTE" />
-          ) : (
-            <StatusBadge value={plantilla.status} />
-          )}
-          {/* Revivir un texto archivado desharía la retirada de quien tuvo un motivo para retirarlo. */}
-          {onMarcar && !plantilla.isDefault && !archivada ? (
-            <Button className="h-8 px-2 text-xs" onClick={onMarcar}>
-              Marcar como vigente
-            </Button>
-          ) : null}
-        </div>
-      </div>
-      <p className="mb-3 text-xs text-atlas-muted">
-        {plantilla.effectiveFrom
-          ? `En vigor desde ${formatDateTime(plantilla.effectiveFrom)}`
-          : "Sin fecha de vigencia"}
-      </p>
-      <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-atlas-soft p-3 text-xs text-atlas-text">
-        {plantilla.body}
-      </pre>
-    </Card>
-  );
-}
-
 export function DialogoPublicar({
   open,
   codigoSugerido,
