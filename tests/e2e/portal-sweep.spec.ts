@@ -24,10 +24,10 @@ type Route = {
 
 const STATIC_ROUTES: Route[] = [
   { path: "/internal", heading: /centro interno/i },
-  { path: "/internal/systems/dashboard", heading: /panel de control/i },
   { path: "/internal/systems/endpoints", heading: /endpoints/i },
   { path: "/internal/systems/tools", heading: /herramientas|tools/i },
-  { path: "/internal/systems/tools/health", heading: /salud/i },
+  // «Salud herramientas» es la pestaña Salud de Herramientas; su ruta vieja redirige ahí.
+  { path: "/internal/systems/tools?tab=salud", heading: /herramientas/i },
   { path: "/internal/systems/network-health", heading: /red|network/i },
   {
     path: "/internal/systems/decision-engine/artifacts",

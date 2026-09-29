@@ -101,7 +101,8 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     }
 
     // La navegación tiene que llevar a la pestaña, no sólo la URL escrita a mano.
-    await page.goto("/internal/systems/dashboard");
+    // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
+    await page.goto("/internal");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Salud de la red" }),
@@ -124,7 +125,8 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     const warning = page.getByText(/El motor de decisión no/);
     await expect(table.or(warning).first()).toBeVisible();
 
-    await page.goto("/internal/systems/dashboard");
+    // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
+    await page.goto("/internal");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Artefactos del motor" }),

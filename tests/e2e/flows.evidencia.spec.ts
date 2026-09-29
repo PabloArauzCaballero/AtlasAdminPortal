@@ -126,7 +126,9 @@ test.describe("Flujos (stack real)", () => {
     try {
       await entrarConPin(page, buzon);
       await page.goto("/internal/flows");
-      await expect(page.getByRole("heading", { name: "Flujos" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Mapa de rutas" }),
+      ).toBeVisible();
       const tabla = page.getByRole("table").first();
       await expect(tabla).toBeVisible({ timeout: 30_000 });
       const filas = tabla.locator("tbody tr");
@@ -278,27 +280,28 @@ test.describe("Flujos (stack real)", () => {
       await capture(page, testInfo, "grafo de un flujo con services y tablas", {
         fullPage: false,
       });
-      // Procesos de negocio: el `workflow-catalog` leído como historias, con cada paso enlazado.
+      // «Procesos de negocio» se fusionó con Procesos: su ruta redirige y los pasos con su flujo
+      // viven en la pestaña «Pasos y flujos» de cada ficha.
       await page.goto("/internal/flows/business");
-      await expect(
-        page.getByRole("heading", { name: "Procesos de negocio" }),
-      ).toBeVisible({ timeout: 30_000 });
-      // Cada tarjeta de proceso es un botón con `aria-expanded`: se localizan por ese atributo.
-      const procesos = page.locator("button[aria-expanded]");
-      await expect(procesos.first()).toBeVisible({ timeout: 30_000 });
-      const cuantos = await procesos.count();
-      expect(cuantos, "el catálogo de procesos está vacío").toBeGreaterThan(0);
-      // Todo enlazado: si un paso quedara sin flujo, la tarjeta lo diría y la insignia cambiaría.
-      await expect(page.getByText("todo enlazado").first()).toBeVisible();
-      await capture(page, testInfo, "procesos de negocio con sus pasos");
-      // Un paso lleva a la ficha del flujo que lo implementa.
-      await clickAndNavigate(
-        page,
-        page.locator("li button").first(),
-        /flow=flow_[a-f0-9]{12}/,
-        "el paso de negocio no abrió su flujo tras el clic",
-        { health },
-      );
+      await expect(page).toHaveURL(/\/internal\/procesos$/, {
+        timeout: 30_000,
+      });
+      await page.goto("/internal/procesos/account_signup_to_login?tab=pasos");
+      await expect(page.getByText("Con flujo en el mapa")).toBeVisible({
+        timeout: 30_000,
+      });
+      await capture(page, testInfo, "pasos de un proceso con sus flujos");
+      // Un paso abre la ficha técnica del flujo que lo implementa (sólo con systems.flows.read).
+      // Los detalles técnicos van plegados; se despliegan todos para llegar al primer paso con flujo.
+      await page
+        .locator("details")
+        .evaluateAll((nodos) =>
+          nodos.forEach((nodo) => nodo.setAttribute("open", "")),
+        );
+      await page
+        .getByRole("button", { name: "Ver ficha técnica" })
+        .first()
+        .click();
       await expect(
         page.getByRole("dialog").getByText("Autorización", { exact: true }),
       ).toBeVisible({ timeout: 30_000 });

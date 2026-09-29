@@ -269,7 +269,7 @@ test("Procesos — el menú y el listado con sus cifras", async ({ page }) => {
     { timeout: 30_000 },
   );
   await expect(
-    page.getByRole("link", { name: "Catálogo de procesos" }),
+    page.getByRole("link", { name: "Procesos", exact: true }),
   ).toBeVisible();
   const cifra = page.getByRole("button", { name: /^Pasos sin pantalla/ });
   await expect(cifra).toBeVisible();
@@ -295,8 +295,11 @@ test("Procesos — la ficha destaca los pasos sin pantalla", async ({ page }) =>
     /\/internal\/procesos\/account_signup_to_login$/,
     "la ficha del proceso no abrió tras el clic",
   );
-  await expect(page.getByRole("status")).toContainText("1 paso sin pantalla");
+  // Resumen es la pestaña por defecto; los pasos sin pantalla viven en «Documentación y cableado».
   await expect(page.getByText("¿Qué pasa cuando falla?")).toBeVisible();
+  await page.getByRole("button", { name: "Documentación y cableado" }).click();
+  await expect(page.getByRole("status")).toContainText("1 paso sin pantalla");
+  await page.getByRole("button", { name: "Pasos y flujos" }).click();
   await expect(
     page
       .getByTestId("etapa-contacts")
@@ -307,9 +310,13 @@ test("Procesos — la ficha destaca los pasos sin pantalla", async ({ page }) =>
 
 test("Procesos — casos en curso y avance de uno", async ({ page }) => {
   await preparar(page);
+  // La ruta vieja `/instancias` redirige a la pestaña «Casos en curso» de la ficha.
   await page.goto("/internal/procesos/account_signup_to_login/instancias", {
     waitUntil: "domcontentloaded",
   });
+  await expect(page).toHaveURL(
+    /\/internal\/procesos\/account_signup_to_login\?tab=casos$/,
+  );
   await expect(page.getByLabel("Casos por estado")).toContainText("12", {
     timeout: 30_000,
   });
@@ -333,6 +340,6 @@ test("Procesos — sin workflows.read, ni menú ni datos", async ({ page }) => {
     timeout: 30_000,
   });
   await expect(
-    page.getByRole("link", { name: "Catálogo de procesos" }),
+    page.getByRole("link", { name: "Procesos", exact: true }),
   ).toHaveCount(0);
 });

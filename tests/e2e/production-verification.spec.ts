@@ -138,7 +138,7 @@ test.describe("Producción — verificación real con backend", () => {
     await login(page);
 
     const routes = [
-      "/internal/systems/dashboard",
+      "/internal",
       "/internal/settings/users",
       "/internal/data-quality/issues",
       "/internal/qa/lab",
@@ -171,7 +171,7 @@ test.describe("Producción — verificación real con backend", () => {
   }) => {
     await login(page);
     const screens = [
-      "/internal/systems/dashboard",
+      "/internal",
       "/internal/settings/users",
       "/internal/data-quality/issues",
     ];
