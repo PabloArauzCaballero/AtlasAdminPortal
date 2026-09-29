@@ -38,7 +38,7 @@ function AuthorizedDataQualityRuleDetailPage({
         icon={ShieldCheck}
         eyebrow="Calidad de datos"
         title="Detalle de regla"
-        description="Definición, target, configuración y ejecución controlada."
+        description="Definición, objetivo, configuración e incidencias pendientes de la regla."
       />
       {rule.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {rule.error ? (
@@ -83,17 +83,16 @@ function AuthorizedDataQualityRuleDetailPage({
                     value: `${rule.data.targetTable}.${rule.data.targetField ?? "*"}`,
                     mono: true,
                   },
-                  { label: "Frecuencia", value: rule.data.frequency },
-                  { label: "Dueño", value: rule.data.owner },
+                  // Sin «Frecuencia», «Dueño» ni «Última ejecución»: la tabla no guarda frecuencia
+                  // ni dueño (eran constantes del servicio) y las reglas no se ejecutan.
                   {
-                    label: "Última ejecución",
-                    value: formatDateTime(rule.data.lastRunAt),
+                    label: "Definición actualizada",
+                    value: formatDateTime(rule.data.definitionUpdatedAt),
                   },
                   {
-                    label: "Estado última ejecución",
-                    value: rule.data.lastRunStatus,
+                    label: "Incidencias pendientes",
+                    value: rule.data.openIssues,
                   },
-                  { label: "Issues abiertos", value: rule.data.openIssues },
                 ]}
               />
               <JsonViewer title="Configuración" value={rule.data.checkConfig} />
