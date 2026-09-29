@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
@@ -61,6 +61,53 @@ describe("RunEventsPanel · diario por cursor (GET /systems/qa/runs/:runId/event
       screen.getByText("p-001 · FAILED · falló en login"),
     ).toBeInTheDocument();
     expect(api.listQaRunEvents).toHaveBeenCalledWith("run-1", 0);
+
+    // El diario es una tabla con sus cabeceras, no una lista de líneas.
+    const table = screen.getByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["N.º", "Fecha", "Hito", "Detalle"]);
+    expect(within(table).getAllByRole("row")).toHaveLength(4);
+  });
+
+  it("el buscador recorta el diario acumulado y pagina de 25 en 25", async () => {
+    api.listQaRunEvents.mockResolvedValue({
+      items: Array.from({ length: 60 }, (_, index) => ({
+        sequence: index + 1,
+        type: index === 41 ? "RUN_STARTED" : "RUN_QUEUED",
+        payload: index === 41 ? { persons: 7, concurrency: 3 } : {},
+        createdAt: "2026-09-24T12:00:00.000Z",
+      })),
+      nextCursor: 60,
+    });
+    renderWithProviders(<RunEventsPanel runId="run-1" live={false} />);
+    await userEvent.click(
+      screen.getByRole("button", { name: /Diario de la corrida/ }),
+    );
+    await screen.findByText("#25");
+    expect(screen.queryByText("#26")).not.toBeInTheDocument();
+    expect(screen.getByText("60")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    expect(await screen.findByText("#26")).toBeInTheDocument();
+
+    // La búsqueda recorre los 60, no sólo la página que se ve.
+    fireEvent.change(screen.getByLabelText("Buscar en el diario…"), {
+      target: { value: "7 personas" },
+    });
+    await waitFor(() =>
+      expect(screen.queryByText("#26")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText("#42")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Buscar en el diario…"), {
+      target: { value: "zzz" },
+    });
+    expect(
+      await screen.findByText("Ningún hito coincide con la búsqueda."),
+    ).toBeInTheDocument();
   });
 
   it("sin eventos lo dice, no deja la sección en blanco", async () => {
