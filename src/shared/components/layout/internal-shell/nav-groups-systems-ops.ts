@@ -3,13 +3,10 @@ import {
   BadgeCheck,
   Boxes,
   ClipboardCheck,
-  Gauge,
   Hourglass,
   Network,
-  Route,
   ShieldAlert,
   SlidersHorizontal,
-  Stethoscope,
   Waypoints,
   Wrench,
 } from "lucide-react";
@@ -18,21 +15,20 @@ import type { InternalNavGroup } from "./nav-config";
 /**
  * El grupo de Systems Ops, aparte del resto de la navegación.
  *
- * Es el único que crece con cada pantalla nueva del catálogo interno —endpoints, flujos, procesos,
- * herramientas, salud, artefactos, cola de revisión— y con la última entrada dejó
+ * Es el único que crece con cada pantalla nueva del catálogo interno —endpoints, mapa de rutas,
+ * herramientas, artefactos, revisión del catálogo— y con la última entrada dejó
  * `nav-groups-primary.ts` por encima de las 300 líneas que admite `yarn max-lines`. El resto de
  * grupos son estables, así que lo que se mueve es lo que se mueve.
+ */
+/*
+ * Fusiones del 2026-09-29 (auditoría de duplicados del menú): «Panel de control» vive ahora en
+ * Inicio, «Salud herramientas» es la pestaña Salud de Herramientas y «Procesos de negocio» es la
+ * pestaña «Pasos y flujos» de cada proceso. Sus rutas viejas redirigen; aquí ya no tienen ítem.
  */
 export const systemsOpsGroup: InternalNavGroup = {
   label: "Systems Ops",
   icon: Activity,
   items: [
-    {
-      label: "Panel de control",
-      href: "/internal/systems/dashboard",
-      icon: Gauge,
-      permissions: ["systems.endpoints.read", "systems.tools.health.read"],
-    },
     {
       label: "Endpoints",
       href: "/internal/systems/endpoints",
@@ -40,15 +36,9 @@ export const systemsOpsGroup: InternalNavGroup = {
       permissions: ["systems.endpoints.read"],
     },
     {
-      label: "Flujos",
+      label: "Mapa de rutas",
       href: "/internal/flows",
       icon: Waypoints,
-      permissions: ["systems.flows.read"],
-    },
-    {
-      label: "Procesos de negocio",
-      href: "/internal/flows/business",
-      icon: Route,
       permissions: ["systems.flows.read"],
     },
     {
@@ -64,7 +54,7 @@ export const systemsOpsGroup: InternalNavGroup = {
       permissions: ["systems.flows.read"],
     },
     {
-      label: "Revisión de flujos",
+      label: "Revisión de análisis de flujos",
       href: "/internal/flows/review",
       icon: ClipboardCheck,
       permissions: ["systems.flows.read"],
@@ -79,13 +69,8 @@ export const systemsOpsGroup: InternalNavGroup = {
       label: "Herramientas",
       href: "/internal/systems/tools",
       icon: Wrench,
-      permissions: ["systems.tools.read"],
-    },
-    {
-      label: "Salud herramientas",
-      href: "/internal/systems/tools/health",
-      icon: Stethoscope,
-      permissions: ["systems.tools.health.read"],
+      // Catálogo o Salud: cada pestaña pide el suyo, y con uno de los dos ya hay algo que ver.
+      permissions: ["systems.tools.read", "systems.tools.health.read"],
     },
     {
       label: "Salud de la red",
@@ -100,7 +85,7 @@ export const systemsOpsGroup: InternalNavGroup = {
       permissions: ["systems.decisionEngine.artifacts.read"],
     },
     {
-      label: "Cola de revisión",
+      label: "Revisión del catálogo",
       href: "/internal/review-queue",
       icon: SlidersHorizontal,
       permissions: ["systems.reviewQueue.read"],

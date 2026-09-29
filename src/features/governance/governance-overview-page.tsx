@@ -194,7 +194,7 @@ function GovernanceSummaryTab() {
             className="rounded-md border border-atlas-border p-4 text-sm font-medium hover:bg-atlas-soft"
             href="/internal/review-queue"
           >
-            Cola de revisión
+            Revisión del catálogo
           </Link>
           <Link
             className="rounded-md border border-atlas-border p-4 text-sm font-medium hover:bg-atlas-soft"

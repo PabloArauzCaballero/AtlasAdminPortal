@@ -1,5 +1,6 @@
-import { ToolsHealthPage } from "@/features/systems-tools/tools-health-page";
+import { redirect } from "next/navigation";
 
+/** «Salud herramientas» es ahora la pestaña Salud de Herramientas; la ruta vieja lleva ahí. */
 export default function ToolsHealthRoute() {
-  return <ToolsHealthPage />;
+  redirect("/internal/systems/tools?tab=salud");
 }

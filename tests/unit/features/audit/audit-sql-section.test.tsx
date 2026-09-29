@@ -14,6 +14,8 @@ const logs = vi.hoisted(() => ({
 vi.mock("@/features/systems/log-services", () => logs);
 
 const { AuditSqlSection } = await import("@/features/audit/audit-sql-section");
+const { MongoLogsSection } =
+  await import("@/features/audit/mongo-logs-section");
 
 const page = {
   items: [],
@@ -94,5 +96,59 @@ describe("Auditoría SQL · filtros desde GET /systems/action-logs/filter-catalo
     expect(
       screen.getByPlaceholderText("Filtrar por Request ID…"),
     ).toBeInTheDocument();
+  });
+});
+
+describe("Auditoría SQL · buscador libre `q` (servidor que lo publica)", () => {
+  beforeEach(() => {
+    logs.getActionLogFilterCatalog.mockResolvedValue({
+      fields: [
+        {
+          name: "q",
+          label: "Buscar",
+          source: "SCHEMA",
+          control: "text",
+          options: [],
+        },
+        {
+          name: "requestId",
+          label: "Request ID",
+          source: "SCHEMA",
+          control: "text",
+          options: [],
+        },
+      ],
+    });
+  });
+
+  it("el buscador busca por ruta o rol y viaja como `q`; el Request ID pasa a campo exacto", async () => {
+    renderWithProviders(<AuditSqlSection />);
+    const buscador = await screen.findByPlaceholderText(
+      "Buscar por ruta o rol de quien la hizo…",
+    );
+    expect(screen.getByLabelText("Request ID")).toBeInTheDocument();
+    await userEvent.type(buscador, "loans");
+    await vi.waitFor(() =>
+      expect(logs.listActionLogs).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: "loans", page: 1 }),
+      ),
+    );
+  });
+});
+
+describe("Terminal del backend · paginación", () => {
+  it("la vista terminal tiene paginación: la página 2 se alcanza sin cambiar a Tabla", async () => {
+    logs.listMongoLogs.mockResolvedValue({
+      items: [],
+      meta: { page: 1, limit: 20, total: 45, totalPages: 3 },
+    });
+    renderWithProviders(<MongoLogsSection />);
+    expect(await screen.findByText(/Página 1 de 3/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await vi.waitFor(() =>
+      expect(logs.listMongoLogs).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2 }),
+      ),
+    );
   });
 });

@@ -13,8 +13,10 @@ import {
   Shield,
   TestTube2,
 } from "lucide-react";
-import { useDashboard, useToolsHealth } from "@/features/systems/hooks";
-import { ToolLiveBadge } from "@/features/systems/tool-live-state";
+import { useQueryClient } from "@tanstack/react-query";
+import { useDashboard } from "@/features/systems/hooks";
+import { queryKeys } from "@/shared/api/query-keys";
+import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
@@ -24,8 +26,14 @@ import {
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { MetricCard } from "@/shared/components/layout/metric-card";
+import { cn } from "@/shared/lib/cn";
 import { humanizeKey, objectEntries, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import {
+  CriticalToolsBanner,
+  CriticalToolsCard,
+  TOOLS_HEALTH_PERMISSION,
+} from "./critical-tools";
 import { TrafficLatencySection } from "./traffic-latency-section";
 
 export function DashboardPage() {
@@ -39,25 +47,37 @@ export function DashboardPage() {
   );
 }
 
+/**
+ * Inicio absorbió «Panel de control» (2026-09-29): los dos leían los mismos contadores. Lo único que
+ * aportaba el panel —el aviso rojo de herramientas críticas caídas— vive aquí, pero sólo para quien
+ * tiene `systems.tools.health.read`, el permiso que pedía «Salud herramientas». Inicio lo abren
+ * también roles de negocio con `systems.dashboard.read` (dirección, jefatura de operaciones): a ellos
+ * no se les pide ni se les enseña la salud técnica.
+ */
 function AuthorizedDashboardPage() {
   const dashboard = useDashboard();
-  const toolsHealth = useToolsHealth();
-  const error = dashboard.error ?? toolsHealth.error;
+  const queryClient = useQueryClient();
+  const { hasPermission } = useAuth();
+  const canSeeHealth = hasPermission(TOOLS_HEALTH_PERMISSION);
+  const error = dashboard.error;
 
   return (
     <>
       <PageHeader
         icon={Activity}
-        eyebrow="Panel de sistemas"
+        eyebrow="Inicio"
         title="Centro interno ATLAS"
-        description="Estado operativo de Systems Ops, catálogo, QA, gobierno, lineage y auditoría conectado al servicio interno real."
+        description="Cómo está la plataforma ahora: catálogo, revisiones pendientes, pruebas, tráfico y, si tienes permiso, la salud de las herramientas."
         actions={
           <Button
             onClick={() => {
               void dashboard.refetch();
-              void toolsHealth.refetch();
+              if (canSeeHealth)
+                void queryClient.invalidateQueries({
+                  queryKey: queryKeys.toolsHealth,
+                });
             }}
-            isLoading={dashboard.isFetching || toolsHealth.isFetching}
+            isLoading={dashboard.isFetching}
             loadingText="Actualizando…"
           >
             <RefreshCw className="h-4 w-4" />
@@ -66,19 +86,17 @@ function AuthorizedDashboardPage() {
         }
       />
 
+      {canSeeHealth ? <CriticalToolsBanner /> : null}
       {dashboard.isLoading ? <LoadingSkeleton rows={5} /> : null}
       {error ? (
         <ErrorState
           description={
             isAtlasApiError(error)
               ? error.message
-              : "No se pudo cargar el dashboard."
+              : "No se pudo cargar el resumen."
           }
           requestId={isAtlasApiError(error) ? error.requestId : undefined}
-          onRetry={() => {
-            void dashboard.refetch();
-            void toolsHealth.refetch();
-          }}
+          onRetry={() => void dashboard.refetch()}
         />
       ) : null}
 
@@ -92,12 +110,17 @@ function AuthorizedDashboardPage() {
 
           <TrafficLatencySection />
 
-          <div className="grid gap-6 grid-cols-1 xl:grid-cols-[1.2fr_0.8fr]">
+          <div
+            className={cn(
+              "grid gap-6 grid-cols-1",
+              canSeeHealth && "xl:grid-cols-[1.2fr_0.8fr]",
+            )}
+          >
             <Card>
               <CardHeader>
                 <SectionHeader
                   title="Postura del catálogo"
-                  description="Información enviada por `/systems/dashboard`."
+                  description="Si el catálogo está listo para revisar y cuánto queda pendiente."
                   className="mb-0"
                 />
               </CardHeader>
@@ -120,40 +143,7 @@ function AuthorizedDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <SectionHeader
-                  title="Herramientas críticas"
-                  description="Salud reportada por `/systems/health/tools`."
-                  className="mb-0"
-                />
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {toolsHealth.isLoading ? <LoadingSkeleton rows={3} /> : null}
-                {(toolsHealth.data ?? []).length === 0 &&
-                !toolsHealth.isLoading ? (
-                  <p className="text-sm text-atlas-muted">
-                    No hay health checks de herramientas disponibles.
-                  </p>
-                ) : null}
-                {(toolsHealth.data ?? []).map((tool, index) => (
-                  <div
-                    key={`${tool.code ?? tool.name ?? index}`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-atlas-border bg-[#FAFAFB] p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-atlas-text">
-                        {safeText(tool.name ?? tool.code)}
-                      </p>
-                      <p className="truncate text-xs text-atlas-muted">
-                        {safeText(tool.code)}
-                      </p>
-                    </div>
-                    <ToolLiveBadge tool={tool} />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            {canSeeHealth ? <CriticalToolsCard /> : null}
           </div>
 
           <Card>

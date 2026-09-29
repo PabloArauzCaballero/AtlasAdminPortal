@@ -1,15 +1,14 @@
-import { Suspense } from "react";
-import { ProcessInstancesPage } from "@/features/processes/process-instances-page";
-import { LoadingSkeleton } from "@/shared/components/ui/states";
+import { redirect } from "next/navigation";
+import { processInstancesRedirect } from "@/features/processes/legacy-redirects";
 
-// `useSearchParams` (el `?caso=` del caso abierto) exige un límite de Suspense en el App Router.
+/** Los casos de un proceso son ahora la pestaña «Casos en curso» de su ficha; se conserva `?caso=`. */
 export default async function ProcessInstancesRoute({
   params,
-}: Readonly<{ params: Promise<{ code: string }> }>) {
+  searchParams,
+}: Readonly<{
+  params: Promise<{ code: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}>) {
   const { code } = await params;
-  return (
-    <Suspense fallback={<LoadingSkeleton rows={6} />}>
-      <ProcessInstancesPage code={code} />
-    </Suspense>
-  );
+  redirect(processInstancesRedirect(code, await searchParams));
 }

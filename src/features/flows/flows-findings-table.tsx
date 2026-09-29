@@ -139,7 +139,7 @@ export function FlowsFindingsTable() {
           meta={findings.data.meta}
           onPageChange={setPage}
           emptyTitle="Sin hallazgos abiertos"
-          emptyDescription="Los detectores no encontraron nada con estos filtros, o el artefacto de Flujos aún no se cargó."
+          emptyDescription="Los detectores no encontraron nada con estos filtros, o el mapa de rutas aún no se cargó."
         />
       ) : null}
     </>

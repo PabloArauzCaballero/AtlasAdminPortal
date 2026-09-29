@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { AdminFormsTable } from "@/features/admin-forms/admin-forms-table";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
@@ -21,8 +22,14 @@ import { SCHEMA_PROPOSE_PERMISSION } from "./change-actor";
 
 export function SchemaVersionsPage() {
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
   const [proposing, setProposing] = useState(false);
-  const versions = useSchemaVersions({ limit: 20, offset: (page - 1) * 20 });
+  const versions = useSchemaVersions({
+    limit: 20,
+    offset: (page - 1) * 20,
+    // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
+    ...(q.trim() ? { q: q.trim() } : {}),
+  });
   const columns = useMemo(() => buildSchemaVersionColumns(), []);
   const { hasPermission } = useAuth();
   const canPropose = hasPermission(SCHEMA_PROPOSE_PERMISSION);
@@ -59,6 +66,19 @@ export function SchemaVersionsPage() {
         aprueba otra persona con{" "}
         <span className="font-mono">governance.schema.approve</span> (4 ojos).
       </BusinessContextNote>
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar versión por código o notas…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el código de la versión y en sus notas. Las tablas de una versión se buscan al abrirla."
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setPage(1);
+        }}
+      />
       {versions.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {versions.error ? (
         <ErrorState
@@ -88,7 +108,11 @@ export function SchemaVersionsPage() {
           columns={columns}
           meta={versions.data.meta}
           onPageChange={setPage}
-          emptyTitle="No hay versiones de esquema registradas."
+          emptyTitle={
+            q.trim()
+              ? "Ninguna versión coincide con la búsqueda."
+              : "No hay versiones de esquema registradas."
+          }
         />
       ) : null}
       {proposing ? (

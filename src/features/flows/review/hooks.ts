@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import { listFlowReviewQueue, reviewFlow } from "./services";
@@ -10,6 +15,7 @@ export function useFlowReviewQueue(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.flowReviewQueue(query),
     queryFn: () => listFlowReviewQueue(query),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { clickAndNavigate } from "./evidence";
 import { motivoParaSaltar } from "./internal-session";
@@ -101,7 +102,9 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     }
 
     // La navegación tiene que llevar a la pestaña, no sólo la URL escrita a mano.
-    await page.goto("/internal/systems/dashboard");
+    // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
+    await page.goto("/internal");
+    await abrirGrupoDelMenu(page, "Systems Ops");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Salud de la red" }),
@@ -124,7 +127,9 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     const warning = page.getByText(/El motor de decisión no/);
     await expect(table.or(warning).first()).toBeVisible();
 
-    await page.goto("/internal/systems/dashboard");
+    // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
+    await page.goto("/internal");
+    await abrirGrupoDelMenu(page, "Systems Ops");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Artefactos del motor" }),
@@ -133,3 +138,27 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     );
   });
 });
+
+/**
+ * Despliega un grupo del menú lateral como lo haría una persona.
+ *
+ * Antes la navegación se recorría desde «Panel de control» (`/internal/systems/dashboard`), que es
+ * una pantalla de Systems Ops: el grupo salía ya abierto porque contenía la ruta activa. Con la
+ * fusión de ese panel en Inicio, `/internal` no pertenece a ningún grupo y todos arrancan plegados
+ * (`grid-rows-[0fr]`): el enlace existe en el DOM pero la cabecera del grupo siguiente le tapa el
+ * clic. Se abre el grupo y se espera a que lo diga `aria-expanded`; el clic se reintenta por si cae
+ * antes de que React hidrate.
+ */
+async function abrirGrupoDelMenu(page: Page, grupo: string): Promise<void> {
+  const cabecera = page
+    .getByRole("complementary", { name: "Navegación principal" })
+    .getByRole("button", { name: grupo, exact: true });
+  await expect(async () => {
+    if ((await cabecera.getAttribute("aria-expanded")) !== "true") {
+      await cabecera.click({ timeout: 5_000 });
+    }
+    await expect(cabecera).toHaveAttribute("aria-expanded", "true", {
+      timeout: 2_000,
+    });
+  }).toPass({ timeout: 30_000 });
+}

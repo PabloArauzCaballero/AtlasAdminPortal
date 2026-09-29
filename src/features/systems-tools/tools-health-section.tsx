@@ -1,33 +1,25 @@
 "use client";
 
-import { AlertTriangle, HeartPulse, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useToolsHealth } from "@/features/systems/hooks";
 import {
   ToolLiveBadge,
   toolLiveState,
 } from "@/features/systems/tool-live-state";
-import { PermissionGate } from "@/shared/auth/permission-gate";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
-import { PageHeader } from "@/shared/components/layout/page-header";
 import { cn } from "@/shared/lib/cn";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 
-export function ToolsHealthPage() {
-  // El gate envuelve a un componente aparte a propósito: si los hooks de
-  // datos vivieran aquí, las queries saldrían en el render antes de que el
-  // gate decidiera, y un usuario sin permiso dispararía igual las peticiones.
-  return (
-    <PermissionGate permissions={["systems.tools.health.read"]}>
-      <AuthorizedToolsHealthPage />
-    </PermissionGate>
-  );
-}
-
-function AuthorizedToolsHealthPage() {
+/**
+ * La pestaña «Salud» de Herramientas (antes la pantalla «Salud herramientas», que redirige aquí).
+ * Estado vivo de `/systems/health/tools`, la misma señal que dispara los avisos de servicio caído o
+ * recuperado. Quien la monta comprueba `systems.tools.health.read`.
+ */
+export function ToolsHealthSection() {
   const health = useToolsHealth();
   const tools = health.data ?? [];
   const downTools = tools.filter((tool) => toolLiveState(tool) === "DOWN");
@@ -40,21 +32,16 @@ function AuthorizedToolsHealthPage() {
 
   return (
     <>
-      <PageHeader
-        icon={HeartPulse}
-        title="Salud de herramientas"
-        description="Estado vivo reportado por `/systems/health/tools` — la misma fuente que dispara las notificaciones de servicio caído/recuperado. Se actualiza automáticamente cada 30s."
-        actions={
-          <Button
-            onClick={() => void health.refetch()}
-            isLoading={health.isFetching}
-            loadingText="Actualizando…"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Actualizar
-          </Button>
-        }
-      />
+      <div className="mb-4 flex justify-end">
+        <Button
+          onClick={() => void health.refetch()}
+          isLoading={health.isFetching}
+          loadingText="Actualizando…"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Actualizar
+        </Button>
+      </div>
       {health.dataUpdatedAt ? (
         <p className="animate-fade-in text-xs text-atlas-muted">
           Última actualización:{" "}
@@ -87,7 +74,7 @@ function AuthorizedToolsHealthPage() {
           description={
             isAtlasApiError(health.error)
               ? health.error.message
-              : "No se pudo cargar health de herramientas."
+              : "No se pudo cargar la salud de las herramientas."
           }
           requestId={
             isAtlasApiError(health.error) ? health.error.requestId : undefined

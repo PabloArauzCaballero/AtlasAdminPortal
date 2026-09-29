@@ -10,7 +10,7 @@ export const processesModuleExplanations: ModuleExplanation[] = [
     module: "Procesos",
     prefixes: ["/internal/procesos"],
     systems:
-      "Lee el catálogo de procesos declarado en el código del núcleo (una definición por proceso con su narrativa, etapas y pasos) por `GET /internal/processes`, con sesión interna y el permiso `workflows.read`. Cruza cada paso con el mapa de Flujos para saber qué portal llama a su ruta. Sólo lee: abrir una ficha no ejecuta ningún paso.",
+      "Lee el catálogo de procesos declarado en el código del núcleo (una definición por proceso con su narrativa, etapas y pasos) por `GET /internal/processes`, con sesión interna y el permiso `workflows.read`. Cruza cada paso con el mapa de rutas para saber qué portal llama a su operación. Sólo lee: abrir una ficha no ejecuta ningún paso.",
     business:
       "Los procesos del negocio de principio a fin —el alta de un cliente, el crédito, el cobro, el alta de un comercio— explicados para quien no ha leído el código: para qué existen, quién los mueve, qué pasa cuando fallan y si cada paso que hace una persona tiene su pantalla.",
     views: {
@@ -22,15 +22,9 @@ export const processesModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/procesos/[code]": {
         systems:
-          "`GET /internal/processes/:code` devuelve la definición completa del proceso con cada paso enriquecido desde Flujos (estado de cableado, riesgo, verificación y quién llama a su ruta) y las huellas del código y de la base. `…/wiring` alimenta el aviso de pasos sin pantalla. El método y la ruta de cada paso quedan plegados en «Detalle técnico», con enlace a su ficha en Flujos.",
+          "`GET /internal/processes/:code` devuelve la definición completa del proceso con cada paso enriquecido desde el mapa de rutas (cableado, riesgo, verificación, prueba automática y quién llama a su operación), los contadores de pasos críticos y verificados y las huellas del código y de la base. Cuatro pestañas en `?tab=`: Resumen, Pasos y flujos (con la ficha técnica de cada flujo para quien tiene permiso del mapa de rutas), Casos en curso (`…/instances`, con el caso abierto en `?caso=`) y Documentación y cableado (`…/wiring`).",
         business:
-          "La ficha de un proceso: las cinco preguntas que cualquiera debe poder contestar, cómo se ve que salió bien o mal, las etapas en el orden en que ocurren con quién actúa y desde qué pantalla, y los pasos que una persona debería poder hacer y hoy no puede, destacados arriba y en rojo.",
-      },
-      "/internal/procesos/[code]/instancias": {
-        systems:
-          "`GET /internal/processes/:code/instances` cuenta por estado y pagina los casos de la tabla que declara el proceso (sólo si vive en el núcleo; si no, dice en qué sistema están). `…/instances/:id/progress` sitúa un caso en cada etapa comparando su estado con los estados de entrada y salida declarados.",
-        business:
-          "Los casos reales de un proceso: cuántos hay en cada estado, cuáles siguen en curso y, al abrir uno, en qué etapa está y desde qué pantalla se sigue. Sirve para ver dónde se atascan los casos sin pedir una consulta a sistemas.",
+          "La ficha de un proceso: las cinco preguntas que cualquiera debe poder contestar, las etapas en el orden en que ocurren con quién actúa y desde qué pantalla, los casos reales que hay en cada estado y en qué etapa está cada uno, y los pasos que una persona debería poder hacer y hoy no puede, destacados en rojo.",
       },
     },
   },

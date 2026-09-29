@@ -19,6 +19,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { useSchemaNames, useSchemaTables, useSchemaVersion } from "./hooks";
 import { buildSchemaTableColumns } from "./schema-table-columns";
 import { SchemaPicker } from "./schema-picker";
@@ -40,6 +41,7 @@ export function SchemaVersionDetailPage({
 }: Readonly<{ versionId: string }>) {
   const [schemaName, setSchemaName] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
 
   const version = useSchemaVersion(versionId);
   const schemas = useSchemaNames(versionId);
@@ -48,12 +50,14 @@ export function SchemaVersionDetailPage({
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
     ...(schemaName ? { schemaName } : {}),
+    // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
+    ...(q.trim() ? { q: q.trim() } : {}),
   });
   const columns = useMemo(() => buildSchemaTableColumns(), []);
 
   // Cambiar de esquema reinicia la paginación: quedarse en la página 3 al saltar a un esquema de
   // seis tablas devolvía una lista vacía que se leía como «este esquema no tiene tablas».
-  useEffect(() => setPage(1), [schemaName]);
+  useEffect(() => setPage(1), [schemaName, q]);
 
   return (
     <>
@@ -182,6 +186,13 @@ export function SchemaVersionDetailPage({
             Abre una tabla para ver sus columnas y sus claves foráneas.
           </span>
         </h2>
+        <FilterBar
+          search={q}
+          searchPlaceholder="Buscar tabla por nombre o descripción…"
+          searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre de la tabla con su esquema (esquema.tabla) y en su descripción."
+          onSearchChange={setQ}
+          onClear={() => setQ("")}
+        />
         {tables.isLoading ? <LoadingSkeleton rows={6} /> : null}
         {tables.error ? (
           <ErrorState
@@ -203,9 +214,11 @@ export function SchemaVersionDetailPage({
             meta={tables.data.meta}
             onPageChange={setPage}
             emptyTitle={
-              schemaName
-                ? `El esquema ${schemaName} no tiene tablas registradas en esta versión.`
-                : "Esta versión no tiene tablas registradas."
+              q.trim()
+                ? "Ninguna tabla coincide con la búsqueda."
+                : schemaName
+                  ? `El esquema ${schemaName} no tiene tablas registradas en esta versión.`
+                  : "Esta versión no tiene tablas registradas."
             }
           />
         ) : null}

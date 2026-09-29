@@ -15,7 +15,7 @@ export const processesGroup: InternalNavGroup = {
   icon: Workflow,
   items: [
     {
-      label: "Catálogo de procesos",
+      label: "Procesos",
       href: "/internal/procesos",
       icon: Workflow,
       permissions: ["workflows.read"],

@@ -14,6 +14,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { fecha } from "../async/labels";
 import { FlowDetailDrawer } from "../flow-detail-drawer";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { useFlowReviewQueue, useReviewFlowMutation } from "./hooks";
 import { ESTADO, ESTADO_AYUDA, MOTIVO } from "./labels";
 import type {
@@ -50,11 +51,19 @@ function AuthorizedFlowReviewPage() {
   const puedeRevisar = hasPermission("systems.flows.review");
   const [estado, setEstado] = useState<FlowReviewStatus>("NEEDS_REVIEW");
   const [page, setPage] = useState(1);
-  const query = useFlowReviewQueue({ reviewStatus: estado, page, limit: 20 });
+  const [q, setQ] = useState("");
+  const query = useFlowReviewQueue({
+    reviewStatus: estado,
+    page,
+    limit: 20,
+    ...(q.trim() ? { q: q.trim() } : {}),
+  });
   const decidir = useReviewFlowMutation();
   // La ficha del flujo, para que quien decide vea lo que aprueba: la cola sólo enseña ruta y motivos.
   const [abierto, setAbierto] = useState<string | null>(null);
-  const totalPaginas = query.data?.meta.totalPages ?? 1;
+  // Con la cola vacía el servidor dice `totalPages: 0`; bajar a la «página 0» pedía `page=0`, que el
+  // servidor rechaza con 400. El suelo es la página 1.
+  const totalPaginas = Math.max(1, query.data?.meta.totalPages ?? 1);
   // Al decidir el último elemento de la última página, esa página deja de existir: sin esto la tabla se
   // quedaba vacía («nada que revisar») mientras las anteriores seguían llenas.
   useEffect(() => {
@@ -167,8 +176,8 @@ function AuthorizedFlowReviewPage() {
     <>
       <PageHeader
         icon={ClipboardCheck}
-        eyebrow="Systems Ops · Flujos"
-        title="Revisión de flujos"
+        eyebrow="Systems Ops · Mapa de rutas"
+        title="Revisión de análisis de flujos"
         description="Flujos de riesgo alto cuyo análisis no se puede dar por bueno solo, y los ya revisados cuyo código cambió. Aprobar un flujo es aprobar ESE código: si cambia, vuelve aquí."
         actions={
           <Select
@@ -188,6 +197,19 @@ function AuthorizedFlowReviewPage() {
         }
       />
       <FlowCatalogNotLoaded />
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en la ruta, el método del controlador, el módulo y el identificador legible del flujo."
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setPage(1);
+        }}
+      />
       {!puedeRevisar ? (
         <p className="mb-4 text-xs text-atlas-muted">
           Puedes ver la cola, pero decidir exige el permiso
@@ -221,8 +243,12 @@ function AuthorizedFlowReviewPage() {
           columns={columns}
           meta={query.data.meta}
           onPageChange={setPage}
-          emptyTitle="Nada que revisar con este estado"
-          emptyDescription="La cola sólo recibe flujos de riesgo alto con análisis incierto y los revisados cuyo código cambió. Se llena al recargar el catálogo de Flujos."
+          emptyTitle={
+            q.trim()
+              ? "Ningún flujo de la cola coincide con la búsqueda"
+              : "Nada que revisar con este estado"
+          }
+          emptyDescription="La cola sólo recibe flujos de riesgo alto con análisis incierto y los revisados cuyo código cambió. Se llena al recargar el mapa de rutas."
         />
       ) : null}
       <FlowDetailDrawer flowId={abierto} onClose={() => setAbierto(null)} />
