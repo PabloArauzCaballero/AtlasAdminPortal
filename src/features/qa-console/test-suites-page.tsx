@@ -24,7 +24,6 @@ import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-bu
 import { useTutorial } from "@/features/qa-tutorials/tutorial-provider";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatBoolean } from "@/shared/lib/format";
-import { optionsToDescriptions, uniqueTextOptions } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { ClipboardList } from "lucide-react";
 
@@ -43,19 +42,12 @@ function AuthorizedTestSuitesPage() {
   const router = useRouter();
   const { start } = useTutorial();
   const [page, setPage] = useState(1);
-  const [module, setModule] = useState("");
+  const [q, setQ] = useState("");
   const [suiteType, setSuiteType] = useState("");
   const [creating, setCreating] = useState(false);
-  const suites = useTestSuites({ page, limit: 20, module, suiteType });
+  const suites = useTestSuites({ page, limit: 20, q, suiteType });
   const items = useMemo(() => suites.data?.items ?? [], [suites.data?.items]);
-  const suiteTypeOptions = useMemo(
-    () =>
-      uniqueTextOptions(
-        items.map((item) => item.suiteType),
-        optionsToDescriptions(SUITE_TYPE_OPTIONS),
-      ),
-    [items],
-  );
+  const filtering = Boolean(q || suiteType);
 
   const columns = useMemo<ColumnDef<TestSuite>[]>(
     () => [
@@ -175,11 +167,11 @@ function AuthorizedTestSuitesPage() {
         que el equipo ya no recuerda probar a mano.
       </BusinessContextNote>
       <FilterBar
-        search={module}
-        searchPlaceholder="Filtrar por módulo…"
-        searchTooltip="Escribe el módulo del backend, p. ej. internal-auth, para ver sólo sus suites."
+        search={q}
+        searchPlaceholder="Buscar por código, nombre o módulo…"
+        searchTooltip="Busca el texto dentro del código, el nombre o el módulo de la suite (p. ej. internal-auth)."
         onSearchChange={(value) => {
-          setModule(value);
+          setQ(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
@@ -187,7 +179,7 @@ function AuthorizedTestSuitesPage() {
           setPage(1);
         }}
         onClear={() => {
-          setModule("");
+          setQ("");
           setSuiteType("");
           setPage(1);
         }}
@@ -198,7 +190,7 @@ function AuthorizedTestSuitesPage() {
             tooltip:
               "Qué clase de prueba es: humo, regresión, integración, extremo a extremo o carga.",
             value: suiteType,
-            options: suiteTypeOptions,
+            options: SUITE_TYPE_OPTIONS,
           },
         ]}
       />
@@ -216,7 +208,7 @@ function AuthorizedTestSuitesPage() {
           onRetry={() => void suites.refetch()}
         />
       ) : null}
-      {suites.data && items.length === 0 ? (
+      {suites.data && items.length === 0 && !filtering ? (
         <EmptyState
           title="Todavía no hay suites de prueba"
           description="Una suite te permite agrupar varios casos y ejecutarlos juntos. Por ejemplo, una suite «Inicio de sesión» con pruebas para acceso correcto, contraseña incorrecta y recuperación de cuenta — así verificas toda una funcionalidad antes de publicarla."
@@ -237,13 +229,15 @@ function AuthorizedTestSuitesPage() {
           }
         />
       ) : null}
-      {suites.data && items.length > 0 ? (
+      {suites.data && (items.length > 0 || filtering) ? (
         <div data-tutorial-id="qa-suites-table">
           <DataTable
             data={items}
             columns={columns}
             meta={suites.data.meta}
             onPageChange={setPage}
+            emptyTitle="Ninguna suite coincide con la búsqueda."
+            emptyDescription="Prueba con otro texto o quita el filtro de tipo."
           />
         </div>
       ) : null}

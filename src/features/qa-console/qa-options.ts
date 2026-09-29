@@ -171,3 +171,31 @@ export const STRESS_PROFILE_STATUS_OPTIONS: Option[] = [
     description: "Obsoleto; se conserva sólo por el historial.",
   },
 ];
+
+/**
+ * Estados de una corrida de ESTRÉS: son los de la cola de trabajos de Core
+ * (`queued`, `running`, `completed`, `failed`), no los de una suite. `PASSED` y
+ * `CANCELLED` no existen ahí: ofrecerlos daba siempre una tabla vacía.
+ */
+export const STRESS_RUN_STATUS_OPTIONS: Option[] = [
+  {
+    value: "QUEUED",
+    label: "QUEUED",
+    description: "En cola; espera al consumidor de estrés.",
+  },
+  {
+    value: "RUNNING",
+    label: "RUNNING",
+    description: "El consumidor la está ejecutando ahora.",
+  },
+  {
+    value: "COMPLETED",
+    label: "COMPLETED",
+    description: "Terminó; el veredicto de umbrales está en su resultado.",
+  },
+  {
+    value: "FAILED",
+    label: "FAILED",
+    description: "No pudo ejecutarse o se cortó; mira el error.",
+  },
+];

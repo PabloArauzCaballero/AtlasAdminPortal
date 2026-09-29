@@ -2,7 +2,7 @@
 
 import {
   ENVIRONMENT_OPTIONS,
-  RUN_STATUS_OPTIONS,
+  STRESS_RUN_STATUS_OPTIONS,
 } from "@/features/qa-console/qa-options";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -21,7 +21,7 @@ import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Waves } from "lucide-react";
 
-const statusOptions = RUN_STATUS_OPTIONS;
+const statusOptions = STRESS_RUN_STATUS_OPTIONS;
 const environmentOptions = ENVIRONMENT_OPTIONS;
 
 export function StressRunsPage() {
@@ -37,11 +37,11 @@ export function StressRunsPage() {
 
 function AuthorizedStressRunsPage() {
   const [page, setPage] = useState(1);
-  const [suiteId, setSuiteId] = useState("");
+  const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [environment, setEnvironment] = useState("");
   const [selectedRun, setSelectedRun] = useState<StressRun | null>(null);
-  const runs = useStressRuns({ page, limit: 20, suiteId, status, environment });
+  const runs = useStressRuns({ page, limit: 20, q, status, environment });
   const columns = useMemo<ColumnDef<StressRun>[]>(
     () => [
       {
@@ -103,14 +103,14 @@ function AuthorizedStressRunsPage() {
       <PageHeader
         icon={Waves}
         title="Historial de stress runs"
-        description="Runs encolados como jobs internos. El servicio interno registra payload sanitizado y bloquea producción para stress."
+        description="Corridas de carga encoladas desde un perfil. Se guardan con las cabeceras sensibles tapadas y producción está bloqueada para carga."
       />
       <FilterBar
-        search={suiteId}
-        searchPlaceholder="Filtrar por suiteId/perfil si aplica…"
-        searchTooltip="Pega el ID de suite o de perfil para ver sólo sus corridas."
+        search={q}
+        searchPlaceholder="Buscar por código de perfil o n.º de corrida…"
+        searchTooltip="Busca el texto dentro del código del perfil (p. ej. LOANS) o, si escribes un número, la corrida con ese número."
         onSearchChange={(value) => {
-          setSuiteId(value);
+          setQ(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
@@ -119,7 +119,7 @@ function AuthorizedStressRunsPage() {
           setPage(1);
         }}
         onClear={() => {
-          setSuiteId("");
+          setQ("");
           setStatus("");
           setEnvironment("");
           setPage(1);
@@ -129,14 +129,14 @@ function AuthorizedStressRunsPage() {
             name: "status",
             label: "Estado",
             tooltip:
-              "Resultado de la corrida de carga; FAILED superó algún umbral.",
+              "Dónde está la corrida en la cola: en espera, ejecutándose, terminada o fallida.",
             value: status,
             options: statusOptions,
           },
           {
             name: "environment",
             label: "Ambiente",
-            tooltip: "Entorno contra el que se lanzó la carga.",
+            tooltip: "Ambiente con el que se encoló la corrida.",
             value: environment,
             options: environmentOptions,
           },
