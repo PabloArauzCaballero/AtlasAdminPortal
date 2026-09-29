@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, Landmark, Plus } from "lucide-react";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
@@ -19,6 +18,7 @@ import {
 } from "./hooks";
 import { ProductCreateDialog } from "./product-create-dialog";
 import { buildProductColumns } from "./product-columns";
+import { ProductsTable } from "./products-table";
 import { ProductStatusDialog } from "./product-status-dialog";
 import type { CreateCreditProductResult, CreditProductStatus } from "./types";
 
@@ -130,14 +130,7 @@ function CreditProductsContent() {
           onRetry={() => void products.refetch()}
         />
       ) : null}
-      {products.data ? (
-        <DataTable
-          data={items}
-          columns={columns}
-          emptyTitle="No hay productos de crédito ofreciéndose."
-          emptyDescription="Crea el primero con «Nuevo producto» y actívalo cuando el negocio lo apruebe."
-        />
-      ) : null}
+      {products.data ? <ProductsTable items={items} columns={columns} /> : null}
       {creating ? (
         <ProductCreateDialog
           isLoading={create.isPending}

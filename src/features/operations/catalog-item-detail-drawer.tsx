@@ -1,13 +1,70 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
+import { SectionTable } from "@/shared/components/data-table/section-table";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
-import { EmptyState } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import type { ContextItem } from "./catalog-version-types";
+import type {
+  ContextItem,
+  ContextItemAlias,
+  ContextItemRiskMapping,
+} from "./catalog-version-types";
+
+const COLUMNAS_ALIAS: ColumnDef<ContextItemAlias>[] = [
+  { header: "Valor", accessorKey: "aliasValue" },
+  {
+    header: "Tipo",
+    accessorKey: "aliasType",
+    cell: ({ row }) => <Badge tone="info">{row.original.aliasType}</Badge>,
+  },
+  {
+    header: "Normalizado",
+    accessorKey: "normalizedAlias",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.original.normalizedAlias}</span>
+    ),
+  },
+  {
+    header: "Confianza",
+    accessorFn: (alias) => safeText(alias.confidenceScore),
+  },
+];
+
+const COLUMNAS_MAPEOS: ColumnDef<ContextItemRiskMapping>[] = [
+  { header: "Dimensión", accessorKey: "riskDimension" },
+  { header: "Banda", accessorKey: "riskBand" },
+  {
+    header: "Puntos",
+    accessorFn: (mapping) => safeText(mapping.scorePointsSuggested),
+    cell: ({ row }) => (
+      <Badge tone="warning">
+        {safeText(row.original.scorePointsSuggested)} pts
+      </Badge>
+    ),
+  },
+  {
+    header: "Motivo",
+    accessorKey: "reasonCode",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.original.reasonCode}</span>
+    ),
+  },
+  { header: "Uso", accessorFn: (mapping) => safeText(mapping.modelUsage) },
+  {
+    header: "Vigencia",
+    accessorFn: (mapping) => mapping.validFrom ?? "",
+    cell: ({ row }) =>
+      `${formatDateTime(row.original.validFrom)} → ${formatDateTime(row.original.validUntil)}`,
+  },
+  {
+    header: "Explicación",
+    accessorFn: (mapping) => mapping.explanation ?? "—",
+  },
+];
 
 /** Ficha de un item del catálogo: atributos, alias y mapeos de riesgo completos. */
 export function CatalogItemDetailDrawer({
@@ -36,72 +93,33 @@ export function CatalogItemDetailDrawer({
           <JsonViewer value={item.attributes} />
         </section>
 
-        <section>
-          <SectionHeader
-            title={`Alias (${item.aliases.length})`}
-            description="Formas alternativas con las que el motor reconoce este item."
-          />
-          {item.aliases.length === 0 ? (
-            <EmptyState title="El item no tiene alias registrados." />
-          ) : (
-            <ul className="space-y-2">
-              {item.aliases.map((alias) => (
-                <li
-                  key={alias.aliasId}
-                  className="rounded-lg border border-atlas-border p-3 text-sm"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <strong className="font-medium">{alias.aliasValue}</strong>
-                    <Badge tone="info">{alias.aliasType}</Badge>
-                  </div>
-                  <p className="mt-1 text-xs text-atlas-muted">
-                    Normalizado:{" "}
-                    <span className="font-mono">{alias.normalizedAlias}</span> ·
-                    Confianza: {safeText(alias.confidenceScore)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <SectionTable
+          title="Alias"
+          description="Formas alternativas con las que el motor reconoce este item."
+          data={item.aliases}
+          columns={COLUMNAS_ALIAS}
+          searchText={(alias) =>
+            `${alias.aliasValue} ${alias.aliasType} ${alias.normalizedAlias}`
+          }
+          searchPlaceholder="Buscar alias…"
+          searchTooltip="Recorre todos los alias del item, que llegan enteros con él: coincide con parte del valor, del tipo o del valor normalizado."
+          emptyTitle="El item no tiene alias registrados."
+          emptyDescription="Añade alias creando una versión nueva del catálogo."
+        />
 
-        <section>
-          <SectionHeader
-            title={`Mapeos de riesgo (${item.riskMappings.length})`}
-            description="Cuánto pesa este item en cada dimensión de riesgo y con qué motivo."
-          />
-          {item.riskMappings.length === 0 ? (
-            <EmptyState title="El item no tiene mapeos de riesgo." />
-          ) : (
-            <ul className="space-y-2">
-              {item.riskMappings.map((mapping) => (
-                <li
-                  key={mapping.riskMappingId}
-                  className="rounded-lg border border-atlas-border p-3 text-sm"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <strong className="font-medium">
-                      {mapping.riskDimension} · {mapping.riskBand}
-                    </strong>
-                    <Badge tone="warning">
-                      {safeText(mapping.scorePointsSuggested)} pts
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-xs text-atlas-muted">
-                    Motivo:{" "}
-                    <span className="font-mono">{mapping.reasonCode}</span> ·
-                    Uso: {safeText(mapping.modelUsage)} · Vigencia:{" "}
-                    {formatDateTime(mapping.validFrom)} →{" "}
-                    {formatDateTime(mapping.validUntil)}
-                  </p>
-                  {mapping.explanation ? (
-                    <p className="mt-2 text-sm">{mapping.explanation}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <SectionTable
+          title="Mapeos de riesgo"
+          description="Cuánto pesa este item en cada dimensión de riesgo y con qué motivo."
+          data={item.riskMappings}
+          columns={COLUMNAS_MAPEOS}
+          searchText={(mapping) =>
+            `${mapping.riskDimension} ${mapping.riskBand} ${mapping.reasonCode} ${mapping.modelUsage ?? ""} ${mapping.explanation ?? ""}`
+          }
+          searchPlaceholder="Buscar mapeo de riesgo…"
+          searchTooltip="Recorre todos los mapeos del item, que llegan enteros con él: coincide con parte de la dimensión, la banda, el motivo, el uso o la explicación."
+          emptyTitle="El item no tiene mapeos de riesgo."
+          emptyDescription="Añade mapeos creando una versión nueva del catálogo."
+        />
       </div>
     </DrawerPanel>
   );

@@ -219,4 +219,66 @@ describe("CreditProductsPage · catálogo, alta y estado", () => {
     renderWithProviders(<CreditProductsPage />);
     expect(screen.getByText("Acceso restringido")).toBeInTheDocument();
   });
+
+  it("es una tabla con su buscador y su filtro de estado sobre el catálogo entero", async () => {
+    server.use(
+      http.get(`${API_BASE}/operations/credit/products`, () =>
+        HttpResponse.json({
+          data: {
+            products: [
+              PRODUCTO,
+              {
+                ...PRODUCTO,
+                id: "22",
+                productCode: "pyme_24m",
+                productName: "Pyme 24 meses",
+                status: "draft",
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    renderWithProviders(<CreditProductsPage />);
+    await screen.findByText("Consumo 12 meses");
+    expect(
+      within(screen.getByRole("table"))
+        .getAllByRole("columnheader")
+        .map((c) => c.textContent),
+    ).toEqual(expect.arrayContaining(["Producto", "Estado", "Monto"]));
+
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Estado/ }),
+      "draft",
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("Consumo 12 meses")).toBeNull(),
+    );
+    expect(screen.getByText("Pyme 24 meses")).toBeInTheDocument();
+
+    await elegirOpcion(screen.getByRole("combobox", { name: /^Estado/ }), "");
+    await userEvent.type(
+      screen.getByRole("textbox", {
+        name: "Buscar por nombre, código, moneda o descripción…",
+      }),
+      "consumo_12m",
+    );
+    await waitFor(() => expect(screen.queryByText("Pyme 24 meses")).toBeNull());
+    expect(screen.getByText("Consumo 12 meses")).toBeInTheDocument();
+
+    await userEvent.clear(
+      screen.getByRole("textbox", {
+        name: "Buscar por nombre, código, moneda o descripción…",
+      }),
+    );
+    await userEvent.type(
+      screen.getByRole("textbox", {
+        name: "Buscar por nombre, código, moneda o descripción…",
+      }),
+      "zzzz",
+    );
+    expect(
+      await screen.findByText("Ningún producto coincide con los filtros."),
+    ).toBeInTheDocument();
+  });
 });

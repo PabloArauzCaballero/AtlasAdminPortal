@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
-import { screen } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -15,6 +16,8 @@ const mockUseAuth = vi.fn();
 vi.mock("@/shared/auth/auth-context", () => ({
   useAuth: () => mockUseAuth(),
 }));
+
+import { elegirOpcion } from "../../shared/option-select-helpers";
 
 const { CurrentRiskPolicyPage } =
   await import("@/features/risk-policy/current-risk-policy-page");
@@ -35,6 +38,17 @@ const POLITICA = {
       effectiveFrom: null,
       effectiveUntil: null,
       rules: [
+        {
+          riskPolicyRuleId: "8",
+          ruleCode: "block_identity_mismatch",
+          ruleName: "Bloquear si la identidad no coincide",
+          riskDimension: "identity",
+          ruleType: "bnpl_responsible_lending",
+          severity: "high",
+          actionCode: "BLOCK",
+          reasonCode: "y",
+          isHardStop: true,
+        },
         {
           riskPolicyRuleId: "7",
           ruleCode: "hold_collection_during_open_dispute",
@@ -93,7 +107,9 @@ describe("CurrentRiskPolicyPage", () => {
     await screen.findByText("Suspender el cobro");
     expect(screen.getByText("Cobranza")).toBeInTheDocument();
     expect(screen.getByText("Crítica")).toBeInTheDocument();
-    expect(screen.getByText("Crédito responsable")).toBeInTheDocument();
+    expect(screen.getAllByText("Crédito responsable").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getByText(/Alta con crédito/)).toBeInTheDocument();
     expect(screen.queryByText("HOLD_COLLECTION")).toBeNull();
     expect(screen.queryByText("bnpl_responsible_lending")).toBeNull();
@@ -103,5 +119,82 @@ describe("CurrentRiskPolicyPage", () => {
     conPermisos(["lineage.read"]);
     renderWithProviders(<CurrentRiskPolicyPage />);
     expect(screen.getByText("Acceso restringido")).toBeInTheDocument();
+  });
+
+  it("versiones y reglas son tablas con cabeceras, no tarjetas", async () => {
+    conPermisos(["operations.riskPolicy.read"]);
+    renderWithProviders(<CurrentRiskPolicyPage />);
+    await screen.findByText("Suspender el cobro");
+    const [versiones, reglas] = screen.getAllByRole("table");
+    expect(
+      within(versiones)
+        .getAllByRole("columnheader")
+        .map((c) => c.textContent),
+    ).toEqual(
+      expect.arrayContaining(["Ruleset", "Tipo", "Estado", "Desde", "Hasta"]),
+    );
+    expect(
+      within(versiones).getByText("atlas_mvp_onboarding_ruleset@v1-seed"),
+    ).toBeInTheDocument();
+    expect(
+      within(reglas)
+        .getAllByRole("columnheader")
+        .map((c) => c.textContent),
+    ).toEqual(expect.arrayContaining(["Regla", "Dimensión", "Severidad"]));
+  });
+
+  it("el buscador y el filtro de severidad recortan las reglas", async () => {
+    conPermisos(["operations.riskPolicy.read"]);
+    renderWithProviders(<CurrentRiskPolicyPage />);
+    await screen.findByText("Suspender el cobro");
+    await userEvent.type(
+      screen.getByRole("textbox", {
+        name: "Buscar por regla, código o ruleset…",
+      }),
+      "identidad",
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByText(
+          "Suspender gestión de cobro sobre una compra disputada",
+        ),
+      ).toBeNull(),
+    );
+    expect(
+      screen.getByText("Bloquear si la identidad no coincide"),
+    ).toBeInTheDocument();
+    await userEvent.clear(
+      screen.getByRole("textbox", {
+        name: "Buscar por regla, código o ruleset…",
+      }),
+    );
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /^Severidad/ }),
+      "critical",
+    );
+    // El vaciado del buscador espera al debounce: primero reaparece la regla crítica.
+    expect(
+      await screen.findByText(
+        "Suspender gestión de cobro sobre una compra disputada",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Bloquear si la identidad no coincide"),
+    ).toBeNull();
+  });
+
+  it("filtros que nada satisface dicen que ninguna regla coincide", async () => {
+    conPermisos(["operations.riskPolicy.read"]);
+    renderWithProviders(<CurrentRiskPolicyPage />);
+    await screen.findByText("Suspender el cobro");
+    await userEvent.type(
+      screen.getByRole("textbox", {
+        name: "Buscar por regla, código o ruleset…",
+      }),
+      "zzzz",
+    );
+    expect(
+      await screen.findByText("Ninguna regla coincide con los filtros."),
+    ).toBeInTheDocument();
   });
 });

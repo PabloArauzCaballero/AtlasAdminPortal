@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import {
@@ -19,6 +18,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
 import { CatalogItemDetailDrawer } from "./catalog-item-detail-drawer";
 import { CatalogVersionActions } from "./catalog-version-actions";
+import { CatalogVersionItemsTable } from "./catalog-version-items-table";
 import { buildCatalogVersionItemColumns } from "./catalog-version-items-columns";
 import { STATUS_HELP, STATUS_LABELS } from "./catalog-version-lifecycle";
 import type { ContextItem } from "./catalog-version-types";
@@ -196,11 +196,7 @@ function AuthorizedCatalogVersionDetailPage({
               />
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={items}
-                columns={columns}
-                emptyTitle="Esta versión no tiene items."
-              />
+              <CatalogVersionItemsTable items={items} columns={columns} />
             </CardContent>
           </Card>
         </div>
