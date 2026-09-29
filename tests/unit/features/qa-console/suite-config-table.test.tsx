@@ -43,7 +43,7 @@ describe("Configuración de la suite · tabla de pasos", () => {
       "Esquema configurable",
     ]);
     expect(within(table).getAllByRole("row")).toHaveLength(3);
-    expect(screen.getByText(/qa@atlas.test/)).toBeInTheDocument();
+    expect(screen.getAllByText(/qa@atlas.test/)).toHaveLength(2);
     expect(screen.queryByRole("article")).toBeNull();
   });
 
