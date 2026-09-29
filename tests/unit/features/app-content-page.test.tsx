@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest } from "@/shared/api/client";
 import { AtlasApiError } from "@/shared/api/errors";
@@ -71,6 +71,36 @@ describe("Contenido de la app", () => {
     );
   });
 
+  it("el celular enseña el texto mientras se escribe, sin guardar", async () => {
+    asManager();
+    request.mockResolvedValue({ items: [] });
+    renderWithProviders(<AppContentPage />);
+
+    const phone = await screen.findByTestId("app-content-phone");
+    expect(phone).toHaveTextContent("Nada publicado todavía");
+
+    fireEvent.click(screen.getByTestId("app-content-new-button"));
+    expect(phone).toHaveTextContent("Empieza a escribir");
+
+    fireEvent.change(screen.getByTestId("new-content-title"), {
+      target: { value: "¿Cómo se calcula mi línea?" },
+    });
+    fireEvent.change(screen.getByTestId("new-content-body"), {
+      target: { value: "Depende de tus ingresos." },
+    });
+    expect(phone).toHaveTextContent("¿Cómo se calcula mi línea?");
+    expect(phone).toHaveTextContent("Depende de tus ingresos.");
+    expect(request).not.toHaveBeenCalledWith(
+      "/operations/app-content",
+      expect.objectContaining({ method: "PUT" }),
+    );
+
+    fireEvent.click(screen.getByText("Cancelar"));
+    await waitFor(() =>
+      expect(phone).not.toHaveTextContent("¿Cómo se calcula mi línea?"),
+    );
+  });
+
   it("no deja publicar una clave con espacios", async () => {
     asManager();
     request.mockResolvedValue({ items: [] });
@@ -115,7 +145,11 @@ describe("Contenido de la app", () => {
     });
     renderWithProviders(<AppContentPage />);
 
-    expect(await screen.findByText("Una pregunta")).toBeInTheDocument();
+    expect(
+      await within(await screen.findByTestId("app-content-list")).findByText(
+        "Una pregunta",
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId("edit-faq.uno")).not.toBeInTheDocument();
     expect(
       screen.queryByTestId("app-content-new-button"),
