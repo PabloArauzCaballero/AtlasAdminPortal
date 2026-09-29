@@ -40,6 +40,7 @@ const SESION = {
     permissions: [
       "governance.policies.read",
       "governance.policies.write",
+      "governance.policies.manage",
       "governance.data.read",
     ],
   },
