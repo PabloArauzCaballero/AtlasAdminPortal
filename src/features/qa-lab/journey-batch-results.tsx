@@ -1,9 +1,66 @@
-import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+"use client";
+
+import { useMemo, useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { Badge, StatusBadge } from "@/shared/components/ui/badges";
+import { Button } from "@/shared/components/ui/button";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
+import type { Option } from "@/shared/lib/options";
 import { JourneyStepResults } from "./journey-step-results";
-import type { QaJourneyBatchResult } from "./journey-types";
+import type {
+  QaJourneyBatchResult,
+  QaJourneyIterationResult,
+} from "./journey-types";
+
+const PAGE_SIZE = 25;
+
+const OUTCOME_OPTIONS: Option[] = [
+  {
+    value: "OK",
+    label: "Sin fallos",
+    description: "Personas cuyos pasos pasaron todos.",
+  },
+  {
+    value: "ERROR",
+    label: "Con fallos",
+    description: "Personas con al menos un paso fallido.",
+  },
+];
+
+const documentOf = (run: QaJourneyIterationResult) =>
+  typeof run.persona.documentNumber === "string"
+    ? run.persona.documentNumber
+    : "";
+
+/**
+ * Filtra el lote entero, que ya está en el navegador (lo generó y ejecutó esta misma pantalla).
+ * Busca por el número de persona o por su documento.
+ */
+export function filterIterations(
+  runs: readonly QaJourneyIterationResult[],
+  q: string,
+  outcome: string,
+): QaJourneyIterationResult[] {
+  const raw = q.trim().toLowerCase();
+  const byNumber = raw.startsWith("#");
+  const needle = raw.replace(/^#/, "");
+  return runs.filter((run) => {
+    const failed = run.result.failedSteps > 0;
+    if (outcome === "OK" && failed) return false;
+    if (outcome === "ERROR" && !failed) return false;
+    if (!needle) return true;
+    if (String(run.index + 1) === needle) return true;
+    // «#3» pide SÓLO la persona 3; sin «#», el texto también se busca dentro del documento.
+    return (
+      !byNumber &&
+      (`persona ${run.index + 1}`.includes(needle) ||
+        documentOf(run).toLowerCase().includes(needle))
+    );
+  });
+}
 
 /**
  * Resultado de un lote de journeys (`iterations` > 1). Con una sola corrida se ve exactamente
@@ -13,9 +70,28 @@ import type { QaJourneyBatchResult } from "./journey-types";
 export function JourneyBatchResults({
   batch,
 }: Readonly<{ batch: QaJourneyBatchResult }>) {
+  const [q, setQ] = useState("");
+  const [outcome, setOutcome] = useState("");
+  const [page, setPage] = useState(1);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const filtered = useMemo(
+    () => filterIterations(batch.runs, q, outcome),
+    [batch.runs, q, outcome],
+  );
+  const columns = useMemo(
+    () =>
+      withoutClientSorting(
+        buildIterationColumns(openIndex, (index) => setOpenIndex(index)),
+      ),
+    [openIndex],
+  );
   if (batch.iterations === 1 && batch.runs[0]) {
     return <JourneyStepResults result={batch.runs[0].result} />;
   }
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const current = Math.min(page, totalPages);
+  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const open = batch.runs.find((run) => run.index === openIndex);
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -26,56 +102,131 @@ export function JourneyBatchResults({
         <Badge tone="default">semilla: {batch.seed}</Badge>
         <Badge tone="default">concurrencia: {batch.concurrency}</Badge>
       </div>
-      <ol className="space-y-2">
-        {batch.runs.map((run) => (
-          <IterationRow key={run.index} run={run} />
-        ))}
-      </ol>
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por n.º de persona o documento…"
+        searchTooltip="Recorre TODAS las personas del lote, que ya está en este navegador porque esta pantalla lo ejecutó: coincide con su número o con parte de su documento; «#3» pide sólo la persona 3."
+        filters={[
+          {
+            name: "outcome",
+            label: "Resultado",
+            allLabel: "Todas las personas",
+            tooltip:
+              "Deja sólo las personas cuyos pasos pasaron todos, o las que tuvieron algún fallo.",
+            value: outcome,
+            options: OUTCOME_OPTIONS,
+          },
+        ]}
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
+        onFilterChange={(_name, value) => {
+          setOutcome(value);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setOutcome("");
+          setPage(1);
+        }}
+      />
+      <DataTable
+        data={shown}
+        columns={columns}
+        meta={{
+          page: current,
+          limit: PAGE_SIZE,
+          total: filtered.length,
+          totalPages,
+        }}
+        onPageChange={setPage}
+        emptyTitle="Ninguna persona coincide con la búsqueda."
+        emptyDescription="Cambia el texto o quita el filtro de resultado."
+      />
+      {open ? (
+        <section
+          className="space-y-3 rounded-xl border border-atlas-border bg-atlas-soft/40 p-3"
+          aria-label={`Detalle de la persona ${open.index + 1}`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-atlas-text">
+              Persona {open.index + 1}
+            </h3>
+            <Button
+              variant="ghost"
+              className="h-7 px-2 text-xs"
+              onClick={() => setOpenIndex(null)}
+            >
+              Cerrar
+            </Button>
+          </div>
+          <JourneyStepResults result={open.result} />
+          <JsonViewer title="Persona simulada" value={open.persona} />
+        </section>
+      ) : null}
     </div>
   );
 }
 
-function IterationRow({
-  run,
-}: Readonly<{ run: QaJourneyBatchResult["runs"][number] }>) {
-  const [open, setOpen] = useState(false);
-  const failed = run.result.failedSteps > 0;
-  return (
-    <li className="rounded-xl border border-atlas-border bg-white p-3">
-      <button
-        type="button"
-        className="flex w-full flex-wrap items-center gap-2 text-left"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-      >
-        {open ? (
-          <ChevronDown
-            className="h-4 w-4 shrink-0 text-atlas-muted"
-            aria-hidden
-          />
-        ) : (
-          <ChevronRight
-            className="h-4 w-4 shrink-0 text-atlas-muted"
-            aria-hidden
-          />
-        )}
-        <Badge tone="default">Persona {run.index + 1}</Badge>
-        <StatusBadge value={failed ? "ERROR" : "OK"} />
-        <Badge>
-          {run.result.passedSteps}/{run.result.totalSteps} pasos
-        </Badge>
-        {typeof run.persona.documentNumber === "string" ? (
-          <span className="font-mono text-[11px] text-atlas-muted">
-            doc: {run.persona.documentNumber}
-          </span>
-        ) : null}
-      </button>
-      {open ? (
-        <div className="mt-3">
-          <JourneyStepResults result={run.result} />
-          <JsonViewer title="Persona simulada" value={run.persona} />
-        </div>
-      ) : null}
-    </li>
-  );
+function buildIterationColumns(
+  openIndex: number | null,
+  onToggle: (index: number | null) => void,
+): ColumnDef<QaJourneyIterationResult>[] {
+  return [
+    {
+      id: "persona",
+      header: "Persona",
+      cell: ({ row }) => (
+        <Badge tone="default">Persona {row.original.index + 1}</Badge>
+      ),
+    },
+    {
+      id: "result",
+      header: "Resultado",
+      cell: ({ row }) => (
+        <StatusBadge
+          value={row.original.result.failedSteps > 0 ? "ERROR" : "OK"}
+        />
+      ),
+    },
+    {
+      id: "steps",
+      header: "Pasos",
+      cell: ({ row }) => (
+        <span className="tabular-nums">
+          {row.original.result.passedSteps}/{row.original.result.totalSteps}{" "}
+          pasos
+        </span>
+      ),
+    },
+    {
+      id: "document",
+      header: "Documento",
+      cell: ({ row }) => (
+        <span className="font-mono text-xs text-atlas-muted">
+          {documentOf(row.original) || "—"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Detalle",
+      meta: { pinRight: true },
+      cell: ({ row }) => {
+        const open = openIndex === row.original.index;
+        return (
+          <Button
+            variant="ghost"
+            className="h-8 px-2.5 text-xs"
+            aria-expanded={open}
+            aria-label={`${open ? "Ocultar" : "Ver"} el detalle de la persona ${row.original.index + 1}`}
+            onClick={() => onToggle(open ? null : row.original.index)}
+          >
+            {open ? "Ocultar detalle" : "Ver detalle"}
+          </Button>
+        );
+      },
+    },
+  ];
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/shared/components/data-table/data-table";
 import { BadgeCheck, CircleSlash, X } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
@@ -214,31 +216,51 @@ function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
   );
 }
 
+const ROOT_CAUSE_COLUMNS: ColumnDef<QaRunSummary["rootCauses"][number]>[] = [
+  {
+    id: "step",
+    header: "Paso",
+    accessorFn: (cause) => cause.stepKey,
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.original.stepKey}</span>
+    ),
+  },
+  {
+    id: "reason",
+    header: "Motivo",
+    accessorFn: (cause) => cause.reason,
+    cell: ({ row }) => (
+      <span className="text-sm text-red-900">{row.original.reason}</span>
+    ),
+  },
+  {
+    id: "personas",
+    header: "Personas",
+    accessorFn: (cause) => cause.personas,
+    cell: ({ row }) => (
+      <span className="tabular-nums">
+        {row.original.personas} persona{row.original.personas === 1 ? "" : "s"}
+      </span>
+    ),
+  },
+];
+
 function RootCauses({ run }: Readonly<{ run: QaRunSummary }>) {
-  if (run.rootCauses.length === 0) return null;
-  const causes = [...run.rootCauses].sort((a, b) => b.personas - a.personas);
+  const causes = useMemo(
+    () => [...run.rootCauses].sort((a, b) => b.personas - a.personas),
+    [run.rootCauses],
+  );
+  if (causes.length === 0) return null;
   return (
-    <section aria-label="Causas raíz">
+    <section aria-label="Causas raíz" className="space-y-2">
       <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-atlas-muted">
         Causa raíz
       </h3>
-      <ol className="mt-2 space-y-1.5">
-        {causes.map((cause) => (
-          <li
-            key={`${cause.stepKey}-${cause.reason}`}
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
-          >
-            <span className="font-mono text-xs">{cause.stepKey}</span> ·{" "}
-            {cause.reason}
-            <span className="ml-1 text-xs text-red-700">
-              ({cause.personas} persona{cause.personas === 1 ? "" : "s"})
-            </span>
-          </li>
-        ))}
-      </ol>
-      <p className="mt-1 text-xs text-atlas-muted">
+      <DataTable data={causes} columns={ROOT_CAUSE_COLUMNS} />
+      <p className="text-xs text-atlas-muted">
         Los pasos que dependían de éstos aparecen como omitidos: son
-        consecuencia, no otra falla.
+        consecuencia, no otra falla. El servidor manda como máximo las diez
+        causas con más personas afectadas.
       </p>
     </section>
   );

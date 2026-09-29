@@ -109,7 +109,7 @@ export function getQaRun(runId: string) {
 
 export function listQaRunPersonas(
   runId: string,
-  query: { page: number; limit: number; status?: string },
+  query: { page: number; limit: number; status?: string; q?: string },
 ) {
   return apiRequest<QaRunPersonaPage>(
     `${BASE}/runs/${encodeURIComponent(runId)}/personas`,

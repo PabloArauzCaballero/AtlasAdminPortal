@@ -24,7 +24,10 @@ test.describe("campaña de journeys QA", () => {
     await settled(page);
     await expect(page.getByText("Recorridos precargados")).toBeVisible();
 
-    const card = page.getByTestId("qa-template-account_signup_to_login");
+    // El recorrido es una fila de la tabla del catálogo; sus acciones están en la última columna.
+    const card = page.getByRole("row").filter({
+      has: page.getByTestId("qa-template-account_signup_to_login"),
+    });
     await expect(card).toBeVisible({ timeout: 20_000 });
     await capture(page, testInfo, "1 catalogo precargado");
 

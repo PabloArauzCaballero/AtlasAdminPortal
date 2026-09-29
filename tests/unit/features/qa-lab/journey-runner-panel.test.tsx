@@ -338,7 +338,7 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
     ).toBeInTheDocument();
   });
 
-  it("un lote de varias personas se ve como lote, con su agregado y cada persona expandible", async () => {
+  it("un lote de varias personas se ve como tabla, con su agregado, su buscador y cada persona expandible", async () => {
     runJourneyBatch.mockResolvedValue({
       iterations: 3,
       concurrency: 2,
@@ -366,14 +366,34 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
     );
 
     expect(await screen.findByText("2/3 personas OK")).toBeInTheDocument();
-    expect(screen.getByText("Persona 1")).toBeInTheDocument();
-    expect(screen.getByText("Persona 3")).toBeInTheDocument();
+    const table = screen.getByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(["Persona", "Resultado", "Pasos", "Documento", "Detalle"]);
+    expect(within(table).getByText("Persona 1")).toBeInTheDocument();
+    expect(within(table).getByText("Persona 3")).toBeInTheDocument();
     // Sin expandir, el detalle de cada persona (los pasos, el contexto) no está en el DOM.
     expect(
       screen.queryByText("Contexto final del journey"),
     ).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText("Persona 1").closest("button")!);
+    // El buscador recorta las filas del lote por número o documento.
+    await userEvent.type(
+      screen.getByLabelText("Buscar por n.º de persona o documento…"),
+      "3",
+    );
+    await waitFor(() =>
+      expect(within(table).queryByText("Persona 1")).not.toBeInTheDocument(),
+    );
+    expect(within(table).getByText("Persona 3")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Limpiar/ }));
+    expect(await within(table).findByText("Persona 1")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /detalle de la persona 1/ }),
+    );
 
     expect(screen.getByText("Contexto final del journey")).toBeInTheDocument();
   });

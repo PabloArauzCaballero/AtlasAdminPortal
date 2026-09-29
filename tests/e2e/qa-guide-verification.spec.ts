@@ -92,16 +92,18 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     ).toBeInViewport();
   });
 
-  test("matriz de escenarios reacciona al click", async ({ page }) => {
+  test("la matriz de escenarios es una tabla que enseña cada cabecera", async ({
+    page,
+  }) => {
     await page.goto(url("/internal/qa/aprender?tab=guia"), {
       waitUntil: "domcontentloaded",
     });
 
-    await page.getByRole("button", { name: /Sin identificarse/ }).click();
+    const row = page.getByRole("row").filter({ hasText: /Sin identificarse/ });
     await expect(
-      page.getByText(/401 si la operación exige sesión\./),
+      row.getByText(/401 si la operación exige sesión\./),
     ).toBeVisible();
-    await expect(page.getByText("Authorization: ninguno")).toBeVisible();
+    await expect(row.getByText("ninguno")).toBeVisible();
   });
 
   test("el gráfico de stress avanza al simular la corrida (screenshot)", async ({
@@ -131,8 +133,11 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
       waitUntil: "domcontentloaded",
     });
 
-    await page.getByRole("button", { name: /^Copiar/ }).click();
-    await expect(page.getByText(/Copiado/)).toBeVisible();
+    // Las tablas de la guía también traen su botón «Copiar» (copia la tabla): se acota a la sección
+    // del journey, que es la del botón que copia el array de pasos.
+    const journey = page.locator("#journey");
+    await journey.getByRole("button", { name: /^Copiar/ }).click();
+    await expect(journey.getByText(/Copiado/)).toBeVisible();
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toContain('"customerId": "data.customerId"');
     expect(clip).toContain("{{customerId}}");

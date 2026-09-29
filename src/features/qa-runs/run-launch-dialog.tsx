@@ -39,7 +39,7 @@ export function RunLaunchDialog({
   open: boolean;
   /** Sólo plantillas de este flujo (desde el árbol). */
   workflowCode?: string;
-  /** Plantilla preseleccionada (desde una tarjeta del catálogo), `code@version`. */
+  /** Plantilla preseleccionada (desde una fila del catálogo), `code@version`. */
   templateKey?: string;
   onClose: () => void;
   onLaunched: (runId: string) => void;
