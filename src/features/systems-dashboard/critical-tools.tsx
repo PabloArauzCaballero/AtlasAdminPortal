@@ -3,13 +3,11 @@
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useToolsHealth } from "@/features/systems/hooks";
-import {
-  ToolLiveBadge,
-  toolLiveState,
-} from "@/features/systems/tool-live-state";
+import { toolLiveState } from "@/features/systems/tool-live-state";
+import { ToolsHealthTable } from "@/features/systems/tools-health-table";
 import { SectionHeader } from "@/shared/components/layout/page-header";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { LoadingSkeleton } from "@/shared/components/ui/states";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
 
 /** El permiso de la pestaña Salud de Herramientas: el mismo que pedía «Salud herramientas». */
@@ -54,13 +52,13 @@ export function CriticalToolsBanner() {
   );
 }
 
-/** La tarjeta con el estado vivo de cada herramienta, con enlace a la pestaña Salud. */
+/** El estado vivo de cada herramienta, en tabla, con enlace a la pestaña Salud. */
 export function CriticalToolsCard() {
   const health = useToolsHealth();
   const tools = health.data ?? [];
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-3">
+    <section>
+      <div className="mb-3 flex flex-row items-start justify-between gap-3">
         <SectionHeader
           title="Herramientas"
           description="Si responden ahora mismo. Se actualiza sola cada 30 segundos."
@@ -72,36 +70,18 @@ export function CriticalToolsCard() {
         >
           Ver salud completa
         </Link>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {health.isLoading ? <LoadingSkeleton rows={3} /> : null}
-        {health.error ? (
-          <p className="text-sm text-red-700">
-            No se pudo leer la salud de las herramientas.
-          </p>
-        ) : null}
-        {!tools.length && !health.isLoading && !health.error ? (
-          <p className="text-sm text-atlas-muted">
-            No hay herramientas con chequeo de salud.
-          </p>
-        ) : null}
-        {tools.map((tool, index) => (
-          <div
-            key={`${tool.code ?? tool.name ?? index}`}
-            className="flex items-center justify-between gap-3 rounded-lg border border-atlas-border bg-[#FAFAFB] p-3"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-atlas-text">
-                {safeText(tool.name ?? tool.code)}
-              </p>
-              <p className="truncate text-xs text-atlas-muted">
-                {safeText(tool.code)}
-              </p>
-            </div>
-            <ToolLiveBadge tool={tool} />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+      </div>
+      {health.isLoading ? <LoadingSkeleton rows={3} /> : null}
+      {health.error ? (
+        <ErrorState
+          description="No se pudo leer la salud de las herramientas."
+          requestId={
+            isAtlasApiError(health.error) ? health.error.requestId : undefined
+          }
+          onRetry={() => void health.refetch()}
+        />
+      ) : null}
+      {health.data ? <ToolsHealthTable tools={tools} compact /> : null}
+    </section>
   );
 }
