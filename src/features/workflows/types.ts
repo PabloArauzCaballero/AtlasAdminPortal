@@ -43,9 +43,9 @@ export type WorkflowStep = {
   stepCode: string;
   name: string;
   description: string | null;
-  endpointCode: string;
-  httpMethod: string;
-  routePath: string;
+  endpointCode: string | null;
+  httpMethod: string | null;
+  routePath: string | null;
   executionOrder: number;
   isMandatory: boolean;
   isRepeatable: boolean;

@@ -29,6 +29,7 @@ import {
 import { WorkflowMinimap } from "./workflow-minimap";
 import { WorkflowNodeTooltip } from "./workflow-node-tooltip";
 import type { WorkflowTree } from "./types";
+import { stepEndpointLabel } from "./step-endpoint";
 import { RunCountsLayer } from "@/features/qa-runs/workflow-run-overlay";
 import type { QaRunStepCounts } from "@/features/qa-runs/types";
 
@@ -216,7 +217,7 @@ export function WorkflowGraphView({
                 role="button"
                 tabIndex={0}
                 className="cursor-pointer focus:outline-none"
-                aria-label={`Paso ${node.step.httpMethod} ${node.step.routePath}: ${node.step.name}`}
+                aria-label={`Paso ${stepEndpointLabel(node.step)}: ${node.step.name}`}
                 aria-pressed={
                   selection?.kind === "step" && selection.code === node.id
                 }

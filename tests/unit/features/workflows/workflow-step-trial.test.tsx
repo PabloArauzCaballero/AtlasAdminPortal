@@ -6,7 +6,7 @@ import {
   pathParamNames,
   resolveRoutePath,
 } from "@/features/workflows/services";
-import type { WorkflowStep } from "@/features/workflows/types";
+import type { RoutedWorkflowStep } from "@/features/workflows/step-endpoint";
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -19,7 +19,9 @@ vi.mock("@/features/workflows/services", async (importOriginal) => ({
 const { WorkflowStepTrial } =
   await import("@/features/workflows/workflow-step-trial");
 
-function stepFixture(overrides: Partial<WorkflowStep> = {}): WorkflowStep {
+function stepFixture(
+  overrides: Partial<RoutedWorkflowStep> = {},
+): RoutedWorkflowStep {
   return {
     stepId: "1",
     stepCode: "first_screen.session_start",

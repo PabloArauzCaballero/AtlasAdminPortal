@@ -3,6 +3,7 @@
 import { ACTOR_LABEL } from "./workflow-node";
 import type { GraphNode } from "./workflow-graph-layout";
 import type { Viewport } from "./workflow-viewport";
+import { stepEndpointLabel } from "./step-endpoint";
 
 /**
  * Tooltip del nodo. Va en HTML (no en SVG) porque necesita texto que se ajuste
@@ -43,7 +44,7 @@ export function WorkflowNodeTooltip({
       className="pointer-events-none absolute z-20 w-[19rem] rounded-xl border border-atlas-border bg-white/98 p-3 shadow-lg backdrop-blur"
     >
       <p className="break-all font-mono text-[0.6875rem] text-atlas-accent">
-        {step.httpMethod} {step.routePath}
+        {stepEndpointLabel(step)}
       </p>
       <p className="mt-1 text-xs font-semibold text-atlas-text">{step.name}</p>
       {step.description ? (
