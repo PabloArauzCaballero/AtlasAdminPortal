@@ -7,9 +7,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import type { QueryParams } from "@/shared/api/types";
+import { queryKeys } from "@/shared/api/query-keys";
 import {
   getOutcomeDeliveryStatus,
   getPortfolioSummary,
+  getRatingScale,
   listExhaustedOutcomes,
   rateCustomer,
   rateLoan,
@@ -65,4 +67,12 @@ export function useRateLoanMutation() {
 
 export function useRateCustomerMutation() {
   return useOperacion((customerId: string) => rateCustomer(customerId));
+}
+
+export function useRatingScale() {
+  return useQuery({
+    queryKey: queryKeys.carteraEscala,
+    queryFn: () => getRatingScale(),
+    staleTime: 5 * 60_000,
+  });
 }

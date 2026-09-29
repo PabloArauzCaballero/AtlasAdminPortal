@@ -10,7 +10,6 @@ import {
   getLoan,
   getLoanRating,
   getLoanRatingHistory,
-  getRatingScale,
   listCustomerApplications,
   listCustomerLoans,
   listPortfolioLoans,
@@ -114,14 +113,6 @@ export function useLoanRatingHistory(loanId: string) {
   return useQuery({
     queryKey: queryKeys.carteraCalificacionPrestamo(loanId, "historial"),
     queryFn: () => getLoanRatingHistory(loanId),
-  });
-}
-
-export function useRatingScale() {
-  return useQuery({
-    queryKey: queryKeys.carteraEscala,
-    queryFn: () => getRatingScale(),
-    staleTime: 5 * 60_000,
   });
 }
 

@@ -3,13 +3,13 @@
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CarteraError } from "@/features/loans/cartera-error";
-import { useRatingScale } from "@/features/loans/hooks";
 import { formatRate } from "@/features/loans/loan-ui";
 import type { RatingScaleGrade } from "@/features/loans/types";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { Badge } from "@/shared/components/ui/badges";
 import { Card } from "@/shared/components/ui/card";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
+import { useRatingScale } from "./hooks";
 
 /**
  * La escala de calificación vigente: categorías, días de atraso y previsión.

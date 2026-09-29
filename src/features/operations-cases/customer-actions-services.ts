@@ -1,5 +1,4 @@
 import { apiRequest } from "@/shared/api/client";
-import type { QueryParams } from "@/shared/api/types";
 import type {
   BehaviorSummary,
   ClearMatchesInput,

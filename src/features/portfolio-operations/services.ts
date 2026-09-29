@@ -1,5 +1,6 @@
 import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
+import type { RatingScale } from "@/features/loans/types";
 import type {
   CustomerRatingResult,
   ExhaustedOutcomeList,
@@ -49,4 +50,9 @@ export function listExhaustedOutcomes(query: QueryParams) {
   return apiRequest<ExhaustedOutcomeList>("/operations/loans/outcome-backlog", {
     query,
   });
+}
+
+/** La escala de calificación vigente (regulatoria y versionada): se lee del servidor, nunca se copia. */
+export function getRatingScale() {
+  return apiRequest<RatingScale>("/operations/rating-scale");
 }

@@ -1,5 +1,3 @@
-import type { PaginationMeta } from "@/shared/api/types";
-
 /**
  * Las 8 tablas origen que unifica la vista `audit_event_feed`. Es el único campo
  * categórico acotado del feed: `eventType` viene crudo de cada fuente (para

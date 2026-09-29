@@ -7,7 +7,6 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
-import type { QueryParams } from "@/shared/api/types";
 import {
   clearComplianceMatches,
   decideEligibility,

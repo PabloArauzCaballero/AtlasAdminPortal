@@ -55,9 +55,10 @@ function entradas(): Entrada[] {
           : `${grupo.label} › ${item.label}`,
     })),
   );
-  const operaciones = supportNavItems.map(
-    (item) => ({ href: item.href, label: `${OPERACIONES} › ${item.label}` }),
-  );
+  const operaciones = supportNavItems.map((item) => ({
+    href: item.href,
+    label: `${OPERACIONES} › ${item.label}`,
+  }));
   return [...sueltos, ...agrupados, ...operaciones, ...SIN_ITEM_EN_MENU];
 }
 
