@@ -1,8 +1,9 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AtlasApiError } from "@/shared/api/errors";
 import { renderWithProviders } from "../../../helpers/render-with-providers";
+import { elegirOpcion } from "../../shared/option-select-helpers";
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -44,7 +45,15 @@ beforeEach(() => {
     items: [item("1"), item("2"), item("3", { proposedItemCode: null })],
     total: 3,
     page: 1,
-    pageSize: 50,
+    pageSize: 20,
+    meta: { page: 1, limit: 20, total: 3, totalPages: 1 },
+    summary: {
+      total: 60,
+      pendingReview: 41,
+      approved: 12,
+      rejected: 7,
+      aiSuggested: 9,
+    },
   });
 });
 
@@ -69,7 +78,7 @@ describe("CatalogStagingPanel · GET /operations/catalog-staging-items + decisio
       reviewStatus: "pending_review",
       ingestionJobId: "41",
       page: 1,
-      pageSize: 50,
+      limit: 20,
     });
   });
 
@@ -192,5 +201,138 @@ describe("CatalogStagingPanel · GET /operations/catalog-staging-items + decisio
     expect(
       screen.getByRole("button", { name: "Aprobar seleccionados (1)" }),
     ).toBeDisabled();
+  });
+});
+
+describe("CatalogStagingPanel · tabla homogénea (E)", () => {
+  it("es una tabla con cabeceras y una fila por ítem propuesto; las cifras salen del summary del alcance", async () => {
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    const tabla = await screen.findByRole("table");
+    for (const cabecera of ["Ítem propuesto", "Propuesta", "Aviso"])
+      expect(
+        within(tabla).getByRole("columnheader", { name: new RegExp(cabecera) }),
+      ).toBeInTheDocument();
+    expect(within(tabla).getAllByRole("row")).toHaveLength(4);
+    expect(within(tabla).getByText("Sin código propuesto")).toBeInTheDocument();
+    // 41 pendientes en TODO el alcance, aunque la página trae tres.
+    expect(screen.getByText("Pendientes").parentElement).toHaveTextContent(
+      "41",
+    );
+    expect(screen.getByText("Aprobados").parentElement).toHaveTextContent("12");
+    expect(
+      screen.getByText("Sugeridos por IA").parentElement,
+    ).toHaveTextContent("9");
+  });
+
+  it("el buscador y «Propuesta» viajan al servidor y vuelven a la página 1", async () => {
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    await screen.findByRole("table");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /código, nombre o n\.º/i }),
+      { target: { value: "50%" } },
+    );
+    await waitFor(() =>
+      expect(api.listStagingItems).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: "50%", page: 1, limit: 20 }),
+      ),
+    );
+    await elegirOpcion(
+      screen.getByRole("combobox", { name: /Propuesta/ }),
+      "true",
+    );
+    await waitFor(() =>
+      expect(api.listStagingItems).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: "50%", aiSuggested: true }),
+      ),
+    );
+    // El buscador sigue en pantalla mientras llega la respuesta.
+    expect(
+      screen.getByRole("textbox", { name: /código, nombre o n\.º/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("la paginación sigue a meta y una selección de la página 1 se conserva en la 2", async () => {
+    api.listStagingItems.mockImplementation(
+      async (query: { page: number }) => ({
+        items: [item(`${query.page}0`)],
+        total: 45,
+        page: query.page,
+        pageSize: 20,
+        meta: { page: query.page, limit: 20, total: 45, totalPages: 3 },
+      }),
+    );
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    await select("Banco 10");
+    await userEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await screen.findByText("Banco 20");
+    expect(api.listStagingItems).toHaveBeenLastCalledWith(
+      expect.objectContaining({ page: 2 }),
+    );
+    await select("Banco 20");
+    expect(
+      screen.getByRole("button", { name: "Aprobar seleccionados (2)" }),
+    ).toBeEnabled();
+  });
+
+  it("«nada coincide» no es «nada pendiente»: cada vacío dice lo suyo", async () => {
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    await screen.findByRole("table");
+    api.listStagingItems.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /código, nombre o n\.º/i }),
+      { target: { value: "zzz" } },
+    );
+    expect(
+      await screen.findByText(
+        "Ningún ítem pendiente coincide con la búsqueda.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Nada pendiente")).toBeNull();
+  });
+
+  it("sin nada pendiente y sin filtros dice «Nada pendiente»", async () => {
+    api.listStagingItems.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    });
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    expect(await screen.findByText("Nada pendiente")).toBeInTheDocument();
+  });
+
+  it("si la lectura falla dice por qué y «Reintentar» la vuelve a pedir", async () => {
+    api.listStagingItems.mockRejectedValueOnce(
+      new AtlasApiError({
+        status: 500,
+        code: "X",
+        message: "El servidor no respondió.",
+      }),
+    );
+    renderWithProviders(
+      <CatalogStagingPanel catalogCode="bancos" currentVersion={DRAFT} />,
+    );
+    expect(
+      await screen.findByText("El servidor no respondió."),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /reintentar/i }));
+    expect(await screen.findByText("Banco 1")).toBeInTheDocument();
   });
 });

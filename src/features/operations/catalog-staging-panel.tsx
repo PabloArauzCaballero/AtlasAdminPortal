@@ -1,25 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Button } from "@/shared/components/ui/button";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingSkeleton,
-} from "@/shared/components/ui/states";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
+import {
+  buildStagingColumns,
+  ORIGEN_PROPUESTA_OPTIONS,
+} from "./catalog-staging-columns";
 import { StagingDecisionDialog } from "./catalog-staging-decision-dialog";
 import { useStagingItems } from "./catalog-staging-hooks";
-import {
-  approvalBlocker,
-  editableTarget,
-  MAX_BATCH,
-} from "./catalog-staging-logic";
+import { editableTarget, MAX_BATCH } from "./catalog-staging-logic";
 import type { StagingDecision, StagingItem } from "./catalog-staging-types";
 import type { ContextCatalog } from "./types";
 
-const PAGE_SIZE = 50;
+const POR_PAGINA = 20;
 
 /**
  * Los ítems que una ingesta dejó pendientes de revisión, con decisión en lote.
@@ -39,29 +38,50 @@ export function CatalogStagingPanel({
 }>) {
   const [onlyThisIngestion, setOnlyThisIngestion] = useState(true);
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [q, setQ] = useState("");
+  const [origen, setOrigen] = useState("");
+  /*
+   * El lote se guarda con los ÍTEMS y no sólo con sus ids: la tabla pagina en el servidor, así que
+   * una selección hecha en la página 1 sigue siendo válida en la 2 y «Aprobar seleccionados (N)»
+   * cuenta todo lo marcado, no sólo lo que se ve.
+   */
+  const [selected, setSelected] = useState<Map<string, StagingItem>>(new Map());
   const [deciding, setDeciding] = useState<StagingDecision | null>(null);
   const scoped = Boolean(ingestionJobId) && onlyThisIngestion;
   const items = useStagingItems({
     catalogCode,
     reviewStatus: "pending_review",
     ...(scoped ? { ingestionJobId } : {}),
+    ...(q.trim() ? { q: q.trim() } : {}),
+    ...(origen ? { aiSuggested: origen === "true" } : {}),
     page,
-    pageSize: PAGE_SIZE,
+    limit: POR_PAGINA,
   });
   const target = editableTarget(currentVersion);
-  const rows = items.data?.items ?? [];
-  const chosen = rows.filter((item) => selected.has(item.stagingItemId));
-  const pages = Math.max(1, Math.ceil((items.data?.total ?? 0) / PAGE_SIZE));
+  const rows = useMemo(() => items.data?.items ?? [], [items.data]);
+  const chosen = useMemo(() => [...selected.values()], [selected]);
+  const resumen = items.data?.summary;
+  const filtrando = Boolean(q.trim() || origen);
+  const columns = useMemo(
+    () =>
+      buildStagingColumns({
+        seleccionado: (id) => selected.has(id),
+        alternar: (item) =>
+          setSelected((previous) => {
+            const next = new Map(previous);
+            if (next.has(item.stagingItemId)) next.delete(item.stagingItemId);
+            else if (next.size < MAX_BATCH) next.set(item.stagingItemId, item);
+            return next;
+          }),
+        tope: selected.size >= MAX_BATCH,
+      }),
+    [selected],
+  );
 
-  function toggle(id: string) {
-    setSelected((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else if (next.size < MAX_BATCH) next.add(id);
-      return next;
-    });
-  }
+  const reiniciar = () => {
+    setPage(1);
+    setSelected(new Map());
+  };
 
   return (
     <section
@@ -72,7 +92,7 @@ export function CatalogStagingPanel({
         <div>
           <p className="text-sm font-semibold text-atlas-text">
             Pendientes de revisión
-            {items.data ? ` (${formatNumber(items.data.total)})` : ""}
+            {items.data ? ` (${formatNumber(items.data.meta.total)})` : ""}
           </p>
           <p className="text-xs text-atlas-muted">
             {scoped
@@ -87,14 +107,35 @@ export function CatalogStagingPanel({
             className="h-8 text-xs"
             onClick={() => {
               setOnlyThisIngestion((value) => !value);
-              setPage(1);
-              setSelected(new Set());
+              reiniciar();
             }}
           >
             {scoped ? "Ver todo el catálogo" : "Ver sólo esta ingesta"}
           </Button>
         ) : null}
       </div>
+
+      {resumen ? (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <MetricCard
+            label="Pendientes"
+            value={formatNumber(resumen.pendingReview)}
+            tone={resumen.pendingReview > 0 ? "warning" : "default"}
+          />
+          <MetricCard
+            label="Aprobados"
+            value={formatNumber(resumen.approved)}
+          />
+          <MetricCard
+            label="Rechazados"
+            value={formatNumber(resumen.rejected)}
+          />
+          <MetricCard
+            label="Sugeridos por IA"
+            value={formatNumber(resumen.aiSuggested)}
+          />
+        </div>
+      ) : null}
 
       {!target ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-sm text-amber-900">
@@ -106,6 +147,35 @@ export function CatalogStagingPanel({
           . Crea una versión nueva con «Nueva versión» y vuelve aquí.
         </p>
       ) : null}
+
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por código, nombre o n.º del ítem…"
+        searchTooltip="Busca en el servidor, entre todos los ítems pendientes del alcance de arriba: coincide con parte del código propuesto, del nombre propuesto o del número del ítem."
+        filters={[
+          {
+            name: "origen",
+            label: "Propuesta",
+            value: origen,
+            options: ORIGEN_PROPUESTA_OPTIONS,
+            tooltip:
+              "Si el ítem lo sugirió la IA o vino tal cual en el lote ingerido.",
+          },
+        ]}
+        onSearchChange={(valor) => {
+          setQ(valor);
+          setPage(1);
+        }}
+        onFilterChange={(_nombre, valor) => {
+          setOrigen(valor);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setOrigen("");
+          setPage(1);
+        }}
+      />
 
       {items.isLoading ? <LoadingSkeleton rows={3} /> : null}
       {items.error ? (
@@ -122,47 +192,23 @@ export function CatalogStagingPanel({
           onRetry={() => void items.refetch()}
         />
       ) : null}
-      {items.data && rows.length === 0 ? (
-        <EmptyState
-          title="Nada pendiente"
-          description="No hay ítems esperando decisión en este alcance."
+      {items.data ? (
+        <DataTable
+          data={rows}
+          columns={columns}
+          meta={items.data.meta}
+          onPageChange={setPage}
+          emptyTitle={
+            filtrando
+              ? "Ningún ítem pendiente coincide con la búsqueda."
+              : "Nada pendiente"
+          }
+          emptyDescription={
+            filtrando
+              ? "Cambia o borra el texto y el filtro."
+              : "No hay ítems esperando decisión en este alcance."
+          }
         />
-      ) : null}
-      {rows.length > 0 ? (
-        <ul className="max-h-80 divide-y divide-atlas-border overflow-auto rounded-lg border border-atlas-border">
-          {rows.map((item) => (
-            <StagingRow
-              key={item.stagingItemId}
-              item={item}
-              checked={selected.has(item.stagingItemId)}
-              onToggle={() => toggle(item.stagingItemId)}
-            />
-          ))}
-        </ul>
-      ) : null}
-
-      {pages > 1 ? (
-        <div className="flex items-center justify-end gap-2 text-xs">
-          <Button
-            type="button"
-            className="h-7 px-2 text-xs"
-            disabled={page <= 1}
-            onClick={() => setPage((value) => value - 1)}
-          >
-            Anterior
-          </Button>
-          <span className="tabular-nums text-atlas-muted">
-            Página {page} de {pages}
-          </span>
-          <Button
-            type="button"
-            className="h-7 px-2 text-xs"
-            disabled={page >= pages}
-            onClick={() => setPage((value) => value + 1)}
-          >
-            Siguiente
-          </Button>
-        </div>
       ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
@@ -193,40 +239,10 @@ export function CatalogStagingPanel({
           target={target}
           onClose={() => {
             setDeciding(null);
-            setSelected(new Set());
+            setSelected(new Map());
           }}
         />
       ) : null}
     </section>
-  );
-}
-
-function StagingRow({
-  item,
-  checked,
-  onToggle,
-}: Readonly<{ item: StagingItem; checked: boolean; onToggle: () => void }>) {
-  const blocker = approvalBlocker(item);
-  const name = item.proposedItemName ?? item.proposedItemCode ?? "Sin nombre";
-  return (
-    <li className="flex items-start gap-3 px-3 py-2 text-sm">
-      <input
-        type="checkbox"
-        className="mt-1"
-        checked={checked}
-        aria-label={`Seleccionar ${name}`}
-        onChange={onToggle}
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-atlas-text">{name}</p>
-        <p className="font-mono text-xs text-atlas-muted">
-          {item.proposedItemCode ?? "—"} · #{item.stagingItemId}
-          {item.aiSuggested ? " · sugerido por IA" : ""}
-        </p>
-      </div>
-      {blocker ? (
-        <span className="shrink-0 text-xs text-amber-800">{blocker}</span>
-      ) : null}
-    </li>
   );
 }

@@ -6,6 +6,8 @@
  * PROPONE, no lo que una versión ya contiene.
  */
 
+import type { PaginationMeta } from "@/shared/api/types";
+
 export type StagingReviewStatus = "pending_review" | "approved" | "rejected";
 
 export type StagingItem = {
@@ -24,8 +26,20 @@ export type StagingItemQuery = {
   catalogCode?: string;
   ingestionJobId?: string;
   reviewStatus?: StagingReviewStatus;
+  /** Por partes: código y nombre propuestos y n.º del ítem. Lo busca el servidor. */
+  q?: string;
+  aiSuggested?: boolean;
   page: number;
-  pageSize: number;
+  limit: number;
+};
+
+/** Del ALCANCE entero (el catálogo o la ingesta), no de la página ni del buscador. */
+export type StagingItemSummary = {
+  total: number;
+  pendingReview: number;
+  approved: number;
+  rejected: number;
+  aiSuggested: number;
 };
 
 export type StagingItemPage = {
@@ -33,6 +47,9 @@ export type StagingItemPage = {
   total: number;
   page: number;
   pageSize: number;
+  meta: PaginationMeta;
+  /** Ausente en un servidor anterior, que no lo publicaba. */
+  summary?: StagingItemSummary;
 };
 
 export type StagingDecision = "approve" | "reject";
