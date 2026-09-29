@@ -131,18 +131,18 @@ ficha entera por un texto que falta.
 
 ## Operaciones, gobierno y calidad
 
-| Método | Ruta                                               | Pantalla             | Permiso esperado              |
-| ------ | -------------------------------------------------- | -------------------- | ----------------------------- |
-| GET    | `/operations/catalogs`                             | Catálogos operativos | `operations.catalogs.read`    |
-| GET    | `/operations/definitions`                          | Definiciones         | `operations.definitions.read` |
-| GET    | `/operations/data-governance/policies`             | Políticas resumidas  | `governance.policies.read`    |
-| GET    | `/operations/risk-policy/current`                  | Política de riesgo   | `operations.riskPolicy.read`  |
-| GET    | `/operations/data-quality/issues`                  | Issues calidad       | `dataQuality.issues.read`     |
-| POST   | `/operations/data-quality/issues/:issueId/resolve` | Resolver issue       | `dataQuality.issues.resolve`  |
-| GET    | `/internal/data-quality/rules`                     | Reglas calidad       | `dataQuality.rules.read`      |
-| GET    | `/internal/data-quality/rules/:ruleId`             | Detalle regla        | `dataQuality.rules.read`      |
-| POST   | `/internal/data-quality/rules/:ruleId/run`         | Ejecutar regla       | `dataQuality.rules.manage`    |
-| GET    | `/internal/governance/policies/:policyId`          | Detalle política     | `governance.policies.read`    |
+| Método | Ruta                                               | Pantalla                                                                                   | Permiso esperado              |
+| ------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- |
+| GET    | `/operations/catalogs`                             | Catálogos operativos                                                                       | `operations.catalogs.read`    |
+| GET    | `/operations/definitions`                          | Definiciones                                                                               | `operations.definitions.read` |
+| GET    | `/operations/data-governance/policies`             | Políticas resumidas                                                                        | `governance.policies.read`    |
+| GET    | `/operations/risk-policy/current`                  | Política de riesgo                                                                         | `operations.riskPolicy.read`  |
+| GET    | `/operations/data-quality/issues`                  | Issues calidad                                                                             | `dataQuality.issues.read`     |
+| POST   | `/operations/data-quality/issues/:issueId/resolve` | Reconocer, corregir o descartar (absorbe el `acknowledge` deprecado de `/internal/alerts`) | `dataQuality.issues.resolve`  |
+| GET    | `/internal/data-quality/rules`                     | Reglas calidad                                                                             | `dataQuality.rules.read`      |
+| GET    | `/internal/data-quality/rules/:ruleId`             | Detalle regla                                                                              | `dataQuality.rules.read`      |
+| POST   | `/internal/data-quality/rules/:ruleId/run`         | Ejecutar regla                                                                             | `dataQuality.rules.manage`    |
+| GET    | `/internal/governance/policies/:policyId`          | Detalle política                                                                           | `governance.policies.read`    |
 
 ## Reportería, metadata y lineage
 
@@ -196,16 +196,14 @@ del frontend más allá de listar/marcar leído.
 
 ## Operación productiva
 
-| Método | Ruta                                    | Pantalla            | Permiso esperado              |
-| ------ | --------------------------------------- | ------------------- | ----------------------------- |
-| GET    | `/internal/jobs`                        | Jobs                | `internal.jobs.read`          |
-| GET    | `/internal/jobs/:jobId`                 | Detalle job         | `internal.jobs.read`          |
-| POST   | `/internal/jobs/:jobId/retry`           | Reintentar job      | `internal.jobs.manage`        |
-| POST   | `/internal/jobs/:jobId/cancel`          | Cancelar job        | `internal.jobs.manage`        |
-| GET    | `/internal/alerts`                      | Alertas             | `internal.alerts.read`        |
-| POST   | `/internal/alerts/:alertId/acknowledge` | Reconocer alerta    | `internal.alerts.acknowledge` |
-| GET    | `/internal/exports`                     | Exportaciones       | `internal.exports.read`       |
-| GET    | `/internal/exports/:exportId`           | Detalle exportación | `internal.exports.read`       |
+| Método | Ruta                           | Pantalla            | Permiso esperado        |
+| ------ | ------------------------------ | ------------------- | ----------------------- |
+| GET    | `/internal/jobs`               | Jobs                | `internal.jobs.read`    |
+| GET    | `/internal/jobs/:jobId`        | Detalle job         | `internal.jobs.read`    |
+| POST   | `/internal/jobs/:jobId/retry`  | Reintentar job      | `internal.jobs.manage`  |
+| POST   | `/internal/jobs/:jobId/cancel` | Cancelar job        | `internal.jobs.manage`  |
+| GET    | `/internal/exports`            | Exportaciones       | `internal.exports.read` |
+| GET    | `/internal/exports/:exportId`  | Detalle exportación | `internal.exports.read` |
 
 La apertura de archivo exportado requiere `internal.exports.download` y confirmación explícita.
 

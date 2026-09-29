@@ -1,5 +1,4 @@
 import {
-  Bell,
   Download,
   FolderTree,
   Gauge,
@@ -35,14 +34,8 @@ export const navGroupOperations: InternalNavGroup = {
   label: "Operaciones",
   icon: ListChecks,
   items: [
-    {
-      label: "Formularios",
-      href: "/internal/forms",
-      icon: ListChecks,
-      permissions: [],
-      // Solo superadmin: el listado también está embebido en "Versiones de esquema".
-      roles: ["SUPER_ADMIN"],
-    },
+    // «Formularios» se quitó (2026-09-29): duplicaba la tabla embebida en «Versiones de esquema»,
+    // con el mismo rol (SUPER_ADMIN). `/internal/forms` redirige allí.
     {
       label: "Contactos sin verificar",
       href: "/internal/operations/pending-contacts",
@@ -160,13 +153,8 @@ export const navGroupOperations: InternalNavGroup = {
         ...new Set([...INTERNAL_PORTAL_ROLE_LIST, ...RUNTIME_JOB_ROLE_LIST]),
       ],
     },
-    {
-      label: "Alertas",
-      href: "/internal/alerts",
-      icon: Bell,
-      permissions: [],
-      roles: INTERNAL_PORTAL_ROLE_LIST,
-    },
+    // «Alertas» se quitó (2026-09-29): era la misma tabla que «Issues de calidad» (Gobierno y
+    // calidad), con un «Reconocer» sin motivo. `/internal/alerts` redirige a la bandeja.
     {
       label: "Mensajería interna",
       href: "/internal/notifications",

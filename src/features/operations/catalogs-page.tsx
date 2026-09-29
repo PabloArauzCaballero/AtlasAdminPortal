@@ -4,16 +4,13 @@ import {
   CATALOG_ACTIVE_OPTIONS,
   CATALOG_VERSION_STATUS_OPTIONS,
 } from "./operations-filter-options";
-import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CatalogIngestionForm } from "@/features/operations/catalog-ingestion-form";
 import { CatalogVersionCreateForm } from "@/features/operations/catalog-version-create-form";
 import { useOperationCatalogs } from "@/features/operations/hooks";
 import type { ContextCatalog } from "@/features/operations/types";
 import { PermissionGate } from "@/shared/auth/permission-gate";
-import { Button } from "@/shared/components/ui/button";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import {
@@ -23,10 +20,10 @@ import {
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatBoolean, formatNumber, safeText } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
+import { buildCatalogColumns } from "./catalog-columns";
 import { Boxes } from "lucide-react";
 export function OperationCatalogsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -39,99 +36,28 @@ export function OperationCatalogsPage() {
   );
 }
 
+/**
+ * Paginada en el servidor con `q` (código, nombre, dominio o dueño). Antes era un `findAll` sin
+ * límite y el buscador mandaba `domain` exacto con `min(2)`: una letra respondía 400. Las tarjetas
+ * salen del `summary` del servidor, que cuenta el filtro entero.
+ */
 function AuthorizedOperationCatalogsPage() {
-  const [domain, setDomain] = useState("");
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
   const [active, setActive] = useState("all");
   const [creatingFor, setCreatingFor] = useState<string | null>(null);
   const [ingestingFor, setIngestingFor] = useState<ContextCatalog | null>(null);
   const router = useRouter();
-  const catalogs = useOperationCatalogs({ domain, status, active });
+  const catalogs = useOperationCatalogs({ page, limit: 20, q, status, active });
+  const summary = catalogs.data?.summary;
   const items = catalogs.data?.items ?? [];
-  const columns = useMemo<ColumnDef<ContextCatalog>[]>(
-    () => [
-      {
-        header: "Código",
-        accessorKey: "catalogCode",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs font-semibold">
-            {row.original.catalogCode}
-          </span>
-        ),
-      },
-      {
-        header: "Catálogo",
-        accessorKey: "catalogName",
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.catalogName}</span>
-        ),
-      },
-      {
-        header: "Dominio",
-        accessorKey: "domain",
-        cell: ({ row }) => safeText(row.original.domain),
-      },
-      {
-        header: "Dueño",
-        accessorKey: "ownerTeam",
-        cell: ({ row }) => safeText(row.original.ownerTeam),
-      },
-      {
-        header: "Activo",
-        accessorKey: "isActive",
-        cell: ({ row }) => formatBoolean(row.original.isActive),
-      },
-      {
-        header: "Versión",
-        id: "version",
-        // `currentVersion` es la versión MÁS RECIENTE del catálogo (el backend
-        // la resuelve con `findLatestVersionsByCatalogIds`, ordenando por
-        // validFrom DESC, id DESC), no solo la publicada. Por eso un borrador
-        // recién creado es alcanzable desde acá: este enlace es la entrada al
-        // flujo de aprobación.
-        cell: ({ row }) => {
-          const version = row.original.currentVersion;
-          if (!version) return safeText(null);
-          return (
-            <Link
-              href={`/internal/operations/catalogs/${row.original.catalogCode}/versions/${version.catalogVersionId}`}
-              className="font-mono text-xs font-semibold text-atlas-accent underline"
-            >
-              {version.versionCode}
-            </Link>
-          );
-        },
-      },
-      {
-        header: "Estado",
-        id: "status",
-        cell: ({ row }) => (
-          <StatusBadge
-            value={row.original.currentVersion?.status ?? "sin_version"}
-          />
-        ),
-      },
-      {
-        header: "Acciones",
-        id: "actions",
-        cell: ({ row }) => (
-          <div className="flex gap-2">
-            <Button
-              className="h-7 px-2 text-xs"
-              onClick={() => setCreatingFor(row.original.catalogCode)}
-            >
-              Nueva versión
-            </Button>
-            <Button
-              className="h-7 px-2 text-xs"
-              onClick={() => setIngestingFor(row.original)}
-            >
-              Ingerir
-            </Button>
-          </div>
-        ),
-      },
-    ],
+  const columns = useMemo(
+    () =>
+      buildCatalogColumns({
+        onCreateVersion: setCreatingFor,
+        onIngest: setIngestingFor,
+      }),
     [],
   );
   return (
@@ -140,7 +66,7 @@ function AuthorizedOperationCatalogsPage() {
         icon={Boxes}
         eyebrow="Catálogos"
         title="Catálogos operativos"
-        description="Conectado a `/operations/catalogs`. Verifica catálogos, versiones, dueños y estados antes de generar reportes o reglas nuevas."
+        description="Las listas de valores que usan las reglas: versión más reciente, dueño y estado de aprobación de cada catálogo."
       />
       <BusinessContextNote>
         Los catálogos operativos son las listas de valores que usan las reglas
@@ -150,9 +76,9 @@ function AuthorizedOperationCatalogsPage() {
         desactualizados sin que nadie lo note.
       </BusinessContextNote>
       <FilterBar
-        search={domain}
-        searchPlaceholder="Filtrar por dominio…"
-        searchTooltip="Escribe el dominio del catálogo, p. ej. bancos, para acotar la lista."
+        search={q}
+        searchPlaceholder="Buscar por código, nombre, dominio o dueño…"
+        searchTooltip="Busca el texto dentro del código, el nombre, el dominio o el equipo dueño del catálogo."
         filters={[
           {
             name: "status",
@@ -171,15 +97,20 @@ function AuthorizedOperationCatalogsPage() {
             options: CATALOG_ACTIVE_OPTIONS,
           },
         ]}
-        onSearchChange={setDomain}
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
         onFilterChange={(name, value) => {
           if (name === "status") setStatus(value || "all");
           if (name === "active") setActive(value || "all");
+          setPage(1);
         }}
         onClear={() => {
-          setDomain("");
+          setQ("");
           setStatus("all");
           setActive("all");
+          setPage(1);
         }}
       />
       {catalogs.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -201,30 +132,25 @@ function AuthorizedOperationCatalogsPage() {
       {catalogs.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Catálogos" value={formatNumber(items.length)} />
             <MetricCard
-              label="Activos"
-              value={formatNumber(items.filter((i) => i.isActive).length)}
+              label="Catálogos"
+              value={formatNumber(summary?.total)}
             />
+            <MetricCard label="Activos" value={formatNumber(summary?.active)} />
             <MetricCard
               label="Publicados"
-              value={formatNumber(
-                items.filter((i) => i.currentVersion?.status === "published")
-                  .length,
-              )}
+              value={formatNumber(summary?.published)}
             />
             <MetricCard
               label="Sin versión"
-              value={formatNumber(
-                items.filter((i) => !i.currentVersion).length,
-              )}
+              value={formatNumber(summary?.withoutVersion)}
             />
           </section>
           <Card>
             <CardHeader>
               <SectionHeader
                 title="Inventario"
-                description="Este listado viene del módulo operativo real."
+                description="Ordenados por código. «Publicados» cuenta los catálogos cuya versión más reciente está publicada."
                 className="mb-0"
               />
             </CardHeader>
@@ -232,6 +158,8 @@ function AuthorizedOperationCatalogsPage() {
               <DataTable
                 data={items}
                 columns={columns}
+                meta={catalogs.data.meta}
+                onPageChange={setPage}
                 emptyTitle="No hay catálogos para los filtros aplicados."
               />
             </CardContent>

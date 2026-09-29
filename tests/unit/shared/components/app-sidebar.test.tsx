@@ -118,17 +118,17 @@ describe("AppSidebar · las dos colas del comercio piden lo que el backend exige
 
 describe("AppSidebar · filtrado por rol", () => {
   it("un ítem restringido por rol no se ve sin ese rol, aunque no pida permisos", () => {
-    // "Formularios" tiene permissions: [] pero roles: ["SUPER_ADMIN"]. Si el
+    // "Agentes de soporte" tiene permissions: [] pero roles de admin. Si el
     // filtro mirara solo permisos, se colaría para cualquier autenticado.
     renderSidebar({ permissions: [], roles: ["operator"] });
 
-    expect(verEnlace("Formularios")).toBe(false);
+    expect(verEnlace("Agentes de soporte")).toBe(false);
   });
 
   it("con el rol exigido, el ítem aparece", () => {
-    renderSidebar({ permissions: [], roles: ["SUPER_ADMIN"] });
+    renderSidebar({ permissions: [], roles: ["admin"] });
 
-    expect(verEnlace("Formularios")).toBe(true);
+    expect(verEnlace("Agentes de soporte")).toBe(true);
   });
 
   it("un ítem sin roles declarados no exige rol alguno", () => {
@@ -248,5 +248,25 @@ describe("AppSidebar · enlaces y sesión", () => {
     expect(
       window.sessionStorage.getItem("atlas_internal_session_v3"),
     ).toBeNull();
+  });
+});
+
+describe("AppSidebar · fusiones WP2 (2026-09-29)", () => {
+  it("«Definiciones del motor» sale con el permiso de su pantalla, no con el del glosario", () => {
+    renderSidebar({ permissions: ["operations.definitions.read"], roles: [] });
+    expect(verEnlace("Definiciones del motor")).toBe(true);
+
+    renderSidebar({ permissions: ["businessMetadata.read"], roles: [] });
+    expect(verEnlace("Definiciones del motor")).toBe(false);
+  });
+
+  it("ya no hay «Alertas» ni «Formularios»: son la bandeja de calidad y Versiones de esquema", () => {
+    renderSidebar({
+      permissions: ["dataQuality.issues.read"],
+      roles: ["SUPER_ADMIN", "admin"],
+    });
+    expect(verEnlace("Alertas")).toBe(false);
+    expect(verEnlace("Formularios")).toBe(false);
+    expect(verEnlace("Issues calidad")).toBe(true);
   });
 });

@@ -34,9 +34,9 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/business-metadata/definitions": {
         systems:
-          "Definiciones operativas administrables (catálogos de valores, reglas de interpretación) servidas por el backend con dueño y dominio.",
+          "Vocabulario semántico del motor de decisión (`/operations/definitions`): eventos, observaciones, atributos y features, paginados en el servidor, con búsqueda por código o nombre y conteos por tipo del filtro entero. No es el glosario de negocio.",
         business:
-          "Documenta las convenciones operativas que no viven en código, para que un cambio de criterio quede registrado y comunicado.",
+          "Qué señales puede usar el motor para decidir y qué significa cada una: antes de que una regla o un modelo use un dato, tiene que estar definido aquí.",
       },
       "/internal/operations/catalogs": {
         systems:
@@ -136,15 +136,15 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/data-quality/issues": {
         systems:
-          "Issues generados por la evaluación de reglas de calidad sobre las tablas del catálogo, con severidad y estado.",
+          "Incidencias de `data_quality_issues` con la severidad de su regla, búsqueda por tabla, código de regla o notas y conteos del filtro entero. Se reconocen (siguen pendientes), corrigen o descartan con motivo y notas en la auditoría. Hoy nada las crea solo: las reglas no se evalúan de forma automática. Absorbe la antigua pantalla «Alertas».",
         business:
-          "Lista de problemas concretos de datos (nulos, duplicados, inconsistencias) priorizada para corregir antes de que contaminen decisiones.",
+          "Los registros que no cumplen una regla de calidad y alguien tiene que atender; las pendientes cuentan en la preparación de salida.",
       },
       "/internal/data-quality/rules": {
         systems:
-          "Definición de reglas de calidad (completitud, unicidad, rangos) asociadas a tablas/columnas y su historial de ejecución.",
+          "Catálogo de reglas de calidad (`data_quality_rules`) con su tabla, campo, severidad, si están activas y sus incidencias pendientes. Las reglas no se ejecutan todavía: no hay historial de ejecución.",
         business:
-          "El estándar de calidad acordado por dato: qué se considera aceptable y cómo se vigila automáticamente.",
+          "El estándar de calidad acordado por dato: qué se considera aceptable y cuántos registros lo incumplen hoy.",
       },
     },
   },

@@ -9,7 +9,12 @@ export const MIN_RESOLUTION_NOTES_LENGTH = 10;
  * relleno vacío ni un dato inventado por el formulario.
  */
 export const resolutionSchema = z.object({
-  resolution: z.enum(["resolved", "ignored"]),
+  /**
+   * `acknowledged` («Reconocer») era un botón aparte en la pantalla «Alertas», sin motivo ni notas, y
+   * después «Cerrar» respondía 409. Ahora es una resolución más, con motivo y notas, que NO cierra:
+   * la incidencia sigue pendiente (cuenta en el semáforo de salida) hasta corregirla o descartarla.
+   */
+  resolution: z.enum(["acknowledged", "resolved", "ignored"]),
   reasonCode: z.string().trim().min(1, "Selecciona un motivo."),
   notes: z
     .string()

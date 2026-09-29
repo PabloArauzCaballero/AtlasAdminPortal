@@ -24,6 +24,7 @@ import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 
 export function DefinitionsPage() {
   // Los hooks viven en el hijo: aquí saldrían antes de que el gate decidiera.
@@ -34,90 +35,100 @@ export function DefinitionsPage() {
   );
 }
 
+/**
+ * Paginada en el servidor. Antes eran cuatro listas sin límite y el «buscador» mandaba `domain`
+ * (igualdad exacta, con `min(2)`: una sola letra respondía 400). Ahora `q` busca en código y
+ * nombre, y las tarjetas cuentan cada tipo con el filtro entero (`summary`).
+ */
 function AuthorizedDefinitionsPage() {
-  const [domain, setDomain] = useState("");
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
-  const definitions = useDefinitions({ domain, type, status });
+  const definitions = useDefinitions({ page, limit: 20, q, type, status });
+  const summary = definitions.data?.summary;
   const rows = useMemo(
     () => (definitions.data ? toRows(definitions.data) : []),
     [definitions.data],
   );
   const columns = useMemo<ColumnDef<DefinitionRow>[]>(
-    () => [
-      { header: "Tipo", accessorKey: "type" },
-      {
-        header: "Código",
-        accessorKey: "code",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs font-semibold">
-            {row.original.code}
-          </span>
-        ),
-      },
-      {
-        header: "Nombre",
-        accessorKey: "name",
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.name}</span>
-        ),
-      },
-      {
-        header: "Familia/alcance",
-        accessorKey: "family",
-        cell: ({ row }) => safeText(row.original.family),
-      },
-      {
-        header: "Dato",
-        accessorKey: "dataType",
-        cell: ({ row }) => safeText(row.original.dataType),
-      },
-      {
-        header: "Riesgo",
-        accessorKey: "riskDimension",
-        cell: ({ row }) => safeText(row.original.riskDimension),
-      },
-      { header: "Flags", accessorKey: "flags" },
-      {
-        header: "Dominio",
-        accessorKey: "domainCode",
-        cell: ({ row }) => safeText(row.original.domainCode),
-      },
-      {
-        header: "Dueño",
-        accessorKey: "ownerTeam",
-        cell: ({ row }) => safeText(row.original.ownerTeam),
-      },
-      {
-        header: "Tablas",
-        accessorKey: "relatedTables",
-        cell: ({ row }) =>
-          row.original.relatedTables.length
-            ? row.original.relatedTables.join(", ")
-            : "—",
-      },
-      {
-        header: "Revisión",
-        accessorKey: "reviewStatus",
-        cell: ({ row }) => <StatusBadge value={row.original.reviewStatus} />,
-      },
-      {
-        header: "Activo",
-        accessorKey: "isActive",
-        cell: ({ row }) => (
-          <StatusBadge value={row.original.isActive ? "active" : "inactive"} />
-        ),
-      },
-    ],
+    () =>
+      withoutClientSorting([
+        { header: "Tipo", accessorKey: "type" },
+        {
+          header: "Código",
+          accessorKey: "code",
+          cell: ({ row }) => (
+            <span className="font-mono text-xs font-semibold">
+              {row.original.code}
+            </span>
+          ),
+        },
+        {
+          header: "Nombre",
+          accessorKey: "name",
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.name}</span>
+          ),
+        },
+        {
+          header: "Familia/alcance",
+          accessorKey: "family",
+          cell: ({ row }) => safeText(row.original.family),
+        },
+        {
+          header: "Dato",
+          accessorKey: "dataType",
+          cell: ({ row }) => safeText(row.original.dataType),
+        },
+        {
+          header: "Riesgo",
+          accessorKey: "riskDimension",
+          cell: ({ row }) => safeText(row.original.riskDimension),
+        },
+        { header: "Flags", accessorKey: "flags" },
+        {
+          header: "Dominio",
+          accessorKey: "domainCode",
+          cell: ({ row }) => safeText(row.original.domainCode),
+        },
+        {
+          header: "Dueño",
+          accessorKey: "ownerTeam",
+          cell: ({ row }) => safeText(row.original.ownerTeam),
+        },
+        {
+          header: "Tablas",
+          accessorKey: "relatedTables",
+          cell: ({ row }) =>
+            row.original.relatedTables.length
+              ? row.original.relatedTables.join(", ")
+              : "—",
+        },
+        {
+          header: "Revisión",
+          accessorKey: "reviewStatus",
+          cell: ({ row }) => <StatusBadge value={row.original.reviewStatus} />,
+        },
+        {
+          header: "Activo",
+          accessorKey: "isActive",
+          cell: ({ row }) => (
+            <StatusBadge
+              value={row.original.isActive ? "active" : "inactive"}
+            />
+          ),
+        },
+      ]),
     [],
   );
   return (
     <>
       <PageHeader
         icon={FileText}
-        eyebrow="Definiciones"
-        title="Definiciones de negocio"
-        description="Eventos, observaciones, atributos y features reales desde `/operations/definitions`."
+        eyebrow="Motor de decisión"
+        title="Definiciones del motor"
+        description="El vocabulario del motor de decisión: eventos, observaciones, atributos y features que pueden alimentar reglas y modelos."
       />
       <BusinessContextNote>
         Antes de que el modelo de riesgo o un reporte pueda usar una señal (un
@@ -130,9 +141,9 @@ function AuthorizedDefinitionsPage() {
         una persona todavía.
       </BusinessContextNote>
       <FilterBar
-        search={domain}
-        searchPlaceholder="Filtrar por dominio…"
-        searchTooltip="Escribe el dominio de la definición, p. ej. riesgo, para acotar la lista."
+        search={q}
+        searchPlaceholder="Buscar por código o nombre…"
+        searchTooltip="Busca el texto dentro del código o del nombre de la definición."
         filters={[
           {
             name: "type",
@@ -150,15 +161,20 @@ function AuthorizedDefinitionsPage() {
             options: DEFINITION_STATUS_OPTIONS,
           },
         ]}
-        onSearchChange={setDomain}
+        onSearchChange={(value) => {
+          setQ(value);
+          setPage(1);
+        }}
         onFilterChange={(name, value) => {
           if (name === "type") setType(value || "all");
           if (name === "status") setStatus(value || "all");
+          setPage(1);
         }}
         onClear={() => {
-          setDomain("");
+          setQ("");
           setType("all");
           setStatus("all");
+          setPage(1);
         }}
       />
       {definitions.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -180,21 +196,18 @@ function AuthorizedDefinitionsPage() {
       {definitions.data ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Eventos"
-              value={formatNumber(definitions.data.events.length)}
-            />
+            <MetricCard label="Eventos" value={formatNumber(summary?.events)} />
             <MetricCard
               label="Observaciones"
-              value={formatNumber(definitions.data.observations.length)}
+              value={formatNumber(summary?.observations)}
             />
             <MetricCard
               label="Atributos"
-              value={formatNumber(definitions.data.attributes.length)}
+              value={formatNumber(summary?.attributes)}
             />
             <MetricCard
               label="Features"
-              value={formatNumber(definitions.data.features.length)}
+              value={formatNumber(summary?.features)}
             />
           </section>
           <Card>
@@ -209,6 +222,8 @@ function AuthorizedDefinitionsPage() {
               <DataTable
                 data={rows}
                 columns={columns}
+                meta={definitions.data.meta}
+                onPageChange={setPage}
                 emptyTitle="No hay definiciones para los filtros aplicados."
               />
             </CardContent>

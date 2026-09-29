@@ -46,10 +46,14 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["businessMetadata.read"],
       },
       {
-        label: "Definiciones",
+        // «del motor»: es el vocabulario semántico del motor de decisión (eventos, atributos,
+        // features), no el glosario de negocio. Mismo permiso que la pantalla y que AtlasBackend
+        // reparte a quien la usa: con `businessMetadata.read` el ítem salía a quien después veía
+        // «acceso restringido» y no salía a operaciones, que sí la lee.
+        label: "Definiciones del motor",
         href: "/internal/business-metadata/definitions",
         icon: BookOpen,
-        permissions: ["businessMetadata.read"],
+        permissions: ["operations.definitions.read"],
       },
       {
         label: "Catálogos operativos",
