@@ -1,6 +1,6 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   FilterBar,
   type FilterOption,
@@ -40,17 +40,79 @@ describe("FilterBar · búsqueda", () => {
     );
   });
 
-  it("emite cada tecla al padre (el debounce vive fuera)", async () => {
-    const onSearchChange = vi.fn();
-    render(<FilterBar search="" onSearchChange={onSearchChange} />);
+  describe("con el debounce del buscador", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
 
-    await userEvent.type(
-      screen.getByRole("textbox", { name: "Buscar…" }),
-      "ab",
-    );
+    const escribir = (texto: string) =>
+      userEvent
+        .setup({ advanceTimers: vi.advanceTimersByTime })
+        .type(screen.getByRole("textbox", { name: "Buscar…" }), texto);
 
-    expect(onSearchChange).toHaveBeenCalledTimes(2);
-    expect(onSearchChange).toHaveBeenLastCalledWith("b");
+    it("pinta lo tecleado al instante pero avisa al padre UNA sola vez, con el texto final", async () => {
+      const onSearchChange = vi.fn();
+      render(<FilterBar search="" onSearchChange={onSearchChange} />);
+
+      await escribir("abc");
+
+      expect(screen.getByRole("textbox", { name: "Buscar…" })).toHaveValue(
+        "abc",
+      );
+      expect(onSearchChange).not.toHaveBeenCalled();
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(onSearchChange).toHaveBeenCalledTimes(1);
+      expect(onSearchChange).toHaveBeenCalledWith("abc");
+    });
+
+    it("un cambio que llega de fuera (Limpiar, enlace profundo) se adopta y descarta lo pendiente", async () => {
+      const onSearchChange = vi.fn();
+      const { rerender } = render(
+        <FilterBar search="" onSearchChange={onSearchChange} />,
+      );
+      await escribir("xyz");
+
+      // El padre limpia los filtros antes de que salga la petición pendiente.
+      rerender(<FilterBar search="otro" onSearchChange={onSearchChange} />);
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      expect(screen.getByRole("textbox", { name: "Buscar…" })).toHaveValue(
+        "otro",
+      );
+      expect(onSearchChange).not.toHaveBeenCalled();
+    });
+
+    it("la respuesta tardía del padre no pisa lo que la persona sigue escribiendo", async () => {
+      const onSearchChange = vi.fn();
+      const { rerender } = render(
+        <FilterBar search="" onSearchChange={onSearchChange} />,
+      );
+      await escribir("ab");
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(onSearchChange).toHaveBeenLastCalledWith("ab");
+
+      // La persona sigue escribiendo y, ANTES de que salga la siguiente petición, el padre confirma «ab».
+      await escribir("c");
+      rerender(<FilterBar search="ab" onSearchChange={onSearchChange} />);
+
+      expect(screen.getByRole("textbox", { name: "Buscar…" })).toHaveValue(
+        "abc",
+      );
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(onSearchChange).toHaveBeenLastCalledWith("abc");
+    });
   });
 
   it("usa el placeholder por defecto y admite uno propio", () => {

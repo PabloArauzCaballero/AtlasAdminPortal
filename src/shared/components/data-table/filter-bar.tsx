@@ -1,7 +1,7 @@
 "use client";
 
 import { FilterX, Search } from "lucide-react";
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { FieldTooltip } from "@/shared/components/ui/field-tooltip";
 import { Input } from "@/shared/components/ui/input";
@@ -18,6 +18,12 @@ export type FilterOption = {
   /** Etiqueta de la fila que quita el filtro. Por defecto, la del filtro. */
   allLabel?: string;
 };
+
+/**
+ * Espera entre la última tecla y la petición. 350 ms es lo que ya usan `loans` y el buscador global:
+ * suficiente para no lanzar una consulta por carácter mientras se escribe, y aún se siente en vivo.
+ */
+const SEARCH_DEBOUNCE_MS = 350;
 
 /**
  * La barra de búsqueda y filtros de una tabla.
@@ -49,6 +55,31 @@ export function FilterBar({
   onClear?: () => void;
 }>) {
   const uid = useId();
+  // El texto que se ve se actualiza al instante; la petición (`onSearchChange`) sale cuando se deja de
+  // teclear. Antes cada tecla disparaba una consulta en TODAS las pantallas de listado (en el registro
+  // de PII, además, eran ~13 peticiones encadenadas por tecla).
+  const [draft, setDraft] = useState(search);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Lo último que ESTA barra mandó al padre. Si `search` cambia y no es eso, el cambio vino de fuera
+  // (Limpiar, un enlace profundo, un reset de filtros): hay que adoptarlo y descartar lo pendiente.
+  // Sin esta distinción, una respuesta tardía del padre pisaría lo que la persona sigue escribiendo.
+  const lastSent = useRef(search);
+  useEffect(() => {
+    if (search !== lastSent.current) {
+      lastSent.current = search;
+      clearTimeout(timer.current);
+      setDraft(search);
+    }
+  }, [search]);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const writeSearch = (value: string) => {
+    setDraft(value);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      lastSent.current = value;
+      onSearchChange(value);
+    }, SEARCH_DEBOUNCE_MS);
+  };
   return (
     <div className="mb-4 flex flex-col gap-3 rounded-xl border border-atlas-border bg-white p-3 shadow-subtle lg:flex-row lg:flex-wrap lg:items-center">
       {/* El buscador conserva un ancho mínimo: con seis filtros la fila envuelve en vez de aplastarlo. */}
@@ -56,11 +87,11 @@ export function FilterBar({
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
         <Input
           className="pl-9"
-          value={search}
+          value={draft}
           placeholder={searchPlaceholder}
           aria-label={searchPlaceholder}
           aria-describedby={searchTooltip ? `${uid}-buscador` : undefined}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onChange={(event) => writeSearch(event.target.value)}
         />
         {searchTooltip ? (
           <span className="absolute right-2 top-1/2 -translate-y-1/2">

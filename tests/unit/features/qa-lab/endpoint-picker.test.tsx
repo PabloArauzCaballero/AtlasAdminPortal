@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EndpointItem } from "@/features/systems/types";
@@ -116,11 +116,14 @@ describe("EndpointPicker · búsqueda", () => {
       "health",
     );
 
-    expect(useLabEndpoints).toHaveBeenLastCalledWith({
-      page: 1,
-      limit: 10,
-      q: "health",
-    });
+    // El buscador espera a que se deje de teclear antes de consultar.
+    await waitFor(() =>
+      expect(useLabEndpoints).toHaveBeenLastCalledWith({
+        page: 1,
+        limit: 10,
+        q: "health",
+      }),
+    );
   });
 });
 
