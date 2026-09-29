@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -84,6 +89,8 @@ export function useProviderRequests(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.externalProviderRequests(query),
     queryFn: () => listProviderRequests(query),
+    // Cambiar de página o de filtro no vacía la tabla ni desmonta el buscador.
+    placeholderData: keepPreviousData,
   });
 }
 
