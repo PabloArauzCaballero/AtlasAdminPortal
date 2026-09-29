@@ -15,12 +15,12 @@ import type {
   SupportCaseListResponse,
   SupportCaseTimeline,
   SupportCategory,
-  SupportChannel,
   SupportCodes,
   SupportQueue,
   TriageInput,
 } from "./types";
 import { subscribeToServerEvents } from "@/shared/api/server-events";
+import type { DeskMineResponse, DeskQueueResponse } from "./desk-types";
 
 /**
  * Cada acción del caso lleva clave de idempotencia.
@@ -73,19 +73,15 @@ export function getSupportCodes() {
   return apiRequest<SupportCodes>("/internal/support/codes");
 }
 
-export function listQueuedChannels() {
-  return apiRequest<{ channels: SupportChannel[] }>(
-    "/internal/support/desk/queue",
-  );
+export function listQueuedChannels(query: QueryParams = {}) {
+  return apiRequest<DeskQueueResponse>("/internal/support/desk/queue", {
+    query,
+  });
 }
 
 /** Mi presencia real y las conversaciones que llevo; sin esto, un chat auto-asignado no se veía. */
-export function getMyDesk() {
-  return apiRequest<{
-    agentProfileId: string;
-    presenceState: string;
-    channels: SupportChannel[];
-  }>("/internal/support/desk/mine");
+export function getMyDesk(query: QueryParams = {}) {
+  return apiRequest<DeskMineResponse>("/internal/support/desk/mine", { query });
 }
 
 export function claimChannel(channelId: string) {
