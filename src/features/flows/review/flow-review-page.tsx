@@ -9,7 +9,6 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { Badge, MethodBadge, RiskBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { fecha } from "../async/labels";
@@ -179,34 +178,40 @@ function AuthorizedFlowReviewPage() {
         eyebrow="Systems Ops · Mapa de rutas"
         title="Revisión de análisis de flujos"
         description="Flujos de riesgo alto cuyo análisis no se puede dar por bueno solo, y los ya revisados cuyo código cambió. Aprobar un flujo es aprobar ESE código: si cambia, vuelve aquí."
-        actions={
-          <Select
-            name="estadoRevision"
-            ariaLabel="Estado de revisión"
-            value={estado}
-            onChange={(valor) => {
-              setEstado(valor as FlowReviewStatus);
-              setPage(1);
-            }}
-            options={ESTADOS.map((valor) => ({
-              value: valor,
-              label: ESTADO[valor].label,
-              description: ESTADO_AYUDA[valor],
-            }))}
-          />
-        }
       />
       <FlowCatalogNotLoaded />
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en la ruta, el método del controlador, el módulo y el identificador legible del flujo."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas ni tildes, en el nombre, la ruta, el handler, el controlador, el módulo y el identificador legible del flujo."
+        filters={[
+          {
+            name: "estado",
+            label: "Estado de revisión",
+            value: estado === "NEEDS_REVIEW" ? "" : estado,
+            allLabel: ESTADO.NEEDS_REVIEW.label,
+            tooltip:
+              "Elige qué parte de la cola ves: lo que espera revisión, lo aprobado, lo rechazado o lo detectado sin pedir revisión. Sin elegir, la cola de pendientes.",
+            options: ESTADOS.filter((valor) => valor !== "NEEDS_REVIEW").map(
+              (valor) => ({
+                value: valor,
+                label: ESTADO[valor].label,
+                description: ESTADO_AYUDA[valor],
+              }),
+            ),
+          },
+        ]}
+        onFilterChange={(_name, valor) => {
+          setEstado(valor ? (valor as FlowReviewStatus) : "NEEDS_REVIEW");
+          setPage(1);
+        }}
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
         }}
         onClear={() => {
           setQ("");
+          setEstado("NEEDS_REVIEW");
           setPage(1);
         }}
       />

@@ -8,17 +8,12 @@ import { BlockBadge, SeverityBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useFlowFindings } from "./hooks";
-import { FLOW_RISKS, FLOW_SYSTEMS, type FlowFinding } from "./types";
-
-const KINDS = [
-  "UNPROTECTED_WRITE",
-  "CONTRACT_DRIFT",
-  "JWT_ONLY_NO_ROLE",
-  "CLIENT_CALL_UNMATCHED",
-  "UNTESTED_WRITE",
-  "ORPHAN_ENDPOINT",
-  "RBAC_UNRESOLVED",
-];
+import {
+  FINDING_KIND_OPTIONS,
+  RISK_OPTIONS,
+  SYSTEM_OPTIONS,
+} from "./filter-options";
+import type { FlowFinding } from "./types";
 
 /** Hallazgos de los detectores de Flujos, abiertos por defecto. */
 export function FlowsFindingsTable() {
@@ -83,6 +78,7 @@ export function FlowsFindingsTable() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por ruta, módulo o detalle…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas ni tildes, en la referencia (la ruta), el módulo y el detalle del hallazgo."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -100,19 +96,25 @@ export function FlowsFindingsTable() {
             name: "severity",
             label: "Severidad",
             value: severity,
-            options: FLOW_RISKS.map((value) => ({ label: value, value })),
+            tooltip:
+              "Deja sólo los hallazgos de esa gravedad. Los críticos frenan la compuerta de documentación.",
+            options: RISK_OPTIONS,
           },
           {
             name: "kind",
             label: "Tipo",
             value: kind,
-            options: KINDS.map((value) => ({ label: value, value })),
+            tooltip:
+              "Deja sólo los hallazgos de un detector concreto: escrituras sin guarda, contratos que derivan, rutas huérfanas…",
+            options: FINDING_KIND_OPTIONS,
           },
           {
             name: "systemCode",
             label: "Bloque",
             value: systemCode,
-            options: FLOW_SYSTEMS.map((value) => ({ label: value, value })),
+            tooltip:
+              "Deja sólo los hallazgos de las rutas de ese bloque: núcleo, motor, ERP o tableros.",
+            options: SYSTEM_OPTIONS,
           },
         ]}
       />
