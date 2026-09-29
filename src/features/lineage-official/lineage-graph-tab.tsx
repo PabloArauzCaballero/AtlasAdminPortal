@@ -110,7 +110,7 @@ export function LineageGraphTab() {
               value={formatNumber(nodes.length)}
             />
             <MetricCard
-              label="Endpoint → tabla"
+              label="Operación → tabla"
               value={formatNumber(summary?.impactEdges?.shown ?? 0)}
               hint={
                 summary?.impactEdges

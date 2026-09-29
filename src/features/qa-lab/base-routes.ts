@@ -35,7 +35,7 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   {
     key: "ENVIRONMENT_DEFAULT",
     label: "Base del ambiente seleccionado",
-    hint: "Usa LOCAL, STAGING o PRODUCTION_READONLY segun el ambiente elegido.",
+    hint: "Usa la dirección del ambiente elegido: local, pruebas o producción en solo lectura.",
   },
   {
     key: "CUSTOM_HOST",
@@ -44,13 +44,13 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   },
   {
     key: "LOCAL_API_V1",
-    label: "Local backend /api/v1",
-    hint: "Backend levantado en tu máquina, con prefijo: http://localhost:3005/api/v1",
+    label: "Servidor local con /api/v1",
+    hint: "El servidor arrancado en tu máquina, con prefijo: http://localhost:3005/api/v1",
   },
   {
     key: "LOCAL_ROOT",
-    label: "Local backend raiz",
-    hint: "Backend levantado en tu máquina, sin prefijo: http://localhost:3005",
+    label: "Servidor local, raíz",
+    hint: "El servidor arrancado en tu máquina, sin prefijo: http://localhost:3005",
   },
   {
     key: "CONFIGURED_API",
@@ -59,13 +59,13 @@ export const QA_BASE_ROUTE_OPTIONS: QaBaseRouteOption[] = [
   },
   {
     key: "STAGING_CONFIGURED",
-    label: "Staging configurado",
-    hint: "NEXT_PUBLIC_STAGING_API_BASE_URL con fallback al ambiente.",
+    label: "Pruebas (preproducción)",
+    hint: "La dirección de pruebas configurada para el portal; si falta, la del ambiente.",
   },
   {
     key: "PRODUCTION_READONLY_CONFIGURED",
-    label: "Produccion readonly configurada",
-    hint: "NEXT_PUBLIC_PROD_READONLY_API_BASE_URL con fallback al ambiente.",
+    label: "Producción en solo lectura",
+    hint: "La dirección de producción en solo lectura configurada; si falta, la del ambiente.",
   },
   {
     key: "MOCK_PROVIDERS",

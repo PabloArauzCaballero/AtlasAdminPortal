@@ -229,20 +229,20 @@ describe("PiiBadge", () => {
   it("con PII lo marca con su tono propio", () => {
     render(<PiiBadge value />);
 
-    expect(toneOf("PII")).toBe("pii");
+    expect(toneOf("Datos personales")).toBe("pii");
   });
 
   it("sin PII lo dice explícitamente (no deja el hueco vacío)", () => {
     render(<PiiBadge value={false} />);
 
-    expect(toneOf("Sin PII")).toBe("muted");
+    expect(toneOf("Sin datos personales")).toBe("muted");
   });
 
   it("un valor desconocido no se marca como PII", () => {
     // `null` es "no lo sabemos"; marcarlo como PII sería un falso positivo.
     render(<PiiBadge value={null} />);
 
-    expect(screen.getByText("Sin PII")).toBeInTheDocument();
+    expect(screen.getByText("Sin datos personales")).toBeInTheDocument();
   });
 });
 

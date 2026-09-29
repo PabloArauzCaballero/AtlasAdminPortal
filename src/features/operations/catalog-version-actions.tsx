@@ -62,7 +62,7 @@ export function CatalogVersionActions({
             </Button>
             {hasItems ? null : (
               <span className="text-xs text-atlas-muted">
-                Esta versión no tiene items: el backend no acepta enviarla a
+                Esta versión no tiene elementos: no se puede enviar a
                 aprobación.
               </span>
             )}

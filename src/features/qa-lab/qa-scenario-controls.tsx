@@ -84,7 +84,7 @@ export function QaScenarioControls({
       ) : null}
       <div className="flex flex-wrap gap-3">
         <CheckBox
-          label="Enviar la cabecera de empresa (x-tenant-id)"
+          label="Enviar la cabecera de empresa"
           checked={form.includeTenantHeader}
           onChange={(value) => onChange({ includeTenantHeader: value })}
         />

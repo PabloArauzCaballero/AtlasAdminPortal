@@ -62,7 +62,11 @@ function AuthorizedUserDetailPage({
           <div className="space-y-6">
             <KeyValueGrid
               items={[
-                { label: "Tenant", value: user.data.user.tenantId, mono: true },
+                {
+                  label: "Organización",
+                  value: user.data.user.tenantId,
+                  mono: true,
+                },
                 { label: "Código", value: user.data.user.userCode, mono: true },
                 {
                   label: "Departamento",

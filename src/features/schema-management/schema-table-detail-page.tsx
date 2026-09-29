@@ -71,12 +71,12 @@ export function SchemaTableDetailPage({
             {data.isTenantScoped ? (
               <Badge tone="info">
                 <Users className="h-3 w-3" aria-hidden />
-                Acotada por tenant
+                Separada por organización
               </Badge>
             ) : (
               <Badge tone="muted">
                 <Layers className="h-3 w-3" aria-hidden />
-                Compartida entre tenants
+                Compartida entre organizaciones
               </Badge>
             )}
             <code className="font-mono text-xs text-atlas-muted">
@@ -87,7 +87,7 @@ export function SchemaTableDetailPage({
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Columnas" value={columns.length} />
             <MetricCard
-              label="Columnas con PII"
+              label="Columnas con datos personales"
               value={piiCount}
               hint={piiCount ? "Sujetas a retención y enmascarado" : "Ninguna"}
             />

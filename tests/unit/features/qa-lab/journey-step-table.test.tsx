@@ -222,10 +222,10 @@ describe("JourneySequenceTable · estado interno tras eliminar", () => {
     const items = screen.getAllByRole("listitem");
     await userEvent.click(
       within(items[0]).getByRole("button", {
-        name: "Mostrar avanzado (path/query/payload/extract)",
+        name: "Mostrar avanzado (ruta, consulta, datos y extracción)",
       }),
     );
-    expect(screen.getByLabelText("Payload")).toHaveValue(
+    expect(screen.getByLabelText("Datos de entrada")).toHaveValue(
       '{\n  "soy": "el paso A"\n}',
     );
 
@@ -235,7 +235,7 @@ describe("JourneySequenceTable · estado interno tras eliminar", () => {
 
     expect(stepNames()).toEqual(["b"]);
     // Debería mostrar el payload de B; muestra el de A.
-    expect(screen.getByLabelText("Payload")).toHaveValue(
+    expect(screen.getByLabelText("Datos de entrada")).toHaveValue(
       '{\n  "soy": "el paso A"\n}',
     );
   });

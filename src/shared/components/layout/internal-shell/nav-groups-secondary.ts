@@ -29,7 +29,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: [],
       },
       {
-        label: "Change log de esquema",
+        label: "Historial de cambios del esquema",
         href: "/internal/schema/change-log",
         icon: History,
         permissions: [],
@@ -83,7 +83,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: [],
       },
       {
-        label: "Terminal backend",
+        label: "Registro del sistema",
         href: "/internal/audit",
         icon: ShieldCheck,
         permissions: ["audit.events.read"],
@@ -113,7 +113,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
         permissions: ["internal.permissions.read"],
       },
       {
-        label: "Sync catálogo",
+        label: "Actualizar inventario",
         href: "/internal/settings/catalog-sync",
         icon: Settings,
         permissions: [

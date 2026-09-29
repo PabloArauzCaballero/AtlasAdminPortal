@@ -87,7 +87,7 @@ function AuthorizedGovernedViewsPage() {
         icon={Table2}
         eyebrow="Lectura gobernada"
         title="Vistas del negocio"
-        description="Consultas de sólo lectura sobre las vistas publicadas: clientes, riesgo, cola operativa, proveedores, notificaciones, endpoints y auditoría. Sin acceso a las tablas de origen."
+        description="Consultas de sólo lectura sobre las vistas publicadas: clientes, riesgo, cola operativa, proveedores, notificaciones, operaciones del sistema y auditoría. Sin acceso a las tablas de origen."
       />
 
       <nav className="mb-4 flex flex-wrap gap-2" aria-label="Vistas gobernadas">
@@ -160,7 +160,7 @@ function AuthorizedGovernedViewsPage() {
             meta={vista.data.meta}
             onPageChange={setPage}
             emptyTitle="La vista no devuelve registros con estos filtros."
-            emptyDescription="Prueba a limpiar los filtros: son los que declara el backend para esta vista."
+            emptyDescription="Prueba a limpiar los filtros."
           />
         </div>
       ) : null}

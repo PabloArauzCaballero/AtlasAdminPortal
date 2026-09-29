@@ -140,3 +140,19 @@ export type ApproveSchemaChangeInput = {
   approval: "approve" | "reject";
   approvalNotes?: string;
 };
+
+const CHANGE_TYPE_LABELS: Record<string, string> = {
+  CREATE_TABLE: "Crear tabla",
+  ALTER_TABLE: "Modificar tabla",
+  DROP_TABLE: "Eliminar tabla",
+  ADD_COLUMN: "Añadir columna",
+  ALTER_COLUMN: "Modificar columna",
+  DROP_COLUMN: "Eliminar columna",
+  CREATE_INDEX: "Crear índice",
+  DROP_INDEX: "Eliminar índice",
+};
+
+/** El tipo de cambio en palabras; un tipo nuevo que el portal no conoce se enseña tal cual. */
+export function changeTypeLabel(changeType: string): string {
+  return CHANGE_TYPE_LABELS[changeType] ?? changeType;
+}

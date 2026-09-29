@@ -84,7 +84,7 @@ function AuthorizedDomainEventsPage() {
       <PageHeader
         icon={Radio}
         eyebrow="Eventos de dominio"
-        title="Outbox de eventos"
+        title="Cola de eventos"
         description="Qué publicó cada módulo, qué se procesó y qué quedó atascado. Reintentar y cancelar son decisiones de negocio y quedan auditadas."
       />
       <FilterBar
@@ -98,7 +98,7 @@ function AuthorizedDomainEventsPage() {
             value: status,
             options: OPCIONES_ESTADO,
             tooltip:
-              "Pendiente, en proceso, procesado, fallido o cancelado en el outbox.",
+              "Pendiente, en proceso, procesado, fallido o cancelado en la cola.",
           },
           {
             name: "eventCode",
@@ -175,7 +175,7 @@ function AuthorizedDomainEventsPage() {
             meta={eventos.data.meta}
             onPageChange={setPage}
             emptyTitle="No hay eventos con estos filtros."
-            emptyDescription="El outbox vacío para un filtro no es un fallo: puede que ese código no se haya publicado nunca. Ojo: la mayoría de filas son comandos de la API (aggregate «api_command») y no están en el catálogo."
+            emptyDescription="Una cola vacía para un filtro no es un fallo: puede que ese evento no se haya publicado nunca. Ojo: la mayoría de filas son acciones automáticas del sistema y no están en el catálogo."
           />
         </div>
       ) : null}

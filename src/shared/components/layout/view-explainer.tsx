@@ -49,7 +49,7 @@ export function ViewExplainer() {
             <span className="font-semibold text-atlas-muted">
               {resolved.module.module}
             </span>{" "}
-            — qué es este módulo y esta vista (negocio y sistemas)
+            — qué es este módulo y esta vista (para qué sirve y cómo funciona)
           </span>
         </span>
         <ChevronDown
@@ -77,7 +77,7 @@ export function ViewExplainer() {
             <ExplanationBlock
               icon={Cpu}
               tone="systems"
-              title="Explicación de sistemas"
+              title="Cómo funciona"
               moduleText={resolved.module.systems}
               viewText={resolved.view?.systems ?? null}
             />

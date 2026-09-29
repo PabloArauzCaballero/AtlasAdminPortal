@@ -26,7 +26,7 @@ export function SubmittedRun({
         ) : null}
       </div>
       <div className="mt-3">
-        <JsonViewer title="Respuesta del backend" value={result} />
+        <JsonViewer title="Respuesta del servidor" value={result} />
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ export function LiveRunStatus({
       </div>
       <KeyValueGrid
         items={[
-          { label: "Run", value: `#${run.data.run.runId}`, mono: true },
+          { label: "Corrida", value: `#${run.data.run.runId}`, mono: true },
           { label: "Ambiente", value: run.data.run.environment },
           {
             label: "Duracion",

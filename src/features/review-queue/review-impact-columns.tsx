@@ -25,7 +25,7 @@ export function buildDataImpactColumns(
       ),
     },
     {
-      header: "Endpoint",
+      header: "Operación",
       accessorKey: "endpointId",
       cell: ({ row }) => (
         <EntityLink
@@ -87,7 +87,7 @@ export function buildFieldImpactColumns(
       ),
     },
     {
-      header: "Endpoint",
+      header: "Operación",
       accessorKey: "endpointId",
       cell: ({ row }) => (
         <EntityLink
@@ -149,7 +149,7 @@ export function buildToolColumns(
       ),
     },
     {
-      header: "Endpoint",
+      header: "Operación",
       accessorKey: "endpointId",
       cell: ({ row }) => (
         <EntityLink

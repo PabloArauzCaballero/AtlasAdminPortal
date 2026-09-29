@@ -143,7 +143,7 @@ export function WorkflowCanvas({
         <CardHeader>
           <SectionHeader
             title="Árbol de decisión del recorrido"
-            description="El proceso estándar tal como lo declara el backend: en qué orden se recorren los endpoints, bajo qué condición se pasa de uno al siguiente y qué estado del cliente habilita cada paso."
+            description="El proceso estándar tal como lo define el sistema: en qué orden se recorren las operaciones, bajo qué condición se pasa de uno al siguiente y qué estado del cliente habilita cada paso."
             className="mb-0"
           />
         </CardHeader>
@@ -187,7 +187,7 @@ function WorkflowBody({
         description={
           isAtlasApiError(tree.error)
             ? tree.error.message
-            : "El backend no devolvió el flujo. Comprueba que el catálogo esté sembrado (yarn db:seed:prod) y que la versión del backend incluya /workflows."
+            : "El sistema no devolvió el flujo. Puede que el catálogo de flujos aún no esté cargado en este entorno: avisa al equipo técnico."
         }
         requestId={
           isAtlasApiError(tree.error) ? tree.error.requestId : undefined

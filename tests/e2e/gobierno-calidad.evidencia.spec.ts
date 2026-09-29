@@ -5,7 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * ## Qué demuestra
  *
- * Consentimientos, Contenido de la app y Políticas de notificación se habían quedado con las clases
+ * Consentimientos, Contenido de la app y Políticas de notificación (hoy las dos últimas son tablas) se habían quedado con las clases
  * del tema anterior (`bg-slate-900/60`, `text-slate-400`) mientras el portal entero pasaba al claro.
  * Como la rampa `slate` está REDEFINIDA en `tailwind.config.ts` con el gris de ATLAS, `slate-900`
  * no era un gris azulado sino un casi negro: las tarjetas salían como bloques oscuros con el texto
@@ -40,6 +40,7 @@ const SESION = {
     permissions: [
       "governance.policies.read",
       "governance.policies.write",
+      "governance.policies.manage",
       "governance.data.read",
     ],
   },
@@ -239,6 +240,19 @@ const POLITICAS = {
       updatedAt: "2026-08-10T00:00:00.000Z",
     },
   ],
+  meta: { page: 1, limit: 20, total: 4, totalPages: 1 },
+  summary: {
+    total: 4,
+    mandatory: 2,
+    active: 3,
+    inactive: 1,
+    byChannel: { push: 3, email: 1 },
+    byCategory: [
+      { category: "novedades", count: 1 },
+      { category: "pagos", count: 2 },
+      { category: "seguridad", count: 1 },
+    ],
+  },
 };
 
 async function preparar(page: Page): Promise<void> {
@@ -339,7 +353,8 @@ const VISTAS = [
     nombre: "politicas-de-notificacion",
     ruta: "/internal/settings/notification-policies",
     lista: "notification-policies-list",
-    tarjeta: '[data-testid="notification-policy-payment_overdue-push"]',
+    // Ahora es una tabla: el fondo se mide en el contenedor blanco de la tabla.
+    tarjeta: '[data-testid="notification-policies-list"] .bg-white',
     titulo: /Políticas de notificación/,
     editar: "edit-payment_overdue-push",
     campo: "description-payment_overdue-push",

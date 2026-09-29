@@ -1,9 +1,25 @@
 import { apiRequest } from "@/shared/api/client";
-import type { NotificationPolicyList, NotificationPolicyUpsert } from "./types";
+import type {
+  NotificationPolicyList,
+  NotificationPolicyQuery,
+  NotificationPolicyUpsert,
+} from "./types";
 
-export function listNotificationPolicies() {
+/** El listado paginado del portal: el buscador y los filtros viajan al servidor. */
+export function listNotificationPolicies(query: NotificationPolicyQuery = {}) {
   return apiRequest<NotificationPolicyList>(
     "/operations/notification-policies",
+    {
+      query: {
+        page: query.page,
+        limit: query.limit,
+        q: query.q?.trim() || undefined,
+        category: query.category || undefined,
+        channel: query.channel || undefined,
+        mandatory: query.mandatory || undefined,
+        active: query.active || undefined,
+      },
+    },
   );
 }
 

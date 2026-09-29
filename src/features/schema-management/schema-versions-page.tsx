@@ -50,7 +50,9 @@ export function SchemaVersionsPage() {
               variant="primary"
               disabled={!canPropose}
               title={
-                canPropose ? undefined : "Requiere governance.schema.propose"
+                canPropose
+                  ? undefined
+                  : "Necesitas permiso para proponer cambios de esquema"
               }
               onClick={() => setProposing(true)}
             >

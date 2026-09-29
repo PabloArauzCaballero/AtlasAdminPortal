@@ -88,10 +88,10 @@ export const catalogItemFormSchema = z.object({
   ),
   /** `attributes` viaja como objeto JSON; el formulario lo edita como texto. */
   attributesText: jsonRecordTextField,
-  aliases: z.array(aliasFormSchema).max(50, "Máximo 50 alias por item."),
+  aliases: z.array(aliasFormSchema).max(50, "Máximo 50 alias por elemento."),
   riskMappings: z
     .array(riskMappingFormSchema)
-    .max(50, "Máximo 50 mapeos de riesgo por item."),
+    .max(50, "Máximo 50 mapeos de riesgo por elemento."),
 });
 
 export const createCatalogVersionFormSchema = z.object({
@@ -105,8 +105,8 @@ export const createCatalogVersionFormSchema = z.object({
   notes: optionalLength(1, 4000, "Máximo 4000 caracteres."),
   items: z
     .array(catalogItemFormSchema)
-    .min(1, "Una versión necesita al menos un item.")
-    .max(500, "Máximo 500 items por versión."),
+    .min(1, "Una versión necesita al menos un elemento.")
+    .max(500, "Máximo 500 elementos por versión."),
 });
 
 export const submitCatalogVersionFormSchema = z.object({

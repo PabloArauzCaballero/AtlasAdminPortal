@@ -13,6 +13,12 @@ import { useReleaseReadiness } from "./hooks";
 import { ReportsReadinessPage } from "@/features/reports-readiness/reports-readiness-page";
 import { Rocket } from "lucide-react";
 
+const ESTADO_PREPARACION: Record<string, string> = {
+  ready: "Listo",
+  warning: "Con avisos",
+  blocked: "Bloqueado",
+};
+
 export function ReleaseReadinessPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -35,9 +41,9 @@ function AuthorizedReleaseReadinessPage() {
     <>
       <PageHeader
         icon={Rocket}
-        eyebrow="Readiness"
-        title="Readiness Release"
-        description="Vista unificada del semáforo operativo del release y de la preparación de metadata necesaria para reportes."
+        eyebrow="Preparación"
+        title="Preparación para publicar"
+        description="El semáforo de lo que falta antes de publicar una nueva versión y de la información que necesitan los informes."
       />
       {readinessQuery.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {readinessQuery.error ? (
@@ -45,7 +51,7 @@ function AuthorizedReleaseReadinessPage() {
           description={
             isAtlasApiError(readinessQuery.error)
               ? readinessQuery.error.message
-              : "No se pudo cargar readiness."
+              : "No se pudo cargar el estado de preparación."
           }
           requestId={
             isAtlasApiError(readinessQuery.error)
@@ -58,8 +64,11 @@ function AuthorizedReleaseReadinessPage() {
       {view ? (
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Score readiness" value={`${score}%`} />
-            <MetricCard label="Estado" value={safeText(view.status)} />
+            <MetricCard label="Puntuación de preparación" value={`${score}%`} />
+            <MetricCard
+              label="Estado"
+              value={ESTADO_PREPARACION[view.status] ?? safeText(view.status)}
+            />
             <MetricCard
               label="Bloqueantes"
               value={formatNumber(view.blockers)}

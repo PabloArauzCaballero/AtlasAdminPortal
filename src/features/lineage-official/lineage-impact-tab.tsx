@@ -63,7 +63,7 @@ export function LineageImpactTab() {
             value: family,
             options: FAMILY_OPTIONS,
             tooltip:
-              "Endpoint → tabla: quién toca el dato. Tabla → tabla: cómo se relacionan.",
+              "Operación → tabla: quién toca el dato. Tabla → tabla: cómo se relacionan.",
           },
           {
             name: "severity",
@@ -71,7 +71,7 @@ export function LineageImpactTab() {
             value: severity,
             options: SEVERITY_OPTIONS,
             tooltip:
-              "Sólo aplica a endpoint → tabla; al elegirla, las relaciones entre tablas quedan fuera.",
+              "Sólo aplica a operación → tabla; al elegirla, las relaciones entre tablas quedan fuera.",
           },
           {
             name: "domain",
@@ -116,7 +116,7 @@ export function LineageImpactTab() {
               value={formatNumber(impact.data.meta.total)}
             />
             <MetricCard
-              label="Endpoint → tabla"
+              label="Operación → tabla"
               value={formatNumber(summary?.byFamily.impact ?? 0)}
             />
             <MetricCard
@@ -128,7 +128,7 @@ export function LineageImpactTab() {
               value={formatNumber(
                 (bySeverity.CRITICAL ?? 0) + (bySeverity.HIGH ?? 0),
               )}
-              hint="Endpoint → tabla con severidad alta o crítica en lo filtrado."
+              hint="Operación → tabla con severidad alta o crítica en lo filtrado."
             />
           </section>
           <Card>

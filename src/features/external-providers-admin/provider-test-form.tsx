@@ -98,7 +98,7 @@ export function ProviderTestForm({
         </Field>
       </div>
       <Field
-        tooltip="Caso que fuerza el simulador del proveedor, p. ej. provider_down para verlo caído."
+        tooltip="Caso que fuerza el simulador del proveedor, p. ej. «proveedor caído» para ver cómo responde."
         label="Escenario (opcional, sólo en simulado)"
       >
         <Input

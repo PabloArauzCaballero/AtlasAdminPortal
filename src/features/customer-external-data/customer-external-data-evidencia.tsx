@@ -129,7 +129,7 @@ export function SenalesSueltas({
         <SectionHeader
           icon={Share2}
           title="Facebook"
-          description="El enlace lo abre el CLIENTE: la vuelta de OAuth la recibe el backend, no esta pantalla."
+          description="El enlace lo abre el CLIENTE: la respuesta del banco llega al sistema, no a esta pantalla."
         />
         {facebook.data ? <JsonViewer value={facebook.data} /> : null}
         <Button

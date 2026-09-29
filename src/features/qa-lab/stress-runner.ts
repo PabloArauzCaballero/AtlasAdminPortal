@@ -58,7 +58,9 @@ export async function runStressBurst(
     );
   }
   if (input.dryRun) {
-    logger.child("transport").info("stress.dry_run", "Dry-run sin fetch real");
+    logger
+      .child("transport")
+      .info("stress.dry_run", "Simulación: no sale ninguna petición");
     return withLogs(dryRunStressResult(built, plan, warnings), logger);
   }
   return executeStressPlan(
@@ -109,7 +111,7 @@ function assertStressAllowed(
       "Una carga real fuera de tu máquina necesita un ticket de aprobación (al menos 5 caracteres) para auditoría.",
     );
   }
-  logger.child("safety").info("stress.allowed", "Stress permitido");
+  logger.child("safety").info("stress.allowed", "Prueba de carga permitida");
 }
 
 async function executeStressPlan(
@@ -124,12 +126,14 @@ async function executeStressPlan(
   const bodies = stressBodies(built.method, input);
   const samples: StressRequestSample[] = [];
   const startedAt = performance.now();
-  logger.child("transport").info("stress.started", "Front inicia stress", {
-    url: built.url,
-    method: built.method,
-    headers: redactedHeaders(built.headers),
-    timeoutMs,
-  });
+  logger
+    .child("transport")
+    .info("stress.started", "El portal inicia la prueba de carga", {
+      url: built.url,
+      method: built.method,
+      headers: redactedHeaders(built.headers),
+      timeoutMs,
+    });
   let sampleIndex = 0;
   await runPacedRequests(plan, async () => {
     const index = sampleIndex;
@@ -186,7 +190,7 @@ async function executeStressRequest(
     );
     logger
       .child("transport")
-      .debug("stress.sample", "Backend respondió muestra", sample);
+      .debug("stress.sample", "El servidor respondió a una muestra", sample);
     return sample;
   } catch (error) {
     const sample = buildSample(
@@ -217,13 +221,13 @@ function logStressPlan(
   plan: StressPlan,
   warnings: string[],
 ): void {
-  logger.child("form").info("stress.form", "Formulario stress recibido", {
+  logger.child("form").info("stress.form", "Formulario de carga recibido", {
     environment: input.environment,
     baseRouteKey: input.baseRouteKey,
     dryRun: input.dryRun,
     approvalTicket: input.approvalTicket ? "present" : "missing",
   });
-  logger.child("stress-plan").info("stress.plan", "Plan de stress construido", {
+  logger.child("stress-plan").info("stress.plan", "Plan de carga construido", {
     endpointId: endpoint.endpointId,
     url: built.url,
     method: built.method,

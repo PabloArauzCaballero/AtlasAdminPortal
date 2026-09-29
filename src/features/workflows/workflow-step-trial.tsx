@@ -128,15 +128,15 @@ export function WorkflowStepTrial({ step }: Props) {
         <div className="block">
           <FieldLabel
             className="text-[0.6875rem] text-atlas-muted"
-            label="Payload de prueba (propuesto por el contrato declarado)"
-            tooltip="JSON que se envía en la llamada de prueba; parte del contrato declarado del paso."
+            label="Datos de prueba (propuestos según lo que espera el paso)"
+            tooltip="Datos en JSON que se envían en la llamada de prueba, según lo que espera el paso."
           />
           <textarea
             value={payload}
             onChange={(event) => setPayload(event.target.value)}
             rows={6}
             spellCheck={false}
-            aria-label="Payload de prueba"
+            aria-label="Datos de prueba"
             className="atlas-scrollbar mt-0.5 w-full rounded-md border border-atlas-border bg-white p-2 font-mono text-[0.6875rem] leading-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/40"
           />
         </div>
@@ -167,7 +167,7 @@ export function WorkflowStepTrial({ step }: Props) {
       {missing.length > 0 ? (
         <p className="text-[0.6875rem] leading-4 text-amber-700">
           Sin valor para {missing.map((name) => `:${name}`).join(", ")}: la ruta
-          se enviará con el marcador literal y el backend responderá 404 o 422.
+          se enviará incompleta y el sistema la rechazará.
         </p>
       ) : null}
 
@@ -192,8 +192,8 @@ export function WorkflowStepTrial({ step }: Props) {
         }
         description={
           clampRepeat(repeat) > 1
-            ? `Esta llamada va contra el backend configurado en el portal. Se ejecutará ${step.routePath} ${clampRepeat(repeat)} veces seguidas, ${writes ? "con el payload indicado" : "sin cuerpo"}.`
-            : `Esta llamada va contra el backend configurado en el portal y ${step.httpMethod} escribe. Se ejecutará ${step.routePath} con el payload indicado.`
+            ? `Esta llamada va contra el sistema real al que está conectado el portal. Se ejecutará ${step.routePath} ${clampRepeat(repeat)} veces seguidas, ${writes ? "con los datos indicados" : "sin datos"}.`
+            : `Esta llamada va contra el sistema real al que está conectado el portal y ${step.httpMethod} modifica datos. Se ejecutará ${step.routePath} con los datos indicados.`
         }
         confirmText="Enviar"
         isLoading={trial.isPending}

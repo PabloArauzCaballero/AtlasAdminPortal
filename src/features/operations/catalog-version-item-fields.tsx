@@ -18,7 +18,7 @@ export function CatalogVersionItemFields({
     <div className="space-y-4 rounded-xl border border-atlas-border bg-slate-50/40 p-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-atlas-text">
-          Item #{index + 1}
+          Elemento #{index + 1}
         </p>
         {onRemove ? (
           <Button
@@ -27,7 +27,7 @@ export function CatalogVersionItemFields({
             className="h-7 px-2 text-xs"
             onClick={onRemove}
           >
-            Quitar item
+            Quitar elemento
           </Button>
         ) : null}
       </div>
@@ -35,7 +35,7 @@ export function CatalogVersionItemFields({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Código"
-          tooltip="Clave estable del item; el motor la cruza con los datos, no la cambies entre versiones."
+          tooltip="Clave estable del elemento; el motor la cruza con los datos, no la cambies entre versiones."
           hint="Solo letras, números y _ . : - (2 a 140)."
           error={errors?.itemCode?.message}
         >
@@ -47,7 +47,7 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Nombre"
-          tooltip="Nombre legible del item tal como se enseña en pantallas e informes."
+          tooltip="Nombre legible del elemento tal como se enseña en pantallas e informes."
           error={errors?.itemName?.message}
         >
           <Input
@@ -57,16 +57,16 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Tipo"
-          tooltip="Categoría del item dentro del catálogo; decide cómo lo usará el motor."
-          hint="Categoría del item dentro del catálogo."
+          tooltip="Categoría del elemento dentro del catálogo; decide cómo lo usará el motor."
+          hint="Categoría del elemento dentro del catálogo."
           error={errors?.itemType?.message}
         >
           <Input placeholder="bank" {...register(`items.${index}.itemType`)} />
         </Field>
         <Field
           label="Código de fuente (opcional)"
-          tooltip="Fuente registrada de la que sale el item, para rastrear su origen."
-          hint="Fuente registrada de la que sale el item. Si no existe, el backend lo guarda sin fuente."
+          tooltip="Fuente registrada de la que sale el elemento, para rastrear su origen."
+          hint="Si la fuente no existe, el elemento se guarda sin fuente."
           error={errors?.sourceCode?.message}
         >
           <Input
@@ -79,7 +79,7 @@ export function CatalogVersionItemFields({
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
           label="Confianza (opcional)"
-          tooltip="Cuánto te fías del item, de 0 a 100; baja confianza pesa menos en la decisión."
+          tooltip="Cuánto te fías del elemento, de 0 a 100; baja confianza pesa menos en la decisión."
           hint="Hasta 3 enteros y 2 decimales (ej: 85.5)."
           error={errors?.confidenceScore?.message}
         >
@@ -91,7 +91,7 @@ export function CatalogVersionItemFields({
         </Field>
         <Field
           label="Atributos (JSON)"
-          tooltip="Datos extra del item que no tienen campo propio, en un objeto JSON."
+          tooltip="Datos extra del elemento que no tienen campo propio, en un objeto JSON."
           hint="Objeto JSON libre. Vacío o {} si no aplica."
           error={errors?.attributesText?.message}
         >

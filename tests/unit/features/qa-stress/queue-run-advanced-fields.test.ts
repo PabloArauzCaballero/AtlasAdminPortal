@@ -38,7 +38,7 @@ describe("parseQueueRunAdvanced", () => {
 
     expect(parsed).toEqual({
       ok: false,
-      error: "El payload no es JSON válido.",
+      error: "El cuerpo de la petición no es JSON válido.",
     });
   });
 
@@ -47,7 +47,7 @@ describe("parseQueueRunAdvanced", () => {
 
     expect(parsed).toEqual({
       ok: false,
-      error: "Los headers no son JSON válido.",
+      error: "Las cabeceras no son JSON válido.",
     });
   });
 

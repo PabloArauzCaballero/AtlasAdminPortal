@@ -6,19 +6,19 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     module: "Esquema de datos",
     prefixes: ["/internal/schema"],
     systems:
-      "Versionado del esquema físico: snapshots de tablas/columnas (`schema_tables`, `schema_columns`), diffs entre versiones y change log con aprobaciones.",
+      "Versiones de la estructura de la base: copias de cómo eran las tablas y sus campos en cada momento, comparación entre versiones e historial de cambios con sus aprobaciones.",
     business:
       "Historia formal de cómo evolucionó la estructura de datos: qué cambió, quién lo aprobó y cuándo — clave para auditoría y para depurar problemas históricos.",
     views: {
       "/internal/schema/versions": {
         systems:
-          "Snapshots de esquema versionados con comparación entre versiones.",
+          "Versiones guardadas de la estructura de la base, con comparación entre ellas.",
         business:
           "Permite responder 'cómo era la base cuando pasó X' sin arqueología de migraciones.",
       },
       "/internal/schema/change-log": {
         systems:
-          "Bitácora de cambios de esquema con tipo de cambio, entidad afectada y notas de aprobación.",
+          "Historial de cambios de la estructura con tipo de cambio, elemento afectado y notas de aprobación.",
         business:
           "Trazabilidad de cada cambio estructural con su justificación y aprobador.",
       },
@@ -34,7 +34,7 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     module: "Proveedores externos",
     prefixes: ["/internal/external-providers", "/internal/external-data"],
     systems:
-      "Catálogo y salud de los proveedores externos (buró, SEGIP, telco, WhatsApp…), con políticas de costo, auditorías de consumo y solicitudes registradas request a request.",
+      "Catálogo y salud de los proveedores externos (buró, SEGIP, telefonía, WhatsApp…), con políticas de costo, auditorías de consumo y cada consulta registrada una por una.",
     business:
       "Controla la relación con terceros: si responden, cuánto cuestan y qué se les consultó — para negociar contratos y detectar abusos o caídas.",
     views: {
@@ -52,13 +52,13 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/external-providers/requests": {
         systems:
-          "Registro request a request de las llamadas salientes con estado, latencia y escenario simulado si aplica.",
+          "Registro de cada llamada hecha a un proveedor, con su estado, tiempo de respuesta y escenario simulado si lo hubo.",
         business:
           "Trazabilidad fina: qué se le preguntó a un tercero sobre un cliente y qué respondió.",
       },
       "/internal/external-providers": {
         systems:
-          "Estado vivo y configuración de cada proveedor, incluidas políticas de costo por operación. La ficha de un proveedor lee su credencial con `GET /admin/external-providers/:providerCode/auth-state`.",
+          "Estado en vivo y configuración de cada proveedor, incluidas las políticas de costo por operación. La ficha de cada proveedor muestra además el estado de su credencial.",
         business:
           "Semáforo de dependencias externas: si el buró está caído, el onboarding se ve afectado y aquí se confirma.",
       },
@@ -68,25 +68,25 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     module: "Seguridad y auditoría",
     prefixes: ["/internal/security", "/internal/audit"],
     systems:
-      "Sesión y controles de seguridad del usuario interno, más la terminal de auditoría que consulta los action logs del backend (Postgres y Mongo) por request, módulo y actor.",
+      "Sesión y controles de seguridad del usuario interno, y el registro del sistema, que permite consultar qué se hizo por solicitud, módulo y persona.",
     business:
       "Responde 'quién hizo qué y cuándo' con evidencia técnica completa — la base de cualquier investigación interna o requerimiento regulatorio.",
     views: {
       "/internal/audit/request": {
         systems:
-          "Reconstrucción de un request puntual: cadena de logs correlacionados por requestId a través de módulos.",
+          "Reconstruye una solicitud concreta: todos los registros que dejó a su paso por los distintos módulos, en orden.",
         business:
           "Permite reconstruir un caso específico (una queja, un fraude) paso a paso con evidencia.",
       },
       "/internal/audit": {
         systems:
-          "Explorador de action logs con los filtros que publica `GET /systems/action-logs/filter-catalog` (método, riesgo, módulo, actor, PII, código, fechas, correlación); incluye logs sincronizados desde Mongo.",
+          "Explorador del registro de acciones con filtros por método, riesgo, módulo, persona, datos personales, código, fechas y solicitud relacionada; incluye los registros del archivo de respaldo.",
         business:
           "La bitácora completa de la plataforma para auditoría continua, no solo cuando hay un problema.",
       },
       "/internal/security/session": {
         systems:
-          "Datos de la sesión actual (token, expiración, permisos efectivos) y acciones de cierre.",
+          "Datos de la sesión actual (vencimiento y permisos con los que estás operando) y opciones para cerrarla.",
         business:
           "Transparencia para el usuario interno sobre con qué identidad y permisos está operando.",
       },
@@ -96,13 +96,13 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
     module: "Administración",
     prefixes: ["/internal/settings"],
     systems:
-      "RBAC interno (usuarios, roles, permisos granulares) y mantenimiento del catálogo: descubrimiento de endpoints, refresh de seeds e inferencia de herramientas e impactos.",
+      "Usuarios, roles y permisos internos, y mantenimiento del inventario del sistema: alta de operaciones nuevas, actualización de la lista base y detección de herramientas y efectos sobre tablas.",
     business:
       "Define quién puede hacer qué dentro del portal y mantiene actualizado el inventario sobre el que operan todos los demás módulos.",
     views: {
       "/internal/settings/decision-artifacts": {
         systems:
-          "Catálogo de decisiones delegadas al Decision Engine. Cada fila declara qué artefacto la resuelve, qué versión se ejecuta, qué endpoints del backend la disparan y en qué punto del recorrido ocurre. Las opciones del selector las publica el propio motor (GET /v1/artifacts), así que no se puede asignar un código que no exista.",
+          "Decisiones que se delegan al motor de decisión. Cada fila dice qué artefacto la resuelve, qué versión se usa, qué operaciones de Atlas la piden y en qué momento del recorrido ocurre. Las opciones del selector las da el propio motor, así que no se puede asignar un código que no exista.",
         business:
           "Cambiar la política que evalúa un crédito o una identidad deja de ser un despliegue: lo decide Riesgo desde aquí. Por ejemplo, si Riesgo publica una versión nueva del scoring BNPL, esta pantalla es donde se decide si entra en producción o se sigue con la anterior — y donde se ve, sin abrir el código, qué se rompe si se cambia.",
       },
@@ -114,25 +114,25 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/settings/consent-documents": {
         systems:
-          "Edita el TEXTO de cada documento de consentimiento (`/operations/consent-documents`), nunca su código ni su versión: el backend lo impone y esta pantalla ni siquiera ofrece esos campos. La app móvil lee el título y el cuerpo del servidor, así que corregir una palabra no exige compilar ni publicar en las tiendas.",
+          "Edita el TEXTO de cada documento de consentimiento, nunca su código ni su versión: esos los fija el sistema y esta pantalla ni siquiera los ofrece. La app móvil toma el título y el cuerpo de aquí, así que corregir una palabra no exige publicar una versión nueva de la app.",
         business:
           "Quien aceptó bajo la v1 tiene derecho a que la v1 siga diciendo lo que leyó. Aquí se corrige la redacción; un cambio de fondo se publica como versión nueva y vuelve a pedirse la aceptación.",
       },
       "/internal/settings/app-content": {
         systems:
-          "Contenido por superficie (`/operations/app-content`): bienvenida, preguntas frecuentes, ayuda, inicio, legal, perfil y crédito. Crear y editar son la misma operación, resuelta por superficie + clave + idioma, así que reeditar una pieza la actualiza en vez de duplicarla. El botón de WhatsApp se guarda como número local y el servidor le añade el prefijo del país.",
+          "Contenido por sección de la app: bienvenida, preguntas frecuentes, ayuda, inicio, legal, perfil y crédito. Crear y editar son lo mismo: cada pieza se identifica por sección, clave e idioma, así que volver a editarla la actualiza en vez de duplicarla. El número de WhatsApp se guarda como número local y el sistema le añade el prefijo del país.",
         business:
           "El eslogan, los pasos de bienvenida y las respuestas de ayuda estaban escritos en el código de la app: corregir una respuesta que confunde costaba dos publicaciones en tiendas y, hasta que cada persona actualizara, convivían dos versiones de lo que Atlas dice ser.",
       },
       "/internal/settings/notification-policies": {
         systems:
-          "Declara qué avisos existen, por qué canal salen y cuáles son irrenunciables (`/operations/notification-policies`). El flag de irrenunciable se fija AQUÍ, del lado del servidor: antes llegaba en la petición del cliente y bastaba mandarlo en `false` para silenciar el aviso de mora. Un aviso irrenunciable no puede guardarse sin el motivo que la app enseña junto al candado.",
+          "Define qué avisos existen, por qué canal salen y cuáles no se pueden desactivar. Esa marca se fija AQUÍ y no en la app: antes la app podía enviar que un aviso no era obligatorio y así silenciar el aviso de mora. Un aviso obligatorio no se puede guardar sin el motivo que la app muestra junto al candado.",
         business:
           "Un interruptor bloqueado sin explicación se lee como abuso; con el motivo delante, «no puedes apagarlo» se convierte en «no te conviene apagarlo, y por esto». Aquí se decide qué le llega al cliente y qué puede él silenciar.",
       },
       "/internal/settings/users": {
         systems:
-          "CRUD de usuarios internos con asignación de roles y estado de la cuenta.",
+          "Alta, edición y baja de usuarios internos, con sus roles y el estado de su cuenta.",
         business:
           "Altas, bajas y cambios del equipo con permisos correctos desde el día uno.",
       },
@@ -143,15 +143,15 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
       },
       "/internal/settings/permissions": {
         systems:
-          "Catálogo de permisos granulares que consumen los guards del backend y los gates del frontend.",
+          "Lista de permisos que el sistema comprueba antes de dejar ver o hacer cada cosa en el portal.",
         business:
           "El vocabulario oficial de accesos: qué significa exactamente cada permiso.",
       },
       "/internal/settings/catalog-sync": {
         systems:
-          "Dispara el escaneo de endpoints, el refresh del seed del catálogo y las inferencias de herramientas e impactos endpoint↔tabla (directos e indirectos vía FK).",
+          "Busca las operaciones nuevas del sistema, actualiza la lista base del inventario y detecta qué herramientas usa cada operación y qué tablas toca (directa o indirectamente).",
         business:
-          "El botón de 'poner al día el inventario' después de un deploy del backend, para que catálogo, QA y gobierno trabajen sobre la realidad.",
+          "El botón de «poner al día el inventario» después de cada actualización del sistema, para que catálogo, QA y gobierno trabajen sobre lo que existe de verdad.",
       },
       "/internal/settings/profile": {
         systems: "Datos del perfil propio y cambio de contraseña.",

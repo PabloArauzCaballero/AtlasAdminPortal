@@ -89,13 +89,13 @@ export type QaJourneyBatchResult = {
 export const JOURNEY_EXAMPLE_SPEC: QaJourneyStepSpec[] = [
   {
     key: "health",
-    name: "Health check",
+    name: "Estado del servidor",
     endpointId: "REEMPLAZA_CON_ID_DE_/health",
     expectedStatusCodes: [200],
   },
   {
     key: "onboarding_start",
-    name: "Iniciar onboarding",
+    name: "Iniciar alta de cliente",
     endpointId: "REEMPLAZA_CON_ID_DE_/customer-onboarding/start",
     payload: { channel: "mobile_app" },
     expectedStatusCodes: [200, 201],

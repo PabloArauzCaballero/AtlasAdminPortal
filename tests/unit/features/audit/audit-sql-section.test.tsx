@@ -90,11 +90,11 @@ describe("Auditoría SQL · filtros desde GET /systems/action-logs/filter-catalo
     renderWithProviders(<AuditSqlSection />);
 
     expect(
-      await screen.findByText(/solo puedes buscar por Request ID/),
+      await screen.findByText(/solo puedes buscar por código de referencia/),
     ).toBeInTheDocument();
     expect(logs.listActionLogs).toHaveBeenCalled();
     expect(
-      screen.getByPlaceholderText("Filtrar por Request ID…"),
+      screen.getByPlaceholderText("Filtrar por código de referencia…"),
     ).toBeInTheDocument();
   });
 });

@@ -14,7 +14,7 @@ import type {
 const BASE = "/api/qa-fakers/fakers";
 
 export const FAKER_UNAVAILABLE_TEXT =
-  "El generador de datos de prueba no responde. Sin él no se inventan datos: vuelve a intentarlo en un momento o avisa a quien mantiene el mock de proveedores externos.";
+  "El generador de datos de prueba no responde. Sin él no se inventan datos: vuelve a intentarlo en un momento o avisa al equipo técnico.";
 
 export class FakerError extends Error {
   readonly code: string;

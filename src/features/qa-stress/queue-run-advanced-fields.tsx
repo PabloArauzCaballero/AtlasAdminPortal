@@ -48,19 +48,19 @@ export function QueueRunAdvancedFields({
           onChange={(event) => onChange({ dryRun: event.target.checked })}
         />
         <span>
-          <strong>Dry-run / modo seguro</strong>
+          <strong>Simulación / modo seguro</strong>
           <span className="block text-xs text-atlas-muted">
-            Valida la URL y el plan, sin mandar tráfico real.
+            Valida la dirección y el plan, sin mandar tráfico real.
           </span>
         </span>
       </label>
       <Field
-        label="Base URL"
-        tooltip="Host contra el que corre la carga. Vacío = usa el host del endpoint del perfil. Para probar contra el mock de proveedores externos, pega su URL (ej.: http://localhost:4010/mock)."
+        label="Dirección base"
+        tooltip="Servidor contra el que corre la carga. Vacío = usa el de la ruta del perfil. Para probar contra el simulador de proveedores externos, pega su dirección (ej.: http://localhost:4010/mock)."
         hint={
           endpointBaseUrl
-            ? `Vacío usa el del endpoint: ${endpointBaseUrl}`
-            : "Vacío usa el host del endpoint del perfil, si lo tiene registrado; si no, la corrida real falla pidiendo esta URL."
+            ? `Vacío usa el de la ruta: ${endpointBaseUrl}`
+            : "Vacío usa el servidor de la ruta del perfil, si lo tiene registrado; si no, la corrida real falla pidiendo esta dirección."
         }
       >
         <Input
@@ -72,7 +72,7 @@ export function QueueRunAdvancedFields({
       </Field>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <Field
-          label="Timeout por request (ms)"
+          label="Tiempo máximo por petición (ms)"
           tooltip="Milisegundos que espera cada petición antes de contarla como error de transporte."
         >
           <Input
@@ -86,8 +86,8 @@ export function QueueRunAdvancedFields({
           />
         </Field>
         <Field
-          label="Tope de requests"
-          tooltip="Techo absoluto de peticiones para esta corrida, por encima de RPS × duración del perfil."
+          label="Tope de peticiones"
+          tooltip="Techo absoluto de peticiones para esta corrida, por encima de peticiones por segundo × duración del perfil."
         >
           <Input
             type="number"
@@ -101,8 +101,8 @@ export function QueueRunAdvancedFields({
         </Field>
       </div>
       <Field
-        label="Payload"
-        tooltip="Cuerpo JSON que manda cada petición de la carga (config.payload)."
+        label="Cuerpo de la petición"
+        tooltip="Datos en JSON que manda cada petición de la carga."
       >
         <Textarea
           value={value.payloadText}
@@ -113,11 +113,11 @@ export function QueueRunAdvancedFields({
         />
       </Field>
       <Field
-        label="Headers extra"
+        label="Cabeceras extra"
         tooltip={
-          'Cabeceras JSON que se reenvían tal cual al objetivo. Para forzar un escenario del mock de proveedores externos: {"x-mock-scenario": "provider_down"}.'
+          'Cabeceras en JSON que se reenvían tal cual al destino. Para forzar un escenario del simulador de proveedores externos: {"x-mock-scenario": "provider_down"}.'
         }
-        hint="El worker las manda literalmente: no pongas Authorization/Cookie aquí, viajarían como [REDACTED]."
+        hint="El servicio de carga las manda tal cual: no pongas aquí credenciales ni cookies, llegarían tapadas y no servirían."
       >
         <Textarea
           value={value.headersText}
@@ -141,19 +141,19 @@ export function parseQueueRunAdvanced(
   try {
     payload = JSON.parse(value.payloadText || "{}");
   } catch {
-    return { ok: false, error: "El payload no es JSON válido." };
+    return { ok: false, error: "El cuerpo de la petición no es JSON válido." };
   }
   try {
     headers = JSON.parse(value.headersText || "{}");
   } catch {
-    return { ok: false, error: "Los headers no son JSON válido." };
+    return { ok: false, error: "Las cabeceras no son JSON válido." };
   }
   if (
     typeof headers !== "object" ||
     headers === null ||
     Array.isArray(headers)
   ) {
-    return { ok: false, error: "Los headers deben ser un objeto JSON." };
+    return { ok: false, error: "Las cabeceras deben ser un objeto JSON." };
   }
   return { ok: true, payload, headers };
 }

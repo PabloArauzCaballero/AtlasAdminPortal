@@ -5,7 +5,7 @@ export const systemsOpsModuleExplanation: ModuleExplanation = {
   module: "Systems Ops",
   prefixes: ["/internal/systems", "/internal/review-queue", "/internal/flows"],
   systems:
-    "Cataloga automáticamente los endpoints, herramientas y tablas de cada backend conectado (hoy atlas-backend, extensible a otros vía el campo backendService), infiere qué datos afecta cada endpoint escaneando el código fuente y monitorea la salud viva de las herramientas críticas con probes periódicos.",
+    "Hace el inventario automático de las operaciones, herramientas y tablas de cada bloque de Atlas, detecta qué datos toca cada operación y vigila en vivo si las herramientas críticas responden.",
   business:
     "Es el inventario operativo de la plataforma: permite saber qué existe, quién lo usa, qué rompe si falla y detectar incidentes antes de que un cliente los sufra. Sin este módulo, cada cambio o caída se descubriría a ciegas.",
   views: {
@@ -47,25 +47,25 @@ export const systemsOpsModuleExplanation: ModuleExplanation = {
     },
     "/internal/systems/endpoints": {
       systems:
-        "Lista paginada del catálogo `system_endpoint_catalog`, con bloque, método, ruta, riesgo, PII y estado de revisión. Las rutas de este backend se descubren escaneando sus controladores; las del motor de decisión y el ERP llegan del manifiesto que cada uno publica sobre sí mismo.",
+        "Lista de todas las operaciones del inventario, con su bloque, método, dirección, riesgo, si tocan datos personales y si ya se revisaron. Las del núcleo de Atlas se detectan solas; las del motor de decisión y del ERP llegan del listado que cada uno publica sobre sí mismo.",
       business:
-        "Inventario de todas las operaciones que expone el ECOSISTEMA, no sólo este backend: qué acciones existen en cada producto, cuáles tocan datos sensibles y cuáles requieren pruebas antes de un release.",
+        "Inventario de todas las operaciones de TODO Atlas, no solo del núcleo: qué acciones existen en cada producto, cuáles tocan datos sensibles y cuáles necesitan pruebas antes de una salida.",
     },
     "/internal/systems/network-health": {
       systems:
-        "Cruza `/systems/health/network`: el probe vivo de cada bloque del ecosistema (Atlas Backend, Decision Engine, ERP) con el estado de la federación de su catálogo. Un bloque federa publicando su propio manifiesto de rutas y tablas; esta vista dice si eso ocurrió, cuándo y con qué resultado.",
+        "Para cada bloque de Atlas (núcleo, motor de decisión y ERP) muestra si responde ahora mismo y si ya entregó su propio listado de operaciones y tablas: si lo hizo, cuándo y con qué resultado.",
       business:
         "Responde '¿está completo el ecosistema?', que no es lo mismo que '¿responde cada pieza?'. Un bloque en pie que lleva días sin aportar su catálogo se veía antes igual que uno sano, y por eso el catálogo de datos parecía completo cuando sólo contenía un producto de tres.",
     },
     "/internal/systems/decision-engine/artifacts": {
       systems:
-        "Cruza `/v1/deployments?status=ACTIVE` con `/v1/artifacts` del motor de decisión a través de `/systems/decision-engine/artifacts`: cada fila es un despliegue vigente con su versión, ambiente, autor y reparto de tráfico.",
+        "Cada fila es una versión que el motor de decisión tiene publicada ahora mismo, con su ambiente, su autor y qué parte de las solicitudes recibe.",
       business:
         "Contesta desde el portal '¿qué política está decidiendo crédito ahora mismo?', que es la primera pregunta de cualquier investigación sobre una aprobación o un rechazo. Antes había que entrar al motor, con otra sesión y otro producto.",
     },
     "/internal/systems/tools": {
       systems:
-        "Dos pestañas. «Catálogo»: las herramientas técnicas (`system_tool_catalog`) con tipo, proveedor, variables de entorno requeridas y criticidad, paginadas y con buscador por código, nombre, proveedor o tipo; no muestra secretos. «Salud» (permiso de salud de herramientas): el estado vivo de cada una, la misma señal que dispara los avisos de servicio caído.",
+        "Dos pestañas. «Catálogo»: las herramientas técnicas con su tipo, proveedor, configuración que necesitan y criticidad, con buscador por código, nombre, proveedor o tipo; nunca muestra secretos. «Salud» (requiere permiso): si cada una responde ahora mismo, la misma señal que dispara los avisos de servicio caído.",
       business:
         "Mapa de dependencias externas e internas: qué servicios de terceros usa la plataforma, cuáles son imprescindibles y si ahora mismo responden. Si el buró, WhatsApp o la base están caídos, en «Salud» se confirma el incidente que avisó la campana.",
     },

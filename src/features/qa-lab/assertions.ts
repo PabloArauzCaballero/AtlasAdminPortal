@@ -84,7 +84,7 @@ function evaluateHeaders(input: AssertionInput): QaAssertion[] {
   const expected = input.expectedResponse?.headers ?? {};
   const actual = lowerCaseRecord(input.responseHeaders);
   return Object.entries(expected).map(([key, value]) => ({
-    name: `Header ${key}`,
+    name: `Cabecera ${key}`,
     passed: actual[key.toLowerCase()] === value,
     expected: value,
     actual: actual[key.toLowerCase()] ?? "(ausente)",

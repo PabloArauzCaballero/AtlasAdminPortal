@@ -20,8 +20,8 @@ export function MockScenarioFields({
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
       <Field
-        label="Escenario del mock"
-        tooltip="Qué debe simular el proveedor en esta llamada (x-mock-scenario). Sólo aplica contra el mock de proveedores externos."
+        label="Escenario del simulador"
+        tooltip="Qué debe simular el proveedor en esta llamada. Sólo aplica contra el simulador de proveedores externos."
         hint={describeMockScenario(mockScenario ?? "")}
       >
         <Select
@@ -33,7 +33,7 @@ export function MockScenarioFields({
       </Field>
       <Field
         label="Latencia forzada (ms)"
-        tooltip="Fija la latencia exacta del mock con x-mock-latency-ms. 0 = deja que el proveedor sortee su rango declarado."
+        tooltip="Fija la latencia exacta del simulador. 0 = deja que el proveedor sortee su rango declarado."
         hint="Útil para una prueba de frontera que necesita un número exacto, no un rango aleatorio."
       >
         <Input

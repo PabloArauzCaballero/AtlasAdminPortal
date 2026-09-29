@@ -64,7 +64,7 @@ export function NodeDetailDrawer({
             data={data.outgoingEdges ?? []}
             columns={edgeColumns}
           />
-          <JsonViewer title="Metadata" value={data.metadata} />
+          <JsonViewer title="Metadatos" value={data.metadata} />
         </div>
       ) : null}
     </DrawerPanel>

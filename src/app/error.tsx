@@ -50,7 +50,7 @@ export default function RouteError({
           isOffline
             ? "Revisa tu conexión y vuelve a intentarlo."
             : (apiError?.message ??
-              "Puedes reintentar; si persiste, comparte el Request ID con soporte.")
+              "Puedes reintentar; si persiste, comparte el código de referencia con soporte.")
         }
         requestId={apiError?.requestId ?? error.digest}
         onRetry={reset}

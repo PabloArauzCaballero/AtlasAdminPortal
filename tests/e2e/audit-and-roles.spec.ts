@@ -17,7 +17,9 @@ test.describe("auditoría y RBAC", () => {
 
     await page.goto("/internal/audit");
     await settled(page);
-    await page.getByRole("button", { name: /auditor[íi]a sql/i }).click();
+    await page
+      .getByRole("button", { name: /auditor[íi]a de acciones/i })
+      .click();
     await settled(page);
     await capture(page, testInfo, "1 auditoria sql");
 
@@ -44,7 +46,7 @@ test.describe("auditoría y RBAC", () => {
       "la ficha del request no abrió tras el clic",
     );
     // La cabecera vive de `logs.data[0]`: con la respuesta mal leída no aparecía ninguna.
-    await expect(page.getByText("Correlation ID")).toBeVisible();
+    await expect(page.getByText("Código de seguimiento")).toBeVisible();
     // Y la tabla debe traer al menos el evento del propio request.
     // `getByRole('row')` en vez de `table tbody tr`: es el rol que ve un lector de pantalla, y no
     // se rompe si la tabla deja de usar `<tbody>`.
@@ -65,7 +67,9 @@ test.describe("auditoría y RBAC", () => {
     await page.goto("/internal/audit");
     await settled(page);
 
-    const terminal = page.getByText(/archivo\.log/i).first();
+    const terminal = page
+      .getByText(/registro técnico del sistema|archivo de registro/i)
+      .first();
     await expect(terminal).toBeVisible();
     await capture(page, testInfo, "terminal de logs");
   });

@@ -41,7 +41,7 @@ function AuthorizedReportDetailPage({
         icon={ChartColumn}
         eyebrow="Reportería dinámica"
         title={report.data?.name ?? "Detalle de reporte"}
-        description="Qué mide el informe y sus cifras de ahora. Se calcula en vivo sobre los datos del tenant: no se archiva ninguna copia."
+        description="Qué mide el informe y sus cifras de ahora. Se calcula en vivo sobre los datos de la organización: no se archiva ninguna copia."
       />
       {report.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {report.error ? (

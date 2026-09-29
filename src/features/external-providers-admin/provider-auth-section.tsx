@@ -58,7 +58,7 @@ function AuthStateGrid({ state }: Readonly<{ state: ProviderAuthState }>) {
               state.credentialStatus === "ROTATION_DUE" ? "warning" : "default",
           },
           {
-            label: "Token expira",
+            label: "Acceso temporal vence",
             value: formatDateTime(state.tokenExpiresAt),
           },
           {
@@ -106,7 +106,7 @@ function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
           loadingText="Invalidando…"
           onClick={() => invalidate.mutate()}
         >
-          Forzar renovación del token
+          Forzar renovación del acceso
         </Button>
         <Button
           variant="danger"
@@ -118,13 +118,14 @@ function DangerZone({ state }: Readonly<{ state: ProviderAuthState }>) {
       </div>
       {invalidate.isSuccess ? (
         <p className="text-sm text-emerald-800">
-          Token descartado: la próxima llamada pedirá uno nuevo.
+          Acceso temporal descartado: la próxima llamada pedirá uno nuevo.
         </p>
       ) : null}
       {revoke.isSuccess ? (
         <p className="text-sm text-red-800">
           Credencial revocada el {formatDateTime(revoke.data.revokedAt)}. El
-          broker rechazará toda llamada a este proveedor hasta que se rote.
+          servicio de credenciales rechazará toda llamada a este proveedor hasta
+          que se rote.
         </p>
       ) : null}
       {revoke.error ? (
@@ -171,11 +172,9 @@ export function ProviderAuthSection({
   if (availability.data && !availability.data.configured) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-        Este backend todavía no delega la autenticación de proveedores en el{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>. Configure{" "}
-        <span className="font-mono">AUTH_BROKER_BASE_URL</span> y{" "}
-        <span className="font-mono">AUTH_BROKER_SERVICE_TOKEN</span> para ver
-        aquí el estado de las credenciales.
+        Este entorno todavía no usa el servicio de credenciales de proveedores,
+        así que aquí no hay estado que mostrar. Activarlo es una tarea del
+        equipo técnico.
       </div>
     );
   }
@@ -183,8 +182,8 @@ export function ProviderAuthSection({
   if (availability.data && !availability.data.reachable) {
     return (
       <ErrorState
-        title="El broker de autenticación no responde"
-        description="El backend está configurado para delegar la autenticación, pero no alcanza al worker. Las llamadas a proveedores que exijan credencial fallarán mientras dure la incidencia."
+        title="El servicio de credenciales no responde"
+        description="El sistema está configurado para usar el servicio de credenciales, pero no logra comunicarse con él. Las llamadas a proveedores que exijan credencial fallarán mientras dure la incidencia."
         onRetry={() => void availability.refetch()}
       />
     );
@@ -196,7 +195,7 @@ export function ProviderAuthSection({
   if (authState.error && isNotFound(authState.error)) {
     return (
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
-        El broker no tiene ninguna credencial declarada para{" "}
+        El servicio de credenciales no tiene ninguna credencial declarada para{" "}
         <span className="font-mono">{providerCode}</span>.
       </div>
     );

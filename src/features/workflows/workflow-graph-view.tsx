@@ -189,7 +189,7 @@ export function WorkflowGraphView({
         <svg
           width="100%"
           height="100%"
-          aria-label={`Lienzo del flujo ${tree.name}: ${tree.totals.steps} endpoints en ${tree.totals.stages} etapas`}
+          aria-label={`Lienzo del flujo ${tree.name}: ${tree.totals.steps} operaciones en ${tree.totals.stages} etapas`}
         >
           <EdgeMarkers />
           <g transform={toTransform(viewport)}>

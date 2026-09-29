@@ -94,7 +94,7 @@ describe("WorkflowStepTrial · enviar un payload de prueba", () => {
   it("propone el payload a partir del contrato declarado", () => {
     renderWithProviders(<WorkflowStepTrial step={stepFixture()} />);
 
-    const textarea = screen.getByRole("textbox", { name: "Payload de prueba" });
+    const textarea = screen.getByRole("textbox", { name: "Datos de prueba" });
     expect(textarea).toHaveValue(
       JSON.stringify(
         { deviceId: "<string>", channel: "<mobile_app | web>" },
@@ -140,7 +140,7 @@ describe("WorkflowStepTrial · enviar un payload de prueba", () => {
 
   it("un payload con JSON roto no llega a enviarse", async () => {
     renderWithProviders(<WorkflowStepTrial step={stepFixture()} />);
-    const textarea = screen.getByRole("textbox", { name: "Payload de prueba" });
+    const textarea = screen.getByRole("textbox", { name: "Datos de prueba" });
     await userEvent.clear(textarea);
     await userEvent.click(textarea);
     await userEvent.paste("{no soy json");

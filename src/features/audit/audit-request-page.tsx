@@ -90,7 +90,7 @@ function AuthorizedAuditRequestPage({
         cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
       },
       {
-        header: "PII",
+        header: "Datos personales",
         accessorKey: "containsPii",
         cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
       },
@@ -103,8 +103,8 @@ function AuthorizedAuditRequestPage({
       <PageHeader
         icon={FileSearch}
         eyebrow="Auditoría"
-        title={`Request ${requestId}`}
-        description="Eventos relacionados a un request específico."
+        title={`Solicitud ${requestId}`}
+        description="Todo lo registrado a partir de una misma solicitud."
       />
       {logs.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {logs.error ? (
@@ -112,7 +112,7 @@ function AuthorizedAuditRequestPage({
           description={
             isAtlasApiError(logs.error)
               ? logs.error.message
-              : "No se pudo cargar request."
+              : "No se pudo cargar la solicitud."
           }
           requestId={
             isAtlasApiError(logs.error) ? logs.error.requestId : undefined
@@ -125,13 +125,13 @@ function AuthorizedAuditRequestPage({
           <KeyValueGrid
             items={[
               {
-                label: "Correlation ID",
+                label: "Código de seguimiento",
                 value: first.correlationId,
                 mono: true,
               },
-              { label: "Actor", value: first.actorRole ?? first.actorType },
+              { label: "Quién", value: first.actorRole ?? first.actorType },
               {
-                label: "Endpoint catalogado",
+                label: "Operación del inventario",
                 value: first.endpointCatalogId
                   ? `#${first.endpointCatalogId}`
                   : "—",

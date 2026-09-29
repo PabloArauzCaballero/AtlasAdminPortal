@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export const TABS = [
   "Prueba unitaria",
-  "Journey (encadenado)",
+  "Recorrido (encadenado)",
   "Árbol de decisión",
 ];
 export const UNIT_TABS = ["Funcional", "Carga"];

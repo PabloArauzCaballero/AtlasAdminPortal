@@ -250,7 +250,7 @@ describe("RecalculateRiskAction", () => {
     expect(services.recalculateRisk).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Recalcular" }));
     await waitFor(() =>
-      expect(screen.getByText("run #77")).toHaveAttribute(
+      expect(screen.getByText("corrida #77")).toHaveAttribute(
         "href",
         "/internal/operations/risk-assessments/77",
       ),

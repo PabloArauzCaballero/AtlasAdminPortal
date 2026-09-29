@@ -211,7 +211,7 @@ export function PasswordChangeCard() {
 
 function describe(error: unknown): string {
   if (isAtlasApiError(error)) {
-    return `${error.message}${error.requestId ? ` · Request ID: ${error.requestId}` : ""}`;
+    return `${error.message}${error.requestId ? ` · Código de referencia: ${error.requestId}` : ""}`;
   }
   return "No se pudo completar la operación.";
 }

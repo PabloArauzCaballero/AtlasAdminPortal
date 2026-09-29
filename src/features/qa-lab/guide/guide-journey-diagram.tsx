@@ -7,7 +7,7 @@ import { MethodBadge } from "@/shared/components/ui/badges";
 const JOURNEY_SNIPPET = `[
   {
     "key": "onboarding_start",
-    "name": "Iniciar onboarding",
+    "name": "Iniciar alta de cliente",
     "endpointId": "<ID de POST /customer-onboarding/start>",
     "payload": { "channel": "mobile_app" },
     "expectedStatusCodes": [200, 201],
@@ -29,7 +29,7 @@ export function GuideJourneyDiagram() {
         <FlowNode
           method="GET"
           stepKey="health"
-          name="Health check"
+          name="Estado del servidor"
           route="/health"
           metas={[{ label: "espera 200" }]}
         />
@@ -37,7 +37,7 @@ export function GuideJourneyDiagram() {
         <FlowNode
           method="POST"
           stepKey="onboarding_start"
-          name="Iniciar onboarding"
+          name="Iniciar alta de cliente"
           route="/customer-onboarding/start"
           metas={[
             { label: "espera 200 · 201" },
@@ -67,7 +67,10 @@ export function GuideJourneyDiagram() {
         />
       </div>
 
-      <CodeBlock code={JOURNEY_SNIPPET} label="journey · array de pasos" />
+      <CodeBlock
+        code={JOURNEY_SNIPPET}
+        label="recorrido · lista de pasos (JSON)"
+      />
     </div>
   );
 }

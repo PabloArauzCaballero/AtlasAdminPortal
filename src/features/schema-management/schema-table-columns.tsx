@@ -96,7 +96,7 @@ export function buildSchemaTableColumns(): ColumnDef<SchemaTable>[] {
       },
     },
     {
-      header: "Append-only",
+      header: "Solo añade filas",
       accessorKey: "isAppendOnly",
       cell: ({ row }) =>
         row.original.isAppendOnly ? (
@@ -109,13 +109,13 @@ export function buildSchemaTableColumns(): ColumnDef<SchemaTable>[] {
         ),
     },
     {
-      header: "Multi-tenant",
+      header: "Por organización",
       accessorKey: "isTenantScoped",
       cell: ({ row }) =>
         row.original.isTenantScoped ? (
           <Badge tone="info">
             <Users className="h-3 w-3" aria-hidden />
-            Por tenant
+            Por organización
           </Badge>
         ) : (
           <BooleanBadge value={false} />

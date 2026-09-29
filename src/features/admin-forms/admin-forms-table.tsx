@@ -18,7 +18,8 @@ const formRoutes: FormRoute[] = [
   {
     area: "Catálogo",
     name: "Configurar tabla",
-    purpose: "Metadata, PII, retención y regla append only/mutación.",
+    purpose:
+      "Descripción, datos personales, retención y si la tabla admite cambios.",
     entryPoint: "/internal/data-catalog/tables",
     permission: "catalog.data.manage",
     status: "disponible",
@@ -27,22 +28,22 @@ const formRoutes: FormRoute[] = [
     area: "Gobierno",
     name: "Configurar política",
     purpose:
-      "Acciones que backend debe obedecer: update, delete, export, auditoría.",
+      "Reglas que el sistema aplica al modificar, borrar, exportar y auditar datos.",
     entryPoint: "/internal/governance/policies",
     permission: "governance.policies.manage",
     status: "disponible",
   },
   {
     area: "Calidad",
-    name: "Resolver issue",
-    purpose: "Cierre idempotente con motivo y notas.",
+    name: "Resolver incidencia",
+    purpose: "Cierre con motivo y notas; repetirlo no duplica nada.",
     entryPoint: "/internal/data-quality/issues",
     permission: "dataQuality.issues.resolve",
     status: "disponible",
   },
   {
     area: "QA",
-    name: "Ejecutar suite/regla/reporte",
+    name: "Ejecutar prueba, regla o informe",
     purpose: "Formularios operativos con confirmación explícita.",
     entryPoint: "/internal/qa/suites",
     permission: "systems.qa.execute",

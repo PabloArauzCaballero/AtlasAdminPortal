@@ -62,7 +62,7 @@ describe("useEndpointRunMutation", () => {
     result.current.mutate(runInputFixture());
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toContain("Selecciona un endpoint");
+    expect(result.current.error?.message).toContain("Selecciona una ruta");
     expect(mockedRun).not.toHaveBeenCalled();
   });
 

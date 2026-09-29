@@ -65,7 +65,7 @@ describe("ViewExplainer · colapsado", () => {
 
     expect(toggle()).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("Explicación de negocio")).toBeInTheDocument();
-    expect(screen.getByText("Explicación de sistemas")).toBeInTheDocument();
+    expect(screen.getByText("Cómo funciona")).toBeInTheDocument();
   });
 
   it("el segundo click vuelve a colapsar", async () => {

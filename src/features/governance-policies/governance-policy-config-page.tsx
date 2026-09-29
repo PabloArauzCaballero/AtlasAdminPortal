@@ -56,9 +56,8 @@ function AuthorizedGovernancePolicyConfigPage({
         className="mb-4 max-w-2xl text-sm text-atlas-muted"
         data-testid="policy-config-readonly-note"
       >
-        Esta configuración no se edita desde el portal: AtlasBackend no publica
-        una escritura de políticas por fila. Los cambios entran por el paquete
-        de gobierno versionado y se ven aquí cuando se despliegan.
+        Esta configuración no se edita desde el portal. Los cambios se hacen con
+        el paquete de gobierno y se ven aquí cuando se aplican.
       </p>
       {policy.isLoading ? <LoadingSkeleton rows={8} /> : null}
       {policy.error ? (

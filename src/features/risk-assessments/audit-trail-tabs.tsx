@@ -64,7 +64,7 @@ function RunTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
             mono: true,
           },
           {
-            label: "Snapshot de features",
+            label: "Foto de los indicadores",
             value: run.featureSnapshotId,
             mono: true,
           },
@@ -133,7 +133,7 @@ function ResultTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
             mono: true,
           },
           {
-            label: "Hash de integridad",
+            label: "Huella de integridad",
             value: result.integrityHash,
             mono: true,
           },
@@ -151,8 +151,8 @@ function SnapshotTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
   if (!snapshot) {
     return (
       <EmptyState
-        title="Sin snapshot de features."
-        description="Esta corrida no dejó registrado el estado de las features usadas para evaluar."
+        title="Sin foto de los indicadores."
+        description="Esta corrida no dejó registrado el valor de los indicadores usados para evaluar."
       />
     );
   }
@@ -160,14 +160,14 @@ function SnapshotTab({ detail }: Readonly<{ detail: RiskAssessmentDetail }>) {
     <div className="space-y-4">
       <KeyValueGrid
         items={[
-          { label: "ID de snapshot", value: snapshot.id, mono: true },
+          { label: "Id de la foto", value: snapshot.id, mono: true },
           { label: "Motivo", value: snapshot.snapshotReason },
           {
-            label: "Versión del feature set",
+            label: "Versión del conjunto de indicadores",
             value: snapshot.featureSetVersion,
           },
           {
-            label: "Hash de integridad",
+            label: "Huella de integridad",
             value: snapshot.integrityHash,
             mono: true,
           },
@@ -212,8 +212,8 @@ export function AuditTrailTabs({
         <DataTable
           data={detail.featureContributions}
           columns={buildFeatureContributionColumns()}
-          emptyTitle="Sin contribuciones de features."
-          emptyDescription="La corrida no registró el aporte de cada feature al score."
+          emptyTitle="Sin aportes de los indicadores."
+          emptyDescription="La corrida no registró cuánto aportó cada indicador a la puntuación."
         />
       ) : null}
       {active === "Snapshot" ? <SnapshotTab detail={detail} /> : null}

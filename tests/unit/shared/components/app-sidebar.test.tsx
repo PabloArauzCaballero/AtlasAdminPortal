@@ -74,7 +74,7 @@ describe("AppSidebar · filtrado por permisos", () => {
     // varios permisos de sistemas y basta con el último.
     renderSidebar({ permissions: ["systems.tools.inferRequirements"] });
 
-    expect(verEnlace("Sync catálogo")).toBe(true);
+    expect(verEnlace("Actualizar inventario")).toBe(true);
   });
 
   it("un ítem con permissions: [] es visible sin ningún permiso", () => {
@@ -170,7 +170,7 @@ describe("AppSidebar · grupos", () => {
     expect(verGrupo("Administración")).toBe(true);
     expect(verEnlace("Roles internos")).toBe(true);
     expect(verEnlace("Permisos internos")).toBe(false);
-    expect(verEnlace("Sync catálogo")).toBe(false);
+    expect(verEnlace("Actualizar inventario")).toBe(false);
   });
 
   it("Procesos es un grupo propio, visible sólo con workflows.read", () => {
@@ -229,7 +229,7 @@ describe("AppSidebar · grupos", () => {
 
     // Plegar es solo visual (grid-rows-[0fr]): los enlaces siguen en el DOM.
     // Aquí solo se comprueba que el toggle no destruye el grupo ni sus ítems.
-    expect(verEnlace("Terminal backend")).toBe(true);
+    expect(verEnlace("Registro del sistema")).toBe(true);
   });
 
   it("la cabecera anuncia si el grupo está desplegado o plegado", async () => {
@@ -267,7 +267,7 @@ describe("AppSidebar · enlaces y sesión", () => {
     renderSidebar({ permissions: ["audit.events.read"] });
 
     expect(
-      screen.getByRole("link", { name: "Terminal backend" }),
+      screen.getByRole("link", { name: "Registro del sistema" }),
     ).toHaveAttribute("href", "/internal/audit");
   });
 
@@ -307,6 +307,6 @@ describe("AppSidebar · fusiones WP2 (2026-09-29)", () => {
     });
     expect(verEnlace("Alertas")).toBe(false);
     expect(verEnlace("Formularios")).toBe(false);
-    expect(verEnlace("Issues calidad")).toBe(true);
+    expect(verEnlace("Incidencias de calidad")).toBe(true);
   });
 });

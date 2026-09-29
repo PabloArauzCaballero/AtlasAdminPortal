@@ -9,7 +9,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { AuditSqlSection } from "./audit-sql-section";
 import { MongoLogsSection } from "./mongo-logs-section";
 
-const tabs = ["Terminal backend", "Auditoría SQL"];
+const tabs = ["Registro del sistema", "Auditoría de acciones"];
 
 export function AuditPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -28,8 +28,8 @@ function AuthorizedAuditPage() {
     <>
       <PageHeader
         icon={Terminal}
-        title="Terminal y auditoría del backend"
-        description="Eventos registrados por Systems Ops desde `/systems/action-logs`, más el tail crudo de `Archivo.log` sincronizado a MongoDB."
+        title="Registro y auditoría del sistema"
+        description="Las acciones registradas en el sistema y, en la otra pestaña, el registro técnico completo tal como lo escribe el sistema."
       />
       <BusinessContextNote>
         Cuando algo sale mal para un cliente — un pago rechazado, una decisión
@@ -38,8 +38,8 @@ function AuthorizedAuditPage() {
         auditoría existe para eso: es el registro forense de la plataforma.
       </BusinessContextNote>
       <DetailTabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-      {activeTab === "Terminal backend" ? <MongoLogsSection /> : null}
-      {activeTab === "Auditoría SQL" ? <AuditSqlSection /> : null}
+      {activeTab === "Registro del sistema" ? <MongoLogsSection /> : null}
+      {activeTab === "Auditoría de acciones" ? <AuditSqlSection /> : null}
     </>
   );
 }

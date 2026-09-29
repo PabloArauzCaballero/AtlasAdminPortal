@@ -107,7 +107,7 @@ export function JourneyStepsEditor({
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-4 w-4" />
-              Cargar payload (.json)
+              Cargar pasos (.json)
             </Button>
             {loadedFileName ? (
               <span className="text-xs text-atlas-muted">
@@ -118,7 +118,7 @@ export function JourneyStepsEditor({
           <Field
             label="Especificación de pasos (JSON)"
             tooltip="La lista de pasos del recorrido en JSON; cada paso puede reusar lo extraído antes."
-            hint="Array de pasos: { key, name, endpointId, pathParams, queryParams, payload, headers, expectedStatusCodes, extract }. Usa {{variable}} para reusar valores extraídos de pasos previos."
+            hint="Lista de pasos con estos campos: { key, name, endpointId, pathParams, queryParams, payload, headers, expectedStatusCodes, extract }. Usa {{variable}} para reusar valores extraídos de pasos previos."
           >
             <Textarea
               spellCheck={false}

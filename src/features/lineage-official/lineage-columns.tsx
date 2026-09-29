@@ -6,6 +6,21 @@ import { Badge, RiskBadge, StatusBadge } from "@/shared/components/ui/badges";
 import { safeText } from "@/shared/lib/format";
 import type { LineageEdge, LineageImpactItem, LineageNode } from "./types";
 
+/** Tipos que el catálogo conoce, en palabras; un tipo nuevo se enseña tal cual. */
+const NODE_TYPE_LABELS: Record<string, string> = {
+  table: "Tabla",
+  endpoint: "Operación",
+};
+
+const EDGE_TYPE_LABELS: Record<string, string> = {
+  impact: "Operación → tabla",
+  relationship: "Tabla → tabla",
+  reads: "Lee",
+  writes: "Escribe",
+  read: "Lee",
+  write: "Escribe",
+};
+
 export function buildLineageNodeColumns(): ColumnDef<LineageNode>[] {
   return [
     {
@@ -23,7 +38,11 @@ export function buildLineageNodeColumns(): ColumnDef<LineageNode>[] {
     {
       header: "Tipo",
       accessorKey: "nodeType",
-      cell: ({ row }) => <Badge tone="info">{row.original.nodeType}</Badge>,
+      cell: ({ row }) => (
+        <Badge tone="info">
+          {NODE_TYPE_LABELS[row.original.nodeType] ?? row.original.nodeType}
+        </Badge>
+      ),
     },
     {
       header: "Dominio",
@@ -56,7 +75,11 @@ export function buildLineageEdgeColumns(
     {
       header: "Tipo",
       accessorKey: "edgeType",
-      cell: ({ row }) => <Badge tone="info">{row.original.edgeType}</Badge>,
+      cell: ({ row }) => (
+        <Badge tone="info">
+          {EDGE_TYPE_LABELS[row.original.edgeType] ?? row.original.edgeType}
+        </Badge>
+      ),
     },
     {
       header: "Origen",
@@ -112,7 +135,7 @@ function NodeLink({
 }
 
 export const FAMILY_LABELS: Record<string, string> = {
-  impact: "Endpoint → tabla",
+  impact: "Operación → tabla",
   relationship: "Tabla → tabla",
 };
 

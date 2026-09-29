@@ -21,7 +21,7 @@ export function CustomerAuditPage({
         icon={UserSearch}
         eyebrow="Operaciones"
         title={`Auditoría del cliente #${customerId}`}
-        description="Historial de auditoría del cliente unificado desde las 8 fuentes del backend: auditoría operativa, cambios de datos, autenticación, consentimientos, acciones del cliente, cambios de estado, fraude y revisión manual."
+        description="Historial de auditoría del cliente unificado desde 8 fuentes del sistema: auditoría operativa, cambios de datos, autenticación, consentimientos, acciones del cliente, cambios de estado, fraude y revisión manual."
         actions={
           <Link
             href={`/internal/operations/customers/${encodeURIComponent(customerId)}/investigation-summary`}

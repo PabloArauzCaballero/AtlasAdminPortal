@@ -70,23 +70,23 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   platform:
     "Plataforma base: servicios transversales, configuración compartida y utilidades del sistema.",
   privacy:
-    "Privacidad y datos personales: registro de PII, consentimientos y minimización de datos.",
+    "Privacidad y datos personales: registro de datos personales, consentimientos y minimización de datos.",
   device_intelligence:
     "Inteligencia de dispositivo: huellas, señales de riesgo y reputación del dispositivo.",
   onboarding: "Onboarding: alta y activación de clientes de punta a punta.",
   risk: "Riesgo: evaluación crediticia, capacidad de pago y políticas de decisión.",
   fraud: "Fraude: detección, señales y reglas antifraude.",
   notifications:
-    "Comunicaciones: notificaciones, broadcasts y plantillas de mensajería.",
+    "Comunicaciones: notificaciones, avisos masivos y plantillas de mensajería.",
   data_quality: "Calidad de datos: reglas, incidencias y remediación.",
   audit: "Auditoría: trazabilidad de eventos y acciones sobre el sistema.",
   systems:
-    "Systems Ops y QA: catálogo de endpoints, herramientas internas y laboratorio de pruebas.",
+    "Sistemas y QA: inventario de operaciones, herramientas internas y laboratorio de pruebas.",
   governance:
     "Gobierno de datos: políticas, dominios, responsables y estándares.",
   lineage:
     "Linaje de datos: relaciones y trazabilidad entre orígenes y destinos.",
-  reports: "Reportes: tableros de negocio y readiness de release.",
+  reports: "Reportes: tableros de negocio y preparación de cada salida.",
   security: "Seguridad: revisiones, controles y hallazgos de seguridad.",
   credit:
     "Crédito: líneas aprobadas, solicitudes, cartera, cuotas, pagos y política de mora.",

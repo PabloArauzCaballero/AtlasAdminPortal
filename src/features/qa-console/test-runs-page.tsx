@@ -15,6 +15,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-button";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { optionLabel } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
 
@@ -41,7 +42,7 @@ function AuthorizedTestRunsPage() {
   const columns = useMemo<ColumnDef<TestRun>[]>(
     () => [
       {
-        header: "Run",
+        header: "Corrida",
         accessorKey: "runId",
         cell: ({ row }) => (
           <Link
@@ -64,7 +65,12 @@ function AuthorizedTestRunsPage() {
           </Link>
         ),
       },
-      { header: "Ambiente", accessorKey: "environment" },
+      {
+        header: "Ambiente",
+        accessorKey: "environment",
+        cell: ({ row }) =>
+          optionLabel(ENVIRONMENT_OPTIONS, row.original.environment),
+      },
       {
         header: "Estado",
         accessorKey: "status",
@@ -98,7 +104,7 @@ function AuthorizedTestRunsPage() {
     <>
       <PageHeader
         icon={FlaskConical}
-        title="Runs QA registrados en backend"
+        title="Corridas de las suites QA"
         description="Cada ejecución de una suite de pruebas: contra qué ambiente, cuánto tardó y si pasó. ¿Quieres probar peticiones sueltas contra otra URL?"
         actions={
           <div className="flex gap-2">

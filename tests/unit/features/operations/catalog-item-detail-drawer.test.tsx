@@ -74,10 +74,10 @@ describe("CatalogItemDetailDrawer", () => {
       />,
     );
     expect(
-      screen.getByText("El item no tiene alias registrados."),
+      screen.getByText("El elemento no tiene alias registrados."),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("El item no tiene mapeos de riesgo."),
+      screen.getByText("El elemento no tiene mapeos de riesgo."),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();
   });

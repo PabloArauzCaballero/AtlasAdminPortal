@@ -101,18 +101,31 @@ export function useSupportCodes() {
   });
 }
 
-export function useQueuedChannels() {
+export function useQueuedChannels(query: QueryParams) {
   return useQuery({
-    queryKey: queryKeys.supportDeskQueue,
-    queryFn: listQueuedChannels,
+    queryKey: queryKeys.supportDeskQueue(query),
+    queryFn: () => listQueuedChannels(query),
     refetchInterval: 30_000,
+    // Cambiar de página o de filtro no vacía la tabla mientras llega la siguiente.
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useMyDesk() {
+export function useMyDesk(query: QueryParams) {
   return useQuery({
-    queryKey: queryKeys.supportDeskMine,
-    queryFn: getMyDesk,
+    queryKey: queryKeys.supportDeskMine(query),
+    queryFn: () => getMyDesk(query),
+    refetchInterval: 15_000,
+    retry: false,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** La presencia real que tiene la base: una fila basta, la lista de «mías» se pide aparte. */
+export function useMyPresence() {
+  return useQuery({
+    queryKey: queryKeys.supportDeskPresence,
+    queryFn: () => getMyDesk({ page: 1, limit: 1 }),
     refetchInterval: 15_000,
     retry: false,
   });

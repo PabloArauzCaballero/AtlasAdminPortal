@@ -45,14 +45,14 @@ function AuthorizedStressRunsPage() {
   const columns = useMemo<ColumnDef<StressRun>[]>(
     () => [
       {
-        header: "Run",
+        header: "Corrida",
         accessorKey: "jobRunId",
         cell: ({ row }) => (
           <span className="font-mono text-xs">#{row.original.jobRunId}</span>
         ),
       },
       {
-        header: "Job",
+        header: "Proceso",
         accessorKey: "jobCode",
         cell: ({ row }) => (
           <span className="font-mono text-xs">{row.original.jobCode}</span>
@@ -91,7 +91,7 @@ function AuthorizedStressRunsPage() {
             className="h-8 px-2 text-xs"
             onClick={() => setSelectedRun(row.original)}
           >
-            Ver JSON
+            Ver datos
           </Button>
         ),
       },
@@ -102,7 +102,7 @@ function AuthorizedStressRunsPage() {
     <>
       <PageHeader
         icon={Waves}
-        title="Historial de stress runs"
+        title="Historial de corridas de carga"
         description="Corridas de carga encoladas desde un perfil. Se guardan con las cabeceras sensibles tapadas y producción está bloqueada para carga."
       />
       <FilterBar
@@ -148,7 +148,7 @@ function AuthorizedStressRunsPage() {
           description={
             isAtlasApiError(runs.error)
               ? runs.error.message
-              : "No se pudo cargar stress runs."
+              : "No se pudo cargar el historial de corridas de carga."
           }
           requestId={
             isAtlasApiError(runs.error) ? runs.error.requestId : undefined
@@ -166,7 +166,7 @@ function AuthorizedStressRunsPage() {
       ) : null}
       <DrawerPanel
         open={Boolean(selectedRun)}
-        title="Detalle stress run"
+        title="Detalle de la corrida de carga"
         onClose={() => setSelectedRun(null)}
       >
         {selectedRun ? <JsonViewer value={selectedRun} /> : null}

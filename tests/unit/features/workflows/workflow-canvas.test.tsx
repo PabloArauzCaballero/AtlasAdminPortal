@@ -75,7 +75,7 @@ describe("WorkflowCanvas · lectura del catálogo", () => {
     const stages = await screen.findByText("etapas");
     expect(stages.parentElement).toHaveTextContent("22");
     expect(
-      screen.getByText("pasos (endpoints)").parentElement,
+      screen.getByText("pasos (operaciones)").parentElement,
     ).toHaveTextContent("57");
     expect(screen.getByText("transiciones").parentElement).toHaveTextContent(
       "33",

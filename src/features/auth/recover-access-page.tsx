@@ -29,7 +29,7 @@ import { ErrorState } from "@/shared/components/ui/states";
  * PIN que AtlasBackend manda al correo: quien sólo tenga la contraseña nueva no entra.
  */
 const pedirSchema = z.object({
-  tenantId: z.string().trim().min(1, "El tenant es obligatorio."),
+  tenantId: z.string().trim().min(1, "La organización es obligatoria."),
   email: z.string().trim().email("Ingresa un correo válido."),
 });
 
@@ -137,7 +137,7 @@ export function RecoverAccessPage() {
             <form className="space-y-4" onSubmit={(e) => void onPedir(e)}>
               <Field
                 tooltip="Identificador de la organización a la que pertenece tu cuenta interna."
-                label="Tenant"
+                label="Organización"
                 error={pedir.formState.errors.tenantId?.message}
               >
                 <Input

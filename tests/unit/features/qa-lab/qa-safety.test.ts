@@ -103,9 +103,9 @@ describe("assertHostAllowed", () => {
     );
   });
 
-  it("lanza mencionando la variable que abre la allowlist", () => {
+  it("lanza diciendo a quién pedir que abra la lista permitida", () => {
     expect(() => assertHostAllowed("https://evil.example.com/collect")).toThrow(
-      /NEXT_PUBLIC_QA_ALLOWED_HOSTS/,
+      /pide al equipo técnico que la añada a la lista/,
     );
   });
 

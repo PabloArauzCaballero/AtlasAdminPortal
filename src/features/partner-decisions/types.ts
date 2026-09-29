@@ -63,14 +63,30 @@ export type PartnerQrPending = {
   partner: {
     legalName: string | null;
     tradeName: string | null;
+    /** Desde que el buscador de la cola también busca por NIT; ausente en un servidor anterior. */
+    taxId?: string | null;
     onboardingStatus: string;
   } | null;
+  /** La sucursal del QR; `null` si es del comercio entero. Ausente en un servidor anterior. */
+  branch?: { branchCode: string; name: string; city: string | null } | null;
 };
 
-/** `meta` desde 2026-09-29 (antes llegaba la cola entera, sin paginar). */
+/** De TODA la cola de QR por revisar, no de la página ni del filtro. */
+export type PartnerQrPendingSummary = {
+  total: number;
+  business: number;
+  bank: number;
+  oldestCreatedAt: string | null;
+};
+
+/**
+ * `meta` desde 2026-09-29 (antes llegaba la cola entera, sin paginar); `summary` desde que el
+ * servidor también busca y filtra por tipo. Un Core anterior los omite.
+ */
 export type PartnerQrPendingResponse = {
   items: PartnerQrPending[];
   meta?: PaginationMeta;
+  summary?: PartnerQrPendingSummary;
 };
 
 export type PartnerQrReviewed = {

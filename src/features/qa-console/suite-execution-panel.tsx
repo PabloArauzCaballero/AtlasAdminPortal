@@ -1,6 +1,7 @@
 "use client";
 
 import { ENVIRONMENT_OPTIONS } from "./qa-options";
+import { optionLabel } from "@/shared/lib/options";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Play, RefreshCw } from "lucide-react";
@@ -118,9 +119,9 @@ export function SuiteExecutionPanel({
             />
           </Field>
           <Field
-            label="Timeout por step"
+            label="Tiempo máximo por paso"
             tooltip="Milisegundos que espera cada paso antes de darlo por fallido. Ej.: 10000"
-            hint="El backend también aplica sus límites internos."
+            hint="El servidor también aplica sus propios límites."
           >
             <Input
               type="number"
@@ -138,12 +139,12 @@ export function SuiteExecutionPanel({
               disabled={environment === "PRODUCTION_READONLY"}
               onChange={(event) => setDryRun(event.target.checked)}
             />
-            Dry-run
+            Simulación (sin llamar al destino)
           </label>
           <Field
-            label="Base URL para corrida real"
-            tooltip="Host contra el que se lanzan las peticiones cuando no es dry-run."
-            hint="Usa el host raiz; los steps normalmente ya incluyen /api/v1."
+            label="Dirección base para la corrida real"
+            tooltip="Servidor contra el que se lanzan las peticiones cuando no es simulación."
+            hint="Usa la dirección raíz; los pasos normalmente ya incluyen /api/v1."
           >
             <Input
               value={baseUrl}
@@ -156,7 +157,7 @@ export function SuiteExecutionPanel({
 
         <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
           <Field
-            label="Headers JSON"
+            label="Cabeceras (JSON)"
             tooltip="Cabeceras extra para todas las peticiones de esta corrida, en JSON."
             hint="No se guardan secretos en el portal."
           >
@@ -167,9 +168,9 @@ export function SuiteExecutionPanel({
             />
           </Field>
           <Field
-            label="Config JSON"
+            label="Parámetros (JSON)"
             tooltip="Valores para los parámetros configurables de los pasos, en JSON."
-            hint="Variables consumidas por templates de la suite."
+            hint="Variables que usan las plantillas de los pasos."
           >
             <Textarea
               value={configText}
@@ -179,7 +180,7 @@ export function SuiteExecutionPanel({
         </div>
 
         {formError ? (
-          <ErrorState title="Config invalida" description={formError} />
+          <ErrorState title="Configuración no válida" description={formError} />
         ) : null}
         {runMutation.error ? (
           <ErrorState
@@ -187,7 +188,7 @@ export function SuiteExecutionPanel({
             description={
               isAtlasApiError(runMutation.error)
                 ? runMutation.error.message
-                : "La corrida fue rechazada por el backend."
+                : "El servidor rechazó la corrida."
             }
             requestId={
               isAtlasApiError(runMutation.error)
@@ -227,7 +228,7 @@ export function SuiteExecutionPanel({
         <ConfirmDialog
           open={confirmOpen}
           title="Confirmar ejecucion QA"
-          description={`Se ejecutara la suite en ${environment} con dryRun=${String(dryRun)}. La accion quedara auditada y el backend validara allowlist/SSRF antes de llamar al host.`}
+          description={`Se ejecutará la suite en ${optionLabel(ENVIRONMENT_OPTIONS, environment)}${dryRun ? " en modo simulación, sin llamar al destino" : ""}. La acción queda registrada en auditoría y el servidor comprueba que el destino esté permitido antes de llamarlo.`}
           confirmText="Ejecutar"
           isLoading={runMutation.isPending}
           onCancel={() => setConfirmOpen(false)}
@@ -255,7 +256,7 @@ function SubmittedRun({
         ) : null}
       </div>
       <div className="mt-3">
-        <JsonViewer title="Respuesta del backend" value={result} />
+        <JsonViewer title="Respuesta del servidor" value={result} />
       </div>
     </div>
   );
@@ -276,7 +277,7 @@ function LiveRunStatus({
       </div>
       <KeyValueGrid
         items={[
-          { label: "Run", value: `#${run.data.run.runId}`, mono: true },
+          { label: "Corrida", value: `#${run.data.run.runId}`, mono: true },
           { label: "Ambiente", value: run.data.run.environment },
           {
             label: "Duracion",

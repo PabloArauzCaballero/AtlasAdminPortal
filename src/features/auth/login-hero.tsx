@@ -7,9 +7,9 @@ import {
 import { AnimatedBackground } from "@/shared/components/layout/animated-background";
 
 const MODULES = [
-  { icon: ServerCog, label: "Systems Ops", note: "Salud en vivo" },
-  { icon: FlaskConical, label: "QA Lab", note: "Pruebas reales" },
-  { icon: DatabaseZap, label: "Catálogo", note: "Metadata" },
+  { icon: ServerCog, label: "Sistemas", note: "Salud en vivo" },
+  { icon: FlaskConical, label: "Laboratorio QA", note: "Pruebas reales" },
+  { icon: DatabaseZap, label: "Catálogo", note: "Metadatos" },
   { icon: ShieldCheck, label: "Auditoría", note: "Trazabilidad" },
 ];
 
@@ -37,7 +37,7 @@ export function LoginHero() {
           Sistemas, QA y gobierno de datos en un solo lugar.
         </h2>
         <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400 animate-float-in [animation-delay:160ms]">
-          Monitorea catálogos, calidad de datos, lineage y auditoría conectados
+          Monitorea catálogos, calidad de datos, linaje y auditoría conectados
           en tiempo real al servicio interno de ATLAS.
         </p>
 

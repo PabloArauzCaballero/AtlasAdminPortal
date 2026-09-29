@@ -45,7 +45,7 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "segip-identity-verify",
     code: "MOCK_SEGIP_IDENTITY_VERIFY",
-    module: "Proveedores externos (mock)",
+    module: "Proveedores externos (simulador)",
     businessAction: "Verificar identidad (SEGIP)",
     businessPurpose:
       "Registro estatal de identidad boliviano. Confirma que la cédula existe y que los datos coinciden.",
@@ -58,7 +58,7 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "infocenter-credit-report",
     code: "MOCK_INFOCENTER_CREDIT_REPORT",
-    module: "Proveedores externos (mock)",
+    module: "Proveedores externos (simulador)",
     businessAction: "Pedir reporte crediticio (INFOCENTER)",
     businessPurpose:
       "Central de riesgo crediticio. Devuelve score, deudas vigentes y peor mora de los últimos 12 meses.",
@@ -71,8 +71,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "qr-payment-verify",
     code: "MOCK_QR_PAYMENT_VERIFY",
-    module: "Proveedores externos (mock)",
-    businessAction: "Verificar pago QR (QR_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Verificar pago QR (QR genérico)",
     businessPurpose:
       "Confirma que un cobro por QR se acreditó, con el monto y la referencia.",
     method: "POST",
@@ -88,8 +88,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "banking-qr-generate",
     code: "MOCK_BANKING_QR_GENERATE",
-    module: "Proveedores externos (mock)",
-    businessAction: "Generar QR de cobro (BANKING_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Generar QR de cobro (banca genérica)",
     businessPurpose: "Genera un QR de cobro para un monto y referencia dados.",
     method: "POST",
     path: "/banking/qr/generate",
@@ -104,8 +104,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "banking-transfer-verify",
     code: "MOCK_BANKING_TRANSFER_VERIFY",
-    module: "Proveedores externos (mock)",
-    businessAction: "Verificar transferencia (BANKING_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Verificar transferencia (banca genérica)",
     businessPurpose:
       "Confirma que una transferencia bancaria se realizó, con monto y referencia.",
     method: "POST",
@@ -121,8 +121,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "telco-phone-trust-check",
     code: "MOCK_TELCO_PHONE_TRUST_CHECK",
-    module: "Proveedores externos (mock)",
-    businessAction: "Chequear confianza del teléfono (TELCO_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Chequear confianza del teléfono (telefonía genérica)",
     businessPurpose:
       "Da antigüedad y señales de riesgo de un número de teléfono.",
     method: "POST",
@@ -132,8 +132,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "facebook-me",
     code: "MOCK_FACEBOOK_ME",
-    module: "Proveedores externos (mock)",
-    businessAction: "Leer perfil OAuth (FACEBOOK_META)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Leer perfil OAuth (Facebook)",
     businessPurpose:
       "Simula el intercambio OAuth de Meta para verificación social.",
     method: "POST",
@@ -143,8 +143,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "whatsapp-verification-confirm",
     code: "MOCK_WHATSAPP_VERIFICATION_CONFIRM",
-    module: "Proveedores externos (mock)",
-    businessAction: "Confirmar verificación (WHATSAPP_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Confirmar verificación (WhatsApp)",
     businessPurpose: "Confirma que un número de WhatsApp es contactable.",
     method: "POST",
     path: "/whatsapp/verification/confirm",
@@ -153,8 +153,8 @@ const MOCK_ENDPOINT_SEEDS: MockEndpointSeed[] = [
   {
     id: "digital-trust-check",
     code: "MOCK_DIGITAL_TRUST_CHECK",
-    module: "Proveedores externos (mock)",
-    businessAction: "Chequear confianza digital (DIGITAL_TRUST_GENERIC)",
+    module: "Proveedores externos (simulador)",
+    businessAction: "Chequear confianza digital (confianza digital genérica)",
     businessPurpose:
       "Da una señal agregada de confianza digital de la persona.",
     method: "POST",
@@ -184,7 +184,7 @@ function toEndpointItem(seed: MockEndpointSeed): EndpointItem {
     businessPurpose: seed.businessPurpose,
     businessAction: seed.businessAction,
     expectedResponseSummary:
-      "Respuesta simulada del proveedor externo según el escenario pedido (x-mock-scenario).",
+      "Respuesta simulada del proveedor externo según el escenario elegido.",
     expectedStatusCodes: [200],
     minPayloadSchema: seed.examplePayload,
     queryParamsSchema: {},

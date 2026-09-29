@@ -33,7 +33,7 @@ export function PolicyConfigSummary({
       <CardHeader>
         <SectionHeader
           title="Configuración operativa"
-          description="Reglas que el backend debe obedecer al escribir, retener, auditar o exportar datos."
+          description="Reglas que el sistema debe cumplir al guardar, conservar, auditar o exportar datos."
           className="mb-0"
         />
       </CardHeader>

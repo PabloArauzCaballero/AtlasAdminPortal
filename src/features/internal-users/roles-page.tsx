@@ -74,7 +74,7 @@ function AuthorizedRolesPage() {
     <>
       <PageHeader
         icon={ShieldCheck}
-        eyebrow="RBAC"
+        eyebrow="Roles y permisos"
         title="Roles internos"
         description={`Catálogo completo${roles.data ? ` (${formatNumber(todos.length)} roles)` : ""}: los roles que se pueden asignar a una cuenta interna y cuántos permisos da cada uno. Para ver quién tiene un rol, abre Usuarios internos y filtra por él.`}
       />

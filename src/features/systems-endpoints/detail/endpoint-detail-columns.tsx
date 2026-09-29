@@ -95,12 +95,12 @@ export function buildToolColumns(): ColumnDef<ToolRequirement>[] {
       cell: ({ row }) => formatBoolean(row.original.isRequired),
     },
     {
-      header: "Mock",
+      header: "Necesita simulador",
       accessorKey: "requiresMock",
       cell: ({ row }) => formatBoolean(row.original.requiresMock),
     },
     {
-      header: "Stress",
+      header: "Carga",
       accessorKey: "requiresStressTest",
       cell: ({ row }) => formatBoolean(row.original.requiresStressTest),
     },

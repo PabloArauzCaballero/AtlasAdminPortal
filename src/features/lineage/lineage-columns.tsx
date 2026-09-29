@@ -31,7 +31,7 @@ export function buildEntityColumns(): ColumnDef<DataEntity>[] {
       cell: ({ row }) => <ModuleBadge value={row.original.module} />,
     },
     {
-      header: "PII",
+      header: "Datos personales",
       accessorKey: "containsPii",
       cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
     },
@@ -72,7 +72,7 @@ export function buildEntityColumns(): ColumnDef<DataEntity>[] {
 export function buildEndpointColumns(): ColumnDef<EndpointItem>[] {
   return [
     {
-      header: "Endpoint",
+      header: "Operación",
       accessorKey: "fullPath",
       cell: ({ row }) => (
         <Link
@@ -94,12 +94,12 @@ export function buildEndpointColumns(): ColumnDef<EndpointItem>[] {
       cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
     },
     {
-      header: "PII",
+      header: "Datos personales",
       accessorKey: "containsPii",
       cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
     },
     {
-      header: "Stress",
+      header: "Carga",
       accessorKey: "requiresStressTest",
       cell: ({ row }) => (
         <BooleanBadge value={row.original.requiresStressTest} />

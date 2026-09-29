@@ -89,31 +89,31 @@ export function CatalogSyncPage() {
       <PageHeader
         icon={RefreshCw}
         eyebrow="Sincronización"
-        title="Sincronización de catálogo"
-        description="Acciones controladas sobre Systems Ops. No ejecuta seeds destructivos ni toca secretos. Toda acción crítica requiere confirmación."
+        title="Actualizar inventario"
+        description="Pone al día el inventario del sistema. No borra datos ni toca secretos, y cada acción pide confirmación."
       />
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         <SyncActionCard
-          title="Descubrir endpoints"
-          description="Añade las rutas nuevas desde el contrato OpenAPI del backend y refresca método, ruta y contrato de las existentes, sin tocar su revisión ni su dueño. También corre sola al arrancar la API."
+          title="Buscar operaciones nuevas"
+          description="Añade las operaciones nuevas del sistema y actualiza los datos técnicos de las que ya estaban, sin tocar su revisión ni su responsable. También se hace sola cada vez que el sistema arranca."
           disabled={!hasPermission("systems.endpoints.discover")}
           onClick={() => setAction("discover")}
         />
         <SyncActionCard
-          title="Refrescar seed de catálogo"
-          description="Ejecuta `/systems/endpoints/catalog-seed/refresh` con tools, data entities y endpoint seeds."
+          title="Recargar la lista base"
+          description="Vuelve a cargar la lista base de herramientas, tablas y operaciones que mantiene el equipo técnico."
           disabled={!hasPermission("systems.endpoints.catalogSeedRefresh")}
           onClick={() => setAction("seed")}
         />
         <SyncActionCard
           title="Inferir herramientas"
-          description="Ejecuta `/systems/tools/infer-requirements` con persist=true."
+          description="Detecta qué herramientas usa cada operación y guarda el resultado."
           disabled={!hasPermission("systems.tools.inferRequirements")}
           onClick={() => setAction("infer")}
         />
         <SyncActionCard
-          title="Inferir impactos endpoint-tabla"
-          description="Ejecuta `/systems/data-entities/infer-impacts`: escanea el código fuente de cada endpoint en busca de modelos Sequelize (lectura/escritura) para poblar la relación endpoint↔tabla automáticamente, sin depender de un seed curado a mano."
+          title="Detectar tablas por operación"
+          description="Revisa cada operación para saber qué tablas lee o escribe y actualiza esa relación sola, sin tener que cargarla a mano."
           disabled={!hasPermission("systems.tools.inferRequirements")}
           onClick={() => setAction("inferImpacts")}
         />
@@ -127,7 +127,7 @@ export function CatalogSyncPage() {
       <ConfirmDialog
         open={Boolean(action)}
         title="Confirmar sincronización"
-        description="Esta acción modifica metadata del catálogo de sistemas. Debe ejecutarse solo después de revisar migraciones y seeds relacionadas con cambios recientes."
+        description="Esta acción cambia el inventario del sistema. Hazla solo después de confirmar con el equipo técnico que la última actualización ya está instalada."
         confirmText="Ejecutar"
         isLoading={activeMutation.isPending}
         onCancel={() => setAction(null)}
@@ -206,17 +206,26 @@ function SyncResults({
         ) : null,
       )}
       {discover.data ? (
-        <JsonViewer title="Resultado discover" value={discover.data} />
+        <JsonViewer
+          title="Resultado de la búsqueda de operaciones"
+          value={discover.data}
+        />
       ) : null}
       {refresh.data ? (
-        <JsonViewer title="Resultado seed refresh" value={refresh.data} />
+        <JsonViewer
+          title="Resultado de la recarga de la lista base"
+          value={refresh.data}
+        />
       ) : null}
       {infer.data ? (
-        <JsonViewer title="Resultado inferencia" value={infer.data} />
+        <JsonViewer
+          title="Resultado de la detección de herramientas"
+          value={infer.data}
+        />
       ) : null}
       {inferImpacts.data ? (
         <JsonViewer
-          title="Resultado inferencia de impactos"
+          title="Resultado de la detección de tablas"
           value={inferImpacts.data}
         />
       ) : null}

@@ -38,25 +38,25 @@ export function CatalogVersionItemsTable({
     <>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por código, nombre o tipo del item…"
-        searchTooltip="Recorre TODOS los items de la versión, que llegan enteros con ella: coincide con parte del código, del nombre o del tipo."
+        searchPlaceholder="Buscar por código, nombre o tipo del elemento…"
+        searchTooltip="Recorre TODOS los elementos de la versión, que llegan enteros con ella: coincide con parte del código, del nombre o del tipo."
         filters={[
           {
             name: "activo",
             label: "Activo",
             tooltip:
-              "«Sí» son los items que el motor lee; «No», los que la versión trae desactivados.",
+              "«Sí» son los elementos que el motor lee; «No», los que la versión trae desactivados.",
             value: activo,
             options: [
               {
                 value: "true",
                 label: "Activo",
-                description: "Items que el motor lee de esta versión.",
+                description: "Elementos que el motor lee de esta versión.",
               },
               {
                 value: "false",
                 label: "Inactivo",
-                description: "Items desactivados: el motor no los lee.",
+                description: "Elementos desactivados: el motor no los lee.",
               },
             ],
           },
@@ -73,12 +73,12 @@ export function CatalogVersionItemsTable({
         columns={columns}
         emptyTitle={
           items.length === 0
-            ? "Esta versión no tiene items."
-            : "Ningún item coincide con los filtros."
+            ? "Esta versión no tiene elementos."
+            : "Ningún elemento coincide con los filtros."
         }
         emptyDescription={
           items.length === 0
-            ? "Crea una versión nueva con items para que el motor tenga qué leer."
+            ? "Crea una versión nueva con elementos para que el motor tenga qué leer."
             : "Cambia o quita el estado o el texto buscado."
         }
       />

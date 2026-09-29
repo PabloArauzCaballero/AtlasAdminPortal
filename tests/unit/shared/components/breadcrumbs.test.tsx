@@ -56,7 +56,7 @@ describe("Breadcrumbs · rutas", () => {
     expect(crumbs()).toEqual([
       "Inicio",
       "Calidad de datos",
-      "Issues de calidad",
+      "Incidencias de calidad",
     ]);
   });
 

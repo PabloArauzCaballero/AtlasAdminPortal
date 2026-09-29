@@ -26,8 +26,8 @@ export function DeviceProfileField({
     <div className="space-y-2 rounded-xl border border-atlas-border bg-atlas-soft p-3">
       <Field
         label="Cabeceras de dispositivo (sólo informativas)"
-        tooltip="Añade cabeceras x-device-… a la petición. Hoy el backend no lee ninguna, así que no cambian ninguna decisión de riesgo."
-        hint="Hoy el backend no usa estas cabeceras. Para probar el riesgo por dispositivo, usa «Riesgo del dispositivo» en «Ajustar los datos generados»: esos datos van dentro de la petición, donde el alta sí los lee."
+        tooltip="Añade cabeceras x-device-… a la petición. Hoy el servidor no lee ninguna, así que no cambian ninguna decisión de riesgo."
+        hint="Hoy el servidor no usa estas cabeceras. Para probar el riesgo por dispositivo, usa «Riesgo del dispositivo» en «Ajustar los datos generados»: esos datos van dentro de la petición, donde el alta sí los lee."
       >
         <Select
           name="dispositivo"

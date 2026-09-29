@@ -57,8 +57,8 @@ export function WorkflowStepDetail({ step }: Readonly<{ step: WorkflowStep }>) {
       ) : null}
 
       <DetailField
-        label="Código de endpoint"
-        value={step.endpointCode ?? `Sin endpoint: ${MANUAL_STEP_ROUTE}`}
+        label="Código de operación"
+        value={step.endpointCode ?? `Sin operación: ${MANUAL_STEP_ROUTE}`}
         mono
       />
 

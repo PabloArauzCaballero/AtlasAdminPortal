@@ -122,7 +122,7 @@ function pushTruncationNotice(
     hostname: HOSTNAME,
     name: LOGGER_NAME,
     layer,
-    msg: `Log truncado: se alcanzó el tope de ${MAX_LOG_ENTRIES} entradas.`,
+    msg: `Registro recortado: se alcanzó el tope de ${MAX_LOG_ENTRIES} entradas.`,
     event: "log.truncated",
     runId,
   });

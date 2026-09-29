@@ -26,14 +26,14 @@ export const learningPaths: readonly LearningPath[] = [
   {
     id: "pruebas-api",
     title: "Pruebas de API",
-    summary: "Probar operaciones una a una y encadenarlas en un journey.",
+    summary: "Probar operaciones una a una y encadenarlas en un recorrido.",
     tutorialIds: ["qa-lab-functional", "qa-lab-journey"],
   },
   {
     id: "recorridos-y-dependencias",
     title: "Recorridos y dependencias",
     summary:
-      "Diseñar un journey, leer su árbol de decisión y saber qué se cae si un paso falla.",
+      "Diseñar un recorrido, leer su árbol de decisión y saber qué se cae si un paso falla.",
     tutorialIds: [
       "qa-lab-journey",
       "qa-lab-decision-tree",
@@ -44,7 +44,7 @@ export const learningPaths: readonly LearningPath[] = [
     id: "rendimiento",
     title: "Rendimiento y carga",
     summary:
-      "Medir carga en el Lab y guardar perfiles de stress reutilizables (hoy sólo se encolan).",
+      "Medir carga en el Lab y guardar perfiles de carga reutilizables (hoy sólo se encolan).",
     tutorialIds: ["qa-lab-stress", "qa-stress-profile"],
   },
   {

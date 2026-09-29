@@ -102,7 +102,9 @@ describe("EndpointPicker · estados de la consulta", () => {
       screen.getByText("No se encontraron operaciones."),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Ajusta la búsqueda o pega el endpointId directamente."),
+      screen.getByText(
+        "Ajusta la búsqueda o pega directamente el identificador de la ruta.",
+      ),
     ).toBeInTheDocument();
   });
 });

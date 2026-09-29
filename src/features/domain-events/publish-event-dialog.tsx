@@ -53,7 +53,7 @@ export function PublishEventDialog({
     try {
       cuerpo = JSON.parse(payload || "{}");
     } catch {
-      setErrorPayload("El payload no es JSON válido.");
+      setErrorPayload("El contenido no es un JSON válido.");
       return;
     }
     setErrorPayload(null);
@@ -82,13 +82,13 @@ export function PublishEventDialog({
           Publicar un evento de dominio
         </h2>
         <p className="text-sm text-atlas-muted">
-          El evento entra en el outbox y lo consumirán sus suscriptores como si
-          lo hubiera publicado el módulo de origen. Queda auditado con el
-          usuario que lo publicó.
+          El evento entra en la cola y lo recibirán sus suscriptores como si lo
+          hubiera publicado el módulo de origen. Queda auditado con el usuario
+          que lo publicó.
         </p>
 
         <Field
-          tooltip="Evento del catálogo registrado que se inyecta en el outbox."
+          tooltip="Evento del catálogo registrado que se añade a la cola de eventos."
           label="Código de evento"
           hint="Sale del catálogo registrado: un código libre no lo consume ningún suscriptor."
         >
@@ -111,7 +111,7 @@ export function PublishEventDialog({
             label="Tipo de agregado"
             hint={
               permitidos.length > 0
-                ? "Los que admite la definición elegida; otro tipo responde EVENT_AGGREGATE_NOT_ALLOWED."
+                ? "Sólo los que admite el evento elegido; otro tipo se rechaza."
                 : "Sobre qué entidad ocurre: customer, loan, partner…"
             }
           >
@@ -148,9 +148,9 @@ export function PublishEventDialog({
         </div>
 
         <Field
-          tooltip="JSON que recibirán los suscriptores del evento."
-          label="Payload"
-          hint="JSON. Es lo que recibirán los suscriptores."
+          tooltip="Los datos, en JSON, que recibirán los suscriptores del evento."
+          label="Contenido del evento"
+          hint="En formato JSON. Es lo que recibirán los suscriptores."
           error={errorPayload ?? undefined}
         >
           <Textarea

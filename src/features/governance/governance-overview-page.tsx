@@ -100,7 +100,10 @@ function GovernanceSummaryTab() {
         {formatNumber(endpoints.total)} rutas del catálogo.
       </p>
       <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Tablas con PII" value={formatNumber(tables.pii)} />
+        <MetricCard
+          label="Tablas con datos personales"
+          value={formatNumber(tables.pii)}
+        />
         <MetricCard
           label="Tablas financieras"
           value={formatNumber(tables.financial)}
@@ -156,7 +159,10 @@ function GovernanceSummaryTab() {
             />
           </CardHeader>
           <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-3">
-            <MetricCard label="PII" value={formatNumber(endpoints.pii)} />
+            <MetricCard
+              label="Con datos personales"
+              value={formatNumber(endpoints.pii)}
+            />
             <MetricCard
               label="Destructivos"
               value={formatNumber(endpoints.destructive)}

@@ -59,7 +59,7 @@ export function SampleNotice({
       <span>
         {KIND_INTENT[kind]} Los campos salen del contrato que publica el
         catálogo (no de las reglas finas del servidor); los datos de persona,
-        del generador del mock con la semilla elegida.
+        del generador de datos de prueba con la semilla elegida.
       </span>
     </p>
   );

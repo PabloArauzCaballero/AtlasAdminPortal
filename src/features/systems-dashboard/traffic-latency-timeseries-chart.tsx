@@ -50,10 +50,11 @@ export function TrafficLatencyTimeseriesChart({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h4 className="text-sm font-semibold text-atlas-text">
-            Serie de tiempo: hits y latencia (p95)
+            Uso y tiempo de respuesta en el tiempo
           </h4>
           <p className="text-xs text-atlas-muted">
-            Barras = requests por bucket · línea = p95 de latencia.
+            Barras: solicitudes en cada tramo · línea: tiempo que no supera el
+            95 % de las respuestas.
           </p>
         </div>
         {active ? (
@@ -80,7 +81,7 @@ export function TrafficLatencyTimeseriesChart({
           height={CHART_HEIGHT}
           viewBox={`0 0 ${width} ${CHART_HEIGHT}`}
           role="img"
-          aria-label="Serie de tiempo de hits y latencia"
+          aria-label="Uso y tiempo de respuesta en el tiempo"
         >
           {buckets.map((bucket, index) => {
             const x = LEFT_PADDING + index * (COLUMN_WIDTH + COLUMN_GAP);
@@ -158,11 +159,11 @@ export function TrafficLatencyTimeseriesChart({
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-atlas-muted">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm bg-atlas-accent/60" />
-          Requests (max {formatNumber(maxHits)})
+          Solicitudes (máx. {formatNumber(maxHits)})
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-0.5 w-3 rounded-full bg-atlas-accent" />
-          p95 latencia (max {formatNumber(maxLatency)} ms)
+          Tiempo de respuesta, 95 % (máx. {formatNumber(maxLatency)} ms)
         </span>
       </div>
     </div>

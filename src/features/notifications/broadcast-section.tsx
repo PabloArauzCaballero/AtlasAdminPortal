@@ -133,7 +133,7 @@ function BroadcastForm() {
               </Field>
               <Field
                 label="Categoría"
-                tooltip="Grupo del aviso para que la app lo filtre. Ej.: system_alert"
+                tooltip="Grupo del aviso para que la app lo filtre. Ej.: avisos del sistema"
               >
                 <Input {...register("category")} />
               </Field>

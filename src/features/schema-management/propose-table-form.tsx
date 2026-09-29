@@ -48,9 +48,9 @@ export function ProposeTableForm({
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Field
-            tooltip="Nombre técnico en snake_case, p. ej. customer_watchlist_entries."
+            tooltip="Nombre técnico de la tabla, en minúsculas y con guion bajo entre palabras."
             label="Nombre de tabla"
-            hint="snake_case, mín. 3 caracteres."
+            hint="Minúsculas, números y guion bajo; mínimo 3 caracteres."
             error={errors.tableName?.message}
           >
             <Input
@@ -69,25 +69,25 @@ export function ProposeTableForm({
               options={[
                 {
                   value: "transactional",
-                  label: "Transactional",
+                  label: "Transaccional",
                   description:
                     "Registra operaciones del negocio que se crean continuamente.",
                 },
                 {
                   value: "catalog",
-                  label: "Catalog",
+                  label: "Catálogo",
                   description:
                     "Valores de referencia que cambian poco, como listas cerradas.",
                 },
                 {
                   value: "audit",
-                  label: "Audit",
+                  label: "Auditoría",
                   description:
                     "Rastro de lo que ocurrió y quién lo hizo, para auditoría.",
                 },
                 {
                   value: "operational",
-                  label: "Operational",
+                  label: "Operativa",
                   description: "Estado de trabajo interno de procesos y colas.",
                 },
               ]}
@@ -97,11 +97,11 @@ export function ProposeTableForm({
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm text-atlas-text">
             <input type="checkbox" {...register("isAppendOnly")} />
-            Append-only
+            Solo se añaden filas
           </label>
           <label className="flex items-center gap-2 text-sm text-atlas-text">
             <input type="checkbox" {...register("isTenantScoped")} />
-            Multi-tenant
+            Separada por organización
           </label>
         </div>
         <Field
@@ -206,8 +206,9 @@ export function ProposeTableForm({
         ) : null}
         {propose.isSuccess ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-            Propuesta registrada (change #{propose.data.changeId}), pendiente de
-            aprobación de otra persona con governance.schema.approve.
+            Propuesta registrada (cambio n.º {propose.data.changeId}), pendiente
+            de que la apruebe otra persona con permiso para aprobar cambios de
+            esquema.
           </div>
         ) : null}
         <div className="flex gap-2">

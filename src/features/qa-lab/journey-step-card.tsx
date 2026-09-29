@@ -73,7 +73,7 @@ export function JourneyStepCard({
       <div className="space-y-3 p-3">
         <div>
           <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-atlas-muted">
-            Endpoint
+            Ruta
           </span>
           <JourneyStepEndpointSelect
             endpointId={step.endpointId}
@@ -119,7 +119,7 @@ export function JourneyStepCard({
           />
           {expanded
             ? "Ocultar avanzado"
-            : "Mostrar avanzado (path/query/payload/extract)"}
+            : "Mostrar avanzado (ruta, consulta, datos y extracción)"}
         </button>
         {expanded ? (
           <StepAdvancedFields step={step} onChange={onChange} />

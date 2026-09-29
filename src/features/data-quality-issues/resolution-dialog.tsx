@@ -94,7 +94,7 @@ export function ResolutionDialog({
               tooltip="Criterio operativo de la decisión, sin datos personales; queda en la auditoría."
               label={`Notas (obligatorio, mínimo ${MIN_RESOLUTION_NOTES_LENGTH} caracteres)`}
               error={errors.notes?.message}
-              hint="Explica criterio operativo sin pegar datos personales. Queda en la auditoría del issue."
+              hint="Explica criterio operativo sin pegar datos personales. Queda en la auditoría de la incidencia."
             >
               <Textarea
                 placeholder="Ejemplo: validado contra fuente primaria."

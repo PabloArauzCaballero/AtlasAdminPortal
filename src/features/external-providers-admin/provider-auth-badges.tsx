@@ -48,10 +48,10 @@ export function CredentialStatusBadge({
 }
 
 const TOKEN_LABELS: Record<AccessTokenStatus, string> = {
-  VALID: "Token vigente",
-  EXPIRING: "Token por renovar",
-  EXPIRED: "Token vencido",
-  NONE: "Sin token",
+  VALID: "Acceso temporal vigente",
+  EXPIRING: "Acceso temporal por renovar",
+  EXPIRED: "Acceso temporal vencido",
+  NONE: "Sin acceso temporal",
   REFRESH_FAILED: "Renovación fallida",
 };
 
@@ -74,9 +74,9 @@ export function TokenStatusBadge({
 }
 
 const METHOD_LABELS: Record<ProviderAuthMethod, string> = {
-  oauth2_client_credentials: "OAuth2 client credentials",
-  jwt_bearer: "Aserción JWT (RFC 7523)",
-  mtls: "mTLS (RFC 8705)",
+  oauth2_client_credentials: "OAuth2 (credenciales de cliente)",
+  jwt_bearer: "Firma JWT",
+  mtls: "Certificado mutuo (mTLS)",
   api_key: "Clave de API",
   none: "Sin autenticación",
 };

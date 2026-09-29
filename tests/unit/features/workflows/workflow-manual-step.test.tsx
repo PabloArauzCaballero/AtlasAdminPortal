@@ -73,7 +73,7 @@ describe("paso del flujo que hace una persona", () => {
 
   it("el detalle no ofrece probar un endpoint que no existe", () => {
     renderWithProviders(<WorkflowStepDetail step={manualStep()} />);
-    expect(screen.getByText(/Sin endpoint/)).toBeInTheDocument();
+    expect(screen.getByText(/Sin operación/)).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Enviar/ }),
     ).not.toBeInTheDocument();

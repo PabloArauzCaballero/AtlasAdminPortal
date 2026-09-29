@@ -56,7 +56,7 @@ export function RecalculateRiskAction({
             href={`/internal/operations/risk-assessments/${recalcular.data.riskAssessmentRunId}`}
             className="font-mono text-xs text-atlas-accent underline"
           >
-            run #{recalcular.data.riskAssessmentRunId}
+            corrida #{recalcular.data.riskAssessmentRunId}
           </Link>
           {recalcular.data.manualReviewCaseId ? (
             <span className="text-atlas-muted">

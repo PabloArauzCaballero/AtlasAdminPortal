@@ -77,7 +77,7 @@ function AuthorizedPaymentClaimsPage() {
             icon={Hourglass}
             label="Pendientes en la cola"
             value={formatNumber(summary.pending)}
-            hint="Toda la cola del tenant, sin filtros."
+            hint="Toda la cola de la organización, sin filtros."
           />
           <MetricCard
             icon={AlarmClock}

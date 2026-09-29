@@ -7,6 +7,8 @@ import { MethodBadge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 import { formatBoolean } from "@/shared/lib/format";
+import { optionLabel } from "@/shared/lib/options";
+import { STEP_INPUT_MODE_OPTIONS } from "./qa-options";
 
 export function buildStepColumns({
   onEdit,
@@ -37,7 +39,7 @@ export function buildStepColumns({
       ),
     },
     {
-      header: "Endpoint",
+      header: "Ruta del catálogo",
       accessorKey: "endpointId",
       cell: ({ row }) => (
         <span className="font-mono text-xs">
@@ -45,7 +47,12 @@ export function buildStepColumns({
         </span>
       ),
     },
-    { header: "Input", accessorKey: "inputMode" },
+    {
+      header: "Datos de entrada",
+      accessorKey: "inputMode",
+      cell: ({ row }) =>
+        optionLabel(STEP_INPUT_MODE_OPTIONS, row.original.inputMode),
+    },
     {
       header: "Continúa",
       accessorKey: "continueOnFailure",

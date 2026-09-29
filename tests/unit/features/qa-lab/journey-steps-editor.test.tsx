@@ -38,7 +38,7 @@ async function switchToJson() {
 
 /**
  * El `<input type="file">` va oculto a propósito: la afordancia es el botón
- * "Cargar payload". No hay query accesible que lo alcance.
+ * "Cargar pasos". No hay query accesible que lo alcance.
  */
 function fileInput(): HTMLInputElement {
   return document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -53,7 +53,7 @@ describe("JourneyStepsEditor · modos de edición", () => {
     renderEditor();
 
     expect(screen.getByRole("listitem")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Cargar payload/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Cargar pasos/ })).toBeNull();
   });
 
   it("se puede alternar a JSON/archivo y volver a la tabla", async () => {
