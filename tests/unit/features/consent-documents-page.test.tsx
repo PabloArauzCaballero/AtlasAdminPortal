@@ -46,6 +46,29 @@ describe("ConsentDocumentsPage", () => {
     permisos = ["governance.policies.manage"];
   });
 
+  it("si la carga falla ofrece reintentar, y reintentar vuelve a pedir la lista", async () => {
+    request
+      .mockRejectedValueOnce(new Error("sin red"))
+      .mockResolvedValue({ items: [document] });
+    renderWithProviders(<ConsentDocumentsPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /reintentar/i }));
+
+    expect(
+      await screen.findByText("Política de privacidad"),
+    ).toBeInTheDocument();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("sin documentos lo dice, en vez de dejar la pantalla en blanco", async () => {
+    request.mockResolvedValue({ items: [] });
+    renderWithProviders(<ConsentDocumentsPage />);
+
+    expect(
+      await screen.findByText("Todavía no hay documentos publicados"),
+    ).toBeInTheDocument();
+  });
+
   it("muestra el estado en palabras, no el código de la base", async () => {
     request.mockResolvedValue({ items: [document] });
     renderWithProviders(<ConsentDocumentsPage />);
