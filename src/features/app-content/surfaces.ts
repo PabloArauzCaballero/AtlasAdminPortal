@@ -9,10 +9,9 @@ export const APP_CONTENT_MANAGE = ["governance.policies.manage"];
  * El estado vacío decía para todas «la app usará sus textos por defecto», y sólo es verdad en dos:
  * la bienvenida y la pantalla de permisos traen su texto de fábrica. Preguntas frecuentes y Ayuda
  * NO: sin piezas publicadas la pantalla de ayuda del cliente sale sin preguntas y sin contacto de
- * soporte. Y Inicio, Perfil y Crédito existen en el catálogo pero la app todavía no las lee: lo que
- * se publique ahí se guarda y ningún cliente lo ve. Decirlo es lo que evita que alguien dé por
- * publicado un texto que nadie va a leer (comprobado contra `getContent(...)` de la app el
- * 2026-09-28: sólo pide `onboarding`, `faq`, `help` y `legal`).
+ * soporte. Y Inicio, Perfil y Crédito se pintan como tarjetas (`SurfaceContent` en la app) desde que la app las
+ * lee; `readByApp` sigue existiendo para avisar si una superficie nueva se añade al catálogo antes
+ * que la app.
  */
 export type SurfaceOption = {
   value: ContentSurface;
@@ -23,9 +22,6 @@ export type SurfaceOption = {
   /** La app pide esta superficie. Si no, lo que se publique no llega a ningún cliente. */
   readByApp: boolean;
 };
-
-const UNREAD =
-  "La app todavía no lee esta pantalla: lo que se publique aquí queda guardado, pero ningún cliente lo verá hasta que la app lo use.";
 
 export const SURFACES: readonly SurfaceOption[] = [
   {
@@ -56,8 +52,9 @@ export const SURFACES: readonly SurfaceOption[] = [
     value: "home",
     label: "Inicio",
     hint: "Avisos y mensajes de la pantalla principal",
-    whenEmpty: UNREAD,
-    readByApp: false,
+    whenEmpty:
+      "Inicio no muestra ningún aviso hasta que se publique aquí la primera pieza. Cada pieza sale como una tarjeta bajo el saludo.",
+    readByApp: true,
   },
   {
     value: "legal",
@@ -71,15 +68,17 @@ export const SURFACES: readonly SurfaceOption[] = [
     value: "profile",
     label: "Perfil",
     hint: "Textos de la pantalla de perfil",
-    whenEmpty: UNREAD,
-    readByApp: false,
+    whenEmpty:
+      "Perfil no muestra ningún texto extra hasta que se publique aquí la primera pieza. Cada pieza sale como una tarjeta arriba del todo.",
+    readByApp: true,
   },
   {
     value: "credit",
     label: "Crédito",
     hint: "Explicaciones de la línea y el puntaje",
-    whenEmpty: UNREAD,
-    readByApp: false,
+    whenEmpty:
+      "Perfil no muestra ninguna explicación de la línea ni del puntaje hasta que se publique aquí la primera pieza. Sale como una tarjeta bajo el puntaje.",
+    readByApp: true,
   },
 ];
 
