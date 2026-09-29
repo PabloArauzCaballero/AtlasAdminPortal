@@ -6,7 +6,9 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { LOAN_RATING_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
-import { buildBacklogColumns, buildGradeColumns } from "./portfolio-columns";
+import { buildGradeColumns } from "./portfolio-columns";
+import { PortfolioBacklog } from "./portfolio-backlog";
+import { RatingScaleCard } from "./rating-scale-card";
 import { EnlaceMotor, EstadoEntrega } from "./portfolio-delivery";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -15,11 +17,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatAmount, formatNumber } from "@/shared/lib/format";
 import { useAuth } from "@/shared/auth/auth-context";
 import { OUTCOME_BACKLOG_ROLES } from "./access";
-import {
-  useExhaustedOutcomes,
-  useOutcomeDeliveryStatus,
-  usePortfolioSummary,
-} from "./hooks";
+import { useOutcomeDeliveryStatus, usePortfolioSummary } from "./hooks";
 import { PortfolioRerate } from "./portfolio-rerate";
 
 /**
@@ -53,12 +51,9 @@ function AuthorizedPortfolioPage() {
   const veBacklog = hasAnyRole(OUTCOME_BACKLOG_ROLES);
   const resumen = usePortfolioSummary();
   const entrega = useOutcomeDeliveryStatus();
-  const backlog = useExhaustedOutcomes(100, veBacklog);
 
   const grades = useMemo(() => resumen.data?.grades ?? [], [resumen.data]);
-  const pendientes = useMemo(() => backlog.data?.items ?? [], [backlog.data]);
   const columnasGrado = useMemo(() => buildGradeColumns(), []);
-  const columnasBacklog = useMemo(() => buildBacklogColumns(), []);
 
   return (
     <>
@@ -159,46 +154,8 @@ function AuthorizedPortfolioPage() {
           {entrega.data ? <EstadoEntrega estado={entrega.data} /> : null}
         </Card>
 
-        <Card className="p-5">
-          <h2 className="mb-1 text-base font-semibold text-atlas-text">
-            Desenlaces que agotaron reintentos
-          </h2>
-          <p className="mb-4 text-sm text-atlas-muted">
-            Cada fila es una decisión de la que el Motor nunca supo el
-            resultado. No se reintentan solos: hay que arreglar la causa y
-            volver a entregar desde Jobs › Ejecutar ahora.
-          </p>
-          {!veBacklog ? (
-            <p className="text-sm text-atlas-muted">
-              Esta lista sólo la ven Análisis de riesgo y Administración. El
-              número de agotados de arriba sí es el de toda la cartera.
-            </p>
-          ) : null}
-          {veBacklog && backlog.isLoading ? <LoadingSkeleton rows={3} /> : null}
-          {backlog.error ? (
-            <ErrorState
-              description={
-                isAtlasApiError(backlog.error)
-                  ? backlog.error.message
-                  : "No se pudo leer la lista de desenlaces agotados."
-              }
-              requestId={
-                isAtlasApiError(backlog.error)
-                  ? backlog.error.requestId
-                  : undefined
-              }
-              onRetry={() => void backlog.refetch()}
-            />
-          ) : null}
-          {backlog.data ? (
-            <DataTable
-              data={pendientes}
-              columns={columnasBacklog}
-              emptyTitle="Ningún desenlace agotó sus reintentos."
-              emptyDescription="El Motor está recibiendo las observaciones de cosecha."
-            />
-          ) : null}
-        </Card>
+        <PortfolioBacklog visible={veBacklog} />
+        <RatingScaleCard />
       </section>
     </>
   );

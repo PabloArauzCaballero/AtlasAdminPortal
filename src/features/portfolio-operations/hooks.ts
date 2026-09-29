@@ -1,6 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import type { QueryParams } from "@/shared/api/types";
 import {
   getOutcomeDeliveryStatus,
   getPortfolioSummary,
@@ -27,11 +33,12 @@ export function useOutcomeDeliveryStatus() {
 }
 
 /** `enabled: false` para quien el backend no deja leer la lista: no se pide para recibir un 403. */
-export function useExhaustedOutcomes(limit: number, enabled = true) {
+export function useExhaustedOutcomes(query: QueryParams, enabled = true) {
   return useQuery({
-    queryKey: [...RAIZ, "backlog", limit],
-    queryFn: () => listExhaustedOutcomes(limit),
+    queryKey: [...RAIZ, "backlog", query],
+    queryFn: () => listExhaustedOutcomes(query),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 

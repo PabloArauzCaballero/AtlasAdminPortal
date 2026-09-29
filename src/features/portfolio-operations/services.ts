@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import type { QueryParams } from "@/shared/api/types";
 import type {
   CustomerRatingResult,
   ExhaustedOutcomeList,
@@ -43,8 +44,9 @@ export function getOutcomeDeliveryStatus() {
   return apiRequest<OutcomeDeliveryStatus>("/operations/loans/outcome-status");
 }
 
-export function listExhaustedOutcomes(limit: number) {
+/** Una página de los desenlaces agotados; `loanId` acota a un préstamo. */
+export function listExhaustedOutcomes(query: QueryParams) {
   return apiRequest<ExhaustedOutcomeList>("/operations/loans/outcome-backlog", {
-    query: { limit },
+    query,
   });
 }

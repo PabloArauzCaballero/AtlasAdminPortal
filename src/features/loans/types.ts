@@ -17,6 +17,8 @@ export type LoanSummary = {
   loanId: string;
   loanCode: string;
   customerId: string;
+  /** Sólo en la cartera para el personal (`GET /operations/loans`); `null`/ausente fuera de ella. */
+  customerCode?: string | null;
   creditApplicationId: string | null;
   currencyCode: string;
   principalAmount: string;

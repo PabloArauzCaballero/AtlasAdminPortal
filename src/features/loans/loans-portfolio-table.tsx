@@ -5,6 +5,7 @@ import { LOAN_READ_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { useAuth } from "@/shared/auth/auth-context";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
 import { Card } from "@/shared/components/ui/card";
 import { LoadingSkeleton } from "@/shared/components/ui/states";
 import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
@@ -19,8 +20,8 @@ const POR_PAGINA = 25;
 /**
  * La cartera entera, paginada y filtrada EN EL SERVIDOR (`GET /operations/loans`).
  *
- * El código se busca EXACTO (el servidor no busca por parte) y con retardo: cada tecla sería una
- * consulta a la base. Cambiar un filtro
+ * El buscador manda `q`: parte del código del préstamo o del código del cliente (antes el código
+ * se buscaba EXACTO y completo), con retardo para no consultar la base por tecla. Cambiar un filtro
  * vuelve a la página 1, porque la página 7 de otro filtro no significa nada.
  *
  * Cumplimiento puede listar la cartera pero NO abrir la ficha (`GET /loans/:id` no lo admite), así
@@ -38,12 +39,15 @@ export function LoansPortfolioTable() {
   const cartera = usePortfolioLoans({
     status: status || undefined,
     delinquencyBucket: tramo || undefined,
-    loanCode: codigoBuscado || undefined,
+    q: codigoBuscado || undefined,
     page,
     pageSize: POR_PAGINA,
   });
   const columnas = useMemo(
-    () => buildLoanColumns({ conCliente: true, conAbrir: puedeAbrir }),
+    () =>
+      withoutClientSorting(
+        buildLoanColumns({ conCliente: true, conAbrir: puedeAbrir }),
+      ),
     [puedeAbrir],
   );
   const data = cartera.data;
@@ -66,8 +70,8 @@ export function LoansPortfolioTable() {
       </p>
       <FilterBar
         search={codigo}
-        searchPlaceholder="Buscar por código de préstamo…"
-        searchTooltip="El código COMPLETO, tal como sale en la ficha: la búsqueda es exacta, no por parte. Ej.: LOAN-7F3A."
+        searchPlaceholder="Código de préstamo o de cliente…"
+        searchTooltip="Parte del código del préstamo (LOAN-7F…) o del cliente (CUS-…), sin distinguir mayúsculas. Con sólo dígitos también encuentra el número interno del préstamo o del cliente."
         filters={[
           {
             name: "status",
@@ -124,7 +128,7 @@ export function LoansPortfolioTable() {
           }}
           onPageChange={setPage}
           emptyTitle="Ningún préstamo con estos filtros."
-          emptyDescription="Quita un filtro, o revisa el código: se busca completo y exacto."
+          emptyDescription="Quita un filtro o acorta la búsqueda: busca por parte del código del préstamo o del cliente."
         />
       ) : null}
     </Card>
