@@ -1,30 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { useAuth } from "@/shared/auth/auth-context";
-import { Pagination } from "@/shared/components/data-table/pagination";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
+import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Textarea } from "@/shared/components/ui/input";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingSkeleton,
-} from "@/shared/components/ui/states";
-import { formatDateTime, safeText } from "@/shared/lib/format";
-import {
-  usePartnerQrImage,
-  useQrPendingReview,
-  useReviewPartnerQrMutation,
-} from "./hooks";
-import {
-  onboardingStatusLabel,
-  partnerActionErrorMessage,
-  qrKindLabel,
-} from "./labels";
+import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { formatNumber } from "@/shared/lib/format";
+import { useQrPendingReview } from "./hooks";
+import { PartnerQrDialog } from "./partner-qr-dialog";
+import { buildQrColumns, TIPO_QR_OPTIONS } from "./partner-qr-columns";
 import type { PartnerQrPending } from "./types";
+
+const QR_POR_PAGINA = 10;
 
 /**
  * La cola de QR de cobro esperando revisión.
@@ -32,21 +22,32 @@ import type { PartnerQrPending } from "./types";
  * Un QR de cobro dice a qué cuenta transfieren los clientes de un comercio. Nace en
  * `pending_review` y hasta que alguien lo aprueba aquí la app NO lo enseña: hasta el 2026-09-14 no
  * existía esta pantalla y ningún QR salía nunca de «pendiente», así que el cliente veía un código
- * que nadie había mirado. Se pinta la IMAGEN —por blob, con la sesión— porque decidir sobre una
- * cuenta de cobro mirando sólo el hash es firmar sin haber visto.
+ * que nadie había mirado.
  *
- * Los botones sólo aparecen con `partner.qr.review` (MERCHANT_OPERATIONS): el backend responde 403
- * sin él, y una promesa que termina en 403 no es una promesa. El aviso para quien no lo tiene va
- * en palabras, sin el código del permiso.
+ * Es una tabla —un QR por fila, con el comercio, la sucursal, la cuenta y la huella— y la IMAGEN se
+ * ve al pulsar «Revisar», junto a las decisiones (`PartnerQrDialog`): una tarjeta con imagen por
+ * cada fila descargaba todas las imágenes a la vez y no dejaba buscar ni filtrar. La búsqueda, el
+ * filtro por tipo y la paginación son del servidor; las cifras salen de su `summary`, de la cola
+ * entera, y no cambian al buscar.
  */
-const QR_POR_PAGINA = 10;
-
 export function PartnerQrReviewQueue() {
-  // Por páginas: antes llegaban TODOS los pendientes y cada tarjeta descargaba su imagen a la vez.
+  const [q, setQ] = useState("");
+  const [qrKind, setQrKind] = useState("");
   const [page, setPage] = useState(1);
-  const cola = useQrPendingReview({ page, limit: QR_POR_PAGINA });
-  const items = cola.data?.items ?? [];
-  const meta = cola.data?.meta;
+  const [abierto, setAbierto] = useState<PartnerQrPending | null>(null);
+  const cola = useQrPendingReview({
+    page,
+    limit: QR_POR_PAGINA,
+    q: q.trim() || undefined,
+    qrKind: qrKind || undefined,
+  });
+  const items = useMemo(() => cola.data?.items ?? [], [cola.data]);
+  const columns = useMemo(
+    () => withoutClientSorting(buildQrColumns(setAbierto)),
+    [],
+  );
+  const resumen = cola.data?.summary;
+  const filtrando = Boolean(q.trim() || qrKind);
 
   return (
     <Card className="p-5">
@@ -54,10 +55,55 @@ export function PartnerQrReviewQueue() {
         QR de cobro esperando revisión
       </h2>
       <p className="mb-4 text-sm text-atlas-muted">
-        Cada imagen es el código con el que un comercio pide que le transfieran.
-        Hasta que se aprueba, la app del cliente no lo enseña. Rechazar exige
-        una nota: es lo único que le dice al comercio qué corregir.
+        Cada fila es el código con el que un comercio pide que le transfieran.
+        Hasta que se aprueba, la app del cliente no lo enseña. «Revisar» abre la
+        imagen y las decisiones; rechazar exige una nota: es lo único que le
+        dice al comercio qué corregir.
       </p>
+      {resumen ? (
+        <section className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <MetricCard
+            label="QR esperando"
+            value={formatNumber(resumen.total)}
+          />
+          <MetricCard
+            label="Del negocio"
+            value={formatNumber(resumen.business)}
+          />
+          <MetricCard
+            label="De cuenta bancaria"
+            value={formatNumber(resumen.bank)}
+          />
+        </section>
+      ) : null}
+      <FilterBar
+        search={q}
+        searchPlaceholder="Comercio, NIT, sucursal, cuenta o n.º de QR…"
+        searchTooltip="Busca en el servidor, en toda la cola: coincide con parte del nombre legal o comercial del comercio, su NIT, el nombre, código o ciudad de la sucursal, la entidad, la cuenta enmascarada, la huella del archivo y el número del QR o del comercio."
+        filters={[
+          {
+            name: "qrKind",
+            label: "Tipo de QR",
+            value: qrKind,
+            options: TIPO_QR_OPTIONS,
+            tooltip:
+              "Sólo los QR del negocio o sólo los de una cuenta bancaria.",
+          },
+        ]}
+        onSearchChange={(valor) => {
+          setQ(valor);
+          setPage(1);
+        }}
+        onFilterChange={(_nombre, valor) => {
+          setQrKind(valor);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setQrKind("");
+          setPage(1);
+        }}
+      />
       {cola.isLoading ? <LoadingSkeleton rows={3} /> : null}
       {cola.error ? (
         <ErrorState
@@ -72,158 +118,27 @@ export function PartnerQrReviewQueue() {
           onRetry={() => void cola.refetch()}
         />
       ) : null}
-      {cola.data && items.length === 0 ? (
-        <EmptyState
-          title="No hay QR esperando revisión."
-          description="Cuando un comercio suba o cambie su QR de cobro, aparecerá aquí."
+      {cola.data ? (
+        <DataTable
+          data={items}
+          columns={columns}
+          meta={cola.data.meta}
+          onPageChange={setPage}
+          emptyTitle={
+            filtrando
+              ? "Ningún QR esperando revisión coincide con la búsqueda."
+              : "No hay QR esperando revisión."
+          }
+          emptyDescription={
+            filtrando
+              ? "Cambia o borra el texto y el filtro."
+              : "Cuando un comercio suba o cambie su QR de cobro, aparecerá aquí."
+          }
         />
       ) : null}
-      {items.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {items.map((qr) => (
-            <li key={qr.qrId}>
-              <QrPendingCard qr={qr} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {meta && meta.totalPages > 1 ? (
-        <div className="mt-4">
-          <Pagination meta={meta} onPageChange={setPage} />
-        </div>
+      {abierto ? (
+        <PartnerQrDialog qr={abierto} onClose={() => setAbierto(null)} />
       ) : null}
     </Card>
-  );
-}
-
-function QrPendingCard({ qr }: Readonly<{ qr: PartnerQrPending }>) {
-  const { hasPermission } = useAuth();
-  const puedeRevisar = hasPermission("partner.qr.review");
-  const revisar = useReviewPartnerQrMutation();
-  const imagen = usePartnerQrImage(qr.partnerId, qr.qrId);
-  const [nota, setNota] = useState("");
-  const [pendiente, setPendiente] = useState<"aprobar" | "rechazar" | null>(
-    null,
-  );
-  const nombre = safeText(qr.partner?.tradeName ?? qr.partner?.legalName);
-  const tipo = qrKindLabel(qr.qrKind);
-
-  return (
-    <article
-      className="rounded-xl border border-slate-200 bg-white p-4"
-      data-testid={`qr-pendiente-${qr.qrId}`}
-    >
-      <header className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-atlas-text">{nombre}</h3>
-          <p className="text-xs text-atlas-muted">
-            {tipo}
-            {qr.partner
-              ? ` · comercio ${onboardingStatusLabel(qr.partner.onboardingStatus).toLowerCase()}`
-              : ""}
-          </p>
-        </div>
-        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
-          pendiente
-        </span>
-      </header>
-
-      <div className="mb-3 flex justify-center rounded-lg border border-dashed border-slate-200 bg-atlas-soft p-3">
-        {imagen.isLoading ? <LoadingSkeleton rows={2} /> : null}
-        {imagen.url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- es un blob local con la sesión puesta; next/image no puede cargarlo
-          <img
-            src={imagen.url}
-            alt={`${tipo} de ${nombre}`}
-            className="max-h-56 w-auto"
-          />
-        ) : null}
-        {imagen.error ? (
-          <p className="text-xs text-red-700">
-            No se pudo cargar la imagen del QR.
-          </p>
-        ) : null}
-      </div>
-
-      <dl className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <dt className="text-atlas-muted">Entidad</dt>
-        <dd className="font-mono">{qr.bankInstitutionCode ?? "—"}</dd>
-        <dt className="text-atlas-muted">Cuenta</dt>
-        <dd className="font-mono">{qr.accountNumberMasked ?? "—"}</dd>
-        <dt className="text-atlas-muted">Huella del archivo</dt>
-        <dd className="font-mono">{qr.fingerprint}</dd>
-        <dt className="text-atlas-muted">Subido</dt>
-        <dd>{formatDateTime(qr.createdAt)}</dd>
-        <dt className="text-atlas-muted">N.º de comercio</dt>
-        <dd className="select-all font-mono">{qr.partnerId}</dd>
-      </dl>
-
-      {puedeRevisar ? (
-        <div className="space-y-2">
-          <Field
-            tooltip="Explicación que lee el comercio; obligatoria si rechazas su QR."
-            label="Nota para el comercio"
-            hint="Obligatoria para rechazar: es lo que el comercio lee para corregir."
-          >
-            <Textarea
-              rows={2}
-              value={nota}
-              onChange={(evento) => setNota(evento.target.value)}
-            />
-          </Field>
-          <div className="flex gap-2">
-            <Button variant="primary" onClick={() => setPendiente("aprobar")}>
-              Aprobar QR
-            </Button>
-            <Button
-              variant="danger"
-              disabled={nota.trim().length < 3}
-              onClick={() => setPendiente("rechazar")}
-            >
-              Rechazar QR
-            </Button>
-          </div>
-          {revisar.error ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {partnerActionErrorMessage(
-                revisar.error,
-                "No se pudo revisar el QR.",
-              )}
-            </p>
-          ) : null}
-        </div>
-      ) : (
-        <p className="text-xs text-atlas-muted">
-          Tu usuario no puede aprobar ni rechazar QR de cobro: lo hace el equipo
-          de Operaciones de comercios.
-        </p>
-      )}
-
-      <ConfirmDialog
-        open={pendiente !== null}
-        title={pendiente === "aprobar" ? "Aprobar el QR" : "Rechazar el QR"}
-        description={
-          pendiente === "aprobar"
-            ? "Desde ahora los clientes de este comercio verán este código al pagar. Si había otro activo, queda archivado."
-            : "El comercio verá la nota y tendrá que subir otra imagen."
-        }
-        confirmText={pendiente === "aprobar" ? "Aprobar" : "Rechazar"}
-        isLoading={revisar.isPending}
-        onCancel={() => setPendiente(null)}
-        onConfirm={() => {
-          const aprobado = pendiente === "aprobar";
-          void revisar
-            .mutateAsync({
-              partnerId: qr.partnerId,
-              qrId: qr.qrId,
-              approved: aprobado,
-              ...(nota.trim() ? { note: nota.trim() } : {}),
-            })
-            .then(() => setPendiente(null))
-            // En error el diálogo se cierra y el motivo queda pintado bajo los botones.
-            .catch(() => setPendiente(null));
-        }}
-      />
-    </article>
   );
 }
