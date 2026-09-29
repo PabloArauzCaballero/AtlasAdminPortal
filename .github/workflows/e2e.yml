@@ -78,7 +78,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: PabloArauzCaballero/AtlasBackend
-          ref: def7e44f1bd76c20936fa66ad085e36d4f89c317
+          ref: 452ec8769b4da8615367a7f4bd5cb20188c063e3
           path: qa-backend
           persist-credentials: false
 
