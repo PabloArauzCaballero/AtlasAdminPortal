@@ -121,7 +121,7 @@ export async function runJourney(
         url: "",
         passed: false,
         extracted: {},
-        skipped: `No se encontró el endpoint #${step.endpointId} en el catálogo.`,
+        skipped: `No se encontró la ruta #${step.endpointId} en el catálogo.`,
       });
       continue;
     }

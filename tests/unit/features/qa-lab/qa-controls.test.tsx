@@ -211,7 +211,7 @@ describe("QaScenarioControls · escenario y credencial", () => {
 
     await userEvent.click(
       screen.getByRole("checkbox", {
-        name: "Enviar la cabecera de empresa (x-tenant-id)",
+        name: "Enviar la cabecera de empresa",
       }),
     );
 

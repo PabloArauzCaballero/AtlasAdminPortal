@@ -72,7 +72,7 @@ export function CatalogItemDetailDrawer({
   onClose,
 }: Readonly<{ item: ContextItem; onClose: () => void }>) {
   return (
-    <DrawerPanel open title={`Item ${item.itemCode}`} onClose={onClose}>
+    <DrawerPanel open title={`Elemento ${item.itemCode}`} onClose={onClose}>
       <div className="space-y-6">
         <KeyValueGrid
           items={[
@@ -88,36 +88,36 @@ export function CatalogItemDetailDrawer({
         <section>
           <SectionHeader
             title="Atributos"
-            description="Payload JSON libre que el item aporta a las reglas."
+            description="Datos extra que este elemento aporta a las reglas."
           />
           <JsonViewer value={item.attributes} />
         </section>
 
         <SectionTable
           title="Alias"
-          description="Formas alternativas con las que el motor reconoce este item."
+          description="Formas alternativas con las que el motor reconoce este elemento."
           data={item.aliases}
           columns={COLUMNAS_ALIAS}
           searchText={(alias) =>
             `${alias.aliasValue} ${alias.aliasType} ${alias.normalizedAlias}`
           }
           searchPlaceholder="Buscar alias…"
-          searchTooltip="Recorre todos los alias del item, que llegan enteros con él: coincide con parte del valor, del tipo o del valor normalizado."
-          emptyTitle="El item no tiene alias registrados."
+          searchTooltip="Recorre todos los alias del elemento, que llegan enteros con él: coincide con parte del valor, del tipo o del valor normalizado."
+          emptyTitle="El elemento no tiene alias registrados."
           emptyDescription="Añade alias creando una versión nueva del catálogo."
         />
 
         <SectionTable
           title="Mapeos de riesgo"
-          description="Cuánto pesa este item en cada dimensión de riesgo y con qué motivo."
+          description="Cuánto pesa este elemento en cada dimensión de riesgo y con qué motivo."
           data={item.riskMappings}
           columns={COLUMNAS_MAPEOS}
           searchText={(mapping) =>
             `${mapping.riskDimension} ${mapping.riskBand} ${mapping.reasonCode} ${mapping.modelUsage ?? ""} ${mapping.explanation ?? ""}`
           }
           searchPlaceholder="Buscar mapeo de riesgo…"
-          searchTooltip="Recorre todos los mapeos del item, que llegan enteros con él: coincide con parte de la dimensión, la banda, el motivo, el uso o la explicación."
-          emptyTitle="El item no tiene mapeos de riesgo."
+          searchTooltip="Recorre todos los mapeos del elemento, que llegan enteros con él: coincide con parte de la dimensión, la banda, el motivo, el uso o la explicación."
+          emptyTitle="El elemento no tiene mapeos de riesgo."
           emptyDescription="Añade mapeos creando una versión nueva del catálogo."
         />
       </div>

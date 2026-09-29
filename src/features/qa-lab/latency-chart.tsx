@@ -12,7 +12,7 @@ const BAR_MAX_HEIGHT = 46;
 
 export function StressLatencyChart({
   points,
-  title = "Evolución de latencia y hits durante el stress",
+  title = "Evolución de latencia y peticiones durante la carga",
   caption = "Cada punto agrupa las solicitudes terminadas por segundo.",
   emptyText = "Sin datos todavía.",
   secondLabel = (second: number) => `seg. ${second}`,

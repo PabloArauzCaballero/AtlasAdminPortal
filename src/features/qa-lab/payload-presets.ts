@@ -39,7 +39,7 @@ export const QA_PAYLOAD_PRESETS: QaPayloadPreset[] = [
     },
     expectedStatusCodes: "401",
     notes:
-      "El correo y el PIN son generados, así que esa cuenta no existe: lo correcto es 401 (credenciales inválidas). Para entrar de verdad cambia el correo y el PIN por los de una cuenta que exista en el entorno; ninguna semilla del repositorio crea una cuenta de cliente de demostración.",
+      "El correo y el PIN son generados, así que esa cuenta no existe: lo correcto es 401 (credenciales inválidas). Para entrar de verdad cambia el correo y el PIN por los de una cuenta que exista en el entorno; no hay ninguna cuenta de cliente de demostración cargada de antemano.",
   },
   {
     method: "POST",
@@ -78,7 +78,7 @@ export const QA_PAYLOAD_PRESETS: QaPayloadPreset[] = [
     },
     expectedStatusCodes: "200, 201",
     notes:
-      "Crea un cliente: con una semilla con nombre la segunda vez responderá que ya existe; usa «Personas nuevas». El PIN es de 4 dígitos (así lo pide el alta). consentDocumentId tiene que ser un documento de consentimiento vigente del entorno; si responde que no existe, cámbialo.",
+      "Crea un cliente: con una semilla con nombre la segunda vez responderá que ya existe; usa «Personas nuevas». El PIN es de 4 dígitos (así lo pide el alta). El campo consentDocumentId tiene que ser un documento de consentimiento vigente del entorno; si responde que no existe, cámbialo.",
   },
   {
     method: "POST",

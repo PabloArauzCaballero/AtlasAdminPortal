@@ -32,7 +32,7 @@ export function SessionInvestigationPage({
         icon={Fingerprint}
         eyebrow="Operaciones"
         title={`Investigación de la sesión #${sessionId}`}
-        description="¿Esta sesión es legítima? Señales de fraude, dispositivo, red, autenticación y actividad — todo lo que el backend registró sobre esta sesión."
+        description="¿Esta sesión es legítima? Señales de fraude, dispositivo, red, autenticación y actividad — todo lo que el sistema registró sobre esta sesión."
         actions={
           summary.data ? (
             <StatusBadge value={summary.data.session.status} />
@@ -41,7 +41,7 @@ export function SessionInvestigationPage({
       />
       <BusinessContextNote>
         Esta vista solo lee. Por privacidad, las capturas de GPS informan
-        únicamente si hubo coordenadas: el backend nunca devuelve latitud ni
+        únicamente si hubo coordenadas: el sistema nunca entrega latitud ni
         longitud, así que el portal no puede ubicar al cliente en un mapa.
       </BusinessContextNote>
       {summary.isLoading ? <LoadingSkeleton rows={6} /> : null}

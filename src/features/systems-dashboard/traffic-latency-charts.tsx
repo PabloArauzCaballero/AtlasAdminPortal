@@ -45,8 +45,8 @@ export function TrafficLatencyCharts({
   return (
     <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
       <ChartCard
-        title="Hits por endpoint"
-        subtitle="Top 10 rutas por cantidad de requests en la ventana."
+        title="Uso por operación"
+        subtitle="Las 10 rutas con más solicitudes en el periodo."
       >
         <ul className="space-y-2">
           {topByHits.map((route) => (
@@ -73,8 +73,8 @@ export function TrafficLatencyCharts({
       </ChartCard>
 
       <ChartCard
-        title="Latencia por endpoint"
-        subtitle="Top 8 rutas por p95. Barra clara = p95, barra oscura = promedio."
+        title="Tiempo de respuesta por operación"
+        subtitle="Las 8 rutas más lentas. Barra clara: tiempo que no supera el 95 % de las respuestas; barra oscura: promedio."
       >
         <ul className="space-y-3">
           {topByLatency.map((route) => {

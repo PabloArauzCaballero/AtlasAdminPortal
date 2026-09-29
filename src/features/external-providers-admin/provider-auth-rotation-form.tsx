@@ -60,7 +60,7 @@ export function RotationForm({
         </Field>
       </div>
       <Field
-        tooltip="El valor secreto nuevo, que se envía al broker de credenciales."
+        tooltip="El valor secreto nuevo, que se envía al servicio de credenciales."
         label="Material nuevo"
       >
         <Input
@@ -68,15 +68,14 @@ export function RotationForm({
           autoComplete="off"
           value={material}
           onChange={(event) => setMaterial(event.target.value)}
-          placeholder="Se envía al broker, que lo sella. No se guarda en el backend."
+          placeholder="Se envía al servicio de credenciales, que lo cifra. No se guarda aquí."
         />
       </Field>
       <p className="text-xs text-atlas-muted">
-        El material viaja al{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>, que lo
-        cifra y descarta el token cacheado del proveedor. El backend no lo
-        persiste y la respuesta solo devuelve su huella: no podrá volver a
-        consultarse desde aquí.
+        El material viaja al servicio de credenciales, que lo cifra y descarta
+        el acceso temporal guardado del proveedor. El sistema no lo guarda y la
+        respuesta solo devuelve su huella: no podrá volver a consultarse desde
+        aquí.
       </p>
       {rotate.error ? (
         <ErrorState
@@ -107,7 +106,7 @@ export function RotationForm({
       <ConfirmDialog
         open={confirming}
         title={`Rotar ${field} de ${state.providerCode}`}
-        description="El proveedor pasará a autenticarse con el material nuevo de inmediato: el token vigente se descarta. Si el material es incorrecto, las llamadas a este proveedor fallarán hasta corregirlo."
+        description="El proveedor pasará a autenticarse con el material nuevo de inmediato: el acceso temporal vigente se descarta. Si el material es incorrecto, las llamadas a este proveedor fallarán hasta corregirlo."
         confirmText="Rotar ahora"
         isLoading={rotate.isPending}
         onCancel={() => setConfirming(false)}

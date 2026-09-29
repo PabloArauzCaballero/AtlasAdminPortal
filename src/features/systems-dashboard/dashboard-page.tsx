@@ -158,7 +158,7 @@ function AuthorizedDashboardPage() {
               <QuickAccessLink
                 icon={GitBranch}
                 href="/internal/systems/endpoints"
-                label="Ver endpoints"
+                label="Ver operaciones"
               />
               <QuickAccessLink
                 icon={Database}
@@ -168,7 +168,7 @@ function AuthorizedDashboardPage() {
               <QuickAccessLink
                 icon={FolderTree}
                 href="/internal/lineage"
-                label="Ver lineage"
+                label="Ver linaje"
               />
               <QuickAccessLink
                 icon={Shield}
@@ -183,12 +183,12 @@ function AuthorizedDashboardPage() {
               <QuickAccessLink
                 icon={FileCheck2}
                 href="/internal/release-readiness"
-                label="Readiness Release"
+                label="Preparación de salida"
               />
               <QuickAccessLink
                 icon={TestTube2}
                 href="/internal/qa/suites"
-                label="Ver suites QA"
+                label="Ver baterías de prueba"
               />
               <QuickAccessLink
                 icon={ScrollText}

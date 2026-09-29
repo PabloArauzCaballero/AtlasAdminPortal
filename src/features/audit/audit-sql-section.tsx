@@ -48,7 +48,7 @@ export function AuditSqlSection() {
         cell: ({ row }) => formatDateTime(row.original.occurredAt),
       },
       {
-        header: "Request ID",
+        header: "Código de referencia",
         accessorKey: "requestId",
         cell: ({ row }) => (
           <Link
@@ -81,13 +81,13 @@ export function AuditSqlSection() {
         cell: ({ row }) => <ModuleBadge value={row.original.module} />,
       },
       {
-        header: "Actor",
+        header: "Quién",
         accessorKey: "actorRole",
         cell: ({ row }) =>
           row.original.actorRole ?? row.original.actorType ?? "—",
       },
       {
-        header: "Status",
+        header: "Resultado",
         accessorKey: "responseStatusCode",
         cell: ({ row }) => (
           <StatusBadge
@@ -110,7 +110,7 @@ export function AuditSqlSection() {
         cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
       },
       {
-        header: "PII",
+        header: "Datos personales",
         accessorKey: "containsPii",
         cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
       },
@@ -135,7 +135,7 @@ export function AuditSqlSection() {
       {catalogo.error ? (
         <p role="status" className="mb-3 text-xs text-amber-800">
           No se pudieron cargar todos los filtros; por ahora solo puedes buscar
-          por Request ID.
+          por código de referencia.
         </p>
       ) : null}
       {logs.isLoading ? <LoadingSkeleton rows={8} /> : null}

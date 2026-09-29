@@ -109,7 +109,7 @@ export function RiskAssessmentDetailPage({
           />
           <SectionHeader
             title="Traza de auditoría"
-            description="Los datos crudos que respaldan la decisión: corrida, resultado, reglas, contribuciones y snapshot de features."
+            description="Los datos crudos que respaldan la decisión: corrida, resultado, reglas, aportes y foto de los indicadores."
           />
           <AuditTrailTabs detail={detail.data} />
         </>

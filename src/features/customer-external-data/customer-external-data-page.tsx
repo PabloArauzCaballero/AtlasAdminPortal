@@ -63,9 +63,9 @@ function AuthorizedCustomerExternalDataPage() {
 
       <Card className="mb-6 p-5">
         <Field
-          tooltip="El customerId interno del cliente cuyos datos externos quieres ver."
+          tooltip="El número interno del cliente cuyos datos externos quieres ver."
           label="Identificador del cliente"
-          hint="El customerId interno."
+          hint="El número interno del cliente en Atlas."
         >
           <div className="flex gap-2">
             <Input

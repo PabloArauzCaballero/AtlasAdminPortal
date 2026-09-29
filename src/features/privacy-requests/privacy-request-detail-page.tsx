@@ -60,7 +60,7 @@ function AuthorizedDetail({ requestId }: Readonly<{ requestId: string }>) {
           description={
             isAtlasApiError(detalle.error)
               ? detalle.error.status === 404
-                ? "Esta solicitud no existe en este tenant."
+                ? "Esta solicitud no existe en esta organización."
                 : detalle.error.message
               : "No se pudo cargar la solicitud."
           }

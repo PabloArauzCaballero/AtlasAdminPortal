@@ -147,7 +147,7 @@ export function MongoLogsSection() {
           onClick={() => upload.fileInputRef.current?.click()}
         >
           <Upload className="h-4 w-4" aria-hidden />
-          Cargar Archivo.log
+          Cargar archivo de registro
         </Button>
         <Button
           variant="ghost"
@@ -197,10 +197,10 @@ export function MongoLogsSection() {
       {logs.data && view === "terminal" ? (
         <>
           <LogTerminal
-            title="atlas-backend — Archivo.log › mongo"
+            title="Registro técnico del sistema"
             lines={terminalLines}
             live={live}
-            emptyText="Sin logs sincronizados en MongoDB para el filtro aplicado."
+            emptyText="No hay registros para este filtro."
           />
           {/* La vista terminal enseña la misma página que la tabla: sin esto, lo que pasaba de la
               primera página sólo se alcanzaba cambiando a «Tabla». */}
@@ -213,7 +213,7 @@ export function MongoLogsSection() {
           columns={columns}
           meta={logs.data.meta}
           onPageChange={setPage}
-          emptyTitle="Sin logs registrados en MongoDB para el filtro aplicado."
+          emptyTitle="No hay registros para este filtro."
         />
       ) : null}
     </div>
@@ -271,12 +271,12 @@ function MongoLogsError({
     <ErrorState
       title={
         notConfigured
-          ? "La sincronización de logs a MongoDB está apagada."
-          : "No se pudieron cargar los logs de MongoDB."
+          ? "El registro técnico no está disponible en este ambiente."
+          : "No se pudo cargar el registro técnico."
       }
       description={
         notConfigured
-          ? "El backend responde 503 MONGO_LOGS_NOT_CONFIGURED: sin MONGO_DB_URL_CONNECTION no hay colección que leer. Levanta el stack con `docker compose --profile app --profile logs up -d`. Mientras tanto, puedes cargar un Archivo.log a mano con el botón de arriba."
+          ? "El equipo técnico no lo ha activado aquí. Mientras tanto, puedes cargar un archivo de registro a mano con el botón de arriba."
           : (apiError?.message ?? "Error desconocido.")
       }
       requestId={apiError?.requestId}

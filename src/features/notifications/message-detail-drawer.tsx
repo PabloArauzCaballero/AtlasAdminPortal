@@ -135,7 +135,7 @@ export function MessageDetailDrawer({
             />
           ) : null}
           <DeliveriesSection deliveries={data.deliveries} />
-          <JsonViewer title="Payload" value={data.payload} />
+          <JsonViewer title="Datos del mensaje" value={data.payload} />
         </div>
       ) : null}
       <ConfirmDialog

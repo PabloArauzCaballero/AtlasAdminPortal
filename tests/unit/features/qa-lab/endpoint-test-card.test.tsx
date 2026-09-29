@@ -324,7 +324,7 @@ describe("EndpointTestCard · resultado", () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.getByRole("link", { name: "Descargar logs Pino" }),
+      screen.getByRole("link", { name: "Descargar el registro" }),
     ).toHaveAttribute("download", "qa-ep-1.log");
   });
 
@@ -335,7 +335,7 @@ describe("EndpointTestCard · resultado", () => {
     render(<EndpointTestCard endpointId="ep-1" endpoint={HEALTH} />);
 
     expect(
-      screen.queryByRole("link", { name: "Descargar logs Pino" }),
+      screen.queryByRole("link", { name: "Descargar el registro" }),
     ).toBeNull();
   });
 });

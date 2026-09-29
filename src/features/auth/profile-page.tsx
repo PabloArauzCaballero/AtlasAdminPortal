@@ -29,7 +29,7 @@ export function ProfilePage() {
             items={[
               { label: "Usuario", value: user.fullName },
               { label: "Email", value: user.email, mono: true },
-              { label: "Tenant", value: user.tenantId, mono: true },
+              { label: "Organización", value: user.tenantId, mono: true },
               { label: "Código", value: user.userCode, mono: true },
               { label: "Departamento", value: user.department },
               { label: "Cargo", value: user.jobTitle },

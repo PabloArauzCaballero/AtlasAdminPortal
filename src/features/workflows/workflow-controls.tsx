@@ -71,7 +71,7 @@ export function WorkflowControls({
       />
       <Select
         label="Módulo"
-        tooltip="Limita el árbol a los pasos de un módulo del backend."
+        tooltip="Limita el árbol a los pasos de un módulo del sistema."
         value={filters.moduleCode ?? ""}
         onChange={(moduleCode) =>
           onFiltersChange({ ...filters, moduleCode: moduleCode || undefined })
@@ -150,7 +150,7 @@ function Select({
 export function WorkflowTotals({ tree }: Readonly<{ tree: WorkflowTree }>) {
   const items = [
     { label: "etapas", value: tree.totals.stages },
-    { label: "pasos (endpoints)", value: tree.totals.steps },
+    { label: "pasos (operaciones)", value: tree.totals.steps },
     { label: "transiciones", value: tree.totals.transitions },
     { label: "dependencias", value: tree.totals.dependencies },
   ];

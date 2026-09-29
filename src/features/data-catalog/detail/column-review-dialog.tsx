@@ -20,12 +20,30 @@ const REVIEW_STATUSES: ReviewDecisionInput["reviewStatus"][] = [
 
 const CONFIDENCE_LEVELS = ["LOW", "MEDIUM", "HIGH"] as const;
 
+const REVIEW_STATUS_LABEL: Record<string, string> = {
+  APPROVED: "Aprobada",
+  NEEDS_REVIEW: "Pendiente de revisión",
+  REJECTED: "Rechazada",
+};
+
 const REVIEW_STATUS_HELP: Record<string, string> = {
   APPROVED:
-    "Da por buena la inferencia: la columna se puede usar para decisiones de gobierno.",
+    "Da por buena la propuesta: el campo se puede usar para decisiones de gobierno.",
   NEEDS_REVIEW:
-    "La devuelve a la cola de revisión: todavía no es catálogo confiable.",
+    "La devuelve a la cola de revisión: todavía no es un dato confiable.",
   REJECTED: "La marca como incorrecta.",
+};
+
+const CONFIDENCE_LABEL: Record<(typeof CONFIDENCE_LEVELS)[number], string> = {
+  LOW: "Baja",
+  MEDIUM: "Media",
+  HIGH: "Alta",
+};
+
+const CONFIDENCE_HELP: Record<(typeof CONFIDENCE_LEVELS)[number], string> = {
+  LOW: "Tienes dudas sobre lo que dice el catálogo.",
+  MEDIUM: "Parece correcto, pero no lo comprobaste del todo.",
+  HIGH: "Lo comprobaste y estás seguro de que es correcto.",
 };
 
 export function ColumnReviewDialog({
@@ -82,15 +100,15 @@ export function ColumnReviewDialog({
     >
       <div className="space-y-4">
         <p className="text-sm text-atlas-muted">
-          La metadata de columnas se infiere automáticamente. Revisarla es lo
-          que la convierte en catálogo confiable: una columna aprobada se puede
-          usar para decisiones de gobierno, una en revisión no.
+          La descripción de cada columna la deduce el sistema solo. Revisarla es
+          lo que la vuelve confiable: una columna aprobada se puede usar para
+          decisiones de gobierno, una en revisión no.
         </p>
 
         <Field
-          tooltip="Veredicto sobre la metadata inferida de esta columna."
+          tooltip="Tu veredicto sobre lo que el sistema dedujo de este campo."
           label="Decisión"
-          hint="APPROVED da por buena la inferencia; NEEDS_REVIEW la devuelve a la cola; REJECTED la marca como incorrecta."
+          hint="«Aprobada» la da por buena; «Pendiente de revisión» la devuelve a la cola; «Rechazada» la marca como incorrecta."
         >
           <Select
             name="reviewStatus"
@@ -100,16 +118,16 @@ export function ColumnReviewDialog({
             }
             options={REVIEW_STATUSES.map((value) => ({
               value,
-              label: value,
+              label: REVIEW_STATUS_LABEL[value] ?? value,
               description: REVIEW_STATUS_HELP[value],
             }))}
           />
         </Field>
 
         <Field
-          tooltip="Qué tan seguro estás de la metadata inferida para esta columna."
+          tooltip="Qué tan seguro estás de lo que el sistema dedujo de este campo."
           label="Nivel de confianza (opcional)"
-          hint="Qué tan seguro estás de la metadata inferida para esta columna."
+          hint="Qué tan seguro estás de lo que el sistema dedujo de este campo."
         >
           <Select
             name="confidenceLevel"
@@ -122,7 +140,11 @@ export function ColumnReviewDialog({
                 description:
                   "No declara nivel de confianza para esta revisión.",
               },
-              ...CONFIDENCE_LEVELS.map((value) => ({ value, label: value })),
+              ...CONFIDENCE_LEVELS.map((value) => ({
+                value,
+                label: CONFIDENCE_LABEL[value],
+                description: CONFIDENCE_HELP[value],
+              })),
             ]}
           />
         </Field>
@@ -143,7 +165,7 @@ export function ColumnReviewDialog({
             onChange={(event) => setNotes(event.target.value)}
             placeholder={
               notesRequired
-                ? "Ej: el tipo PII inferido es incorrecto, la columna guarda un código interno."
+                ? "Ej.: no guarda datos personales, como se dedujo; guarda un código interno."
                 : undefined
             }
           />

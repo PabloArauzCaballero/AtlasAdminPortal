@@ -62,7 +62,7 @@ function AuthorizedStressProfilesPage() {
       },
       { header: "Nombre", accessorKey: "name" },
       {
-        header: "Endpoint",
+        header: "Ruta",
         accessorKey: "endpointId",
         cell: ({ row }) => (
           <Link
@@ -74,7 +74,7 @@ function AuthorizedStressProfilesPage() {
         ),
       },
       {
-        header: "RPS",
+        header: "Peticiones/s",
         accessorKey: "targetRps",
         cell: ({ row }) => formatNumber(row.original.targetRps),
       },
@@ -105,7 +105,7 @@ function AuthorizedStressProfilesPage() {
   const matrixColumns = useMemo<ColumnDef<StressMatrixItem>[]>(
     () => [
       {
-        header: "Endpoint",
+        header: "Ruta",
         accessorKey: "endpoint.fullPath",
         cell: ({ row }) => (
           <Link
@@ -118,7 +118,7 @@ function AuthorizedStressProfilesPage() {
       },
       { header: "Módulo", accessorKey: "endpoint.module" },
       {
-        header: "Requiere stress",
+        header: "Requiere prueba de carga",
         accessorKey: "endpoint.requiresStressTest",
         cell: ({ row }) =>
           formatBoolean(row.original.endpoint.requiresStressTest),
@@ -141,9 +141,9 @@ function AuthorizedStressProfilesPage() {
     <>
       <PageHeader
         icon={Gauge}
-        eyebrow="QA Stress"
-        title="Stress backend-driven"
-        description="Administración de perfiles de stress y matriz de endpoints que requieren carga. Producción queda bloqueada por el servicio interno para stress runs. ¿Quieres ejecutar requests directos contra otra URL?"
+        eyebrow="Carga QA"
+        title="Perfiles de carga"
+        description="Perfiles de prueba de carga y qué rutas la necesitan. Las corridas de carga están bloqueadas en producción. ¿Quieres lanzar peticiones sueltas contra otra dirección?"
         actions={
           <div className="flex gap-2">
             <TutorialLaunchButton tutorialId="qa-stress-profile" />
@@ -165,22 +165,22 @@ function AuthorizedStressProfilesPage() {
               </Button>
             </PermissionGate>
             <Link href="/internal/qa/lab">
-              <Button>Abrir QA Live Lab</Button>
+              <Button>Abrir el laboratorio QA</Button>
             </Link>
           </div>
         }
       />
       <DrawerPanel
         open={creating}
-        title="Nuevo perfil de stress"
+        title="Nuevo perfil de carga"
         onClose={() => setCreating(false)}
       >
         <StressProfileForm onSaved={() => setCreating(false)} />
       </DrawerPanel>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar perfil o endpoint…"
-        searchTooltip="Perfiles: código, nombre, notas o ruta del endpoint. Matriz de cobertura: ruta, código, nombre de ruta o propósito del endpoint."
+        searchPlaceholder="Buscar perfil o ruta…"
+        searchTooltip="Perfiles: código, nombre, notas o dirección de la ruta. Matriz de cobertura: dirección, código, nombre o propósito de la ruta."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -213,7 +213,7 @@ function AuthorizedStressProfilesPage() {
           description={
             isAtlasApiError(profiles.error)
               ? profiles.error.message
-              : "No se pudo cargar perfiles de estrés."
+              : "No se pudieron cargar los perfiles de carga."
           }
           requestId={
             isAtlasApiError(profiles.error)
@@ -235,7 +235,7 @@ function AuthorizedStressProfilesPage() {
         <CardHeader>
           <SectionHeader
             title="Matriz de cobertura"
-            description="Endpoints que requieren stress test y cobertura de perfil habilitado."
+            description="Rutas que necesitan prueba de carga y si tienen un perfil habilitado."
             className="mb-0"
           />
         </CardHeader>
@@ -246,7 +246,7 @@ function AuthorizedStressProfilesPage() {
               description={
                 isAtlasApiError(matrix.error)
                   ? matrix.error.message
-                  : "No se pudo cargar matriz de stress."
+                  : "No se pudo cargar la matriz de cobertura."
               }
               requestId={
                 isAtlasApiError(matrix.error)

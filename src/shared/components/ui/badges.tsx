@@ -254,9 +254,8 @@ export function BlockBadge({ value }: Readonly<{ value?: string | null }>) {
 }
 
 export function PiiBadge({ value }: Readonly<{ value?: boolean | null }>) {
-  return (
-    <Badge tone={value ? "pii" : "muted"}>{value ? "PII" : "Sin PII"}</Badge>
-  );
+  const label = value ? "Datos personales" : "Sin datos personales";
+  return <Badge tone={value ? "pii" : "muted"}>{label}</Badge>;
 }
 
 export function BooleanBadge({

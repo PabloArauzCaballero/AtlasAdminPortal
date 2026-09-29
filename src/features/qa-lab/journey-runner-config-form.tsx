@@ -105,7 +105,7 @@ export function JourneyRunnerConfigFields({
             />
             <NumberField
               label="Personas a la vez"
-              tooltip="Cuántas personas atraviesan el journey al mismo tiempo."
+              tooltip="Cuántas personas hacen el recorrido al mismo tiempo."
               value={config.concurrency}
               min={1}
               max={20}
@@ -144,7 +144,7 @@ export function JourneyRunnerConfigFields({
       */}
       <div className="flex flex-wrap gap-3">
         <CheckBox
-          label="Enviar la cabecera de empresa (x-tenant-id)"
+          label="Enviar la cabecera de empresa"
           checked={config.includeTenantHeader}
           onChange={(value) => onChange({ includeTenantHeader: value })}
         />

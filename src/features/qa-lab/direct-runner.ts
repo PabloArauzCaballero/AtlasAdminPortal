@@ -77,9 +77,11 @@ export async function executeEndpointDirectly(
       dryRun: input.dryRun,
       allowMutations: input.allowMutations,
     });
-    logger.child("safety").info("request.allowed", "Request permitido");
+    logger.child("safety").info("request.allowed", "Petición permitida");
   } catch (error) {
-    logger.child("safety").error("request.blocked", "Request bloqueado", error);
+    logger
+      .child("safety")
+      .error("request.blocked", "Petición bloqueada", error);
     return withLogs(
       buildBlockedDirectResult(built, input.dryRun, warnings, error),
       logger,
@@ -87,13 +89,17 @@ export async function executeEndpointDirectly(
   }
 
   if (input.dryRun) {
-    logger.child("transport").info("request.dry_run", "Dry-run sin fetch real");
+    logger
+      .child("transport")
+      .info("request.dry_run", "Simulación: no sale ninguna petición");
     return withLogs(buildDryRunDirectResult(built, warnings), logger);
   }
   if (built.unresolvedPathParams.length > 0) {
-    logger.child("builder").warn("path_params.missing", "Faltan path params", {
-      unresolved: built.unresolvedPathParams,
-    });
+    logger
+      .child("builder")
+      .warn("path_params.missing", "Faltan datos de la ruta", {
+        unresolved: built.unresolvedPathParams,
+      });
     return withLogs(buildMissingParamsDirectResult(built, warnings), logger);
   }
   return executeFetch(endpoint, input, built, timeoutMs, warnings, logger);
@@ -109,13 +115,15 @@ async function executeFetch(
 ): Promise<DirectRunResult> {
   const body = getBodyForMethod(built.method, input.payload);
   const startedAt = performance.now();
-  logger.child("transport").info("request.sent", "Front envía request", {
-    method: built.method,
-    url: built.url,
-    headers: redactedHeaders(built.headers),
-    hasBody: Boolean(body),
-    timeoutMs,
-  });
+  logger
+    .child("transport")
+    .info("request.sent", "El portal envía la petición", {
+      method: built.method,
+      url: built.url,
+      headers: redactedHeaders(built.headers),
+      hasBody: Boolean(body),
+      timeoutMs,
+    });
   try {
     const response = await rawFetch(
       built.url,
@@ -142,7 +150,7 @@ async function executeFetch(
     const latencyMs = Math.round(performance.now() - startedAt);
     logger
       .child("transport")
-      .error("response.error", "Error de red o timeout", {
+      .error("response.error", "Error de red o tiempo agotado", {
         latencyMs,
         error,
       });
@@ -178,7 +186,7 @@ function logResponse(
   sizeBytes: number,
   latencyMs: number,
 ): void {
-  logger.child("transport").info("response.received", "Backend respondió", {
+  logger.child("transport").info("response.received", "El servidor respondió", {
     status: response.status,
     ok: response.ok,
     latencyMs,
@@ -201,7 +209,7 @@ function logBuildLayer(
     dryRun: input.dryRun,
     timeoutMs: input.timeoutMs,
   });
-  logger.child("builder").info("request.built", "Request construido", {
+  logger.child("builder").info("request.built", "Petición construida", {
     endpointId: endpoint.endpointId,
     method: built.method,
     url: built.url,

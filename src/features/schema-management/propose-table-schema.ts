@@ -52,7 +52,7 @@ export const proposeTableSchema = z.object({
     .min(3, "Mínimo 3 caracteres.")
     .regex(
       /^[a-z][a-z0-9_]*$/,
-      "snake_case: minúsculas, números y guion bajo.",
+      "Solo minúsculas, números y guion bajo, empezando por una letra.",
     ),
   tableType: z.enum(["transactional", "catalog", "audit", "operational"]),
   isAppendOnly: z.boolean(),

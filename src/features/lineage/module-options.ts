@@ -35,7 +35,7 @@ export const NODE_TYPE_OPTIONS: Option[] = [
   {
     value: "endpoint",
     label: "Rutas",
-    description: "Sólo rutas del catálogo de endpoints.",
+    description: "Sólo las rutas del inventario del sistema.",
   },
 ];
 
@@ -65,7 +65,7 @@ export const SEVERITY_OPTIONS: Option[] = [
 export const FAMILY_OPTIONS: Option[] = [
   {
     value: "impact",
-    label: "Endpoint → tabla",
+    label: "Operación → tabla",
     description: "Qué ruta lee o escribe qué tabla. Tiene severidad.",
   },
   {

@@ -141,7 +141,7 @@ export function assertHostAllowed(rawUrl: string): void {
   throw new Error(
     `La dirección destino${host ? ` (${host})` : ""} no está en la lista de direcciones permitidas del laboratorio, ` +
       "y a una dirección no confiable no se le envían credenciales. " +
-      "Si es un backend de ATLAS, pide que la añadan a NEXT_PUBLIC_QA_ALLOWED_HOSTS.",
+      "Si es un servidor de ATLAS, pide al equipo técnico que la añada a la lista.",
   );
 }
 

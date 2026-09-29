@@ -54,7 +54,7 @@ export function LoginPinForm({
     } catch (error) {
       if (isAtlasApiError(error)) {
         setError("root", {
-          message: `${error.message}${error.requestId ? ` · Request ID: ${error.requestId}` : ""}`,
+          message: `${error.message}${error.requestId ? ` · Código de referencia: ${error.requestId}` : ""}`,
         });
         return;
       }

@@ -127,7 +127,7 @@ export function WorkflowLoadBar({
         <div className="w-full sm:w-48">
           <Field
             label="Usuarios ficticios"
-            tooltip="Cuántas personas inventadas recorren el flujo completo, cada una con su cuenta, sus datos y las fotos de su carnet generadas por el mock."
+            tooltip="Cuántas personas inventadas recorren el flujo completo, cada una con su cuenta, sus datos y las fotos de su carnet generadas por el simulador."
             hint={environment ? `Hasta ${environment.maxPersons}.` : undefined}
           >
             <Input

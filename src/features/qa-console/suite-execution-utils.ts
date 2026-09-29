@@ -19,21 +19,21 @@ export function validateExecutionForm(input: {
   configText: string;
 }): string | null {
   if (!input.dryRun && input.baseUrl.trim().length === 0) {
-    return "Para una corrida real debes indicar Base URL.";
+    return "Para una corrida real debes indicar la dirección base.";
   }
   try {
     parseJsonRecord(input.headersText);
     parseJsonRecord(input.configText);
     return null;
   } catch (error) {
-    return error instanceof Error ? error.message : "JSON invalido.";
+    return error instanceof Error ? error.message : "JSON inválido.";
   }
 }
 
 export function parseJsonRecord(value: string): Record<string, unknown> {
   const parsed = value.trim() ? JSON.parse(value) : {};
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("Headers y config deben ser objetos JSON.");
+    throw new Error("Las cabeceras y los parámetros deben ser objetos JSON.");
   }
   return parsed as Record<string, unknown>;
 }

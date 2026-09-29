@@ -13,7 +13,10 @@ export function EntityGovernanceSummary({
         title="Clasificación de datos"
         description="Define sensibilidad y restricciones de uso por dominio."
         items={[
-          { label: "Contiene PII", value: formatBoolean(entity.containsPii) },
+          {
+            label: "Contiene datos personales",
+            value: formatBoolean(entity.containsPii),
+          },
           {
             label: "Datos financieros",
             value: formatBoolean(entity.containsFinancialData),
@@ -52,7 +55,7 @@ export function EntityGovernanceSummary({
         title="Responsabilidad y vigencia"
         description="Responsables, retención y estado de revisión."
         items={[
-          { label: "Owner", value: entity.dataOwner },
+          { label: "Responsable", value: entity.dataOwner },
           { label: "Retención", value: entity.retentionPolicyCode, mono: true },
           { label: "Estado review", value: entity.reviewStatus },
           { label: "Fuente detección", value: entity.detectedFrom },

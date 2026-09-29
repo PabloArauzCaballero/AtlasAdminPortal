@@ -103,7 +103,7 @@ export function CatalogIngestionForm({
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-atlas-text">
-                Items ({formatNumber(fields.length)})
+                Elementos ({formatNumber(fields.length)})
               </p>
               <p className="text-xs text-atlas-muted">
                 Al menos 1, máximo 1000.
@@ -114,7 +114,7 @@ export function CatalogIngestionForm({
               onClick={() => append(emptyIngestionItemForm)}
               disabled={fields.length >= 1000}
             >
-              Agregar item
+              Agregar elemento
             </Button>
           </div>
           {errors.items?.message ? (
@@ -148,7 +148,7 @@ export function CatalogIngestionForm({
                   </Field>
                   <Field
                     label="Tipo"
-                    tooltip="Categoría del item dentro del catálogo; decide cómo lo usará el motor."
+                    tooltip="Categoría del elemento dentro del catálogo; decide cómo lo usará el motor."
                     error={errors.items?.[index]?.itemType?.message}
                   >
                     <Input {...register(`items.${index}.itemType`)} />
@@ -167,7 +167,7 @@ export function CatalogIngestionForm({
                     />
                   </Field>
                   <Field
-                    label="Payload crudo (JSON)"
+                    label="Fila original (JSON)"
                     tooltip="La fila original completa en JSON, tal como llegó, para poder auditarla después."
                     error={errors.items?.[index]?.rawPayloadText?.message}
                   >
@@ -193,7 +193,7 @@ export function CatalogIngestionForm({
                       className="h-8 text-xs"
                       onClick={() => remove(index)}
                     >
-                      Quitar item
+                      Quitar elemento
                     </Button>
                   ) : null}
                 </div>
@@ -217,11 +217,10 @@ export function CatalogIngestionForm({
         ) : null}
         {ingest.isSuccess ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-            Lote ingerido (job{" "}
-            <span className="font-mono">{ingest.data.ingestionJobId}</span>,
-            estado <span className="font-mono">{ingest.data.status}</span>):{" "}
-            {formatNumber(ingest.data.stagingItemsCreated)} ítems pendientes de
-            revisión. Abajo aparecen para aprobarlos o rechazarlos.
+            Lote recibido (carga n.º{" "}
+            <span className="font-mono">{ingest.data.ingestionJobId}</span>):{" "}
+            {formatNumber(ingest.data.stagingItemsCreated)} elementos pendientes
+            de revisión. Abajo aparecen para aprobarlos o rechazarlos.
           </div>
         ) : null}
 

@@ -26,19 +26,19 @@ export type ErrorExplanation = Readonly<{
 const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
   HTTP_401: {
     code: "HTTP_401",
-    title: "La API pidió autenticación",
+    title: "El servidor pidió identificarse",
     whatHappened:
-      "El endpoint respondió 401: no reconoció tu identidad o tus credenciales no son válidas.",
+      "La ruta respondió 401: no reconoció tu identidad o tus credenciales no son válidas.",
     likelyCauses: [
-      "Tu sesión caducó o el token expiró.",
-      "El endpoint requiere un permiso que tu usuario no tiene.",
+      "Tu sesión caducó o la credencial venció.",
+      "La ruta requiere un permiso que tu usuario no tiene.",
       "Falta enviar la cabecera de autenticación.",
     ],
     consequence:
       "La prueba no llega a ejecutar la lógica real: se detiene en la puerta.",
     fixSteps: [
-      "Vuelve a iniciar sesión para renovar el token.",
-      "Confirma que tu rol tiene el permiso del endpoint.",
+      "Vuelve a iniciar sesión para renovar la credencial.",
+      "Confirma que tu rol tiene el permiso que pide la ruta.",
       "Reejecuta la prueba.",
     ],
     recommendedAction: "Renueva la sesión y reintenta.",
@@ -47,17 +47,17 @@ const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
     code: "HTTP_404",
     title: "La ruta probada no existe",
     whatHappened:
-      "El endpoint respondió 404: la dirección solicitada no corresponde a ningún recurso.",
+      "La ruta respondió 404: la dirección solicitada no corresponde a ningún registro.",
     likelyCauses: [
-      "El recurso (por ejemplo, un id) no existe o se borró.",
+      "El registro (por ejemplo, un número de cliente) no existe o se borró.",
       "Un paso anterior no creó el dato que este esperaba.",
-      "La ruta cambió en el backend.",
+      "La ruta cambió en el servidor.",
     ],
     consequence: "El flujo se rompe aquí porque no encuentra con qué trabajar.",
     fixSteps: [
       "Revisa que el paso anterior devolvió el dato esperado.",
-      "Comprueba que el id o parámetro usado existe.",
-      "Actualiza la ruta si el backend cambió.",
+      "Comprueba que el número o dato usado existe.",
+      "Actualiza la ruta si cambió en el servidor.",
     ],
     recommendedAction: "Verifica el dato del paso anterior.",
   },
@@ -65,55 +65,56 @@ const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
     code: "HTTP_500",
     title: "El servidor tuvo un problema interno",
     whatHappened:
-      "El endpoint respondió 500: el fallo ocurrió DENTRO del backend, no en tu prueba.",
+      "La ruta respondió 500: el fallo ocurrió DENTRO del servidor, no en tu prueba.",
     likelyCauses: [
-      "Un bug en el backend con esos datos concretos.",
+      "Un defecto del servidor con esos datos concretos.",
       "Una dependencia (base de datos, otro servicio) caída.",
     ],
     consequence:
-      "Es un defecto real del backend: tu prueba hizo su trabajo al detectarlo.",
+      "Es un defecto real del servidor: tu prueba hizo su trabajo al detectarlo.",
     fixSteps: [
-      "Guarda la evidencia (request y respuesta).",
-      "Anota el Request ID que devuelve el portal.",
-      "Reporta el defecto al equipo dueño del endpoint.",
+      "Guarda la evidencia (petición y respuesta).",
+      "Anota el código de soporte que muestra el portal.",
+      "Reporta el defecto al equipo técnico responsable de esa ruta.",
     ],
-    recommendedAction: "Reporta el defecto con el Request ID.",
+    recommendedAction: "Reporta el defecto con el código de soporte.",
   },
   STRESS_THRESHOLD_EXCEEDED: {
     code: "STRESS_THRESHOLD_EXCEEDED",
-    title: "El endpoint no aguantó la carga",
+    title: "La ruta no aguantó la carga",
     whatHappened:
       "Bajo carga, el tiempo de respuesta (p95) superó el umbral o aparecieron errores.",
     likelyCauses: [
-      "El endpoint no está optimizado para ese volumen.",
-      "Falta caché, índices o escalado en backend.",
+      "La ruta no está preparada para ese volumen.",
+      "Al servidor le falta capacidad u optimización para ese volumen.",
     ],
     consequence:
       "Con muchos usuarios reales, esta funcionalidad se degradaría o caería.",
     fixSteps: [
-      "Baja los VUs para encontrar el punto donde sí aguanta.",
-      "Comparte el resultado con backend para optimizar.",
+      "Baja los usuarios simultáneos para encontrar el punto donde sí aguanta.",
+      "Comparte el resultado con el equipo técnico para optimizar.",
       "Repite la prueba tras la optimización.",
     ],
-    recommendedAction: "Comparte el p95 con backend antes de publicar.",
+    recommendedAction:
+      "Comparte el p95 con el equipo técnico antes de publicar.",
   },
   STRESS_CONFIG_INVALID: {
     code: "STRESS_CONFIG_INVALID",
     title: "La configuración de carga no es válida",
     whatHappened:
-      "El dry-run rechazó el perfil por un parámetro fuera de rango o incoherente.",
+      "La simulación rechazó el perfil por un parámetro fuera de rango o incoherente.",
     likelyCauses: [
-      "Un valor de VUs o duración desproporcionado (un cero de más).",
+      "Un valor de usuarios simultáneos o duración desproporcionado (un cero de más).",
       "Un umbral imposible de cumplir.",
     ],
     consequence:
       "La barrera de seguridad evitó lanzar una carga que podía tumbar el ambiente.",
     fixSteps: [
-      "Revisa VUs, duración y umbral con la ayuda de cada campo.",
+      "Revisa usuarios simultáneos, duración y umbral con la ayuda de cada campo.",
       "Ajusta a valores realistas.",
-      "Repite el dry-run.",
+      "Repite la simulación.",
     ],
-    recommendedAction: "Corrige el parámetro señalado y repite el dry-run.",
+    recommendedAction: "Corrige el parámetro señalado y repite la simulación.",
   },
   STEP_FAILED: {
     code: "STEP_FAILED",
@@ -121,13 +122,13 @@ const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
     whatHappened:
       "El resultado real del paso no coincidió con el resultado esperado.",
     likelyCauses: [
-      "El endpoint devolvió otra cosa de la esperada.",
+      "La ruta devolvió otra cosa de la esperada.",
       "La expectativa del caso quedó desactualizada.",
     ],
     consequence: "Hay una diferencia entre lo que debía pasar y lo que pasó.",
     fixSteps: [
       "Abre el paso y compara «esperado» vs «obtenido».",
-      "Decide si el bug está en el backend o en la expectativa.",
+      "Decide si el defecto está en el servidor o en la expectativa.",
       "Corrige y reejecuta.",
     ],
     recommendedAction: "Compara esperado vs obtenido en el paso.",
@@ -162,7 +163,7 @@ const catalog: Record<string, Omit<ErrorExplanation, "tutorial">> = {
       "Confirma que el ambiente está arriba.",
       "Reintenta la ejecución.",
     ],
-    recommendedAction: "Reintenta antes de reportar un bug.",
+    recommendedAction: "Reintenta antes de reportar un defecto.",
   },
 };
 

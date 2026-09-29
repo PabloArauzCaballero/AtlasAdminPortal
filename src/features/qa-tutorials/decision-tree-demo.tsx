@@ -232,8 +232,8 @@ export function DecisionTreeDemo() {
         </text>
       </svg>
       <p className="mt-1 text-[0.625rem] leading-4 text-atlas-muted">
-        Cada caja es una etapa del catálogo con su endpoint real. Las flechas
-        llevan la condición: verde si sale bien, roja la rama de excepción.
+        Cada caja es una etapa del catálogo con su ruta real. Las flechas llevan
+        la condición: verde si sale bien, roja la rama de excepción.
       </p>
     </div>
   );

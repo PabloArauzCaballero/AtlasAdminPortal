@@ -36,7 +36,8 @@ export const JOB_QUEUE_OPTIONS: Option[] = [
   {
     value: "internal_user",
     label: "Manual",
-    description: "La lanzó una persona desde Jobs › Ejecutar ahora.",
+    description:
+      "La lanzó una persona desde Procesos automáticos › Ejecutar ahora.",
   },
 ];
 

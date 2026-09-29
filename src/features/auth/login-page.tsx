@@ -19,7 +19,7 @@ import { Field, Input } from "@/shared/components/ui/input";
 import { ErrorState } from "@/shared/components/ui/states";
 
 const loginSchema = z.object({
-  tenantId: z.string().trim().min(1, "El tenant es obligatorio."),
+  tenantId: z.string().trim().min(1, "La organización es obligatoria."),
   email: z.string().trim().email("Ingresa un correo válido."),
   password: z.string().min(1, "La contraseña es obligatoria."),
 });
@@ -29,8 +29,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 /** Lo que el portal interno hace, en la voz del producto. */
 const CAPACIDADES = [
   "Catálogo de datos y su gobierno",
-  "Calidad, lineage e impacto",
-  "QA de endpoints y pruebas de carga",
+  "Calidad, linaje e impacto",
+  "Pruebas de operaciones y de carga",
   "Auditoría de cada acción interna",
 ];
 
@@ -69,7 +69,7 @@ export function LoginPage() {
     } catch (error) {
       if (isAtlasApiError(error)) {
         setError("root", {
-          message: `${error.message}${error.requestId ? ` · Request ID: ${error.requestId}` : ""}`,
+          message: `${error.message}${error.requestId ? ` · Código de referencia: ${error.requestId}` : ""}`,
         });
         return;
       }
@@ -103,8 +103,8 @@ export function LoginPage() {
             Sistemas, QA y gobierno de datos en un solo lugar.
           </h2>
           <p className="mt-4 text-sm leading-6 text-slate-300">
-            Monitorea catálogos, calidad de datos, lineage y auditoría
-            conectados en tiempo real al servicio interno de ATLAS.
+            Monitorea catálogos, calidad de datos, linaje y auditoría conectados
+            en tiempo real al servicio interno de ATLAS.
           </p>
           {/*
             La lista dice QUÉ se hace aquí dentro, que es lo que un titular solo no alcanza a
@@ -180,9 +180,9 @@ export function LoginPage() {
               >
                 <Field
                   tooltip="Identificador de la organización a la que pertenece tu cuenta interna."
-                  label="Tenant"
+                  label="Organización"
                   error={errors.tenantId?.message}
-                  hint="Usa el tenant configurado para el ambiente interno."
+                  hint="Usa el código de organización de tu ambiente interno."
                 >
                   <Input
                     {...register("tenantId")}

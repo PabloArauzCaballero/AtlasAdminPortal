@@ -59,7 +59,7 @@ function AuthorizedToolDetailPage({ toolId }: Readonly<{ toolId: string }>) {
                 { label: "Código", value: tool.data.code, mono: true },
                 { label: "Tipo", value: tool.data.type },
                 { label: "Proveedor", value: tool.data.provider },
-                { label: "Owner", value: tool.data.ownerTeam },
+                { label: "Responsable", value: tool.data.ownerTeam },
                 {
                   label: "Crítica",
                   value: formatBoolean(tool.data.isCritical),

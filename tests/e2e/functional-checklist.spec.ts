@@ -39,7 +39,7 @@ async function fillLogin(
   password: string,
 ): Promise<void> {
   await page.goto(url("/internal/login"));
-  // El form es controlado por react-hook-form y "Tenant" viene con defaultValue.
+  // El form es controlado por react-hook-form y «Organización» viene con defaultValue.
   // Si se rellena antes de que React hidrate, el default se reaplica encima y el
   // valor queda duplicado ("11"), el backend recibe un tenant inexistente y
   // responde error interno. Por eso: esperar hidratación, re-llenar si hiciera
@@ -47,7 +47,7 @@ async function fillLogin(
   await page.waitForLoadState("networkidle").catch(() => undefined);
   // Por etiqueta y no por atributo: `getByLabel` es lo que ve quien usa la pantalla y sobrevive a
   // un cambio de `autocomplete` o de `type`, que son detalles de implementación.
-  const tenant = page.getByLabel("Tenant");
+  const tenant = page.getByLabel("Organización");
   await tenant.waitFor({ state: "visible" });
   await tenant.fill(TENANT);
   if ((await tenant.inputValue()) !== TENANT) await tenant.fill(TENANT);

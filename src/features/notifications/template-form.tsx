@@ -56,7 +56,7 @@ export function TemplateForm({
           unknown
         >;
       } catch {
-        setError("El esquema de payload debe ser JSON válido.");
+        setError("La lista de variables debe ser un JSON válido.");
         return;
       }
     }
@@ -82,7 +82,7 @@ export function TemplateForm({
           title={
             template ? `Editar plantilla ${template.code}` : "Nueva plantilla"
           }
-          description="Las plantillas definen cómo se renderiza cada mensaje por canal. bodyTemplate acepta {{variables}} resueltas desde el payload del evento."
+          description="Las plantillas definen cómo se ve cada mensaje en cada canal. El texto admite {{variables}} que se rellenan con los datos del evento."
           className="mb-0"
         />
       </CardHeader>
@@ -90,7 +90,7 @@ export function TemplateForm({
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           <Field
             label="Código"
-            tooltip="Clave con la que el backend elige esta plantilla; no se puede cambiar después."
+            tooltip="Clave con la que el sistema elige esta plantilla; no se puede cambiar después."
             hint="Identificador único, ej: onboarding_welcome."
           >
             <Input
@@ -153,7 +153,7 @@ export function TemplateForm({
           <Field
             label="Categoría"
             tooltip="Grupo del aviso para filtrar y silenciar en bloque en la app."
-            hint="Agrupa notificaciones para un futuro frontend (ej: system_alert, billing, kyc)."
+            hint="Agrupa avisos parecidos en la app (ej.: alertas, cobros, identidad)."
           >
             <Input
               value={form.category ?? ""}
@@ -173,8 +173,8 @@ export function TemplateForm({
         </div>
         <Field
           label="Cuerpo del mensaje"
-          tooltip="El texto que recibe el destinatario; las {{variables}} se rellenan con el payload."
-          hint="Texto renderizado al destinatario. Usa {{variable}} para interpolar el payload del evento."
+          tooltip="El texto que recibe el destinatario; las {{variables}} se rellenan con los datos del evento."
+          hint="Usa {{variable}} para insertar un dato del evento en el texto."
         >
           <Textarea
             value={form.bodyTemplate}
@@ -183,9 +183,9 @@ export function TemplateForm({
           />
         </Field>
         <Field
-          label="Esquema de payload (JSON, opcional)"
+          label="Variables que usa la plantilla (JSON, opcional)"
           tooltip="Qué variables necesita la plantilla, para detectar eventos que no las traen."
-          hint='Documenta qué variables espera el template, ej: { "customerId": "number|optional" }'
+          hint='Lista las variables que necesita la plantilla, ej.: { "nombre": "texto" }'
         >
           <Textarea
             value={payloadSchemaText}

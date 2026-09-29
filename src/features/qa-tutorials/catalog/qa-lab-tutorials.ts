@@ -44,9 +44,9 @@ const overview: TutorialDefinition = {
       target: "qa-lab-tabs",
       title: "Tres formas de mirar una prueba",
       content:
-        "«Prueba unitaria» comprueba UNA operación. «Journey» encadena VARIAS simulando un caso de negocio. «Árbol de decisión» dibuja el recorrido real del cliente.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
+        "«Prueba unitaria» comprueba UNA operación. «Recorrido» encadena VARIAS simulando un caso de negocio. «Árbol de decisión» dibuja el recorrido real del cliente.\n\nEmpieza siempre por la prueba unitaria: es la más rápida para saber si algo está roto.",
       example:
-        "¿Se cae el login? → Prueba unitaria de la operación de login. ¿Falla el alta completa de un cliente? → Journey que encadena crear cliente + sesión + riesgo.",
+        "¿Se cae el login? → Prueba unitaria de la operación de login. ¿Falla el alta completa de un cliente? → Recorrido que encadena crear cliente + sesión + riesgo.",
       position: "bottom",
     },
     {
@@ -54,7 +54,7 @@ const overview: TutorialDefinition = {
       target: "qa-lab-endpoint-picker",
       title: "Aquí eliges qué probar",
       content:
-        "Busca la operación por ruta, módulo o acción, y pulsa «Probar» en su fila. El catálogo viene del backend: sólo aparecen operaciones reales.",
+        "Busca la operación por ruta, módulo o acción, y pulsa «Probar» en su fila. El catálogo viene del sistema: sólo aparecen operaciones reales.",
       example:
         "Escribe «login» para filtrar las operaciones de autenticación, o «health» para la de salud del servicio.",
       position: "top",
@@ -68,7 +68,7 @@ const stress: TutorialDefinition = {
   module: "Laboratorio",
   tab: "Prueba unitaria",
   tool: "Prueba de carga",
-  title: "Medir la carga (stress)",
+  title: "Medir la carga",
   description:
     "Comprueba cuántas peticiones seguidas aguanta una operación sin degradarse.",
   level: "intermediate",
@@ -79,7 +79,7 @@ const stress: TutorialDefinition = {
   steps: [
     {
       id: "what",
-      title: "¿Para qué sirve el stress?",
+      title: "¿Para qué sirve la prueba de carga?",
       content:
         "Una API puede funcionar perfecta con un usuario y caerse con mil. La prueba de carga lanza muchas peticiones desde tu navegador para ver si la operación se mantiene rápida y estable. No se guarda en ningún historial: descarga el registro si lo necesitas.",
       example:
@@ -131,11 +131,11 @@ const stress: TutorialDefinition = {
 const journey: TutorialDefinition = {
   id: "qa-lab-journey",
   module: "Laboratorio",
-  tab: "Journey (encadenado)",
-  tool: "Journey",
-  title: "Encadenar un flujo de negocio (journey)",
+  tab: "Recorrido (encadenado)",
+  tool: "Recorrido",
+  title: "Encadenar un flujo de negocio (recorrido)",
   description:
-    "Simula un caso real encadenando varios endpoints y reutilizando datos entre pasos.",
+    "Simula un caso real encadenando varias operaciones y reutilizando datos entre pasos.",
   level: "advanced",
   version: 3,
   route: LAB,
@@ -144,11 +144,11 @@ const journey: TutorialDefinition = {
   steps: [
     {
       id: "what",
-      title: "¿Qué es un journey?",
+      title: "¿Qué es un recorrido?",
       content:
-        "Un journey encadena varias operaciones en orden, pasando datos de una respuesta a la siguiente. Reproduce lo que hace un usuario o un proceso completo, no una sola llamada.",
+        "Un recorrido encadena varias operaciones en orden, pasando datos de una respuesta a la siguiente. Reproduce lo que hace un usuario o un proceso completo, no una sola llamada.",
       example:
-        "Journey «Alta de cliente»: 1) crear cliente → 2) tomar su id de la respuesta → 3) abrir sesión con ese id → 4) consultar su riesgo.",
+        "Recorrido «Alta de cliente»: 1) crear cliente → 2) tomar su id de la respuesta → 3) abrir sesión con ese id → 4) consultar su riesgo.",
       nextRoute: `${LAB}?tab=journey`,
     },
     {
@@ -156,19 +156,19 @@ const journey: TutorialDefinition = {
       target: "qa-lab-journey-panel",
       title: "Recorridos precargados y editor de pasos",
       content:
-        "Esta es la pestaña «Journey». Arriba están los recorridos listos: «Ejecutar» lanza N personas en el servidor, cada una con su cuenta. Abajo, plegado, el editor de pasos arma a mano UN recorrido para diagnosticarlo: eliges la operación, defines los datos y tomas valores de un paso anterior para el siguiente. Las personas del editor salen del generador de datos con la semilla elegida.",
+        "Esta es la pestaña «Recorrido». Arriba están los recorridos listos: «Ejecutar» lanza N personas en el servidor, cada una con su cuenta. Abajo, plegado, el editor de pasos arma a mano UN recorrido para diagnosticarlo: eliges la operación, defines los datos y tomas valores de un paso anterior para el siguiente. Las personas del editor salen del generador de datos con la semilla elegida.",
       example:
-        "El paso 1 crea un cliente y guarda `customerId` de la respuesta; el paso 2 lo reutiliza como `{{customerId}}` en la ruta de la sesión.",
+        "El paso 1 crea un cliente y guarda su número (customerId) de la respuesta; el paso 2 lo reutiliza como {{customerId}} en la ruta de la sesión.",
       position: "top",
       waitForElement: true,
     },
     {
       id: "read",
-      title: "Interpretar un journey",
+      title: "Interpretar un recorrido",
       content:
-        "El journey se detiene (o marca fallo) en el primer paso que no cumple. El resultado te dice EN QUÉ paso se rompió el flujo, que es justo lo que necesitas para reproducir un bug de negocio.",
+        "El recorrido se detiene (o marca fallo) en el primer paso que no cumple. El resultado te dice EN QUÉ paso se rompió el flujo, que es justo lo que necesitas para reproducir un defecto de negocio.",
       example:
-        "Si el paso 3 (sesión) falla con 404, el cliente del paso 1 no se creó: el bug está aguas arriba, no en la sesión.",
+        "Si el paso 3 (sesión) falla con 404, el cliente del paso 1 no se creó: el defecto está aguas arriba, no en la sesión.",
     },
   ],
 };

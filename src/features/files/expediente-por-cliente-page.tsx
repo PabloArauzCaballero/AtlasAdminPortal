@@ -40,7 +40,7 @@ function Redireccion({ customerId }: Readonly<{ customerId: string }>) {
     return (
       <EmptyState
         title="Este cliente todavía no tiene expediente."
-        description="Se abre solo al empezar un onboarding. Los clientes anteriores a esta función necesitan el relleno histórico, que se lanza desde Jobs › Ejecutar ahora."
+        description="Se abre solo al empezar el alta. Los clientes anteriores a esta función necesitan la carga histórica, que se lanza desde Procesos automáticos › Ejecutar ahora."
       />
     );
   }

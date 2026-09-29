@@ -24,7 +24,7 @@ export const navGroupsPrimary: InternalNavGroup[] = [
   systemsOpsGroup,
   processesGroup,
   {
-    label: "Catálogo y metadata",
+    label: "Catálogo y metadatos",
     icon: Database,
     items: [
       {
@@ -59,13 +59,13 @@ export const navGroupsPrimary: InternalNavGroup[] = [
     ],
   },
   {
-    label: "Lineage",
+    label: "Linaje",
     icon: GitBranch,
     items: [
       {
         // Una pantalla con pestañas (Grafo, Nodos, Relaciones e impacto, Mapa por dominio). Las
         // antiguas «Lineage oficial» e «Impacto lineage» redirigen a su pestaña.
-        label: "Lineage",
+        label: "Linaje",
         href: "/internal/lineage",
         icon: GitBranch,
         permissions: ["lineage.read"],
@@ -165,7 +165,7 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["operations.riskPolicy.read"],
       },
       {
-        label: "Issues calidad",
+        label: "Incidencias de calidad",
         href: "/internal/data-quality/issues",
         icon: ClipboardCheck,
         permissions: ["dataQuality.issues.read"],
@@ -189,7 +189,7 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["reporting.read"],
       },
       {
-        label: "Readiness Release",
+        label: "Preparación de salida",
         href: "/internal/release-readiness",
         icon: ClipboardCheck,
         permissions: ["reporting.read"],

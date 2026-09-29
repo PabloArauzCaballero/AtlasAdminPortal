@@ -78,7 +78,7 @@ export const suiteSchema = z
       value.isSafeForProduction,
     {
       message:
-        "Para incluir PRODUCTION_READONLY la suite debe marcarse como segura para producción.",
+        "Para incluir «Producción en solo lectura» la suite debe marcarse como segura para producción.",
       path: ["environmentScope"],
     },
   );
@@ -124,7 +124,7 @@ export const stepSchema = z.object({
     .trim()
     .refine(
       (value) => value === "" || /^[1-9][0-9]*$/.test(value),
-      "Identificador de endpoint inválido.",
+      "Identificador de ruta no válido.",
     ),
   /**
    * A propósito **no** usa `z.coerce.number()`: el tipo de entrada de `coerce`

@@ -83,7 +83,7 @@ function AuthorizedPermissionsPage() {
     <>
       <PageHeader
         icon={KeyRound}
-        eyebrow="RBAC"
+        eyebrow="Roles y permisos"
         title="Permisos internos"
         description={
           permissions.data

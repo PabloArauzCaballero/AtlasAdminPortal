@@ -54,27 +54,27 @@ export function StressProfileForm({
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Field
-          label="Endpoint objetivo"
-          tooltip="Endpoint del catálogo que recibe la carga; no se cambia al editar el perfil."
-          hint="El perfil aplica carga sobre este endpoint del catálogo."
+          label="Ruta objetivo"
+          tooltip="Ruta del catálogo que recibe la carga; no se cambia al editar el perfil."
+          hint="El perfil aplica carga sobre esta ruta del catálogo."
           error={errors.endpointId?.message}
         >
           <FormSelect
             control={control}
             name="endpointId"
             disabled={isEdit}
-            placeholder="Selecciona un endpoint…"
+            placeholder="Selecciona una ruta…"
             options={(endpoints.data ?? []).map(endpointOption)}
           />
         </Field>
 
         <Field
           label={isEdit ? "Código (no editable)" : "Código (opcional)"}
-          tooltip="Identificador único del perfil; vacío lo deriva del código del endpoint."
+          tooltip="Identificador único del perfil; vacío lo deriva del código de la ruta."
           hint={
             isEdit
               ? "El código identifica al perfil: cambiarlo no lo renombra, crearía otro perfil distinto."
-              : "Vacío deriva STRESS_<código del endpoint>. Si ese perfil ya existe, se sobrescribe."
+              : "Vacío lo arma como STRESS_ más el código de la ruta. Si ese perfil ya existe, se sobrescribe."
           }
           error={errors.code?.message}
         >
@@ -107,8 +107,8 @@ export function StressProfileForm({
         </Field>
 
         <Field
-          label="RPS objetivo"
-          tooltip="Peticiones por segundo que intenta sostener la corrida contra el endpoint."
+          label="Peticiones por segundo objetivo"
+          tooltip="Ritmo de peticiones que intenta sostener la corrida contra la ruta."
           hint="Entre 1 y 10000."
           error={errors.targetRps?.message}
         >
@@ -151,7 +151,7 @@ export function StressProfileForm({
         <Field
           label="Error máximo aceptable (%)"
           tooltip="Porcentaje de respuestas fallidas a partir del cual la corrida se da por fallida."
-          hint="Umbral de fallo del perfil. Se envía como fracción al backend."
+          hint="Umbral de fallo del perfil, entre 0 y 100."
           error={errors.maxErrorRatePercent?.message}
         >
           <Input
@@ -185,7 +185,7 @@ export function StressProfileForm({
           <Field
             label="Ambientes habilitados"
             tooltip="Dónde se permite lanzar este perfil; producción queda bloqueada para carga real."
-            hint="PRODUCTION_READONLY solo tiene efecto si la política interna lo permite; el backend bloquea stress real en producción."
+            hint="«Producción en solo lectura» sólo tiene efecto si la política interna lo permite; el servidor bloquea la carga real en producción."
             error={errors.environmentScope?.message}
           >
             <div className="flex flex-wrap gap-2">
@@ -256,7 +256,7 @@ export function StressProfileForm({
           description={
             isAtlasApiError(mutation.error)
               ? mutation.error.message
-              : "No se pudo guardar el perfil de stress."
+              : "No se pudo guardar el perfil de carga."
           }
           requestId={
             isAtlasApiError(mutation.error)

@@ -21,7 +21,7 @@ import type { ProviderRow } from "./provider-columns";
  */
 const AYUDA_MODO: Record<string, string> = {
   mock_local:
-    "El backend fabrica la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
+    "El sistema genera la respuesta él mismo. No sale a la red, así que no hay latencia que medir.",
   mock_server:
     "Llama por red al emulador de proveedores. Es el modo que permite medir salud y latencia de verdad.",
   sandbox:

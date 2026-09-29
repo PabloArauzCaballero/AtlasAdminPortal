@@ -39,7 +39,7 @@ describe("CatalogVersionItemsTable", () => {
 
     await userEvent.type(
       screen.getByRole("textbox", {
-        name: "Buscar por código, nombre o tipo del item…",
+        name: "Buscar por código, nombre o tipo del elemento…",
       }),
       "mercantil",
     );
@@ -62,18 +62,18 @@ describe("CatalogVersionItemsTable", () => {
       <CatalogVersionItemsTable items={[]} columns={columnas} />,
     );
     expect(
-      screen.getByText("Esta versión no tiene items."),
+      screen.getByText("Esta versión no tiene elementos."),
     ).toBeInTheDocument();
     unmount();
     render(<CatalogVersionItemsTable items={ITEMS} columns={columnas} />);
     await userEvent.type(
       screen.getByRole("textbox", {
-        name: "Buscar por código, nombre o tipo del item…",
+        name: "Buscar por código, nombre o tipo del elemento…",
       }),
       "zzzz",
     );
     expect(
-      await screen.findByText("Ningún item coincide con los filtros."),
+      await screen.findByText("Ningún elemento coincide con los filtros."),
     ).toBeInTheDocument();
   });
 });

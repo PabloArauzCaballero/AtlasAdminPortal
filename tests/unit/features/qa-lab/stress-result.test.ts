@@ -179,7 +179,7 @@ describe("buildStressResult · agregación sin muestras", () => {
   it("sin muestras el umbral de throughput mínimo sí falla", () => {
     const result = buildFor([], { input: { minThroughputRps: 5 } });
     expect(result.thresholds[0]).toMatchObject({
-      name: "Throughput minimo",
+      name: "Peticiones por segundo mínimas",
       passed: false,
     });
   });

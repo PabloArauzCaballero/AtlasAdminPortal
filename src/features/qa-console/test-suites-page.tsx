@@ -1,6 +1,7 @@
 "use client";
 
-import { SUITE_TYPE_OPTIONS } from "./qa-options";
+import { ENVIRONMENT_OPTIONS, SUITE_TYPE_OPTIONS } from "./qa-options";
+import { optionLabel } from "@/shared/lib/options";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
@@ -73,7 +74,9 @@ function AuthorizedTestSuitesPage() {
         header: "Tipo",
         accessorKey: "suiteType",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.suiteType}</span>
+          <span className="text-xs">
+            {optionLabel(SUITE_TYPE_OPTIONS, row.original.suiteType)}
+          </span>
         ),
       },
       {
@@ -82,7 +85,9 @@ function AuthorizedTestSuitesPage() {
         cell: ({ row }) => (
           <span className="text-xs">
             {Array.isArray(row.original.environmentScope)
-              ? row.original.environmentScope.join(", ")
+              ? row.original.environmentScope
+                  .map((env) => optionLabel(ENVIRONMENT_OPTIONS, env))
+                  .join(", ")
               : "—"}
           </span>
         ),
@@ -95,12 +100,12 @@ function AuthorizedTestSuitesPage() {
         ),
       },
       {
-        header: "Seed",
+        header: "Datos de ejemplo",
         accessorKey: "requiresSeedData",
         cell: ({ row }) => formatBoolean(row.original.requiresSeedData),
       },
       {
-        header: "Prod safe",
+        header: "Segura en producción",
         accessorKey: "isSafeForProduction",
         cell: ({ row }) => formatBoolean(row.original.isSafeForProduction),
       },
@@ -118,8 +123,8 @@ function AuthorizedTestSuitesPage() {
     <>
       <PageHeader
         icon={ClipboardList}
-        title="Suites QA registradas en backend"
-        description="Suites de prueba registradas en `/systems/test-suites`. ¿Quieres ejecutar requests directos contra otra URL?"
+        title="Suites QA registradas"
+        description="Las suites de prueba guardadas en el sistema. ¿Quieres lanzar peticiones sueltas contra otra dirección?"
         actions={
           <div className="flex gap-2">
             <TutorialLaunchButton tutorialId="qa-suites-list" />

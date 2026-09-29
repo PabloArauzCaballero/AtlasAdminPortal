@@ -135,7 +135,7 @@ export function SimulateDialog({
             Este proveedor está en modo{" "}
             <strong>{etiquetaDeModo(provider.mode)}</strong>. Los escenarios los
             aplica el emulador, que sólo interviene en «simulado servidor»: en
-            cualquier otro modo la respuesta la fabrica el propio backend y el
+            cualquier otro modo la respuesta la genera el propio sistema y el
             escenario se ignora en su mayor parte.
           </p>
         ) : null}

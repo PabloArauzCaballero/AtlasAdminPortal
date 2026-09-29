@@ -16,7 +16,7 @@ export const operationsModuleExplanation: ModuleExplanation = {
     "/internal/events",
   ],
   systems:
-    "Herramientas del día a día del equipo interno: cola de trabajo, soporte, jobs programados, alertas, mensajería (avisos, plantillas y seguimiento de campañas), eventos entre procesos, comercios, cartera y exportaciones, todo con trazabilidad.",
+    "Herramientas del día a día del equipo interno: cola de trabajo, soporte, procesos automáticos, alertas, mensajería (avisos, plantillas y seguimiento de campañas), eventos entre procesos, comercios, cartera y exportaciones, todo con registro de quién hizo qué.",
   business:
     "Concentra la operación diaria: qué casos hay que atender, qué procesos automáticos corrieron, qué avisos llegaron y cómo se comunica el equipo — todo auditable.",
   views: {
@@ -28,7 +28,7 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/support/knowledge": {
       systems:
-        "Crea artículos y versiones con POST /admin/support/knowledge/articles y /articles/:id/versions, y las mueve con /versions/:id/submit-review, /approve y /publish. El servidor impide que el autor apruebe su propia versión y exige riesgo o cumplimiento para los equipos de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. La lista de artículos (GET /articles, cualquier estado y audiencia) y la cola de versiones por estado (GET /versions) son lecturas del personal; antes de cada paso se lee la versión completa con GET /versions/:id, y la versión propia en revisión no ofrece «Aprobar».",
+        "Crea artículos y versiones nuevas, los envía a revisión, los aprueba y los publica. El sistema impide que el autor apruebe su propia versión y exige a Riesgo o Cumplimiento para los temas de crédito, riesgo, pagos, identidad, seguridad, privacidad y legal. Antes de cada paso se muestra la versión completa, y en una versión propia en revisión no aparece «Aprobar».",
       business:
         "Las respuestas oficiales que ven clientes, comercios y el equipo. Se redactan, las revisa y aprueba otra persona, y sólo entonces se publican; lo publicado no se edita, se reemplaza por otra versión y queda la historia de qué decía cada día.",
     },
@@ -82,43 +82,43 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/operations/pending-contacts": {
       systems:
-        "Lista de `customer_contact_methods` con status `unverified` (GET /operations/customers/pending-contact-verification). El botón dispara POST /customer-onboarding/:id/contact-verification/request con rol interno: el backend genera y manda el código, con cooldown por destino.",
+        "Lista los medios de contacto (correo o teléfono) que siguen sin confirmar. El botón pide al sistema que genere y envíe un código nuevo, con una espera mínima entre envíos al mismo destino.",
       business:
         "Los usuarios de la app que se quedaron sin confirmar el correo o el teléfono, y un botón para reenviarles el código sin pedirles que vuelvan a empezar.",
     },
     "/internal/operations/payment-claims": {
       systems:
-        "Lista paginada de `credit.loan_payment_claims` de todo el tenant (GET /operations/payment-claims) con comercio, cliente, préstamo, cuota y horas de espera. Sólo lectura: la verificación es `POST /merchant/partners/:id/payment-claims/:claimId/verification`, que llama el ERP del comercio.",
+        "Lista de todos los avisos de pago, con comercio, cliente, préstamo, cuota y horas de espera. Es de consulta: quien confirma el pago es el comercio, desde su ERP.",
       business:
         "Los comprobantes que los clientes mandaron al pagar y que su comercio todavía no confirmó. Sirve para ver qué comercio deja avisos sin mirar más de 48 horas y llamarle, antes de que el cliente crea que su pago se perdió.",
     },
     "/internal/operations/work-queue": {
       systems:
-        "GET /operations/work-queue con `queue` (all / manual_review / fraud, pestaña `?cola=`), `q` (código de cliente o de caso), estado y prioridad, paginado en el servidor y con `summary.byType` para las cifras. `fraud_analyst` sólo entra con `queue=fraud`. Las rutas /internal/operations/manual-review-cases y /fraud-cases redirigen aquí.",
+        "La cola de trabajo, con pestañas para todos los casos, revisión manual y fraude, búsqueda por código de cliente o de caso, filtros de estado y prioridad y totales por tipo. Quien analiza fraude solo ve la pestaña de fraude. Las antiguas pantallas de revisión manual y de casos de fraude llevan aquí.",
       business:
         "El 'inbox' del analista: los casos de revisión manual y de fraude que esperan decisión, en una sola cola con una pestaña por tipo, sin planillas paralelas.",
     },
     "/internal/operations/manual-review-cases": {
       systems:
-        "Ruta antigua: redirige a /internal/operations/work-queue?cola=manual_review conservando sus parámetros.",
+        "Dirección antigua: lleva a la pestaña de revisión manual de la cola de trabajo, con los mismos filtros.",
       business:
         "La revisión manual es ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/operations/fraud-cases": {
       systems:
-        "Ruta antigua: redirige a /internal/operations/work-queue?cola=fraud conservando sus parámetros.",
+        "Dirección antigua: lleva a la pestaña de fraude de la cola de trabajo, con los mismos filtros.",
       business:
         "Los casos de fraude son ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/files": {
       systems:
-        "Expediente por sujeto sobre MinIO/S3: un árbol de carpetas con ruta materializada, concesiones heredadas por carpeta y bitácora append-only. Los archivos NUNCA se sirven por URL pública — el contenido pasa por la API autenticada y cada apertura queda registrada. Las subidas van por ticket firmado y el backend verifica hash, tamaño y tipo antes de dar el archivo por bueno. Los contactos y referencias no son un archivo: se componen desde la base al abrirlos, enmascarados salvo permiso de revelado.",
+        "El expediente de cada persona, organizado en carpetas. Los permisos se heredan por carpeta y cada movimiento queda en una bitácora que no se puede borrar. Los archivos NUNCA quedan en una dirección pública: solo se abren con sesión y cada apertura queda registrada. Al subir un archivo, el sistema comprueba que llegó completo, su tamaño y su tipo antes de darlo por bueno. Los contactos y referencias no son archivos: se muestran a partir de los datos del cliente, ocultos salvo permiso para verlos.",
       business:
         "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
     },
     "/internal/operations/loans": {
       systems:
-        "Cartera paginada con filtros de estado, tramo y código (GET /operations/loans) y ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
+        "Cartera de préstamos con filtros de estado, tramo y código, y la ficha de cada préstamo (cronograma, cobros e historial) desde donde se registra un cobro (sin duplicarlo aunque se pulse dos veces), se revierte un cobro o se castiga la deuda, junto con su calificación y la escala vigente. El desembolso se hace desde la ficha del cliente.",
       business:
         "Lo que pasa después de aprobar: entregar el dinero, anotar lo que el cliente paga, deshacer un cobro mal aplicado y reconocer una deuda como pérdida — siempre con motivo y con tu usuario en el historial.",
     },
@@ -127,43 +127,43 @@ export const operationsModuleExplanation: ModuleExplanation = {
     // no pueden tener clave propia y caen todas en esta entrada.
     "/internal/operations/customers": {
       systems:
-        "Ficha 360 del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación agregados desde varios módulos del backend. La pestaña de Auditoría lee `/operations/audit/customer/:id/feed` — paginado por cursor real sobre la vista `audit_event_feed`, que unifica las 8 fuentes de auditoría — y ofrece como modo secundario la ruta `/operations/audit/customer/:id`, deprecada en el backend, que aporta un resumen por evento y filtros por tipo y fecha a cambio de un conteo aproximado.",
+        "Ficha completa del cliente: identidad, sesiones, dispositivos, decisiones de riesgo y resumen de investigación, reunidos desde varios módulos. La pestaña de Auditoría junta las 8 fuentes de auditoría en una sola línea de tiempo, y ofrece un segundo modo, más antiguo, con resumen por evento y filtros por tipo y fecha, pero con un total aproximado.",
       business:
         "Toda la historia de un cliente en una pantalla para resolver un caso sin saltar entre sistemas, incluida la auditoría completa: qué le pasó al cliente, cuándo y quién lo hizo — la evidencia que respalda una decisión de riesgo, fraude o compliance.",
     },
     "/internal/operations/risk-assessments": {
       systems:
-        "Detalle de una evaluación de riesgo por `riskAssessmentRunId`: explicación legible (decisión, factores a favor/en contra, reglas disparadas) más la traza cruda — corrida, resultado con scores por dimensión, contribuciones de features y snapshot. No tiene listado: se llega por enlace desde la investigación del cliente.",
+        "Detalle de una evaluación de riesgo: la explicación legible (decisión, factores a favor y en contra, reglas que se cumplieron) y el detalle técnico completo con la puntuación por dimensión y el peso de cada variable. No tiene listado: se llega desde la investigación del cliente.",
       business:
         "Responde 'por qué el sistema decidió esto' con evidencia: el analista puede sostener, revertir o auditar una decisión de riesgo sin pedirle el desglose al equipo técnico.",
     },
     "/internal/operations/sessions": {
       systems:
-        "Resumen de investigación de una sesión (`OperationsSessionsController`): sesión, cliente y dispositivo, más la telemetría asociada — snapshots del dispositivo, reputación de IP, SIM, eventos de autenticación y permisos, GPS, acciones, observaciones y auditoría. Enlace directo por sessionId: no hay listado de sesiones.",
+        "Resumen de investigación de una sesión: la sesión, el cliente y el dispositivo, con todo lo registrado alrededor: estado del dispositivo, reputación de la conexión, SIM, inicios de sesión y permisos, GPS, acciones, observaciones y auditoría. Se llega desde un enlace: no hay listado de sesiones.",
       business:
         "Responde '¿esta sesión es legítima?' en una pantalla: si la conexión venía por VPN/proxy/Tor, si el teléfono estaba rooteado o era un emulador, cuántos logins fallaron y qué permisos se denegaron. Por privacidad nunca muestra la ubicación exacta, solo si hubo captura de GPS.",
     },
     "/internal/jobs": {
       systems:
-        "Dos pestañas sobre `system_job_runs`. «Historial»: cada corrida con estado, duración, entrada, resultado y error (de lectura; una corrida no se reintenta). «Ejecutar ahora» (sólo admin, platform_admin y system): disparo manual de los procesos de mantenimiento, que arrancan en ensayo y dejan su corrida en el historial.",
+        "Dos pestañas. «Historial»: cada ejecución con estado, duración, datos de entrada, resultado y error (solo consulta; una ejecución no se reintenta). «Ejecutar ahora» (solo administración): lanzar a mano los procesos de mantenimiento, que empiezan en modo ensayo y dejan su ejecución en el historial.",
       business:
         "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres) y la palanca para destrabar la operación cuando algo se atasca, sin esperar a la ventana programada ni pedir un despliegue.",
     },
     "/internal/notifications": {
       systems:
-        "Administración de mensajería: broadcasts a usuarios internos, plantillas versionadas y preferencias por canal.",
+        "Administración de mensajería: avisos a usuarios internos, plantillas con versiones y preferencias por canal.",
       business:
         "Cómo la plataforma comunica — desde un aviso de mantenimiento hasta la notificación de un incidente — con formato consistente.",
     },
     "/internal/my-notifications": {
       systems:
-        "Bandeja personal alimentada por el mismo feed de la campana; marca leído por ítem o en bloque y se sincroniza con la salud de herramientas.",
+        "Bandeja personal con los mismos avisos de la campana; se marcan como leídos uno a uno o todos juntos, y se actualiza con el estado de las herramientas.",
       business:
         "El historial personal de avisos: qué me notificaron, cuándo, y qué sigue pendiente de atender.",
     },
     "/internal/exports": {
       systems:
-        "Ruta retirada: redirige al catálogo de datos. Las descargas en JSON se hacen con el botón «Descargar JSON» de Endpoints, Catálogo de datos y Reglas de calidad, que baja el catálogo entero con la sesión de quien pulsa.",
+        "Dirección retirada: lleva al catálogo de datos. Las descargas en JSON se hacen con el botón «Descargar JSON» de Endpoints, Catálogo de datos y Reglas de calidad, que baja el catálogo entero con la sesión de quien lo pulsa.",
       business:
         "Los catálogos se descargan desde la pantalla de cada uno; aquí no hay un historial de exportaciones.",
     },

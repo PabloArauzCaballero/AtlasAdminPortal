@@ -30,17 +30,17 @@ export function SessionUnavailable({
         </div>
         <h1 className="text-lg font-semibold">
           {throttled
-            ? "Demasiadas peticiones al backend"
+            ? "Demasiadas solicitudes seguidas"
             : "No se pudo contactar con el servicio interno"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-300">
           {throttled
             ? "El límite de peticiones por minuto se agotó. Tu sesión sigue siendo válida: espera unos segundos y vuelve a intentarlo."
-            : "Tu sesión no se ha cerrado; el portal no consiguió leer tu perfil. Puede ser el backend reiniciándose o un corte de red."}
+            : "Tu sesión no se ha cerrado; el portal no consiguió leer tu perfil. Puede que el sistema se esté reiniciando o que haya un corte de red."}
         </p>
         {apiError?.requestId ? (
           <p className="mt-3 font-mono text-xs text-slate-300">
-            Request ID: {apiError.requestId}
+            Código de referencia: {apiError.requestId}
           </p>
         ) : null}
         <Button className="mt-5 w-full" variant="secondary" onClick={onRetry}>

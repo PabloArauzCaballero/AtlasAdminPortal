@@ -62,16 +62,20 @@ describe("ToolGovernanceNotes", () => {
     );
     expect(screen.queryByText("Valor de negocio")).not.toBeInTheDocument();
     expect(
-      screen.getByText(/no tiene metadata de gobierno registrada/i),
+      screen.getByText(/todavía no tiene notas de gobierno/i),
     ).toBeInTheDocument();
   });
 
   it("una herramienta de un catálogo antiguo no rompe la ficha y explica el hueco", () => {
     render(<ToolGovernanceNotes tool={BASE_TOOL} />);
     expect(
-      screen.getByText(/no tiene metadata de gobierno registrada/i),
+      screen.getByText(/todavía no tiene notas de gobierno/i),
     ).toBeInTheDocument();
-    // Dice de dónde sale, para que nadie la busque en un formulario que no existe.
-    expect(screen.getByText(/SYSTEM_TOOL_SEEDS/)).toBeInTheDocument();
+    // Dice quién la mantiene, para que nadie la busque en un formulario que no existe, y lo dice
+    // sin nombres internos del código.
+    expect(
+      screen.getByText(/la mantiene el equipo técnico; no se edita desde aquí/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/SYSTEM_TOOL_SEEDS|seed|backend/)).toBeNull();
   });
 });

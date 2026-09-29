@@ -37,8 +37,8 @@ export function RelatedEndpointsSection({
         <DataTable
           data={data}
           columns={columns}
-          emptyTitle="Relación con endpoints pendiente."
-          emptyDescription="La tabla aún no tiene impactos registrados. Revisa endpoint_impacts o el seed de catalogación."
+          emptyTitle="Todavía no se sabe qué operaciones usan esta tabla."
+          emptyDescription="Se completa al usar «Detectar tablas por operación» en Actualizar inventario."
         />
       ) : null}
     </div>

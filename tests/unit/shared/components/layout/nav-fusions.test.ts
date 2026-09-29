@@ -12,10 +12,10 @@ const hrefs = navGroups.flatMap((group) =>
 );
 
 describe("menú tras las fusiones de metadatos y linaje", () => {
-  it("el grupo Lineage tiene una sola entrada, la pantalla con pestañas", () => {
-    const lineage = navGroups.find((group) => group.label === "Lineage");
+  it("el grupo Linaje tiene una sola entrada, la pantalla con pestañas", () => {
+    const lineage = navGroups.find((group) => group.label === "Linaje");
     expect(lineage?.items.map((item) => [item.label, item.href])).toEqual([
-      ["Lineage", "/internal/lineage"],
+      ["Linaje", "/internal/lineage"],
     ]);
   });
 
@@ -42,7 +42,7 @@ describe("menú tras las fusiones de metadatos y linaje", () => {
   });
 
   it("el asistente nombra la pantalla nueva", () => {
-    expect(assistScreenFor("/internal/lineage")).toContain("Lineage");
+    expect(assistScreenFor("/internal/lineage")).toContain("Linaje");
     expect(assistScreenFor("/internal/business-metadata/domains")).toContain(
       "Dominios y glosario",
     );

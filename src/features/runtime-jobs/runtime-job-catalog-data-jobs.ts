@@ -10,11 +10,11 @@ import type { RuntimeJobDefinition } from "./types";
 export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
   {
     code: "mark-abandoned-onboardings",
-    title: "Cerrar onboardings abandonados",
+    title: "Cerrar altas abandonadas",
     systems:
-      "Marca como `abandoned` los flujos sin terminar cuya ÚLTIMA ACTIVIDAD supera el umbral. Cierra el flujo, no al cliente: quien dejó el registro a medias puede volver y retomar.",
+      "Marca como abandonadas las altas sin terminar cuya ÚLTIMA ACTIVIDAD supera el umbral. Cierra el alta, no al cliente: quien dejó el registro a medias puede volver y retomarlo.",
     business:
-      "Sin este cierre no existe tasa de abandono, que es la métrica que dice si el registro funciona: los flujos se quedaban en `in_progress` para siempre.",
+      "Sin este cierre no existe tasa de abandono, que es la cifra que dice si el registro funciona: las altas se quedaban «en curso» para siempre.",
     destructive: false,
     path: "/customer-onboarding/jobs/mark-abandoned",
     // Su cuerpo se valida en modo estricto: un `dryRun` de más es un 400.
@@ -23,15 +23,15 @@ export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
       {
         name: "olderThanDays",
         label: "Inactividad mínima (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
+        hint: "Entre 1 y 365. Vacío usa el valor por defecto (30).",
         placeholder: "30",
         min: 1,
         max: 365,
       },
       {
         name: "limit",
-        label: "Límite de flujos",
-        hint: "Entre 1 y 2000. Vacío usa el default del backend (500).",
+        label: "Límite de altas",
+        hint: "Entre 1 y 2000. Vacío usa el valor por defecto (500).",
         placeholder: "500",
         min: 1,
         max: 2000,
@@ -40,17 +40,17 @@ export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
   },
   {
     code: "purge-idempotency-keys",
-    title: "Purgar claves de idempotencia",
+    title: "Borrar comprobantes de repetición",
     systems:
-      "Borra las claves ya resueltas más antiguas que la retención indicada.",
+      "Borra los comprobantes que usa el sistema para no ejecutar dos veces la misma orden, cuando ya están resueltos y son más antiguos que el plazo indicado.",
     business:
-      "La tabla crece sin techo en la ruta más caliente de escritura. Purgar demasiado pronto es peor: convierte un reintento legítimo en una segunda ejecución del comando.",
+      "Estos comprobantes se acumulan sin límite en una de las partes más usadas del sistema. Borrarlos demasiado pronto es peor: un reintento legítimo se ejecutaría por segunda vez.",
     destructive: true,
     fields: [
       {
         name: "retentionDays",
         label: "Retención (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
+        hint: "Entre 1 y 365. Vacío usa el valor por defecto (30).",
         placeholder: "30",
         min: 1,
         max: 365,
@@ -58,7 +58,7 @@ export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
       {
         name: "limit",
         label: "Límite de filas",
-        hint: "Entre 1 y 10000. Vacío usa el default del backend (1000).",
+        hint: "Entre 1 y 10000. Vacío usa el valor por defecto (1000).",
         placeholder: "1000",
         min: 1,
         max: 10000,
@@ -67,17 +67,17 @@ export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
   },
   {
     code: "purge-processed-outbox",
-    title: "Purgar outbox ya procesado",
+    title: "Borrar eventos ya enviados",
     systems:
-      "Borra los eventos de outbox en estado `processed` pasada su retención.",
+      "Borra de la cola de eventos los que ya se enviaron, una vez pasado su plazo de conservación.",
     business:
-      "El outbox drenado seguía acumulando filas para siempre y degradaba el índice con el que se reclaman los pendientes; pasada la ventana, esa evidencia ya no sirve para diagnosticar.",
+      "Los eventos ya enviados se acumulaban para siempre y hacían más lenta la búsqueda de los pendientes; pasado el plazo, esa evidencia ya no sirve para diagnosticar.",
     destructive: true,
     fields: [
       {
         name: "retentionDays",
         label: "Retención (días)",
-        hint: "Entre 1 y 365. Vacío usa el default del backend (30).",
+        hint: "Entre 1 y 365. Vacío usa el valor por defecto (30).",
         placeholder: "30",
         min: 1,
         max: 365,
@@ -85,7 +85,7 @@ export const DATA_LIFECYCLE_JOBS: readonly RuntimeJobDefinition[] = [
       {
         name: "limit",
         label: "Límite de filas",
-        hint: "Entre 1 y 10000. Vacío usa el default del backend (1000).",
+        hint: "Entre 1 y 10000. Vacío usa el valor por defecto (1000).",
         placeholder: "1000",
         min: 1,
         max: 10000,

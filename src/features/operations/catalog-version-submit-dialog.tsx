@@ -53,7 +53,7 @@ export function CatalogVersionSubmitDialog({
 
         <Field
           label="Nota para quien aprueba"
-          tooltip="Lo que el aprobador necesita saber para decidir sin abrir cada item."
+          tooltip="Lo que el aprobador necesita saber para decidir sin abrir cada elemento."
           hint="Mín. 3 caracteres. Qué cambia esta versión y por qué — queda en el registro de aprobación."
           error={errors.notes?.message}
         >

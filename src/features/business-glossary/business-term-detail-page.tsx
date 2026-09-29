@@ -99,7 +99,10 @@ function AuthorizedBusinessTermDetailPage({
               { label: "Actualizado", value: formatDateTime(data.updatedAt) },
               { label: "Tablas", value: data.relatedTables?.join(", ") },
               { label: "Columnas", value: data.relatedColumns?.join(", ") },
-              { label: "Endpoints", value: data.relatedEndpoints?.join(", ") },
+              {
+                label: "Operaciones",
+                value: data.relatedEndpoints?.join(", "),
+              },
             ]}
           />
           <Card>
@@ -108,7 +111,7 @@ function AuthorizedBusinessTermDetailPage({
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-atlas-text">
               <p>{safeText(data.definition)}</p>
-              <JsonViewer title="Metadata" value={data.metadata} />
+              <JsonViewer title="Metadatos" value={data.metadata} />
             </CardContent>
           </Card>
           <Card>

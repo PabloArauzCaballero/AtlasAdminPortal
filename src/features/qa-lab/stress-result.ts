@@ -141,7 +141,7 @@ function evaluateThresholds(
     input.minThroughputRps === undefined
       ? null
       : {
-          name: "Throughput minimo",
+          name: "Peticiones por segundo mínimas",
           passed: throughputRps >= input.minThroughputRps,
           expected: `>= ${input.minThroughputRps} rps`,
           actual: `${throughputRps} rps`,

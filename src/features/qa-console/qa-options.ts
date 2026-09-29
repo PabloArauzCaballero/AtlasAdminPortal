@@ -10,48 +10,48 @@ import type { Option } from "@/shared/lib/options";
 export const SUITE_TYPE_OPTIONS: Option[] = [
   {
     value: "INTEGRATION",
-    label: "INTEGRATION",
+    label: "Integración",
     description:
       "Prueba que varios módulos funcionan juntos contra la base real.",
   },
   {
     value: "SMOKE",
-    label: "SMOKE",
+    label: "Humo (arranque)",
     description:
       "Pocos pasos rápidos para saber si el sistema arrancó bien tras desplegar.",
   },
   {
     value: "REGRESSION",
-    label: "REGRESSION",
+    label: "Regresión",
     description: "Cubre fallos ya corregidos para que no vuelvan a aparecer.",
   },
   {
     value: "E2E_API",
-    label: "E2E_API",
+    label: "Recorrido completo",
     description:
       "Recorre un flujo de negocio completo sólo a través de la API.",
   },
   {
     value: "LOAD",
-    label: "LOAD",
-    description: "Mide cómo responde el endpoint bajo volumen sostenido.",
+    label: "Carga",
+    description: "Mide cómo responde la ruta bajo volumen sostenido.",
   },
 ];
 
 export const ENVIRONMENT_OPTIONS: Option[] = [
   {
     value: "LOCAL",
-    label: "LOCAL",
+    label: "Local",
     description: "Tu máquina o un contenedor de desarrollo; datos desechables.",
   },
   {
     value: "STAGING",
-    label: "STAGING",
+    label: "Pruebas (preproducción)",
     description: "Entorno de pruebas compartido, parecido a producción.",
   },
   {
     value: "PRODUCTION_READONLY",
-    label: "PRODUCTION_READONLY",
+    label: "Producción en solo lectura",
     description: "Producción sólo en lectura; exige suite marcada como segura.",
   },
 ];
@@ -97,25 +97,25 @@ export const HTTP_METHOD_OPTIONS: Option[] = [
 export const STEP_INPUT_MODE_OPTIONS: Option[] = [
   {
     value: "DEFAULT",
-    label: "DEFAULT",
+    label: "Datos por defecto",
     description:
-      "Envía el payload y las cabeceras por defecto del paso, tal cual.",
+      "Envía el cuerpo y las cabeceras por defecto del paso, tal cual.",
   },
   {
     value: "CONFIGURABLE",
-    label: "CONFIGURABLE",
+    label: "Configurable al ejecutar",
     description:
-      "Pide parámetros al ejecutar, según el config schema del paso.",
+      "Pide parámetros al ejecutar, según los parámetros configurables del paso.",
   },
   {
     value: "GENERATED",
-    label: "GENERATED",
+    label: "Datos generados",
     description:
       "Genera datos de prueba nuevos en cada corrida (correos, IDs).",
   },
   {
     value: "FROM_PREVIOUS_STEP",
-    label: "FROM_PREVIOUS_STEP",
+    label: "Del paso anterior",
     description:
       "Usa lo que extrajo el paso anterior, p. ej. un token o un ID.",
   },
@@ -124,27 +124,27 @@ export const STEP_INPUT_MODE_OPTIONS: Option[] = [
 export const RUN_STATUS_OPTIONS: Option[] = [
   {
     value: "QUEUED",
-    label: "QUEUED",
-    description: "Encolada; espera un trabajador libre.",
+    label: "En cola",
+    description: "Encolada; espera a que haya capacidad libre.",
   },
   {
     value: "RUNNING",
-    label: "RUNNING",
+    label: "En curso",
     description: "Se está ejecutando ahora mismo.",
   },
   {
     value: "PASSED",
-    label: "PASSED",
+    label: "Aprobada",
     description: "Terminó y todas las comprobaciones pasaron.",
   },
   {
     value: "FAILED",
-    label: "FAILED",
+    label: "Fallida",
     description: "Terminó con al menos una comprobación fallida.",
   },
   {
     value: "CANCELLED",
-    label: "CANCELLED",
+    label: "Cancelada",
     description: "Detenida antes de terminar; sin veredicto.",
   },
 ];
@@ -152,22 +152,22 @@ export const RUN_STATUS_OPTIONS: Option[] = [
 export const STRESS_PROFILE_STATUS_OPTIONS: Option[] = [
   {
     value: "ACTIVE",
-    label: "ACTIVE",
+    label: "Activo",
     description: "En uso: se puede encolar una corrida con él.",
   },
   {
     value: "DISABLED",
-    label: "DISABLED",
+    label: "Desactivado",
     description: "Apagado a mano; no se puede encolar.",
   },
   {
     value: "NEEDS_REVIEW",
-    label: "NEEDS_REVIEW",
-    description: "El endpoint cambió; revisa umbrales antes de usarlo.",
+    label: "Por revisar",
+    description: "La ruta cambió; revisa umbrales antes de usarlo.",
   },
   {
     value: "DEPRECATED",
-    label: "DEPRECATED",
+    label: "Obsoleto",
     description: "Obsoleto; se conserva sólo por el historial.",
   },
 ];
@@ -180,22 +180,22 @@ export const STRESS_PROFILE_STATUS_OPTIONS: Option[] = [
 export const STRESS_RUN_STATUS_OPTIONS: Option[] = [
   {
     value: "QUEUED",
-    label: "QUEUED",
-    description: "En cola; espera al consumidor de estrés.",
+    label: "En cola",
+    description: "En cola; espera al servicio que ejecuta la carga.",
   },
   {
     value: "RUNNING",
-    label: "RUNNING",
-    description: "El consumidor la está ejecutando ahora.",
+    label: "En curso",
+    description: "El servicio de carga la está ejecutando ahora.",
   },
   {
     value: "COMPLETED",
-    label: "COMPLETED",
+    label: "Completada",
     description: "Terminó; el veredicto de umbrales está en su resultado.",
   },
   {
     value: "FAILED",
-    label: "FAILED",
+    label: "Fallida",
     description: "No pudo ejecutarse o se cortó; mira el error.",
   },
 ];

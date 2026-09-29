@@ -65,7 +65,7 @@ export function AccesoASoporte({
             </p>
             {error.requestId ? (
               <p className="mt-3 font-mono text-xs text-amber-700">
-                Request ID: {error.requestId}
+                Código de referencia: {error.requestId}
               </p>
             ) : null}
           </div>

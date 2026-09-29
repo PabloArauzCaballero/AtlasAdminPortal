@@ -49,7 +49,7 @@ function AuthorizedLineagePage() {
       <PageHeader
         icon={Waypoints}
         eyebrow="Linaje"
-        title="Lineage"
+        title="Linaje"
         description="Qué rutas leen o escriben cada tabla y cómo se relacionan las tablas entre sí, calculado sobre el catálogo completo."
       />
       <BusinessContextNote>

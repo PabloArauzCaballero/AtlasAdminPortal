@@ -26,9 +26,8 @@ export function ToolGovernanceNotes({ tool }: Readonly<{ tool: ToolItem }>) {
       <Card>
         <CardContent>
           <p className="text-sm text-atlas-muted">
-            Esta herramienta no tiene metadata de gobierno registrada. Se
-            completa desde el seed del catálogo (`SYSTEM_TOOL_SEEDS` en el
-            backend), no desde esta pantalla.
+            Esta herramienta todavía no tiene notas de gobierno. Esta
+            información la mantiene el equipo técnico; no se edita desde aquí.
           </p>
         </CardContent>
       </Card>

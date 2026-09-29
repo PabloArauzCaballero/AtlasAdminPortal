@@ -13,7 +13,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
   tool: "Árbol de decisión",
   title: "Leer el árbol de decisión del recorrido",
   description:
-    "El proceso estándar del negocio tal como lo publica el backend: etapas, endpoints, condiciones de paso y dependencias.",
+    "El proceso estándar del negocio tal como lo publica el sistema: etapas, rutas, condiciones de paso y dependencias.",
   level: "intermediate",
   version: 4,
   route: "/internal/qa/lab",
@@ -24,7 +24,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       id: "what",
       title: "El recorrido no se inventa: se consulta",
       content:
-        "El backend ya sabía QUÉ endpoints expone. El catálogo de flujos responde lo que faltaba: en qué ORDEN se recorren, bajo qué CONDICIÓN se pasa de uno al siguiente y qué estado del cliente habilita cada paso.\n\nEsta pestaña dibuja ese catálogo: si el backend publica una versión nueva del flujo, el dibujo cambia solo.",
+        "El sistema ya sabía QUÉ rutas expone. El catálogo de flujos responde lo que faltaba: en qué ORDEN se recorren, bajo qué CONDICIÓN se pasa de uno al siguiente y qué estado del cliente habilita cada paso.\n\nEsta pestaña dibuja ese catálogo: si el sistema publica una versión nueva del flujo, el dibujo cambia solo.",
       example:
         "Hoy hay tres flujos publicados: el alta de cuenta hasta la sesión iniciada, el arranque de la app hasta la primera pantalla, y el recorrido completo hasta la decisión de crédito.",
       demo: "decision-tree",
@@ -34,7 +34,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       target: "qa-lab-tabs",
       title: "Abre la pestaña «Árbol de decisión»",
       content:
-        "Es la tercera pestaña. Al abrirla, el portal pide el flujo al backend y lo dibuja como un lienzo de nodos: se arrastra para moverse y se hace zoom con Ctrl + rueda. Es de solo lectura.",
+        "Es la tercera pestaña. Al abrirla, el portal pide el flujo al servidor y lo dibuja como un lienzo de nodos: se arrastra para moverse y se hace zoom con Ctrl + rueda. Es de solo lectura.",
       position: "bottom",
       requiredAction: {
         type: "element-appears",
@@ -59,9 +59,9 @@ export const decisionTreeTutorial: TutorialDefinition = {
     {
       id: "steps",
       target: "workflow-graph",
-      title: "Cada nodo es un endpoint real",
+      title: "Cada nodo es una ruta real",
       content:
-        "Dentro de la etapa, cada fila es un paso: su método, su ruta y su nombre de negocio. Es el endpoint que hay que llamar de verdad — el mismo que puedes probar en la pestaña «Prueba unitaria».\n\nLa fila punteada es un paso opcional; «entrada» y «salida» marcan por dónde empieza y termina el recorrido.",
+        "Dentro de la etapa, cada fila es un paso: su método, su ruta y su nombre de negocio. Es la ruta que hay que llamar de verdad — el mismo que puedes probar en la pestaña «Prueba unitaria».\n\nLa fila punteada es un paso opcional; «entrada» y «salida» marcan por dónde empieza y termina el recorrido.",
       example:
         "La entrada del flujo es POST /customer-onboarding/start y la salida, POST /operations/credit/applications/:id/decision.",
       position: "right",
@@ -114,7 +114,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       target: "workflow-detail",
       title: "La ficha de lo que selecciones",
       content:
-        "Roles autorizados, estados requeridos y resultantes, eventos que produce, errores posibles y de qué pasos depende.\n\nDe una etapa verás además su regla de completitud: cuándo el backend la da por terminada.",
+        "Roles autorizados, estados requeridos y resultantes, eventos que produce, errores posibles y de qué pasos depende.\n\nDe una etapa verás además su regla de completitud: cuándo el sistema la da por terminada.",
       example:
         "Selecciona GET /auth/me y pulsa «Enviar GET»: responde 200 con tu propio actor, o 401 si tu sesión caducó.",
       position: "left",
@@ -126,9 +126,9 @@ export const decisionTreeTutorial: TutorialDefinition = {
       target: "workflow-controls",
       title: "Versión y filtros",
       content:
-        "El catálogo está versionado: puedes ver la vigente o una versión concreta.\n\nLos filtros por módulo y actor los aplica el BACKEND, no el navegador: así el recorte nunca deja una flecha apuntando a un paso que ya no está en pantalla.",
+        "El catálogo está versionado: puedes ver la vigente o una versión concreta.\n\nLos filtros por módulo y actor los aplica el SERVIDOR, no el navegador: así el recorte nunca deja una flecha apuntando a un paso que ya no está en pantalla.",
       example:
-        "«Alta de cuenta» responde qué endpoints toca un usuario para registrarse y quedar logueado; «primera pantalla», qué se llama entre el login y el inicio.",
+        "«Alta de cuenta» responde qué rutas toca un usuario para registrarse y quedar con la sesión iniciada; «primera pantalla», qué se llama entre el login y el inicio.",
       position: "bottom",
       waitForElement: true,
     },
@@ -138,7 +138,7 @@ export const decisionTreeTutorial: TutorialDefinition = {
       content:
         "Te dice qué probar y en qué orden: los pasos obligatorios del camino principal son los que no pueden fallar, y las dependencias te dicen qué hay que dejar hecho antes de probar uno suelto.",
       example:
-        "¿Vas a armar un journey en la pestaña anterior? Copia de aquí el orden de los pasos y sus rutas: es el recorrido real, no uno inventado.",
+        "¿Vas a armar un recorrido en la pestaña anterior? Copia de aquí el orden de los pasos y sus rutas: es el recorrido real, no uno inventado.",
       optional: true,
     },
   ],

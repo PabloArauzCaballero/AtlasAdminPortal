@@ -5,6 +5,8 @@ import {
   formatNumber,
 } from "@/shared/lib/format";
 import type { StressProfile } from "@/features/systems/types";
+import { ENVIRONMENT_OPTIONS } from "@/features/qa-console/qa-options";
+import { optionLabel } from "@/shared/lib/options";
 
 /** La grilla de campos del perfil, separada de la página para que quepa bajo el límite de líneas. */
 export function StressProfileSummary({
@@ -14,16 +16,24 @@ export function StressProfileSummary({
     <KeyValueGrid
       items={[
         { label: "Código", value: profile.code, mono: true },
-        { label: "Endpoint", value: `#${profile.endpointId}`, mono: true },
-        { label: "Target RPS", value: formatNumber(profile.targetRps) },
+        { label: "Ruta", value: `#${profile.endpointId}`, mono: true },
+        {
+          label: "Peticiones por segundo objetivo",
+          value: formatNumber(profile.targetRps),
+        },
         {
           label: "Duración",
           value: `${formatNumber(profile.durationSeconds)} s`,
         },
         { label: "Concurrencia", value: formatNumber(profile.concurrency) },
-        { label: "Max error rate", value: profile.maxErrorRate },
-        { label: "Max p95 ms", value: profile.maxP95Ms },
-        { label: "Ambientes", value: profile.environmentScope.join(", ") },
+        { label: "Error máximo aceptable", value: profile.maxErrorRate },
+        { label: "P95 máximo (ms)", value: profile.maxP95Ms },
+        {
+          label: "Ambientes",
+          value: profile.environmentScope
+            .map((env) => optionLabel(ENVIRONMENT_OPTIONS, env))
+            .join(", "),
+        },
         { label: "Habilitado", value: formatBoolean(profile.isEnabled) },
         {
           label: "Requiere aprobación",

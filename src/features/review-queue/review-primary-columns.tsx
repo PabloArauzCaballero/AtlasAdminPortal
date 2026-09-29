@@ -94,9 +94,9 @@ export function buildEntityColumns(
       accessorKey: "module",
       cell: ({ row }) => <ModuleBadge value={row.original.module} />,
     },
-    { header: "Owner", accessorKey: "dataOwner" },
+    { header: "Responsable", accessorKey: "dataOwner" },
     {
-      header: "PII",
+      header: "Datos personales",
       accessorKey: "containsPii",
       cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
     },

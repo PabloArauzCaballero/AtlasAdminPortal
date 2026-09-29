@@ -171,7 +171,7 @@ function AuthorizedActiveArtifactsPage() {
       <PageHeader
         icon={Cpu}
         title="Artefactos activos del motor"
-        description="Todo lo que el ATLAS Decision Engine tiene DESPLEGADO ahora mismo, desde `/systems/decision-engine/artifacts`."
+        description="Todo lo que el motor de decisión tiene publicado y en uso ahora mismo."
         actions={
           <Button
             onClick={() => void artifacts.refetch()}

@@ -78,7 +78,7 @@ function AuthorizedCatalogVersionDetailPage({
         icon={Boxes}
         eyebrow="Catálogos"
         title={`Versión ${safeText(version?.versionCode)}`}
-        description={`Ciclo de aprobación de una versión de \`${catalogCode}\`. Conectado a \`/operations/catalogs/:catalogCode/versions/:versionId\`.`}
+        description={`Ciclo de aprobación de una versión del catálogo ${catalogCode}.`}
         actions={
           <Link href="/internal/operations/catalogs">
             <Button>
@@ -91,11 +91,10 @@ function AuthorizedCatalogVersionDetailPage({
 
       <BusinessContextNote>
         Una versión de catálogo recorre borrador → aprobación → publicación.
-        Solo la versión <span className="font-mono">published</span> alimenta a
-        las reglas de negocio: mientras está en borrador o esperando aprobación
-        no afecta a producción. Publicar o retirar cambia lo que el motor de
-        decisión lee en vivo, por eso cada paso pide una justificación que queda
-        en la auditoría.
+        Solo la versión publicada alimenta a las reglas de negocio: mientras
+        está en borrador o esperando aprobación no afecta a producción. Publicar
+        o retirar cambia lo que el motor de decisión lee en vivo, por eso cada
+        paso pide una justificación que queda en la auditoría.
       </BusinessContextNote>
 
       {detail.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -190,7 +189,7 @@ function AuthorizedCatalogVersionDetailPage({
           <Card>
             <CardHeader>
               <SectionHeader
-                title="Items de la versión"
+                title="Elementos de la versión"
                 description="Valores que la versión aporta al motor de decisión. Abre un código para ver atributos, alias y mapeos de riesgo."
                 className="mb-0"
               />

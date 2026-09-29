@@ -36,9 +36,9 @@ const suitesList: TutorialDefinition = {
       target: "qa-suites-table",
       title: "Tus suites registradas",
       content:
-        "Esta lista muestra las suites guardadas en el backend, con su módulo, tipo y si son seguras para producción. El código (en verde) abre el detalle de la suite.",
+        "Esta lista muestra las suites guardadas en el sistema, con su módulo, tipo y si son seguras para producción. El código (en verde) abre el detalle de la suite.",
       example:
-        "La columna «Prod safe» en verde significa que puedes correrla en producción (sólo lectura) sin riesgo de tocar datos reales.",
+        "La columna «Segura en producción» en verde significa que puedes correrla en producción (sólo lectura) sin riesgo de tocar datos reales.",
       position: "top",
       waitForElement: true,
     },
@@ -49,7 +49,7 @@ const suitesList: TutorialDefinition = {
       content:
         "El botón «Nueva suite» abre el formulario. Necesitas: un nombre claro, el módulo al que pertenece y el tipo de prueba (funcional, regresión, humo…).",
       example:
-        "Nombre «Inicio de sesión», módulo «internal-auth», tipo «SMOKE»: una suite corta que valida que el login básico responde.",
+        "Nombre «Inicio de sesión», módulo «internal-auth», tipo «Humo (arranque)»: una suite corta que valida que el login básico responde.",
       position: "bottom",
       requiredAction: { type: "element-appears", targetId: "qa-suite-form" },
       validation: {
@@ -62,7 +62,7 @@ const suitesList: TutorialDefinition = {
       target: "qa-suite-form",
       title: "Rellena los datos",
       content:
-        "El tipo de suite, el módulo y los ambientes salen de catálogos del backend (no texto libre). Marca «segura para producción» sólo si la suite no altera datos reales.",
+        "El tipo de suite, el módulo y los ambientes salen de listas fijas del sistema (no texto libre). Marca «segura para producción» sólo si la suite no altera datos reales.",
       example:
         "Si la suite sólo hace GET (lectura), márcala «segura para producción». Si crea o borra, déjala desmarcada.",
       position: "left",
@@ -113,25 +113,25 @@ const suiteDetail: TutorialDefinition = {
       waitForElement: true,
       title: "Las cuatro pestañas del detalle",
       content:
-        "Resumen (qué es la suite) · Pasos (los casos que ejecuta) · Config (variables y ambiente) · Ejecución (lanzarla y ver el resultado).\n\nEl orden es también el flujo de trabajo: primero defines, luego configuras, luego ejecutas.",
+        "Resumen (qué es la suite) · Pasos (los casos que ejecuta) · Configuración (variables y ambiente) · Ejecución (lanzarla y ver el resultado).\n\nEl orden es también el flujo de trabajo: primero defines, luego configuras, luego ejecutas.",
       example:
-        "Para una suite nueva vas de izquierda a derecha: Pasos (añadir casos) → Config (elegir ambiente) → Ejecución (lanzar).",
+        "Para una suite nueva vas de izquierda a derecha: Pasos (añadir casos) → Configuración (elegir ambiente) → Ejecución (lanzar).",
     },
     {
       id: "steps",
       title: "Pasos = casos de prueba",
       content:
-        "Cada paso es un caso: una acción contra el backend con un resultado esperado. Puedes añadir, reordenar y quitar pasos. El orden importa: se ejecutan de arriba a abajo.",
+        "Cada paso es un caso: una acción contra el servidor con un resultado esperado. Puedes añadir, reordenar y quitar pasos. El orden importa: se ejecutan de arriba a abajo.",
       example:
         "Paso 1: crear cliente (espera 201). Paso 2: consultar el cliente creado (espera 200 con sus datos).",
     },
     {
       id: "config",
-      title: "Config: ambiente y variables",
+      title: "Configuración: ambiente y variables",
       content:
         "Elige el ambiente destino (dónde se ejecuta) y define variables compartidas que todos los pasos pueden reutilizar. El ambiente sale de catálogo: nunca escribes una URL a mano.",
       example:
-        "Defines una variable `baseCustomerId` una vez y los 5 pasos la reutilizan como `{{baseCustomerId}}`; cambiarla en un sitio actualiza todos.",
+        "Defines una variable baseCustomerId una vez y los 5 pasos la reutilizan como {{baseCustomerId}}; cambiarla en un sitio actualiza todos.",
     },
     {
       id: "run",
@@ -139,14 +139,14 @@ const suiteDetail: TutorialDefinition = {
       content:
         "Al ejecutar, cada paso termina en un estado. Aprende a leerlos en el tutorial «Interpretar una ejecución»: Aprobado, Fallido, Bloqueado, Omitido y Error de infraestructura no piden la misma acción.",
       example:
-        "Empieza siempre en dry-run: valida la configuración sin llamar al host real. Cuando esté verde, desmarca dry-run y ejecuta de verdad.",
+        "Empieza siempre en simulación: valida la configuración sin llamar al servidor real. Cuando esté verde, desmarca la simulación y ejecuta de verdad.",
     },
   ],
 };
 
 const runsInterpret: TutorialDefinition = {
   id: "qa-runs-interpret",
-  module: "Runs",
+  module: "Corridas",
   tab: "Detalle",
   tool: "Interpretación de resultados",
   title: "Interpretar una ejecución",
@@ -160,11 +160,11 @@ const runsInterpret: TutorialDefinition = {
   steps: [
     {
       id: "what",
-      title: "¿Qué es un run?",
+      title: "¿Qué es una corrida?",
       content:
-        "Un run es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.",
+        "Una corrida es el registro de una ejecución: qué suite/paso se corrió, cuándo, cuánto tardó y en qué estado terminó cada paso. Es tu evidencia y tu punto de partida para depurar.",
       example:
-        "Un run con «Duración: 4200 ms» y 5 pasos te dice de un vistazo cuánto tardó todo el flujo y dónde se fue el tiempo.",
+        "Una corrida con «Duración: 4200 ms» y 5 pasos te dice de un vistazo cuánto tardó todo el flujo y dónde se fue el tiempo.",
     },
     {
       id: "open",
@@ -182,7 +182,7 @@ const runsInterpret: TutorialDefinition = {
     {
       id: "summary",
       target: "qa-run-summary",
-      title: "El resumen del run",
+      title: "El resumen de la corrida",
       content:
         "Arriba tienes de qué suite viene, contra qué ambiente corrió, cuánto tardó y su estado global.",
       position: "bottom",
@@ -194,7 +194,7 @@ const runsInterpret: TutorialDefinition = {
       target: "qa-run-steps",
       title: "Los estados y su acción recomendada",
       content:
-        "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → falló el entorno (DB caída, timeout de red); reintenta antes de reportar un bug.",
+        "• Pendiente / En ejecución → espera.\n• Aprobado → lo esperado ocurrió; nada que hacer.\n• Fallido → el resultado real ≠ el esperado; abre el paso y compara.\n• Bloqueado → un paso previo impidió continuar; corrige la causa raíz.\n• Omitido → no se ejecutó (condición no cumplida).\n• Error de infraestructura → falló el entorno (base de datos caída, red sin respuesta); reintenta antes de reportar un defecto.",
       example:
         "3 Aprobados, 1 Fallido y 1 Bloqueado: el Bloqueado es consecuencia del Fallido. Arreglas el Fallido y normalmente el Bloqueado se resuelve solo.",
       position: "top",
@@ -206,7 +206,7 @@ const runsInterpret: TutorialDefinition = {
       id: "fail",
       title: "Cuando un paso falla",
       content:
-        "Abre el paso fallido y compara «esperado» vs «obtenido». La diferencia te dice si el bug está en el dato, en el endpoint o en la propia expectativa del caso (que quizá quedó desactualizada).",
+        "Abre el paso fallido y compara «esperado» vs «obtenido». La diferencia te dice si el defecto está en el dato, en la ruta o en la propia expectativa del caso (que quizá quedó desactualizada).",
       example:
         "Esperado: 200 con el cliente. Obtenido: 404. → El cliente no se creó en el paso anterior: el problema está aguas arriba, no en este paso.",
     },

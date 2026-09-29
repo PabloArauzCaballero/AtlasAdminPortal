@@ -47,10 +47,10 @@ const STATIC_ROUTES: Route[] = [
     path: "/internal/business-metadata/definitions",
     heading: /definiciones del motor/i,
   },
-  { path: "/internal/lineage", heading: /^lineage$/i },
+  { path: "/internal/lineage", heading: /^linaje$/i },
   // Redirigen a las pestañas de Lineage.
-  { path: "/internal/lineage/official", heading: /^lineage$/i },
-  { path: "/internal/lineage/impact", heading: /^lineage$/i },
+  { path: "/internal/lineage/official", heading: /^linaje$/i },
+  { path: "/internal/lineage/impact", heading: /^linaje$/i },
   { path: "/internal/governance", heading: /gobierno/i },
   // #59 renombró el h1 a «Registro de datos personales» (sin la sigla) y nadie tocó esta lista:
   // el barrido de dev llevaba desde entonces rojo en esta vista.
@@ -60,25 +60,31 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/data-quality/rules", heading: /reglas/i },
   { path: "/internal/data-quality/issues", heading: /incidencias|issues/i },
   { path: "/internal/reports", heading: /reporter[íi]a/i },
-  { path: "/internal/reports/readiness", heading: /readiness|disponibilidad/i },
-  { path: "/internal/release-readiness", heading: /release|disponibilidad/i },
+  {
+    path: "/internal/reports/readiness",
+    heading: /preparación|readiness|disponibilidad/i,
+  },
+  {
+    path: "/internal/release-readiness",
+    heading: /preparación|release|disponibilidad/i,
+  },
   { path: "/internal/qa/lab", heading: /laboratorio/i },
   { path: "/internal/qa/suites", heading: /suites/i },
-  { path: "/internal/qa/runs", heading: /runs qa/i },
+  { path: "/internal/qa/runs", heading: /corridas/i },
   { path: "/internal/qa/stress", heading: /carga|stress/i },
   { path: "/internal/qa/stress/runs", heading: /carga|stress/i },
   { path: "/internal/review-queue", heading: /revisi[óo]n/i },
   { path: "/internal/operations/work-queue", heading: /cola de trabajo/i },
   { path: "/internal/operations/catalogs", heading: /cat[áa]logos/i },
-  { path: "/internal/jobs?tab=ejecutar", heading: /^jobs$/i },
-  { path: "/internal/jobs", heading: /^jobs$/i },
+  { path: "/internal/jobs?tab=ejecutar", heading: /^procesos automáticos$/i },
+  { path: "/internal/jobs", heading: /^procesos automáticos$/i },
   { path: "/internal/notifications", heading: /notificaciones/i },
   { path: "/internal/my-notifications", heading: /mis notificaciones/i },
   // Redirige al catálogo de datos, que tiene el botón «Descargar JSON».
   { path: "/internal/exports", heading: /cat[áa]logo de datos/i },
   // «Formularios» se quitó (2026-09-29): redirige a «Versiones de esquema» (ya probado abajo).
   { path: "/internal/schema/versions", heading: /versiones de esquema/i },
-  { path: "/internal/schema/change-log", heading: /change log/i },
+  { path: "/internal/schema/change-log", heading: /historial de cambios/i },
   { path: "/internal/risk-policy/current", heading: /pol[íi]tica de riesgo/i },
   { path: "/internal/external-providers", heading: /proveedores/i },
   { path: "/internal/external-providers/audits", heading: /auditor[íi]as/i },
@@ -87,7 +93,10 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/settings/roles", heading: /roles/i },
   { path: "/internal/settings/permissions", heading: /permisos/i },
   { path: "/internal/settings/profile", heading: /perfil/i },
-  { path: "/internal/settings/catalog-sync", heading: /sincroniza/i },
+  {
+    path: "/internal/settings/catalog-sync",
+    heading: /actualizar inventario/i,
+  },
   { path: "/internal/security/session", heading: /sesi[óo]n/i },
   { path: "/internal/search", heading: /b[úu]squeda global/i },
   {

@@ -72,7 +72,7 @@ describe("ProviderAuthSection · GET /admin/external-providers/:providerCode/aut
     renderWithProviders(<ProviderAuthSection providerCode="segip" />);
 
     expect(
-      await screen.findByText(/todavía no delega la autenticación/),
+      await screen.findByText(/todavía no usa el servicio de credenciales/),
     ).toBeInTheDocument();
     expect(services.getProviderAuthState).not.toHaveBeenCalled();
   });

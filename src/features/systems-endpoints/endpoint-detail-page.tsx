@@ -34,7 +34,7 @@ const tabs = [
   "Tablas impactadas",
   "Campos impactados",
   "Herramientas",
-  "QA Lab",
+  "Pruebas QA",
 ];
 
 export function EndpointDetailPage(props: Readonly<{ endpointId: string }>) {
@@ -75,18 +75,18 @@ function AuthorizedEndpointDetailPage({
         <>
           <PageHeader
             icon={Route}
-            eyebrow={`Endpoint #${data.endpoint.endpointId}`}
+            eyebrow={`Operación #${data.endpoint.endpointId}`}
             title={data.endpoint.routeName ?? data.endpoint.handlerName}
             description={
               data.endpoint.businessPurpose ??
-              "Endpoint sin propósito de negocio documentado todavía."
+              "Esta operación todavía no tiene documentado para qué sirve en el negocio."
             }
             actions={
               <>
                 <Link
                   href={`/internal/qa/lab?endpointId=${data.endpoint.endpointId}`}
                 >
-                  <Button variant="primary">Probar endpoint</Button>
+                  <Button variant="primary">Probar operación</Button>
                 </Link>
                 {canSeeFlows && data.endpoint.handlerName ? (
                   // Enlace cruzado al mapa de rutas, sólo con su permiso: a los demás les llevaría a
@@ -118,7 +118,7 @@ function AuthorizedEndpointDetailPage({
               data={impact.data?.tables ?? data.dataEntityImpacts}
               columns={columns.dataImpact}
               emptyTitle="NO IMPACTA NINGUNA TABLA"
-              emptyDescription="Este endpoint no escribe ni lee ninguna tabla catalogada."
+              emptyDescription="Esta operación no escribe ni lee ninguna tabla del catálogo."
             />
           ) : null}
           {activeTab === "Campos impactados" ? (
@@ -131,8 +131,8 @@ function AuthorizedEndpointDetailPage({
               emptyTitle="NO IMPACTA NINGÚN CAMPO"
               emptyDescription={
                 (impact.data?.tables ?? data.dataEntityImpacts).length > 0
-                  ? "Este endpoint impacta tablas a nivel de registro (INSERT/DELETE de filas completas), pero no hay columnas individuales catalogadas para este endpoint."
-                  : "Este endpoint no impacta ningún campo catalogado."
+                  ? "Esta operación crea o borra filas completas de alguna tabla, pero no hay campos concretos registrados para ella."
+                  : "Esta operación no modifica ningún campo del catálogo."
               }
             />
           ) : null}
@@ -144,10 +144,10 @@ function AuthorizedEndpointDetailPage({
               data={impact.data?.tools ?? data.toolRequirements}
               columns={columns.tools}
               emptyTitle="NO REQUIERE HERRAMIENTAS"
-              emptyDescription="Este endpoint no depende de herramientas externas (buró, WhatsApp, storage, etc.)."
+              emptyDescription="Esta operación no depende de herramientas externas (buró, WhatsApp, almacenamiento de archivos, etc.)."
             />
           ) : null}
-          {activeTab === "QA Lab" ? (
+          {activeTab === "Pruebas QA" ? (
             <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
               <EndpointTestCard
                 endpointId={data.endpoint.endpointId}
@@ -207,7 +207,7 @@ function EndpointError({
       description={
         isAtlasApiError(error)
           ? error.message
-          : "No se pudo cargar la información del endpoint."
+          : "No se pudo cargar la información de la operación."
       }
       requestId={isAtlasApiError(error) ? error.requestId : undefined}
       onRetry={() => void retry()}

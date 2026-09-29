@@ -54,8 +54,8 @@ export const catalogIngestionFormSchema = z.object({
   sourceCode: OPTIONAL_CODE,
   items: z
     .array(ingestionItemFormSchema)
-    .min(1, "La ingesta necesita al menos un item.")
-    .max(1000, "Máximo 1000 items por ingesta."),
+    .min(1, "La ingesta necesita al menos un elemento.")
+    .max(1000, "Máximo 1000 elementos por ingesta."),
 });
 
 export type IngestionItemForm = z.infer<typeof ingestionItemFormSchema>;

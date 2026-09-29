@@ -30,7 +30,7 @@ export function PolicyPreviewTab() {
     try {
       input = inputJson.trim() ? JSON.parse(inputJson) : {};
     } catch {
-      setJsonError("El input debe ser JSON válido.");
+      setJsonError("Los datos de entrada deben ser un JSON válido.");
       return;
     }
     setJsonError(null);
@@ -72,8 +72,8 @@ export function PolicyPreviewTab() {
           />
         </Field>
         <Field
-          tooltip="Tipo de consulta a evaluar, p. ej. IDENTITY_VERIFICATION."
-          label="Query type"
+          tooltip="Código del tipo de consulta a evaluar, tal como lo usa el proveedor (p. ej. verificación de identidad)."
+          label="Tipo de consulta"
         >
           <Input
             value={queryType}
@@ -100,8 +100,8 @@ export function PolicyPreviewTab() {
         />
       </Field>
       <Field
-        tooltip="Datos de entrada de la consulta en JSON, como los mandaría el backend."
-        label="Input (JSON)"
+        tooltip="Datos de entrada de la consulta en JSON, como los enviaría el sistema."
+        label="Datos de entrada (JSON)"
       >
         <Textarea
           value={inputJson}

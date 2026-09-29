@@ -168,7 +168,7 @@ describe("Encolar una corrida", () => {
       await screen.findByText(/Encolar está desactivado en este entorno/),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Encolar dry-run/ }),
+      screen.getByRole("button", { name: /Encolar simulación/ }),
     ).toBeDisabled();
   });
 
@@ -176,7 +176,7 @@ describe("Encolar una corrida", () => {
     consumerEnabled = true;
     renderWithProviders(<StressProfileDetailPage profileId="5" />);
     const button = await screen.findByRole("button", {
-      name: /Encolar dry-run/,
+      name: /Encolar simulación/,
     });
     await waitFor(() => expect(button).toBeEnabled());
     expect(screen.queryByText(/Encolar está desactivado/)).toBeNull();
