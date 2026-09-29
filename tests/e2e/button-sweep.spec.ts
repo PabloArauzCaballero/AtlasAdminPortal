@@ -66,8 +66,9 @@ const ROUTES = [
 const MAX_CONTROLS = 30;
 
 /** Ruido que NO es una avería del portal (ver el comentario junto a la comprobación). */
-const ERRORES_ESPERADOS =
-  /logs\/mongo|503|429|404[^\n]*\/api\/v1\/internal\/assist\//;
+// `consoleErrors` trae la URL completa (…/api/v1/internal/assist/…) y `failedRequests` sólo la ruta
+// ("404 /internal/assist/…"): el patrón cubre las dos formas.
+const ERRORES_ESPERADOS = /logs\/mongo|503|429|404[^\n]*\/internal\/assist\//;
 
 /**
  * Cierra el diálogo que un control haya abierto. Primero Escape (el patrón de todos los modales
