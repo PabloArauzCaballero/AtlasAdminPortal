@@ -17,7 +17,9 @@ test.describe("auditoría y RBAC", () => {
 
     await page.goto("/internal/audit");
     await settled(page);
-    await page.getByRole("button", { name: /auditor[íi]a sql/i }).click();
+    await page
+      .getByRole("button", { name: /auditor[íi]a de acciones/i })
+      .click();
     await settled(page);
     await capture(page, testInfo, "1 auditoria sql");
 
@@ -65,7 +67,9 @@ test.describe("auditoría y RBAC", () => {
     await page.goto("/internal/audit");
     await settled(page);
 
-    const terminal = page.getByText(/archivo\.log/i).first();
+    const terminal = page
+      .getByText(/registro técnico del sistema|archivo de registro/i)
+      .first();
     await expect(terminal).toBeVisible();
     await capture(page, testInfo, "terminal de logs");
   });
