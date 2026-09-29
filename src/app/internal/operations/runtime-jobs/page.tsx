@@ -1,5 +1,6 @@
-import { RuntimeJobsPage } from "@/features/runtime-jobs/runtime-jobs-page";
+import { redirect } from "next/navigation";
 
+/** «Jobs de runtime» es ahora la pestaña «Ejecutar ahora» de Jobs. */
 export default function Page() {
-  return <RuntimeJobsPage />;
+  redirect("/internal/jobs?tab=ejecutar");
 }

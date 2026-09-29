@@ -9,7 +9,6 @@ import {
   MailCheck,
   Megaphone,
   MessageSquare,
-  PlayCircle,
   Radio,
   ShieldAlert,
   Stamp,
@@ -152,21 +151,18 @@ export const navGroupOperations: InternalNavGroup = {
       roles: INTERNAL_PORTAL_ROLE_LIST,
     },
     {
-      label: "Jobs internos",
+      label: "Jobs",
       href: "/internal/jobs",
       icon: ListChecks,
       // Igual que "Cola de trabajo": el backend gatea por @Roles, no por permiso granular.
       // Con `internal.jobs.read` —que no existe en /internal/permissions— el ítem no salía
       // en el menú de NADIE y la pantalla quedaba inalcanzable salvo escribiendo la URL.
+      // Une las dos pestañas: quien sólo puede disparar jobs (`system`) también entra, y la
+      // página le enseña sólo «Ejecutar ahora».
       permissions: [],
-      roles: INTERNAL_PORTAL_ROLE_LIST,
-    },
-    {
-      label: "Jobs de runtime",
-      href: "/internal/operations/runtime-jobs",
-      icon: PlayCircle,
-      permissions: [],
-      roles: RUNTIME_JOB_ROLE_LIST,
+      roles: [
+        ...new Set([...INTERNAL_PORTAL_ROLE_LIST, ...RUNTIME_JOB_ROLE_LIST]),
+      ],
     },
     {
       label: "Alertas",

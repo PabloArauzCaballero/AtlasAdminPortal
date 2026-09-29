@@ -36,7 +36,7 @@ export const JOB_QUEUE_OPTIONS: Option[] = [
   {
     value: "internal_user",
     label: "Manual",
-    description: "La lanzó una persona desde «Jobs de runtime».",
+    description: "La lanzó una persona desde Jobs › Ejecutar ahora.",
   },
 ];
 
@@ -53,7 +53,7 @@ const SCHEDULED_ONLY: Record<string, string> = {
 /**
  * El nombre del proceso en español. El backend publica el código (`deliver_pending_notifications`)
  * y su versión con espacios, que seguía siendo inglés; el mismo proceso ya tiene nombre en el
- * catálogo de «Jobs de runtime», con guiones en vez de guiones bajos.
+ * catálogo de «Ejecutar ahora» de Jobs, con guiones en vez de guiones bajos.
  */
 export function jobDisplayName(jobKey: string, fallback: string): string {
   return (

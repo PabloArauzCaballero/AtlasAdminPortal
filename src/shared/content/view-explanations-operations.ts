@@ -118,12 +118,6 @@ export const operationsModuleExplanation: ModuleExplanation = {
       business:
         "La carpeta de cada persona, ordenada sola: el carnet y la selfie en «auth», los extractos en «extractos», y lo que dejó el Motor donde corresponde. Al enviarse la solicitud el expediente se congela y se firma un manifiesto, de modo que meses después se puede demostrar qué había exactamente cuando se decidió. Quién puede verla no es «todo el equipo»: se hereda por carpeta y se amplía caso por caso, siempre con motivo.",
     },
-    "/internal/operations/runtime-jobs": {
-      systems:
-        "Disparo manual de los 5 procesos de mantenimiento del backend (outbox, eventos, expiración de sesiones, retención y recálculo de calidad). Cada corrida arranca en dry-run y queda registrada con su jobRunId.",
-      business:
-        "La palanca para destrabar la operación cuando algo se atasca —eventos sin procesar, sesiones que siguen vivas, retención que no se aplicó— sin esperar a la ventana programada ni pedir un despliegue.",
-    },
     "/internal/operations/loans": {
       systems:
         "Cartera paginada con filtros de estado, tramo y código (GET /operations/loans) y ficha del préstamo (GET /loans/:id: cronograma, cobros e historial) con cobro (POST /loans/:id/payments, idempotente), reverso (…/payments/:id/reversal) y castigo (…/write-off), más su calificación y la escala vigente (GET /operations/rating-scale). El desembolso (POST /credit-applications/:id/disbursement) se lanza desde la ficha del cliente.",
@@ -153,9 +147,9 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/jobs": {
       systems:
-        "Corridas de jobs internos (`system_job_runs`): estado, duración, entrada, resultado y error. Es de lectura: una corrida no se reintenta, el job se vuelve a disparar desde «Jobs de runtime».",
+        "Dos pestañas sobre `system_job_runs`. «Historial»: cada corrida con estado, duración, entrada, resultado y error (de lectura; una corrida no se reintenta). «Ejecutar ahora» (sólo admin, platform_admin y system): disparo manual de los procesos de mantenimiento, que arrancan en ensayo y dejan su corrida en el historial.",
       business:
-        "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres); si uno falla, se ve aquí antes de que falten datos.",
+        "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres) y la palanca para destrabar la operación cuando algo se atasca, sin esperar a la ventana programada ni pedir un despliegue.",
     },
     "/internal/alerts": {
       systems:
