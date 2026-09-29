@@ -10,16 +10,14 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { MetricCard } from "@/shared/components/layout/metric-card";
-import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
-import { explainStatus } from "../finding-codes";
 import { useProvidersDashboard } from "../hooks";
-import { etiquetaTipoConsulta } from "../provider-display";
-import type { DashboardProvider, ProviderRequestRow } from "../types";
-import { ProviderActivityCard } from "./provider-activity-card";
+import type { DashboardProvider } from "../types";
+import { ProviderActivityTable } from "./provider-activity-table";
+import { RecentRequestsTable } from "./recent-requests-table";
 import { SimulateDialog } from "./simulate-dialog";
 
 const VENTANAS = [
@@ -27,68 +25,6 @@ const VENTANAS = [
   { days: 7, label: "7 días" },
   { days: 30, label: "30 días" },
 ];
-
-function RecentRequests({
-  requests,
-}: Readonly<{ requests: ProviderRequestRow[] }>) {
-  if (requests.length === 0) {
-    return (
-      <p className="rounded-xl border border-atlas-border bg-white p-4 text-sm text-atlas-muted shadow-subtle">
-        No se llamó a ningún proveedor en este período.
-      </p>
-    );
-  }
-  return (
-    <div className="overflow-x-auto rounded-xl border border-atlas-border bg-white shadow-subtle">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-atlas-border bg-atlas-soft text-xs uppercase tracking-[0.08em] text-atlas-muted">
-            <th className="whitespace-nowrap px-3 py-2 text-left">Cuándo</th>
-            <th className="whitespace-nowrap px-3 py-2 text-left">Proveedor</th>
-            <th className="whitespace-nowrap px-3 py-2 text-left">
-              Qué se pidió
-            </th>
-            <th className="whitespace-nowrap px-3 py-2 text-left">Resultado</th>
-            <th className="whitespace-nowrap px-3 py-2 text-right">Tardó</th>
-          </tr>
-        </thead>
-        <tbody>
-          {requests.map((request) => {
-            const explicacion = request.responseStatus
-              ? explainStatus(request.responseStatus)
-              : null;
-            return (
-              <tr
-                key={request.requestId}
-                className="border-b border-atlas-border last:border-0"
-              >
-                <td className="whitespace-nowrap px-3 py-2 text-atlas-muted">
-                  {formatDateTime(request.requestedAt)}
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 font-medium">
-                  {request.providerCode ?? "—"}
-                </td>
-                <td className="px-3 py-2 text-atlas-muted">
-                  {etiquetaTipoConsulta(request.requestType)}
-                </td>
-                <td className="px-3 py-2">
-                  <Badge tone={explicacion?.tone ?? "default"}>
-                    {explicacion?.label ?? request.responseStatus ?? "—"}
-                  </Badge>
-                </td>
-                <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">
-                  {request.latencyMs === null
-                    ? "—"
-                    : `${formatNumber(request.latencyMs)} ms`}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 /**
  * El tablero que abre la pantalla de Proveedores externos.
@@ -214,21 +150,18 @@ export function ProvidersDashboard() {
         </p>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {providers.map((provider) => (
-          <ProviderActivityCard
-            key={provider.providerCode}
-            provider={provider}
-            onSimulate={setSimular}
-          />
-        ))}
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-atlas-muted">
+          Actividad por proveedor
+        </h3>
+        <ProviderActivityTable providers={providers} onSimulate={setSimular} />
       </div>
 
       <div className="space-y-2">
         <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-atlas-muted">
           Últimas llamadas
         </h3>
-        <RecentRequests requests={recentRequests} />
+        <RecentRequestsTable requests={recentRequests} />
       </div>
 
       {simular ? (

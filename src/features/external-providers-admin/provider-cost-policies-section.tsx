@@ -1,21 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
 import { Coins, Pencil, ShieldAlert, X } from "lucide-react";
+import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
+import {
+  LocalListTable,
+  type LocalListFilter,
+} from "@/shared/components/data-table/local-list-table";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
+import { CostPolicyEditForm } from "./cost-policy-edit-form";
 import { useProviderCostPolicies, useUpdateCostPolicyMutation } from "./hooks";
 import {
-  DESCRIPCION_DE_TRAMO,
   ETIQUETA_DE_TRAMO,
   etiquetaTipoConsulta,
   type TramoDeCosto,
 } from "./provider-display";
-import type { CostPolicy, CostPolicyPatchInput } from "./types";
+import type { CostPolicy } from "./types";
 
 /**
  * El tramo de costo es un semáforo de gasto, no una etiqueta suelta.
@@ -34,7 +39,41 @@ const TONO_DE_TRAMO: Record<
   CRITICAL: "critical",
 };
 
-const TRAMOS: TramoDeCosto[] = ["FREE", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
+const FILTROS: LocalListFilter<CostPolicy>[] = [
+  {
+    name: "active",
+    label: "Estado",
+    tooltip:
+      "Separa las políticas que hoy se aplican de las que están apagadas y no frenan ninguna consulta.",
+    options: [
+      {
+        value: "yes",
+        label: "Activas",
+        description: "Se aplican a las consultas de este proveedor ahora.",
+      },
+      {
+        value: "no",
+        label: "Inactivas",
+        description: "Están apagadas: no ponen tope ni piden aprobación.",
+      },
+    ],
+    test: (policy, value) => (value === "yes") === policy.active,
+  },
+  {
+    name: "tier",
+    label: "Nivel de costo",
+    tooltip:
+      "Deja sólo las políticas de ese nivel de gasto por consulta, de «sin costo» a «crítico».",
+    options: (Object.keys(ETIQUETA_DE_TRAMO) as TramoDeCosto[]).map(
+      (value) => ({
+        value,
+        label: ETIQUETA_DE_TRAMO[value],
+        description: `Políticas cuyo nivel de costo es «${ETIQUETA_DE_TRAMO[value].toLocaleLowerCase("es")}».`,
+      }),
+    ),
+    test: (policy, value) => policy.costTier === value,
+  },
+];
 
 export function ProviderCostPoliciesSection({
   providerCode,
@@ -42,6 +81,100 @@ export function ProviderCostPoliciesSection({
   const policies = useProviderCostPolicies(providerCode);
   const [editing, setEditing] = useState<CostPolicy | null>(null);
   const update = useUpdateCostPolicyMutation(providerCode);
+
+  const columns = useMemo<ColumnDef<CostPolicy>[]>(
+    () => [
+      {
+        header: "Consulta",
+        id: "queryType",
+        accessorFn: (policy) => etiquetaTipoConsulta(policy.queryType),
+        cell: ({ row }) => (
+          <span className="font-medium">
+            {etiquetaTipoConsulta(row.original.queryType)}
+          </span>
+        ),
+      },
+      {
+        header: "Estado",
+        accessorKey: "active",
+        cell: ({ row }) => (
+          <Badge tone={row.original.active ? "success" : "muted"}>
+            {row.original.active ? "Activa" : "Inactiva"}
+          </Badge>
+        ),
+      },
+      {
+        header: "Nivel de costo",
+        accessorKey: "costTier",
+        cell: ({ row }) =>
+          row.original.costTier ? (
+            <Badge tone={TONO_DE_TRAMO[row.original.costTier]} icon={Coins}>
+              {ETIQUETA_DE_TRAMO[row.original.costTier]}
+            </Badge>
+          ) : (
+            "—"
+          ),
+      },
+      {
+        header: "Reglas",
+        id: "rules",
+        cell: ({ row }) => (
+          <div className="flex flex-wrap gap-1.5">
+            {row.original.blockByDefault ? (
+              <Badge tone="critical" icon={ShieldAlert}>
+                Bloquea por defecto
+              </Badge>
+            ) : null}
+            {row.original.requiresManualApproval ? (
+              <Badge tone="info">Requiere aprobación</Badge>
+            ) : null}
+            {!row.original.blockByDefault &&
+            !row.original.requiresManualApproval
+              ? "—"
+              : null}
+          </div>
+        ),
+      },
+      {
+        header: "Costo por consulta",
+        id: "unitCost",
+        accessorFn: (policy) => Number(policy.unitCostAmount ?? 0),
+        cell: ({ row }) =>
+          `${safeText(row.original.unitCostAmount)} ${safeText(row.original.currency)}`,
+      },
+      {
+        header: "Máx./día usuario",
+        accessorKey: "maxQueriesPerUserPerDay",
+        cell: ({ row }) => formatNumber(row.original.maxQueriesPerUserPerDay),
+      },
+      {
+        header: "Máx./día global",
+        accessorKey: "maxQueriesGlobalPerDay",
+        cell: ({ row }) => formatNumber(row.original.maxQueriesGlobalPerDay),
+      },
+      {
+        id: "actions",
+        header: "Acciones",
+        meta: { pinRight: true } satisfies AtlasColumnMeta,
+        cell: ({ row }) => (
+          <Button
+            className="h-7 px-2 text-xs"
+            onClick={() =>
+              setEditing(editing?.id === row.original.id ? null : row.original)
+            }
+          >
+            {editing?.id === row.original.id ? (
+              <X className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <Pencil className="h-3.5 w-3.5" aria-hidden />
+            )}
+            {editing?.id === row.original.id ? "Cerrar" : "Editar"}
+          </Button>
+        ),
+      },
+    ],
+    [editing],
+  );
 
   if (policies.isLoading) return <LoadingSkeleton rows={3} />;
   if (policies.error) {
@@ -52,172 +185,49 @@ export function ProviderCostPoliciesSection({
             ? policies.error.message
             : "No se pudieron cargar las políticas de costo."
         }
+        requestId={
+          isAtlasApiError(policies.error) ? policies.error.requestId : undefined
+        }
         onRetry={() => void policies.refetch()}
       />
     );
   }
 
   const items = policies.data ?? [];
-  if (items.length === 0) {
-    return (
-      <p className="text-sm text-atlas-muted">
-        Este proveedor no tiene políticas de costo configuradas. La auditoría de
-        calidad lo marca como hallazgo: sin política no hay tope de gasto.
-      </p>
-    );
-  }
-
   return (
-    <div className="space-y-3">
-      {items.map((policy) => (
-        <div
-          key={policy.id}
-          className="rounded-lg border border-atlas-border p-3 text-sm"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold">
-              {etiquetaTipoConsulta(policy.queryType)}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <Badge tone={policy.active ? "success" : "muted"}>
-                {policy.active ? "Activa" : "Inactiva"}
-              </Badge>
-              {policy.costTier ? (
-                <Badge tone={TONO_DE_TRAMO[policy.costTier]} icon={Coins}>
-                  {ETIQUETA_DE_TRAMO[policy.costTier]}
-                </Badge>
-              ) : null}
-              {policy.blockByDefault ? (
-                <Badge tone="critical" icon={ShieldAlert}>
-                  Bloquea por defecto
-                </Badge>
-              ) : null}
-              {policy.requiresManualApproval ? (
-                <Badge tone="info">Requiere aprobación</Badge>
-              ) : null}
-            </div>
-          </div>
-          <p className="mt-1 text-xs text-atlas-muted">
-            {safeText(policy.unitCostAmount)} {safeText(policy.currency)} ·
-            máx/día usuario: {formatNumber(policy.maxQueriesPerUserPerDay)} ·
-            máx/día global: {formatNumber(policy.maxQueriesGlobalPerDay)}
-          </p>
-          <Button
-            className="mt-2 h-7 px-2 text-xs"
-            onClick={() =>
-              setEditing(editing?.id === policy.id ? null : policy)
-            }
-          >
-            {editing?.id === policy.id ? (
-              <X className="h-3.5 w-3.5" aria-hidden />
-            ) : (
-              <Pencil className="h-3.5 w-3.5" aria-hidden />
-            )}
-            {editing?.id === policy.id ? "Cerrar" : "Editar"}
-          </Button>
-          {editing?.id === policy.id ? (
-            <CostPolicyEditForm
-              policy={policy}
-              onSubmit={(body) =>
-                update.mutate(
-                  { queryType: policy.queryType, body },
-                  { onSuccess: () => setEditing(null) },
-                )
-              }
-              isPending={update.isPending}
-              error={update.error}
-            />
-          ) : null}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CostPolicyEditForm({
-  policy,
-  onSubmit,
-  isPending,
-  error,
-}: Readonly<{
-  policy: CostPolicy;
-  onSubmit: (body: CostPolicyPatchInput) => void;
-  isPending: boolean;
-  error: unknown;
-}>) {
-  const [costTier, setCostTier] = useState(policy.costTier ?? "MEDIUM");
-  const [requiresManualApproval, setRequiresManualApproval] = useState(
-    policy.requiresManualApproval,
-  );
-  const [blockByDefault, setBlockByDefault] = useState(policy.blockByDefault);
-  const [active, setActive] = useState(policy.active);
-
-  return (
-    <div className="mt-3 space-y-3 border-t border-atlas-border pt-3">
-      <Field
-        tooltip="Cuánto cuesta cada consulta a este proveedor, de «sin costo» a «crítico»."
-        label="Nivel de costo"
-      >
-        <Select
-          name="costTier"
-          value={costTier}
-          onChange={(valor) =>
-            setCostTier(valor as NonNullable<CostPolicy["costTier"]>)
-          }
-          options={TRAMOS.map((value) => ({
-            value,
-            label: ETIQUETA_DE_TRAMO[value],
-            description: DESCRIPCION_DE_TRAMO[value],
-          }))}
-        />
-      </Field>
-      <div className="flex flex-wrap gap-3 text-xs text-atlas-text">
-        <label className="flex items-center gap-1.5">
-          <input
-            type="checkbox"
-            checked={requiresManualApproval}
-            onChange={(event) =>
-              setRequiresManualApproval(event.target.checked)
-            }
-          />
-          Requiere aprobación manual
-        </label>
-        <label className="flex items-center gap-1.5">
-          <input
-            type="checkbox"
-            checked={blockByDefault}
-            onChange={(event) => setBlockByDefault(event.target.checked)}
-          />
-          Bloquear por defecto
-        </label>
-        <label className="flex items-center gap-1.5">
-          <input
-            type="checkbox"
-            checked={active}
-            onChange={(event) => setActive(event.target.checked)}
-          />
-          Activa
-        </label>
-      </div>
-      {error ? (
-        <ErrorState
-          title="No se pudo actualizar la política"
-          description={
-            isAtlasApiError(error) ? error.message : "Error inesperado."
-          }
-        />
-      ) : null}
-      <Button
-        variant="primary"
-        className="h-8 px-3 text-xs"
-        isLoading={isPending}
-        loadingText="Guardando…"
-        onClick={() =>
-          onSubmit({ costTier, requiresManualApproval, blockByDefault, active })
+    <>
+      <LocalListTable
+        rows={items}
+        columns={columns}
+        searchText={(policy) =>
+          `${etiquetaTipoConsulta(policy.queryType)} ${policy.queryType} ${policy.currency ?? ""}`
         }
-      >
-        Guardar política
-      </Button>
-    </div>
+        searchPlaceholder="Buscar por tipo de consulta o moneda…"
+        searchTooltip="Recorre las políticas de costo de este proveedor, que son pocas y llegan todas: coincide con parte del tipo de consulta o de la moneda."
+        filters={FILTROS}
+        emptyTitle="Este proveedor no tiene políticas de costo configuradas."
+        emptyFilteredTitle="Ninguna política coincide con la búsqueda."
+        emptyDescription="La auditoría de calidad lo marca como hallazgo: sin política no hay tope de gasto."
+      />
+      {editing ? (
+        <div className="mt-3 rounded-lg border border-atlas-border p-3">
+          <p className="text-sm font-semibold">
+            Editando: {etiquetaTipoConsulta(editing.queryType)}
+          </p>
+          <CostPolicyEditForm
+            key={editing.id}
+            policy={editing}
+            onSubmit={(body) =>
+              update.mutate(
+                { queryType: editing.queryType, body },
+                { onSuccess: () => setEditing(null) },
+              )
+            }
+            isPending={update.isPending}
+            error={update.error}
+          />
+        </div>
+      ) : null}
+    </>
   );
 }

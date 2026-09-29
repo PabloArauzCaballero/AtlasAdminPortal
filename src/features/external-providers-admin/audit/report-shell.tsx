@@ -96,68 +96,6 @@ export function RawData({ value }: Readonly<{ value: unknown }>) {
 }
 
 /**
- * Tabla mínima para los reportes. No usa `DataTable` porque estas tablas no ordenan, no filtran y
- * no paginan: son el contenido de un reporte, y montar la maquinaria entera para pintar ocho filas
- * añade peso sin añadir nada.
- */
-export function SimpleTable({
-  headers,
-  children,
-  align,
-}: Readonly<{
-  headers: string[];
-  children: React.ReactNode;
-  align?: Record<number, "right">;
-}>) {
-  return (
-    <div className="overflow-x-auto rounded-xl border border-atlas-border bg-white shadow-subtle">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-atlas-border bg-atlas-soft text-xs uppercase tracking-[0.08em] text-atlas-muted">
-            {headers.map((header, index) => (
-              <th
-                key={header}
-                className={cn(
-                  "whitespace-nowrap px-3 py-2 text-left",
-                  align?.[index] === "right" && "text-right",
-                )}
-              >
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
-    </div>
-  );
-}
-
-export function Td({
-  children,
-  right,
-  muted,
-}: Readonly<{ children: React.ReactNode; right?: boolean; muted?: boolean }>) {
-  return (
-    <td
-      className={cn(
-        "px-3 py-2 align-top",
-        right && "whitespace-nowrap text-right tabular-nums",
-        muted && "text-atlas-muted",
-      )}
-    >
-      {children}
-    </td>
-  );
-}
-
-export function Tr({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <tr className="border-b border-atlas-border last:border-0">{children}</tr>
-  );
-}
-
-/**
  * El veredicto de una compuerta, arriba y en una frase.
  *
  * Es el dato por el que se abre la pestaña, y estaba enterrado en un campo `qualityGate` a mitad
@@ -187,20 +125,5 @@ export function GateBanner({
       )}
       <p className="font-medium">{pass ? passText : failText}</p>
     </div>
-  );
-}
-
-/** Sin hallazgos es una BUENA noticia y hay que decirlo, no dejar la tabla vacía. */
-export function EmptyGood({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <p className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-      <CircleCheck
-        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
-        aria-hidden
-      />
-      <span>{children}</span>
-    </p>
   );
 }
