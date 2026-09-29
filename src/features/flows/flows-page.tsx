@@ -194,7 +194,7 @@ function AuthorizedFlowsPage() {
       <FilterBar
         search={filters.q}
         searchPlaceholder="Buscar por nombre, ruta, handler, controlador, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas ni tildes, en el nombre, el identificador legible, la ruta, el handler, la clase del controlador y el módulo del flujo."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, el identificador legible, la ruta, el handler, la clase del controlador y el módulo del flujo."
         onSearchChange={(value) => setFilter("q", value)}
         onFilterChange={setFilter}
         onClear={() => {

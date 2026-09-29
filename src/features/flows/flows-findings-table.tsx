@@ -78,7 +78,7 @@ export function FlowsFindingsTable() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por ruta, módulo o detalle…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas ni tildes, en la referencia (la ruta), el módulo y el detalle del hallazgo."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en la referencia (la ruta), el módulo y el detalle del hallazgo."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);

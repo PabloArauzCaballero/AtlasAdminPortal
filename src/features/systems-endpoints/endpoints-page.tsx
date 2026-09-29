@@ -27,17 +27,49 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { Route } from "lucide-react";
 
 const riskOptions = [
-  { label: "Riesgo bajo", value: "LOW" },
-  { label: "Riesgo medio", value: "MEDIUM" },
-  { label: "Riesgo alto", value: "HIGH" },
-  { label: "Riesgo crítico", value: "CRITICAL" },
+  {
+    label: "Riesgo bajo",
+    value: "LOW",
+    description: "Sólo lee o navega: no cambia datos.",
+  },
+  {
+    label: "Riesgo medio",
+    value: "MEDIUM",
+    description: "Modifica datos de operación corriente.",
+  },
+  {
+    label: "Riesgo alto",
+    value: "HIGH",
+    description: "Modifica datos importantes o sensibles.",
+  },
+  {
+    label: "Riesgo crítico",
+    value: "CRITICAL",
+    description: "Toca identidad, crédito o dinero, o borra datos.",
+  },
 ];
 
 const reviewOptions = [
-  { label: "Auto detectado", value: "AUTO_DETECTED" },
-  { label: "Necesita revisión", value: "NEEDS_REVIEW" },
-  { label: "Aprobado", value: "APPROVED" },
-  { label: "Rechazado", value: "REJECTED" },
+  {
+    label: "Auto detectado",
+    value: "AUTO_DETECTED",
+    description: "Lo detectó el descubrimiento y nadie lo ha revisado.",
+  },
+  {
+    label: "Necesita revisión",
+    value: "NEEDS_REVIEW",
+    description: "Espera que una persona confirme su ficha.",
+  },
+  {
+    label: "Aprobado",
+    value: "APPROVED",
+    description: "Una persona revisó y aprobó su ficha.",
+  },
+  {
+    label: "Rechazado",
+    value: "REJECTED",
+    description: "Una persona rechazó su ficha: hay que corregirla.",
+  },
 ];
 
 export function EndpointsPage() {
@@ -71,6 +103,7 @@ function AuthorizedEndpointsPage() {
       (blocks.data ?? []).map((item) => ({
         label: `${item.name} (${item.endpoints})`,
         value: item.systemCode,
+        description: `Sólo las rutas del bloque ${item.name}: ${item.endpoints} en el catálogo.`,
       })),
     [blocks.data],
   );
@@ -218,18 +251,24 @@ function AuthorizedEndpointsPage() {
             name: "block",
             label: "Bloque",
             value: block,
+            tooltip:
+              "Deja sólo las rutas de un bloque de Atlas. Los bloques y sus cuentas salen del servidor, aunque alguno aún no aporte rutas.",
             options: blockOptions,
           },
           {
             name: "riskLevel",
             label: "Riesgo",
             value: riskLevel,
+            tooltip:
+              "Deja sólo las rutas con ese nivel de riesgo, según lo que hacen con los datos.",
             options: riskOptions,
           },
           {
             name: "reviewStatus",
             label: "Revisión",
             value: reviewStatus,
+            tooltip:
+              "Deja sólo las rutas cuya ficha está en ese estado de revisión humana.",
             options: reviewOptions,
           },
         ]}
@@ -256,6 +295,12 @@ function AuthorizedEndpointsPage() {
           columns={columns}
           meta={endpoints.data.meta}
           onPageChange={setPage}
+          emptyTitle={
+            q || riskLevel || reviewStatus || block
+              ? "Ninguna ruta coincide con la búsqueda o los filtros."
+              : "No hay rutas en el catálogo."
+          }
+          emptyDescription="Quita el texto o los filtros, o carga el catálogo desde Salud de la red."
         />
       ) : null}
     </>

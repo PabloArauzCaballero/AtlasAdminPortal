@@ -183,7 +183,7 @@ function AuthorizedFlowReviewPage() {
       <FilterBar
         search={q}
         searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas ni tildes, en el nombre, la ruta, el handler, el controlador, el módulo y el identificador legible del flujo."
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, la ruta, el handler, el controlador, el módulo y el identificador legible del flujo."
         filters={[
           {
             name: "estado",
