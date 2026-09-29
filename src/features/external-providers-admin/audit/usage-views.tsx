@@ -4,7 +4,7 @@ import { Ban, Coins, Database, PhoneCall, Play } from "lucide-react";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import type { SlaReport, UsageReport } from "../types";
-import { SlaProvidersTable } from "./provider-tables";
+import { SlaProvidersTable } from "./sla-table";
 import { ReportShell } from "./report-shell";
 
 export function SlaReportView({

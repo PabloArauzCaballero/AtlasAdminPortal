@@ -3,15 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
   IdempotencyFindingsTable,
-  QualityFindingsTable,
-  RetentionCandidatesTable,
   SanitizationFindingsTable,
 } from "@/features/external-providers-admin/audit/findings-tables";
 import {
+  QualityFindingsTable,
+  RetentionCandidatesTable,
+} from "@/features/external-providers-admin/audit/findings-tables-quality";
+import {
   GateProvidersTable,
   ReadinessProvidersTable,
-  SlaProvidersTable,
 } from "@/features/external-providers-admin/audit/provider-tables";
+import { SlaProvidersTable } from "@/features/external-providers-admin/audit/sla-table";
 import { ProviderActivityTable } from "@/features/external-providers-admin/dashboard/provider-activity-table";
 import { RecentRequestsTable } from "@/features/external-providers-admin/dashboard/recent-requests-table";
 import { ProvidersCatalogTable } from "@/features/external-providers-admin/providers-catalog-table";

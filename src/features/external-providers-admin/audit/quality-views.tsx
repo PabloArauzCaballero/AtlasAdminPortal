@@ -4,7 +4,7 @@ import { MetricCard } from "@/shared/components/layout/metric-card";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { explainBlocker } from "../finding-codes";
 import type { ProductionGate, QualityAudit, ReadinessReport } from "../types";
-import { QualityFindingsTable } from "./findings-tables";
+import { QualityFindingsTable } from "./findings-tables-quality";
 import { GateProvidersTable, ReadinessProvidersTable } from "./provider-tables";
 import { GateBanner, ReportShell } from "./report-shell";
 

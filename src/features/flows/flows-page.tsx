@@ -16,9 +16,9 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime } from "@/shared/lib/format";
 import { FlowDetailDrawer } from "./flow-detail-drawer";
 import { FlowsFindingsTable } from "./flows-findings-table";
+import { FlowsHeaderActions } from "./flows-header-actions";
 import {
   useFlowImports,
   useFlowModules,
@@ -144,44 +144,7 @@ function AuthorizedFlowsPage() {
         eyebrow="Systems Ops"
         title="Mapa de rutas"
         description="Una fila por operación de la plataforma, sacada del código: qué puede hacer cada usuario, con qué autorización, y qué le falta (contrato, pruebas, quién la llama). Abrir una ficha nunca ejecuta la operación. Los procesos de negocio que usan estas operaciones están en «Procesos»."
-        actions={
-          <div className="flex max-w-md flex-col items-end gap-1 text-right">
-            <PermissionGate
-              permissions={["systems.flows.analyze"]}
-              fallback={null}
-            >
-              <Button
-                variant="primary"
-                disabled={verify.isPending}
-                onClick={() =>
-                  verify.mutate({ systemCode: "ATLAS_BACKEND", windowDays: 30 })
-                }
-                title="Cruza el catálogo con las corridas reales de system_action_logs (30 días) y recalcula la frescura contra el commit desplegado"
-              >
-                {verify.isPending ? "Verificando…" : "Verificar con corridas"}
-              </Button>
-            </PermissionGate>
-            {verify.data ? (
-              <span
-                className="text-xs text-atlas-muted"
-                data-testid="verify-result"
-              >
-                {verify.data.verified} verificados · {verify.data.broken} rotos
-                · {verify.data.unverified} sin corridas ·{" "}
-                {verify.data.routesWithRuns} rutas con tráfico
-              </span>
-            ) : null}
-            {lastImport ? (
-              <span className="text-xs text-atlas-muted">
-                Última carga: {lastImport.systemCode} @{" "}
-                <span className="font-mono">
-                  {lastImport.analyzedCommit?.slice(0, 7) ?? "—"}
-                </span>{" "}
-                · {formatDateTime(lastImport.createdAt)}
-              </span>
-            ) : null}
-          </div>
-        }
+        actions={<FlowsHeaderActions verify={verify} lastImport={lastImport} />}
       />
       <FlowCatalogNotLoaded />
       <FlowsSummaryTiles

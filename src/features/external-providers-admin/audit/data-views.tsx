@@ -9,9 +9,9 @@ import type {
 } from "../types";
 import {
   IdempotencyFindingsTable,
-  RetentionCandidatesTable,
   SanitizationFindingsTable,
 } from "./findings-tables";
+import { RetentionCandidatesTable } from "./findings-tables-quality";
 import { GateBanner, ReportShell } from "./report-shell";
 
 export function IdempotencyAuditView({

@@ -4,23 +4,17 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo } from "react";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
-import {
-  LocalListTable,
-  type LocalListFilter,
-} from "@/shared/components/data-table/local-list-table";
+import { LocalListTable } from "@/shared/components/data-table/local-list-table";
 import { Badge, MethodBadge, RiskBadge } from "@/shared/components/ui/badges";
-import type { Option } from "@/shared/lib/options";
 import {
-  ACTOR_LABELS,
   actorLabel,
-  CLIENT_LABELS,
   clientLabel,
   STEP_KIND_LABELS,
   systemLabel,
-  WIRING,
 } from "./labels";
+import { buildStepFilters } from "./process-steps-filters";
 import { StageScreen } from "./stage-screen";
-import type { ProcessStage, ProcessStep, StepWiring } from "./types";
+import type { ProcessStage, ProcessStep } from "./types";
 import { WiringBadge } from "./wiring-badge";
 
 /** Una fila por paso; una etapa sin pasos sale con una sola fila que lo dice. */
@@ -36,79 +30,6 @@ export function toStepRows(stages: ProcessStage[]): StepRow[] {
       ? stage.steps.map((step) => ({ stage, stageIndex, step }))
       : [{ stage, stageIndex, step: null }],
   );
-}
-
-const ACTOR_HINTS: Record<string, string> = {
-  customer: "Lo hace la persona cliente desde la app.",
-  internal_user: "Lo hace una persona del equipo interno desde el portal.",
-  merchant_user: "Lo hace una persona del comercio desde su portal.",
-  platform_user: "Lo hace una persona del equipo de plataforma.",
-  system: "Lo hace un sistema, sin intervención de una persona.",
-  external_provider: "Lo hace un proveedor externo fuera de Atlas.",
-};
-
-const CLIENT_HINTS: Record<string, string> = {
-  ADMIN_PORTAL: "Etapas que se hacen desde el portal interno.",
-  ERP_PORTAL: "Etapas que se hacen desde el ERP.",
-  MOTOR_PORTAL: "Etapas que se hacen desde el portal del Motor de decisiones.",
-  CONSUMER_APP: "Etapas que el cliente hace desde su app.",
-  DASHBOARDS_PORTAL: "Etapas que se consultan en los tableros.",
-  BLOCK: "Etapas que hace un sistema por su cuenta.",
-};
-
-const optionsOf = (
-  labels: Record<string, string>,
-  hints: Record<string, string>,
-): Option[] =>
-  Object.entries(labels).map(([value, label]) => ({
-    value,
-    label,
-    description: hints[value] ?? `Filas cuyo valor es «${label}».`,
-  }));
-
-function buildFilters(stages: ProcessStage[]): LocalListFilter<StepRow>[] {
-  return [
-    {
-      name: "stage",
-      label: "Etapa",
-      tooltip:
-        "Deja sólo los pasos de una etapa del proceso. Las etapas salen de la propia ficha del proceso.",
-      options: stages.map((stage, index) => ({
-        value: stage.code,
-        label: `${index + 1}. ${stage.name}`,
-        description: stage.description,
-      })),
-      test: (row, value) => row.stage.code === value,
-    },
-    {
-      name: "actor",
-      label: "Quién actúa",
-      tooltip:
-        "Deja sólo los pasos que hace ese tipo de actor: cliente, equipo interno, comercio, sistema…",
-      options: optionsOf(ACTOR_LABELS, ACTOR_HINTS),
-      test: (row, value) => row.stage.actor === value,
-    },
-    {
-      name: "client",
-      label: "Portal",
-      tooltip:
-        "Deja sólo los pasos de las etapas que se hacen desde ese portal o app.",
-      options: optionsOf(CLIENT_LABELS, CLIENT_HINTS),
-      test: (row, value) => row.stage.client === value,
-    },
-    {
-      name: "wiring",
-      label: "Cableado",
-      tooltip:
-        "Separa los pasos con pantalla, sin pantalla, automáticos o sin comprobar. «Sin pantalla» son los que una persona debería hacer y ningún portal permite.",
-      options: (Object.keys(WIRING) as StepWiring[]).map((value) => ({
-        value,
-        label: WIRING[value].label,
-        description: WIRING[value].hint,
-      })),
-      test: (row, value) => row.step?.wiring === value,
-    },
-  ];
 }
 
 function TechnicalCell({ step }: Readonly<{ step: ProcessStep }>) {
@@ -139,7 +60,7 @@ export function ProcessStepsTable({
   onOpenFlow?: (flowId: string) => void;
 }>) {
   const rows = useMemo(() => toStepRows(stages), [stages]);
-  const filters = useMemo(() => buildFilters(stages), [stages]);
+  const filters = useMemo(() => buildStepFilters(stages), [stages]);
   const columns = useMemo<ColumnDef<StepRow>[]>(
     () => [
       {
