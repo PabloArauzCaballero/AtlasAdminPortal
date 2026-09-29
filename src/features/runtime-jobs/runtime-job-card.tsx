@@ -8,7 +8,6 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { Field, Input } from "@/shared/components/ui/input";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
@@ -26,6 +25,10 @@ import type {
   RuntimeJobRun,
 } from "./types";
 
+/**
+ * El formulario para ejecutar UN job a mano. Se abre en un panel desde la fila del job en la tabla
+ * de «Ejecutar ahora»; lleva sus propios campos porque cada job admite parámetros distintos.
+ */
 export function RuntimeJobCard({
   definition,
 }: Readonly<{ definition: RuntimeJobDefinition }>) {
@@ -77,15 +80,13 @@ export function RuntimeJobCard({
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <SectionHeader
-          title={definition.title}
-          description={definition.systems}
-          className="mb-0"
-        />
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
+      <SectionHeader
+        title={definition.title}
+        description={definition.systems}
+        className="mb-0"
+      />
+      <div className="space-y-4">
         <p className="text-sm text-atlas-muted">{definition.business}</p>
 
         <form onSubmit={onSubmit} noValidate className="space-y-4">
@@ -168,7 +169,7 @@ export function RuntimeJobCard({
         </form>
 
         {lastRun ? <RuntimeJobResult run={lastRun} /> : null}
-      </CardContent>
+      </div>
 
       <ConfirmDialog
         open={pendingBody !== null}
@@ -188,7 +189,7 @@ export function RuntimeJobCard({
         }}
         onCancel={() => setPendingBody(null)}
       />
-    </Card>
+    </div>
   );
 }
 
