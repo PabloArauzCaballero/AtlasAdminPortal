@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -171,13 +171,22 @@ describe("view-explanations · cobertura de las pantallas del portal", () => {
   /** Las dos pantallas públicas no montan el armazón y por eso no pintan explicación. */
   const PUBLICAS = new Set(["/internal/login", "/internal/recuperar-acceso"]);
 
+  /**
+   * Una ruta vieja que sólo redirige (fusiones de pantallas: `/internal/alerts`, `/internal/forms`)
+   * no pinta nada, así que no tiene vista que explicar: la explicación es la de su destino.
+   */
+  function soloRedirige(archivo: string): boolean {
+    const fuente = readFileSync(archivo, "utf8");
+    return /\bredirect\(/.test(fuente) && !/\breturn\b/.test(fuente);
+  }
+
   function rutasDelPortal(dir: string, base: string): string[] {
     const rutas: string[] = [];
     for (const entrada of readdirSync(dir)) {
       const ruta = path.join(dir, entrada);
       if (statSync(ruta).isDirectory()) {
         rutas.push(...rutasDelPortal(ruta, base));
-      } else if (entrada === "page.tsx") {
+      } else if (entrada === "page.tsx" && !soloRedirige(ruta)) {
         const relativa = path.relative(base, path.dirname(ruta));
         // Un segmento dinámico (`[caseId]`) se prueba con un valor cualquiera.
         rutas.push(
