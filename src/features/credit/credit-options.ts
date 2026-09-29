@@ -194,3 +194,20 @@ export function labelOr(map: Record<string, string>, value?: string | null) {
   if (!value) return "—";
   return map[value] ?? value;
 }
+
+/**
+ * El motivo de una decisión o de una respuesta del negocio, en palabras. El historial y la ficha
+ * pintaban el código tal cual (`manual_review_complete`) aunque las etiquetas ya existían para los
+ * formularios. Un código del motor que no esté aquí se muestra legible, sin guiones bajos.
+ */
+export function reasonLabel(code: string | null | undefined): string {
+  if (!code) return "—";
+  const opcion = [
+    ...DECISION_REASONS,
+    ...ACCEPTANCE_REASONS,
+    ...PRODUCT_STATUS_REASONS,
+  ].find((option) => option.value === code);
+  if (opcion) return opcion.label;
+  const texto = code.replaceAll("_", " ").toLowerCase();
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}

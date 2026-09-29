@@ -1,5 +1,8 @@
 import { ClipboardList, ShieldAlert } from "lucide-react";
+import { OPERATIONS_CASE_ROLE_LIST } from "@/shared/auth/portal-roles";
 import type { InternalNavItem } from "./nav-config";
+
+const CASE_ROLES = OPERATIONS_CASE_ROLE_LIST;
 
 /**
  * Las dos colas de casos por separado, paginadas por cursor, junto a la «Cola de trabajo» combinada.
@@ -13,6 +16,7 @@ export const CASE_QUEUE_NAV_ITEMS: InternalNavItem[] = [
     href: "/internal/operations/manual-review-cases",
     icon: ClipboardList,
     permissions: [],
+    roles: CASE_ROLES,
   },
   {
     label: "Casos de fraude",
@@ -20,5 +24,6 @@ export const CASE_QUEUE_NAV_ITEMS: InternalNavItem[] = [
     icon: ShieldAlert,
     // Verlos: cualquier rol de operación y fraud_analyst. Decidirlos: sólo fraude y admin.
     permissions: [],
+    roles: [...CASE_ROLES, "fraud_analyst"],
   },
 ];

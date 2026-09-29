@@ -271,3 +271,19 @@ describe("PortfolioOperationsPage — lo que no se puede o falla, se dice", () =
     ).toBeInTheDocument();
   });
 });
+
+describe("PortfolioOperationsPage — quién entra", () => {
+  it("QA no entra: el backend no le sirve la cartera y el 403 era lo único que veía", () => {
+    sesionCon(["qa_engineer"]);
+    renderWithProviders(<PortfolioOperationsPage />);
+    expect(screen.getByText("Acceso restringido")).toBeInTheDocument();
+  });
+
+  it("cumplimiento sí entra a leerla", async () => {
+    sesionCon(["compliance_analyst"]);
+    renderWithProviders(<PortfolioOperationsPage />);
+    expect(
+      await screen.findByRole("heading", { name: "Calificación de cartera" }),
+    ).toBeInTheDocument();
+  });
+});

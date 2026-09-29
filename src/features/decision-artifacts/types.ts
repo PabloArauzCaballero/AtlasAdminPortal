@@ -1,5 +1,5 @@
 /** Los tipos de decision que hoy delegan en el motor. Uno por consumidor real del backend. */
-export type DecisionType = "identity" | "credit" | "risk";
+export type DecisionType = "identity" | "credit" | "risk" | "partner";
 
 /**
  * De donde salio el artefacto que se va a ejecutar.

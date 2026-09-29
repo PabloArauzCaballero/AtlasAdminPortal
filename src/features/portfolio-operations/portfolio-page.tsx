@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Gauge } from "lucide-react";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { INTERNAL_PORTAL_ROLE_LIST } from "@/shared/auth/portal-roles";
+import { LOAN_RATING_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { buildBacklogColumns, buildGradeColumns } from "./portfolio-columns";
@@ -39,7 +39,10 @@ import { PortfolioRerate } from "./portfolio-rerate";
  */
 export function PortfolioOperationsPage() {
   return (
-    <RoleGate roles={INTERNAL_PORTAL_ROLE_LIST}>
+    // El resumen lo sirve `CreditRatingOperationsController` a operación, riesgo, cumplimiento y
+    // administración (LOAN_RATING_ROLES): con la lista del portal entero, QA, devops y el auditor
+    // entraban y recibían un 403.
+    <RoleGate roles={LOAN_RATING_ROLE_LIST}>
       <AuthorizedPortfolioPage />
     </RoleGate>
   );

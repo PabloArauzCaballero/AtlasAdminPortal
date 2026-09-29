@@ -1,5 +1,6 @@
 "use client";
 
+import { motivoDeCartera } from "./loan-forms";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AtlasColumnMeta } from "@/shared/components/data-table/data-table";
 import { Button } from "@/shared/components/ui/button";
@@ -115,7 +116,7 @@ export function buildPaymentColumns(opciones: {
           <EstadoCartera value={row.original.status} />
           {row.original.reversalReasonCode ? (
             <span className="text-xs text-atlas-muted">
-              {row.original.reversalReasonCode} ·{" "}
+              {motivoDeCartera(row.original.reversalReasonCode)} ·{" "}
               {formatDateTime(row.original.reversedAt)}
             </span>
           ) : null}
@@ -177,7 +178,7 @@ export function buildHistoryColumns(): ColumnDef<LoanHistoryEvent>[] {
     {
       accessorKey: "reasonCode",
       header: "Motivo",
-      cell: ({ row }) => safeText(row.original.reasonCode),
+      cell: ({ row }) => motivoDeCartera(row.original.reasonCode),
     },
     {
       accessorKey: "notes",

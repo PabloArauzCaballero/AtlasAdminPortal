@@ -144,3 +144,26 @@ export const WRITE_OFF_REASON_OPTIONS: Option[] = [
     description: "El titular está en concurso o quiebra declarada por un juez.",
   },
 ];
+
+/** Por qué una deuda o un cliente tiene la categoría que tiene (`ratingReason` del backend). */
+const RATING_REASON_LABELS: Record<string, string> = {
+  days_past_due: "Días de atraso",
+  written_off: "Castigado",
+  worst_operation: "La peor de sus operaciones",
+  no_open_debt: "Sin deuda viva",
+};
+
+/**
+ * Un motivo de la cartera en palabras: reverso, castigo o calificación. Se pintaban los códigos
+ * (`chargeback`, `worst_operation`) aunque los formularios ya tenían sus etiquetas.
+ */
+export function motivoDeCartera(code: string | null | undefined): string {
+  if (!code) return "—";
+  const opcion = [...REVERSAL_REASON_OPTIONS, ...WRITE_OFF_REASON_OPTIONS].find(
+    (option) => option.value === code,
+  );
+  if (opcion) return opcion.label;
+  if (RATING_REASON_LABELS[code]) return RATING_REASON_LABELS[code];
+  const texto = code.replaceAll("_", " ").toLowerCase();
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}

@@ -48,7 +48,9 @@ export function WorkQueuePage() {
     queue,
     status,
     priority,
-    customerId,
+    // El backend exige un número (`^[1-9][0-9]*$`) y responde 400 a cualquier otra cosa: con un
+    // código a medio escribir la tabla se cambiaba por un error. Sólo se filtra con un número.
+    customerId: /^[1-9]\d*$/.test(customerId.trim()) ? customerId.trim() : "",
   });
   const items = useMemo(() => workQueue.data?.items ?? [], [workQueue.data]);
   const columns = useMemo(
@@ -81,16 +83,16 @@ export function WorkQueuePage() {
         description="Casos de revisión manual y de fraude pendientes de decisión, combinados en una sola cola priorizada."
       />
       <BusinessContextNote>
-        Cada fila es un caso real abierto por el backend (KYC insuficiente,
+        Cada fila es un caso real abierto por el sistema (identidad por revisar,
         patrón de fraude detectado, etc.). Decidir un caso lo cierra de forma
         auditable y, si corresponde, actualiza el estado del cliente. La
-        decisión de fraude está restringida a analistas de fraude/admin en el
-        backend — si tu rol no alcanza, la acción devuelve un error claro.
+        decisión de fraude está restringida a analistas de fraude y
+        administración: si tu rol no alcanza, la acción lo dice.
       </BusinessContextNote>
       <FilterBar
         search={customerId}
-        searchPlaceholder="Buscar por ID de cliente…"
-        searchTooltip="Pega el identificador exacto del cliente para ver sólo sus casos abiertos."
+        searchPlaceholder="Número de cliente…"
+        searchTooltip="Escribe el número del cliente (sólo dígitos) para ver sólo sus casos abiertos."
         filters={[
           {
             name: "queue",
@@ -113,7 +115,7 @@ export function WorkQueuePage() {
             label: "Prioridad",
             value: priority,
             tooltip:
-              "Muestra primero lo urgente: la prioridad la asigna el backend al abrir el caso.",
+              "Muestra primero lo urgente: la prioridad se asigna al abrir el caso.",
             options: priorityOptions,
           },
         ]}

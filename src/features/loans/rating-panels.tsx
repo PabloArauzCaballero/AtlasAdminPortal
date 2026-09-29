@@ -1,5 +1,6 @@
 "use client";
 
+import { motivoDeCartera } from "./loan-forms";
 import { useState } from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -58,7 +59,7 @@ const COLUMNAS_HISTORIAL: ColumnDef<Historico>[] = [
   {
     accessorKey: "ratingReason",
     header: "Motivo",
-    cell: ({ row }) => safeText(row.original.ratingReason),
+    cell: ({ row }) => motivoDeCartera(row.original.ratingReason),
   },
 ];
 

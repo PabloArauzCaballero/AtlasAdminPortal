@@ -37,9 +37,13 @@ function isCreditCaseError(error: unknown): boolean {
 }
 
 function creditCaseMessage(message: string): string {
-  return message.startsWith("MANUAL_REVIEW_ES_DE_CREDITO")
-    ? "Este caso es de una solicitud de crédito: se decide en la solicitud, que al resolverse cierra también el caso."
-    : message;
+  if (message.startsWith("MANUAL_REVIEW_ES_DE_CREDITO"))
+    return "Este caso es de una solicitud de crédito: se decide en la solicitud, que al resolverse cierra también el caso.";
+  if (message.startsWith("MANUAL_REVIEW_ES_DE_IDENTIDAD"))
+    return "Este caso es de identidad: se decide en el panel «Documentos de identidad» del expediente del cliente, que al resolverse cierra también el caso.";
+  if (message.startsWith("MANUAL_REVIEW_DELEGADA_AL_MOTOR"))
+    return "Este caso lo resuelve el Motor en su cola de revisión; su veredicto vuelve solo.";
+  return message;
 }
 
 export function ManualReviewDecisionForm({

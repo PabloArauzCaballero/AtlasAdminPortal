@@ -61,7 +61,7 @@ export function PendingContactsPage() {
       } catch (error) {
         setAviso({
           tone: "error",
-          text: `No se pudo reenviar: ${isAtlasApiError(error) ? error.message : "el backend rechazó el reenvío; intenta de nuevo en un minuto."}`,
+          text: `No se pudo reenviar: ${isAtlasApiError(error) ? error.message : "no hubo respuesta del servidor; intenta de nuevo en un minuto."}`,
         });
       } finally {
         setSendingId(null);
@@ -87,15 +87,21 @@ export function PendingContactsPage() {
         Un cliente sin correo verificado no puede recuperar su PIN ni recibir
         avisos, y su alta se queda a medias. Reenviar el código usa el mismo
         canal que la app: el operador no ve el contacto completo ni el código;
-        sólo dispara el envío, y el backend limita la frecuencia.
+        sólo dispara el envío, y el sistema limita la frecuencia.
       </BusinessContextNote>
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Contactos pendientes"
-          value={formatNumber(items.length)}
+          value={pending.data ? formatNumber(items.length) : "—"}
         />
-        <MetricCard label="Correos" value={formatNumber(emails)} />
-        <MetricCard label="Teléfonos" value={formatNumber(phones)} />
+        <MetricCard
+          label="Correos"
+          value={pending.data ? formatNumber(emails) : "—"}
+        />
+        <MetricCard
+          label="Teléfonos"
+          value={pending.data ? formatNumber(phones) : "—"}
+        />
       </div>
       {aviso ? (
         <p

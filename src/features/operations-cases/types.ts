@@ -140,6 +140,9 @@ export type InvestigationSummary = {
     fraudRisk: number | null;
     requestedAt: string | null;
     completedAt: string | null;
+    /** Lo que el Motor habría decidido si la política de revisión humana no lo hubiera retenido. */
+    engineSuggestion?: "VERIFIED" | "REJECTED" | null;
+    engineReason?: string | null;
   } | null;
   /**
    * La FORMA de la agenda del cliente. Nunca su contenido: ni un nombre, ni un
