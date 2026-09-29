@@ -41,7 +41,9 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/lineage/official", heading: /lineage oficial/i },
   { path: "/internal/lineage/impact", heading: /impacto/i },
   { path: "/internal/governance", heading: /gobierno/i },
-  { path: "/internal/governance/pii", heading: /pii/i },
+  // #59 renombró el h1 a «Registro de datos personales» (sin la sigla) y nadie tocó esta lista:
+  // el barrido de dev llevaba desde entonces rojo en esta vista.
+  { path: "/internal/governance/pii", heading: /datos personales/i },
   { path: "/internal/governance/policies", heading: /pol[íi]ticas/i },
   { path: "/internal/data-quality/rules", heading: /reglas/i },
   { path: "/internal/data-quality/issues", heading: /incidencias|issues/i },
