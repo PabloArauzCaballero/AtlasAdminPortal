@@ -71,11 +71,11 @@ jobs:
       PW_PIN_INBOX_PORT: "8790"
       ALLOW_E2E_CATALOG_REFRESH: "true"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # SHA fijo: el E2E mide siempre el mismo código backend que pasó revisión.
       - name: Obtener AtlasBackend para el stack QA
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: PabloArauzCaballero/AtlasBackend
           ref: def7e44f1bd76c20936fa66ad085e36d4f89c317
@@ -87,7 +87,7 @@ jobs:
       - name: Aislar checkout backend del árbol de Next
         run: mv qa-backend "$RUNNER_TEMP/qa-backend"
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: yarn
@@ -254,7 +254,7 @@ jobs:
         run: python3 scripts/assert-no-e2e-secret.py blob-report/
 
       - name: Subir el informe parcial del fragmento
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:
           name: blob-report-${{ matrix.shard }}
@@ -272,20 +272,20 @@ jobs:
     needs: [e2e]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: yarn
       - run: yarn install --frozen-lockfile
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           path: todos-los-blob-reports
           pattern: blob-report-*
           merge-multiple: true
       - name: Unir
         run: yarn playwright merge-reports --reporter=html ./todos-los-blob-reports
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report
           path: playwright-report/
