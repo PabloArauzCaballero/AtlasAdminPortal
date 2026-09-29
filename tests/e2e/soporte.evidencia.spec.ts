@@ -348,7 +348,9 @@ test("Soporte — ficha del caso con su historia", async ({ page }) => {
    * cola y no leerlo. Se comprueba además que un mensaje redactado no salga en blanco —eso se
    * leería como un fallo de carga— sino diciendo que el contenido se retiró.
    */
-  await expect(page.getByText("Conversación")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Conversación" }),
+  ).toBeVisible();
   await expect(page.getByText(/sigue apareciendo pendiente/)).toBeVisible();
   await expect(
     page.getByText("Contenido retirado por contener datos sensibles."),
