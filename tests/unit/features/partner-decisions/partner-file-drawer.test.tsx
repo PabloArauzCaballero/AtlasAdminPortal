@@ -327,8 +327,21 @@ describe("PartnerFileDrawer — lo que falla se dice, y en palabras", () => {
       name: /ver documentos en archivos/i,
     });
     expect(enlace).toHaveAttribute("href", "/internal/files/55");
-    expect(screen.getByText("Casa matriz")).toBeInTheDocument();
-    expect(screen.getByText("Pendiente de revisión")).toBeInTheDocument();
+    // Sucursales y QR son TABLAS con cabeceras, no listas de tarjetas.
+    const tablas = screen.getAllByRole("table");
+    expect(tablas).toHaveLength(2);
+    const [sucursales, qr] = tablas;
+    expect(
+      within(sucursales)
+        .getAllByRole("columnheader")
+        .map((c) => c.textContent),
+    ).toEqual(
+      expect.arrayContaining(["Sucursal", "Dirección", "Ciudad", "Estado"]),
+    );
+    expect(within(sucursales).getByText("Casa matriz")).toBeInTheDocument();
+    expect(within(qr).getByText("Casa matriz")).toBeInTheDocument();
+    expect(within(qr).getByText("****1234")).toBeInTheDocument();
+    expect(within(qr).getByText("Pendiente de revisión")).toBeInTheDocument();
     expect(screen.queryByText("Expediente completo")).toBeNull();
   });
 });

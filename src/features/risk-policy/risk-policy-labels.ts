@@ -62,3 +62,20 @@ export const riskPolicyLabel = {
   assessmentType: (code: string | null | undefined) =>
     etiqueta(ASSESSMENT_TYPE, code),
 };
+
+/** Catálogos cerrados de los filtros: salen de los códigos que la política conoce, no de las filas cargadas. */
+export const RISK_DIMENSION_OPTIONS = Object.entries(DIMENSION).map(
+  ([value, label]) => ({
+    value,
+    label,
+    description: `Reglas que miran ${label.toLowerCase()}.`,
+  }),
+);
+
+export const RISK_SEVERITY_OPTIONS = Object.entries(SEVERITY).map(
+  ([value, label]) => ({
+    value,
+    label,
+    description: `Reglas de severidad ${label.toLowerCase()}.`,
+  }),
+);

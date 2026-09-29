@@ -1,28 +1,26 @@
 "use client";
-import { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCurrentRiskPolicy } from "@/features/operations/hooks";
 import { AvisoDeAutoriaEnElMotor } from "./policy-authoring-notice";
-import { riskPolicyLabel } from "./risk-policy-labels";
-import type { RiskPolicyCurrent } from "@/features/operations/types";
+import {
+  RISK_DIMENSION_OPTIONS,
+  RISK_SEVERITY_OPTIONS,
+  riskPolicyLabel,
+} from "./risk-policy-labels";
+import { RULESET_COLUMNS, RULE_COLUMNS, type RuleRow } from "./policy-columns";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { SectionTable } from "@/shared/components/data-table/section-table";
 import {
   PageHeader,
   SectionHeader,
 } from "@/shared/components/layout/page-header";
 import { MetricCard } from "@/shared/components/layout/metric-card";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import { Scale } from "lucide-react";
-type RuleRow = RiskPolicyCurrent["rulesetVersions"][number]["rules"][number] & {
-  ruleset: string;
-  rulesetStatus: string;
-};
-
 export function CurrentRiskPolicyPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -50,58 +48,23 @@ function AuthorizedCurrentRiskPolicyPage() {
       ),
     [policy.data?.rulesetVersions],
   );
-  const columns = useMemo<ColumnDef<RuleRow>[]>(
-    () => [
-      {
-        header: "Ruleset",
-        accessorKey: "ruleset",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.ruleset}</span>
-        ),
-      },
-      {
-        header: "Regla",
-        accessorKey: "ruleName",
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.ruleName}</span>
-        ),
-      },
-      {
-        header: "Código",
-        accessorKey: "ruleCode",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.ruleCode}</span>
-        ),
-      },
-      {
-        header: "Dimensión",
-        accessorKey: "riskDimension",
-        cell: ({ row }) =>
-          riskPolicyLabel.dimension(row.original.riskDimension),
-      },
-      {
-        header: "Tipo",
-        accessorKey: "ruleType",
-        cell: ({ row }) => riskPolicyLabel.ruleType(row.original.ruleType),
-      },
-      {
-        header: "Severidad",
-        accessorKey: "severity",
-        cell: ({ row }) => riskPolicyLabel.severity(row.original.severity),
-      },
-      {
-        header: "Acción",
-        accessorKey: "actionCode",
-        cell: ({ row }) => riskPolicyLabel.action(row.original.actionCode),
-      },
-      {
-        header: "Hard stop",
-        accessorKey: "isHardStop",
-        cell: ({ row }) => (row.original.isHardStop ? "Sí" : "No"),
-      },
-    ],
-    [],
-  );
+  const [q, setQ] = useState("");
+  const [dimension, setDimension] = useState("");
+  const [severity, setSeverity] = useState("");
+  const [hardStop, setHardStop] = useState("");
+  const visibles = useMemo(() => {
+    const buscado = normalizar(q.trim());
+    return rules.filter(
+      (rule) =>
+        (!dimension || rule.riskDimension === dimension) &&
+        (!severity || rule.severity === severity) &&
+        (!hardStop || String(rule.isHardStop) === hardStop) &&
+        (!buscado ||
+          normalizar(
+            `${rule.ruleset} ${rule.ruleName} ${rule.ruleCode}`,
+          ).includes(buscado)),
+    );
+  }, [rules, q, dimension, severity, hardStop]);
   return (
     <>
       <PageHeader
@@ -143,53 +106,99 @@ function AuthorizedCurrentRiskPolicyPage() {
               value={formatNumber(policy.data.riskSignalSeeds.length)}
             />
           </section>
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Versiones"
-                description="Estado efectivo de modelos y rulesets."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-              {policy.data.rulesetVersions.map((r) => (
-                <div
-                  key={r.riskRulesetVersionId}
-                  className="rounded-lg border border-atlas-border p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <strong className="font-mono text-sm">
-                      {r.rulesetCode}@{r.versionCode}
-                    </strong>
-                    <StatusBadge value={r.status} />
-                  </div>
-                  <p className="mt-2 text-xs text-atlas-muted">
-                    Tipo: {riskPolicyLabel.assessmentType(r.assessmentType)} ·
-                    Desde: {formatDateTime(r.effectiveFrom)} · Hasta:{" "}
-                    {formatDateTime(r.effectiveUntil)}
-                  </p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Reglas de política"
-                description="Reglas asociadas a los rulesets actuales."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={rules}
-                columns={columns}
-                emptyTitle="No hay reglas de riesgo visibles."
-              />
-            </CardContent>
-          </Card>
+          <SectionTable
+            title="Versiones"
+            description="Estado efectivo de modelos y rulesets."
+            data={policy.data.rulesetVersions}
+            columns={RULESET_COLUMNS}
+            searchText={(r) =>
+              `${r.rulesetCode}@${r.versionCode} ${riskPolicyLabel.assessmentType(r.assessmentType)} ${r.status}`
+            }
+            searchPlaceholder="Buscar versión de ruleset…"
+            searchTooltip="Recorre todas las versiones de ruleset vigentes, que llegan enteras del servidor: coincide con parte del código, la versión, el tipo o el estado."
+            emptyTitle="No hay versiones de ruleset vigentes."
+            emptyDescription="Cuando se publique un ruleset de riesgo aparecerá aquí."
+          />
+          <section className="space-y-3">
+            <SectionHeader
+              title="Reglas de política"
+              description="Reglas asociadas a los rulesets actuales."
+              className="mb-0"
+            />
+            <FilterBar
+              search={q}
+              searchPlaceholder="Buscar por regla, código o ruleset…"
+              searchTooltip="Recorre todas las reglas de la política vigente, que llegan enteras del servidor (es un catálogo cerrado de unas decenas): coincide con parte del nombre, del código o del ruleset."
+              filters={[
+                {
+                  name: "dimension",
+                  label: "Dimensión",
+                  tooltip:
+                    "Qué mira la regla: capacidad de pago, endeudamiento, identidad, fraude…",
+                  value: dimension,
+                  options: RISK_DIMENSION_OPTIONS,
+                },
+                {
+                  name: "severity",
+                  label: "Severidad",
+                  tooltip: "Qué tan grave es lo que la regla detecta.",
+                  value: severity,
+                  options: RISK_SEVERITY_OPTIONS,
+                },
+                {
+                  name: "hardStop",
+                  label: "Hard stop",
+                  tooltip:
+                    "«Sí» son las reglas que frenan la solicitud sin más análisis.",
+                  value: hardStop,
+                  options: [
+                    {
+                      value: "true",
+                      label: "Sí",
+                      description: "Frenan la solicitud sin más análisis.",
+                    },
+                    {
+                      value: "false",
+                      label: "No",
+                      description: "Suman a la evaluación pero no la frenan.",
+                    },
+                  ],
+                },
+              ]}
+              onSearchChange={setQ}
+              onFilterChange={(name, value) => {
+                if (name === "dimension") setDimension(value);
+                if (name === "severity") setSeverity(value);
+                if (name === "hardStop") setHardStop(value);
+              }}
+              onClear={() => {
+                setQ("");
+                setDimension("");
+                setSeverity("");
+                setHardStop("");
+              }}
+            />
+            <DataTable
+              data={visibles}
+              columns={RULE_COLUMNS}
+              emptyTitle={
+                rules.length === 0
+                  ? "No hay reglas de riesgo visibles."
+                  : "Ninguna regla coincide con los filtros."
+              }
+              emptyDescription={
+                rules.length === 0
+                  ? "La política vigente no trae reglas."
+                  : "Cambia o quita alguno de los filtros."
+              }
+            />
+          </section>
         </div>
       ) : null}
     </>
   );
+}
+
+function normalizar(texto: string): string {
+  return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }

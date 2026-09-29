@@ -1,7 +1,5 @@
-import { History } from "lucide-react";
-import { SectionHeader } from "@/shared/components/layout/page-header";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { EmptyState } from "@/shared/components/ui/states";
+import type { ColumnDef } from "@tanstack/react-table";
+import { SectionTable } from "@/shared/components/data-table/section-table";
 import { formatDateTime } from "@/shared/lib/format";
 import {
   APPLICATION_STATUS_LABELS,
@@ -32,66 +30,74 @@ const ACTOR_LABELS: Record<string, string> = {
   platform_admin: "Administración",
 };
 
+function cambioDeEstado(event: CreditApplicationEvent): string {
+  return event.previousStatus || event.newStatus
+    ? `${labelOr(APPLICATION_STATUS_LABELS, event.previousStatus)} → ${labelOr(APPLICATION_STATUS_LABELS, event.newStatus)}`
+    : "—";
+}
+
+function actor(event: CreditApplicationEvent): string {
+  return `${labelOr(ACTOR_LABELS, event.actorType)}${event.actorInternalUserId ? ` #${event.actorInternalUserId}` : ""}`;
+}
+
+const COLUMNS: ColumnDef<CreditApplicationEvent>[] = [
+  {
+    header: "Cuándo",
+    accessorKey: "happenedAt",
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap">
+        {formatDateTime(row.original.happenedAt)}
+      </span>
+    ),
+  },
+  {
+    header: "Evento",
+    accessorFn: (event) => labelOr(EVENT_LABELS, event.eventType),
+    cell: ({ row }) => (
+      <span
+        className="font-medium text-atlas-text"
+        title={row.original.eventType}
+      >
+        {labelOr(EVENT_LABELS, row.original.eventType)}
+      </span>
+    ),
+  },
+  { header: "Cambio de estado", accessorFn: cambioDeEstado },
+  { header: "Quién", accessorFn: actor },
+  {
+    header: "Motivo",
+    accessorFn: (event) =>
+      event.reasonCode ? reasonLabel(event.reasonCode) : "—",
+  },
+  {
+    header: "Notas",
+    accessorKey: "notes",
+    cell: ({ row }) =>
+      row.original.notes ? (
+        <span className="whitespace-pre-line">{row.original.notes}</span>
+      ) : (
+        "—"
+      ),
+  },
+];
+
 /** El historial de la solicitud, más reciente primero (hasta 100 eventos, como lo sirve el backend). */
 export function ApplicationEvents({
   events,
 }: Readonly<{ events: CreditApplicationEvent[] }>) {
   return (
-    <Card>
-      <CardHeader>
-        <SectionHeader
-          icon={History}
-          title="Historial"
-          description="Cada cambio de la solicitud, quién lo hizo y por qué. No se edita ni se borra."
-          className="mb-0"
-        />
-      </CardHeader>
-      <CardContent>
-        {events.length === 0 ? (
-          <EmptyState
-            title="Sin eventos registrados."
-            description="Las solicitudes anteriores al historial pueden no tener eventos."
-          />
-        ) : (
-          <ol className="space-y-3">
-            {events.map((event) => (
-              <li
-                key={event.id}
-                className="rounded-lg border border-atlas-border px-3 py-2 text-sm"
-              >
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span
-                    className="font-medium text-atlas-text"
-                    title={event.eventType}
-                  >
-                    {labelOr(EVENT_LABELS, event.eventType)}
-                  </span>
-                  <span className="text-xs text-atlas-muted">
-                    {formatDateTime(event.happenedAt)}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-atlas-muted">
-                  {event.previousStatus || event.newStatus
-                    ? `${labelOr(APPLICATION_STATUS_LABELS, event.previousStatus)} → ${labelOr(APPLICATION_STATUS_LABELS, event.newStatus)} · `
-                    : ""}
-                  {labelOr(ACTOR_LABELS, event.actorType)}
-                  {event.actorInternalUserId
-                    ? ` #${event.actorInternalUserId}`
-                    : ""}
-                  {event.reasonCode
-                    ? ` · ${reasonLabel(event.reasonCode)}`
-                    : ""}
-                </p>
-                {event.notes ? (
-                  <p className="mt-1 whitespace-pre-line text-atlas-text">
-                    {event.notes}
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        )}
-      </CardContent>
-    </Card>
+    <SectionTable
+      title="Historial"
+      description="Cada cambio de la solicitud, quién lo hizo y por qué. No se edita ni se borra."
+      data={events}
+      columns={COLUMNS}
+      searchText={(event) =>
+        `${labelOr(EVENT_LABELS, event.eventType)} ${cambioDeEstado(event)} ${actor(event)} ${event.reasonCode ? reasonLabel(event.reasonCode) : ""} ${event.notes ?? ""}`
+      }
+      searchPlaceholder="Buscar por evento, estado, quién, motivo o notas…"
+      searchTooltip="Recorre todo el historial de la solicitud (hasta 100 eventos, que llegan enteros del servidor): coincide con parte del evento, del cambio de estado, de quién lo hizo, del motivo o de las notas."
+      emptyTitle="Sin eventos registrados."
+      emptyDescription="Las solicitudes anteriores al historial pueden no tener eventos."
+    />
   );
 }

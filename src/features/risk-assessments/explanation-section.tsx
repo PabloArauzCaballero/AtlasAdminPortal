@@ -1,6 +1,8 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { SectionTable } from "@/shared/components/data-table/section-table";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badges";
 import { SectionHeader } from "@/shared/components/layout/page-header";
@@ -14,40 +16,41 @@ import { decidioElMotor } from "./decision-provenance";
 import { useRiskAssessmentExplanation } from "./hooks";
 import type { RiskExplanationFactor } from "./types";
 
-function FactorList({
-  factors,
-  impact,
-}: Readonly<{
-  factors: RiskExplanationFactor[];
-  impact: "positive" | "negative";
-}>) {
-  if (factors.length === 0) {
-    return (
-      <p className="text-sm text-atlas-muted">
-        Sin factores registrados en esta categoría.
-      </p>
-    );
-  }
-  return (
-    <ul className="space-y-2">
-      {factors.map((factor) => (
-        <li
-          key={`${factor.code}-${factor.label}`}
-          className="flex flex-wrap items-center gap-2 rounded-lg border border-atlas-border bg-white px-3 py-2"
-        >
-          <Badge tone={impact === "positive" ? "success" : "critical"}>
-            {impact === "positive" ? "A favor" : "En contra"}
-          </Badge>
-          <span className="font-mono text-xs text-atlas-text">
-            {safeText(factor.code)}
-          </span>
-          <span className="text-sm text-atlas-muted">
-            {safeText(factor.label)}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
+type FilaFactor = RiskExplanationFactor & { impact: "positive" | "negative" };
+
+const COLUMNAS_FACTORES: ColumnDef<FilaFactor>[] = [
+  {
+    header: "Impacto",
+    accessorKey: "impact",
+    cell: ({ row }) => (
+      <Badge tone={row.original.impact === "positive" ? "success" : "critical"}>
+        {row.original.impact === "positive" ? "A favor" : "En contra"}
+      </Badge>
+    ),
+  },
+  {
+    header: "Código",
+    accessorKey: "code",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{safeText(row.original.code)}</span>
+    ),
+  },
+  {
+    header: "Qué mide",
+    accessorKey: "label",
+    cell: ({ row }) => safeText(row.original.label),
+  },
+];
+
+/** Factores a favor y en contra juntos: una sola tabla en la que se compara su peso relativo. */
+function filasDeFactores(
+  positivos: RiskExplanationFactor[],
+  negativos: RiskExplanationFactor[],
+): FilaFactor[] {
+  return [
+    ...positivos.map((factor) => ({ ...factor, impact: "positive" as const })),
+    ...negativos.map((factor) => ({ ...factor, impact: "negative" as const })),
+  ];
 }
 
 export function ExplanationSection({
@@ -121,34 +124,22 @@ export function ExplanationSection({
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <h3 className="text-sm font-semibold text-atlas-text">
-                  Factores a favor
-                </h3>
-              </CardHeader>
-              <CardContent>
-                <FactorList
-                  factors={explanation.data.topPositiveFactors}
-                  impact="positive"
-                />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <h3 className="text-sm font-semibold text-atlas-text">
-                  Factores en contra
-                </h3>
-              </CardHeader>
-              <CardContent>
-                <FactorList
-                  factors={explanation.data.topNegativeFactors}
-                  impact="negative"
-                />
-              </CardContent>
-            </Card>
-          </div>
+          <SectionTable
+            title="Factores de la decisión"
+            description="Lo que más pesó a favor y en contra, ordenado como lo devolvió el sistema."
+            data={filasDeFactores(
+              explanation.data.topPositiveFactors,
+              explanation.data.topNegativeFactors,
+            )}
+            columns={COLUMNAS_FACTORES}
+            searchText={(factor) =>
+              `${factor.code} ${factor.label} ${factor.impact === "positive" ? "a favor" : "en contra"}`
+            }
+            searchPlaceholder="Buscar por código, descripción o impacto…"
+            searchTooltip="Recorre todos los factores de esta evaluación, a favor y en contra, que llegan enteros con la explicación: coincide con parte del código, de la descripción o del impacto."
+            emptyTitle="Sin factores registrados."
+            emptyDescription="La evaluación no dejó factores a favor ni en contra."
+          />
 
           <Card>
             <CardHeader>
