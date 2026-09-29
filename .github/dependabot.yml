@@ -5,7 +5,7 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: '/'
+    directory: "/"
     target-branch: dev
     schedule:
       interval: weekly
@@ -13,34 +13,50 @@ updates:
     open-pull-requests-limit: 5
     labels: [dependencies]
     commit-message:
-      prefix: 'chore(deps)'
-      prefix-development: 'chore(deps-dev)'
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
     # Saltos mayores del framework y del compilador NO por Dependabot: el 2026-09-28 @nestjs/sequelize 12
     # (ESM puro) y typescript 7 rompieron dev en dos repos y se fusionaron sin checks requeridos.
     ignore:
-      - dependency-name: 'typescript'
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@nestjs/*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'next'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react-dom'
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@prisma/*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'prisma'
-        update-types: ['version-update:semver-major']
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-tooling:
-        patterns: ['@types/*', 'eslint*', '@eslint/*', '@typescript-eslint/*', 'typescript', 'prettier', 'jest', 'ts-jest', 'vitest', '@vitest/*', 'supertest', '@nestjs/testing', '@playwright/*', 'playwright']
+        patterns:
+          [
+            "@types/*",
+            "eslint*",
+            "@eslint/*",
+            "@typescript-eslint/*",
+            "typescript",
+            "prettier",
+            "jest",
+            "ts-jest",
+            "vitest",
+            "@vitest/*",
+            "supertest",
+            "@nestjs/testing",
+            "@playwright/*",
+            "playwright",
+          ]
         update-types: [major, minor, patch]
       runtime-minor-patch:
-        patterns: ['*']
+        patterns: ["*"]
         update-types: [minor, patch]
   - package-ecosystem: npm
-    directory: '/atlas-auth-broker-worker'
+    directory: "/atlas-auth-broker-worker"
     target-branch: dev
     schedule:
       interval: weekly
@@ -48,34 +64,50 @@ updates:
     open-pull-requests-limit: 5
     labels: [dependencies]
     commit-message:
-      prefix: 'chore(deps)'
-      prefix-development: 'chore(deps-dev)'
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
     # Saltos mayores del framework y del compilador NO por Dependabot: el 2026-09-28 @nestjs/sequelize 12
     # (ESM puro) y typescript 7 rompieron dev en dos repos y se fusionaron sin checks requeridos.
     ignore:
-      - dependency-name: 'typescript'
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@nestjs/*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'next'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react-dom'
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@prisma/*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'prisma'
-        update-types: ['version-update:semver-major']
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-tooling:
-        patterns: ['@types/*', 'eslint*', '@eslint/*', '@typescript-eslint/*', 'typescript', 'prettier', 'jest', 'ts-jest', 'vitest', '@vitest/*', 'supertest', '@nestjs/testing', '@playwright/*', 'playwright']
+        patterns:
+          [
+            "@types/*",
+            "eslint*",
+            "@eslint/*",
+            "@typescript-eslint/*",
+            "typescript",
+            "prettier",
+            "jest",
+            "ts-jest",
+            "vitest",
+            "@vitest/*",
+            "supertest",
+            "@nestjs/testing",
+            "@playwright/*",
+            "playwright",
+          ]
         update-types: [major, minor, patch]
       runtime-minor-patch:
-        patterns: ['*']
+        patterns: ["*"]
         update-types: [minor, patch]
   - package-ecosystem: github-actions
-    directory: '/'
+    directory: "/"
     target-branch: dev
     schedule:
       interval: weekly
@@ -83,8 +115,8 @@ updates:
     open-pull-requests-limit: 3
     labels: [dependencies, ci]
     commit-message:
-      prefix: 'chore(ci)'
+      prefix: "chore(ci)"
     groups:
       ci-actions:
-        patterns: ['*']
+        patterns: ["*"]
         update-types: [major, minor, patch]

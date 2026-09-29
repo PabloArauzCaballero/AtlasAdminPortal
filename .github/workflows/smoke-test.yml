@@ -61,7 +61,7 @@ jobs:
 
       - name: Smoke HTTP contra TEST
         env:
-          SMOKE_ATTEMPTS: '12'
+          SMOKE_ATTEMPTS: "12"
           TARGET_SHA: ${{ github.sha }}
         run: node scripts/post-deploy-smoke.mjs
 
