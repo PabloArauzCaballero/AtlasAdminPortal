@@ -12,7 +12,7 @@ import type { DecisionArtifactBinding } from "@/features/decision-artifacts/type
 const binding: DecisionArtifactBinding = {
   decisionType: "credit",
   artifactCode: "ATLAS_BNPL_UNDERWRITING",
-  source: "database",
+  source: "binding",
   consumerEndpoints: [
     {
       method: "POST",
