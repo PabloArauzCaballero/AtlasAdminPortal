@@ -156,16 +156,20 @@ describe("Contenido de la app", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("avisa de que la app no lee Inicio, Perfil ni Crédito", async () => {
+  it("Inicio, Perfil y Crédito ya llegan a la app y dicen dónde salen", async () => {
     asManager();
     request.mockResolvedValue({ items: [] });
     renderWithProviders(<AppContentPage />);
 
-    fireEvent.click(await screen.findByTestId("surface-home"));
-
-    expect(await screen.findByTestId("surface-not-read")).toHaveTextContent(
-      /todavía no lee esta pantalla/,
-    );
+    for (const [surface, donde] of [
+      ["home", /bajo el saludo/],
+      ["profile", /arriba del todo/],
+      ["credit", /bajo el puntaje/],
+    ] as const) {
+      fireEvent.click(await screen.findByTestId(`surface-${surface}`));
+      expect(await screen.findByText(donde)).toBeInTheDocument();
+      expect(screen.queryByTestId("surface-not-read")).not.toBeInTheDocument();
+    }
   });
 
   it("un 403 dice que falta un permiso, no que se reintente", async () => {
