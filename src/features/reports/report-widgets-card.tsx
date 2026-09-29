@@ -1,7 +1,29 @@
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+"use client";
+
+import type { ColumnDef } from "@tanstack/react-table";
+import { LocalListTable } from "@/shared/components/data-table/local-list-table";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { safeText } from "@/shared/lib/format";
 import type { ReportWidget } from "./types";
+
+const COLUMNS: ColumnDef<ReportWidget>[] = [
+  {
+    header: "Apartado",
+    accessorKey: "title",
+    cell: ({ row }) => (
+      <span className="font-medium text-atlas-text">{row.original.title}</span>
+    ),
+  },
+  {
+    header: "Qué muestra",
+    accessorKey: "description",
+    cell: ({ row }) => (
+      <span className="text-atlas-muted">
+        {safeText(row.original.description)}
+      </span>
+    ),
+  },
+];
 
 /**
  * Qué apartados trae el informe. Decía que «la definición visual viene desde BD»: viene de
@@ -12,37 +34,20 @@ export function ReportWidgetsCard({
   widgets,
 }: Readonly<{ widgets: ReportWidget[] }>) {
   return (
-    <Card>
-      <CardHeader>
-        <SectionHeader
-          title="Qué calcula"
-          description="Los apartados que salen al calcular el informe."
-          className="mb-0"
-        />
-      </CardHeader>
-      <CardContent>
-        {widgets.length ? (
-          <ul className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-            {widgets.map((widget) => (
-              <li
-                key={widget.widgetId}
-                className="rounded-lg border border-atlas-border p-4"
-              >
-                <h3 className="text-sm font-semibold text-atlas-text">
-                  {widget.title}
-                </h3>
-                <p className="mt-1 text-xs text-atlas-muted">
-                  {safeText(widget.description)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-atlas-muted">
-            Este informe no declara apartados.
-          </p>
-        )}
-      </CardContent>
-    </Card>
+    <section>
+      <SectionHeader
+        title="Qué calcula"
+        description="Los apartados que salen al calcular el informe."
+      />
+      <LocalListTable
+        rows={widgets}
+        columns={COLUMNS}
+        searchText={(widget) => `${widget.title} ${widget.description ?? ""}`}
+        searchPlaceholder="Buscar por apartado o descripción…"
+        searchTooltip="Recorre los apartados del informe, que llegan todos con su definición: coincide con parte del título o de la descripción."
+        emptyTitle="Este informe no declara apartados."
+        emptyFilteredTitle="Ningún apartado coincide con la búsqueda."
+      />
+    </section>
   );
 }
