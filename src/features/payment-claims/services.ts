@@ -22,7 +22,7 @@ export async function listPaymentClaims(
       query: {
         status: filters.status,
         partnerId: filters.partnerId.trim(),
-        customerId: filters.customerId.trim(),
+        q: filters.q.trim(),
         olderThanHours: filters.olderThanHours,
         page: filters.page,
         pageSize: PAYMENT_CLAIMS_PAGE_SIZE,
