@@ -1,21 +1,18 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   useTrafficLatencyReport,
   useTrafficLatencyTimeseries,
 } from "@/features/systems/hooks";
-import type { TrafficLatencyRoute } from "@/features/systems/types";
-import { DataTable } from "@/shared/components/data-table/data-table";
-import { Badge, MethodBadge } from "@/shared/components/ui/badges";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Select } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { SectionHeader } from "@/shared/components/layout/page-header";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { TrafficLatencyCharts } from "./traffic-latency-charts";
+import { TrafficRoutesTable } from "./traffic-routes-table";
 import { TrafficLatencyTimeseriesChart } from "./traffic-latency-timeseries-chart";
 
 const windowOptions = [
@@ -29,55 +26,6 @@ export function TrafficLatencySection() {
   const [live, setLive] = useState(true);
   const report = useTrafficLatencyReport(windowHours, { live });
   const timeseries = useTrafficLatencyTimeseries(windowHours, { live });
-
-  const columns = useMemo<ColumnDef<TrafficLatencyRoute>[]>(
-    () => [
-      {
-        header: "Método",
-        accessorKey: "method",
-        cell: ({ row }) => <MethodBadge method={row.original.method} />,
-      },
-      {
-        header: "Ruta",
-        accessorKey: "routeTemplate",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">
-            {row.original.routeTemplate ?? "—"}
-          </span>
-        ),
-      },
-      {
-        header: "Requests",
-        accessorKey: "totalRequests",
-        cell: ({ row }) => formatNumber(row.original.totalRequests),
-      },
-      {
-        header: "Latencia prom.",
-        accessorKey: "avgLatencyMs",
-        cell: ({ row }) => `${formatNumber(row.original.avgLatencyMs)} ms`,
-      },
-      {
-        header: "p95",
-        accessorKey: "p95LatencyMs",
-        cell: ({ row }) => `${formatNumber(row.original.p95LatencyMs)} ms`,
-      },
-      {
-        header: "Error rate",
-        accessorKey: "errorRate",
-        cell: ({ row }) => (
-          <Badge tone={row.original.errorRate > 0.02 ? "critical" : "success"}>
-            {(row.original.errorRate * 100).toFixed(1)}%
-          </Badge>
-        ),
-      },
-      {
-        header: "Última vez",
-        accessorKey: "lastSeenAt",
-        cell: ({ row }) => formatDateTime(row.original.lastSeenAt),
-      },
-    ],
-    [],
-  );
 
   return (
     <Card>
@@ -152,18 +100,8 @@ export function TrafficLatencySection() {
                 buckets={timeseries.data.buckets}
               />
             ) : null}
-            {report.data.routesTruncated ? (
-              <p role="status" className="text-xs text-amber-800">
-                {`Se enseñan las ${report.data.routes.length} rutas con más peticiones de ${report.data.routesTotal ?? "más"} que tuvieron tráfico en la ventana. Los totales de arriba sí cuentan todas.`}
-              </p>
-            ) : null}
             <TrafficLatencyCharts routes={report.data.routes} />
-            <DataTable
-              data={report.data.routes}
-              columns={columns}
-              emptyTitle="Sin tráfico registrado en esta ventana."
-              emptyDescription="Prueba con una ventana más amplia o revisa que `system_action_logs` esté recibiendo eventos."
-            />
+            <TrafficRoutesTable windowHours={windowHours} live={live} />
           </>
         ) : null}
       </CardContent>

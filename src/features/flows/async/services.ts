@@ -1,12 +1,17 @@
 import { apiRequest } from "@/shared/api/client";
-import type { PendingWorkResponse, RbacDriftResponse } from "./types";
+import type {
+  PendingWorkQuery,
+  PendingWorkResponse,
+  RbacDriftQuery,
+  RbacDriftResponse,
+} from "./types";
 
-export function getPendingWork(windowDays: number) {
+export function getPendingWork(query: PendingWorkQuery) {
   return apiRequest<PendingWorkResponse>("/systems/flows/pending-work", {
-    query: { windowDays },
+    query,
   });
 }
 
-export function getRbacDrift() {
-  return apiRequest<RbacDriftResponse>("/systems/flows/rbac-drift");
+export function getRbacDrift(query: RbacDriftQuery = {}) {
+  return apiRequest<RbacDriftResponse>("/systems/flows/rbac-drift", { query });
 }

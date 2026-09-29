@@ -43,6 +43,7 @@ import type {
   ReviewDecisionInput,
   ReviewTargetType,
   DataEntityMetadataInput,
+  TrafficRoutesQuery,
 } from "./types";
 
 export { useEndpointsByIds } from "./endpoint-reference-hooks";
@@ -181,6 +182,25 @@ export function useTrafficLatencyReport(
     queryKey: ["systems", "traffic-latency", windowHours] as const,
     queryFn: () => getTrafficLatencyReport(windowHours),
     refetchInterval: options?.live ? 5_000 : false,
+  });
+}
+
+/** Las rutas del informe de tráfico, paginadas y filtradas en el servidor (la tabla, no los gráficos). */
+export function useTrafficRoutesPage(
+  windowHours: number,
+  routes: TrafficRoutesQuery,
+  options?: { live?: boolean },
+) {
+  return useQuery({
+    queryKey: [
+      "systems",
+      "traffic-latency-routes",
+      windowHours,
+      routes,
+    ] as const,
+    queryFn: () => getTrafficLatencyReport(windowHours, routes),
+    refetchInterval: options?.live ? 5_000 : false,
+    placeholderData: keepPreviousData,
   });
 }
 
