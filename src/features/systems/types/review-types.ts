@@ -160,6 +160,9 @@ export type TrafficLatencyReport = {
     errorRate: number;
   };
   routes: TrafficLatencyRoute[];
+  /** Rutas distintas en la ventana y si la tabla enseña sólo las de más tráfico (desde 2026-09-29). */
+  routesTotal?: number;
+  routesTruncated?: boolean;
 };
 
 export type TrafficLatencyBucket = {

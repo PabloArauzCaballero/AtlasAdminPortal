@@ -105,4 +105,10 @@ export type ActiveArtifactReport = {
   message: string;
   environmentFilter: string | null;
   items: ActiveArtifact[];
+  /**
+   * El motor sirve como mucho 100 por página y el servidor lee una: `true` si el motor dijo tener
+   * más de lo que llegó. Opcionales: un servidor anterior al 2026-09-29 no los manda.
+   */
+  truncated?: boolean;
+  deploymentsTotal?: number | null;
 };

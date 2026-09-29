@@ -152,6 +152,11 @@ export function TrafficLatencySection() {
                 buckets={timeseries.data.buckets}
               />
             ) : null}
+            {report.data.routesTruncated ? (
+              <p role="status" className="text-xs text-amber-800">
+                {`Se enseñan las ${report.data.routes.length} rutas con más peticiones de ${report.data.routesTotal ?? "más"} que tuvieron tráfico en la ventana. Los totales de arriba sí cuentan todas.`}
+              </p>
+            ) : null}
             <TrafficLatencyCharts routes={report.data.routes} />
             <DataTable
               data={report.data.routes}
