@@ -4,10 +4,8 @@ import type { ModuleExplanation } from "./view-explanations-types";
 export const operationsModuleExplanation: ModuleExplanation = {
   module: "Operaciones",
   prefixes: [
-    "/internal/forms",
     "/internal/operations",
     "/internal/jobs",
-    "/internal/alerts",
     "/internal/notifications",
     "/internal/my-notifications",
     "/internal/exports",
@@ -157,12 +155,6 @@ export const operationsModuleExplanation: ModuleExplanation = {
       business:
         "Visibilidad de los procesos automáticos que mueven el negocio (sincronizaciones, cierres); si uno falla, se ve aquí antes de que falten datos.",
     },
-    "/internal/alerts": {
-      systems:
-        "Incidencias de calidad (`data_quality_issues`) con la severidad de la regla que las levantó; se pueden reconocer. No hay asignación a una persona. Hoy nada las inserta de forma automática.",
-      business:
-        "Los registros que no cumplen una regla de calidad y requieren que alguien los mire.",
-    },
     "/internal/notifications": {
       systems:
         "Administración de mensajería: broadcasts a usuarios internos, plantillas versionadas y preferencias por canal.",
@@ -180,12 +172,6 @@ export const operationsModuleExplanation: ModuleExplanation = {
         "Solicitudes de exportación con estado, alcance y descarga controlada; cada export queda auditado.",
       business:
         "Sacar datos de la plataforma de forma trazable: quién exportó qué y para qué, sin copias silenciosas.",
-    },
-    "/internal/forms": {
-      systems:
-        "Definiciones de formularios versionadas que consumen los flujos de captura del backend.",
-      business:
-        "Los formularios que ve el cliente, administrados y versionados para cambiar sin romper capturas históricas.",
     },
   },
 };

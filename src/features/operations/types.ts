@@ -176,17 +176,33 @@ export type RiskPolicyCurrent = {
 
 export type DataQualityIssue = {
   issueId: string;
+  /** En mayúsculas (LOW…CRITICAL); `null` si la incidencia no tiene regla. */
   severity: string | null;
   entityType: string | null;
   entityId: string | null;
-  issueCode: string;
-  status: string;
+  issueCode: string | null;
+  ruleName?: string | null;
+  status: string | null;
   detectedAt: string | null;
+  /** `null` mientras siga pendiente, también si está reconocida. */
   resolvedAt: string | null;
+  resolutionNotes?: string | null;
 };
-export type DataQualityIssueListResponse = PaginatedResponse<DataQualityIssue>;
+/** Conteos del filtro entero. «Pendiente» = sin revisar + reconocida (lo mismo que el semáforo de salida). */
+export type DataQualityIssueSummary = {
+  total: number;
+  pending: number;
+  unreviewed: number;
+  acknowledged: number;
+  closed: number;
+  byStatus: Record<string, number>;
+};
+export type DataQualityIssueListResponse =
+  PaginatedResponse<DataQualityIssue> & {
+    summary?: DataQualityIssueSummary;
+  };
 export type ResolveDataQualityIssueInput = {
-  resolution: "resolved" | "ignored";
+  resolution: "acknowledged" | "resolved" | "ignored";
   reasonCode: string;
   notes: string;
 };

@@ -1,5 +1,4 @@
 export const breadcrumbLabels: Record<string, string> = {
-  alerts: "Alertas",
   audit: "Auditoría",
   configure: "Configurar",
   "consent-documents": "Consentimientos del cliente",
@@ -8,7 +7,6 @@ export const breadcrumbLabels: Record<string, string> = {
   files: "Archivos",
   expedienteId: "Expediente",
   cliente: "Cliente",
-  forms: "Formularios",
   metadata: "Metadata",
   exportId: "Exportación",
   jobId: "Job",
@@ -20,7 +18,7 @@ export const breadcrumbLabels: Record<string, string> = {
   current: "Actual",
   "data-catalog": "Catálogo de datos",
   "data-quality": "Calidad de datos",
-  definitions: "Definiciones",
+  definitions: "Definiciones del motor",
   domains: "Dominios",
   // Sin esta entrada la miga de pan escribía el segmento crudo de la ruta: «events».
   events: "Eventos de dominio",
@@ -37,7 +35,7 @@ export const breadcrumbLabels: Record<string, string> = {
   policyId: "Política",
   termId: "Término",
   health: "Salud",
-  issues: "Issues",
+  issues: "Issues de calidad",
   lab: "Laboratorio",
   lineage: "Relaciones",
   "my-notifications": "Mis notificaciones",

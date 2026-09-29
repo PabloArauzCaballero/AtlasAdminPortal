@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useId } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Field, Textarea } from "@/shared/components/ui/input";
@@ -10,6 +10,7 @@ import { FormSelect } from "@/shared/components/ui/form-select";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { REASON_OPTIONS, RESOLUTION_OPTIONS } from "./resolution-options";
 import {
   MIN_RESOLUTION_NOTES_LENGTH,
   resolutionDefaults,
@@ -19,12 +20,15 @@ import {
 
 export function ResolutionDialog({
   issueId,
+  acknowledged = false,
   isLoading,
   error,
   onCancel,
   onSubmit,
 }: Readonly<{
   issueId: string;
+  /** Ya reconocida: sólo queda cerrarla (corregida o descartada). */
+  acknowledged?: boolean;
   isLoading: boolean;
   error?: unknown;
   onCancel: () => void;
@@ -40,6 +44,11 @@ export function ResolutionDialog({
     resolver: zodResolver(resolutionSchema),
     defaultValues: resolutionDefaults,
   });
+  const resolution = useWatch({ control, name: "resolution" });
+  const title = `Resolver la incidencia #${issueId}`;
+  const options = acknowledged
+    ? RESOLUTION_OPTIONS.filter((option) => option.value !== "acknowledged")
+    : RESOLUTION_OPTIONS;
 
   // `handleSubmit` no llama a esto si el esquema no pasa: no hay forma de cerrar
   // un issue sin motivo ni notas suficientes, ni de enviarlo dos veces.
@@ -55,55 +64,34 @@ export function ResolutionDialog({
     >
       <form onSubmit={submit}>
         <h2 id={titleId} className="sr-only">
-          {`Cerrar issue #${issueId}`}
+          {title}
         </h2>
         <SectionHeader
-          title={`Cerrar issue #${issueId}`}
-          description="Completa resolución y notas. Evita incluir datos sensibles."
+          title={title}
+          description="Elige qué haces con ella, el motivo y una nota. Todo queda en la auditoría; evita datos personales."
         />
         <div className="grid gap-4 grid-cols-1 md:grid-cols-[180px_1fr]">
           <Field
-            tooltip="Cómo se cierra el issue: corregido o aceptado sin corregir."
+            tooltip="Reconocer la deja pendiente; corregida o descartada la cierran."
             label="Resolución"
             error={errors.resolution?.message}
           >
-            <FormSelect
-              control={control}
-              name="resolution"
-              options={[
-                {
-                  value: "resolved",
-                  label: "resolved",
-                  description: "El problema se corrigió.",
-                },
-                {
-                  value: "ignored",
-                  label: "ignored",
-                  description:
-                    "Se cierra sin corregir el dato; el motivo queda en las notas.",
-                },
-              ]}
-            />
+            <FormSelect control={control} name="resolution" options={options} />
           </Field>
           <Field
-            tooltip="Motivo codificado del cierre, para agrupar los cierres en la auditoría."
-            label="Razón"
+            tooltip="Motivo codificado de la decisión, para agruparlas en la auditoría."
+            label="Motivo"
             error={errors.reasonCode?.message}
           >
             <FormSelect
               control={control}
               name="reasonCode"
-              options={[
-                "manual_review",
-                "source_validated",
-                "false_positive",
-                "temporary_exception",
-              ].map((value) => ({ value, label: value }))}
+              options={REASON_OPTIONS}
             />
           </Field>
           <div className="md:col-span-2">
             <Field
-              tooltip="Criterio operativo del cierre, sin datos personales; queda en la auditoría."
+              tooltip="Criterio operativo de la decisión, sin datos personales; queda en la auditoría."
               label={`Notas (obligatorio, mínimo ${MIN_RESOLUTION_NOTES_LENGTH} caracteres)`}
               error={errors.notes?.message}
               hint="Explica criterio operativo sin pegar datos personales. Queda en la auditoría del issue."
@@ -123,7 +111,7 @@ export function ResolutionDialog({
               description={
                 isAtlasApiError(error)
                   ? error.message
-                  : "No se pudo cerrar el issue."
+                  : "No se pudo guardar la resolución."
               }
               requestId={isAtlasApiError(error) ? error.requestId : undefined}
             />
@@ -134,7 +122,11 @@ export function ResolutionDialog({
             Cancelar
           </Button>
           <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? "Procesando…" : "Cerrar issue"}
+            {isLoading
+              ? "Procesando…"
+              : resolution === "acknowledged"
+                ? "Reconocer"
+                : "Cerrar incidencia"}
           </Button>
         </div>
       </form>

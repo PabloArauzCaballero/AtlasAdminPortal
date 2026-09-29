@@ -44,7 +44,6 @@ const ROUTES = [
   "/internal/operations/work-queue",
   "/internal/operations/catalogs",
   "/internal/jobs",
-  "/internal/alerts",
   "/internal/notifications",
   "/internal/my-notifications",
   "/internal/exports",

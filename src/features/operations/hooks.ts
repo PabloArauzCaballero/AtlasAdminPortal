@@ -1,5 +1,6 @@
 "use client";
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -47,6 +48,7 @@ export function useOperationCatalogs(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.operationCatalogs(query),
     queryFn: () => listOperationCatalogs(query),
+    placeholderData: keepPreviousData,
   });
 }
 export function useCatalogVersion(catalogCode: string, versionId: string) {
@@ -132,6 +134,7 @@ export function useDefinitions(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.definitions(query),
     queryFn: () => listDefinitions(query),
+    placeholderData: keepPreviousData,
   });
 }
 export function useDataGovernancePolicies() {
@@ -150,6 +153,7 @@ export function useDataQualityIssues(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.dataQualityIssues(query),
     queryFn: () => listDataQualityIssues(query),
+    placeholderData: keepPreviousData,
   });
 }
 export function useResolveDataQualityIssueMutation() {
