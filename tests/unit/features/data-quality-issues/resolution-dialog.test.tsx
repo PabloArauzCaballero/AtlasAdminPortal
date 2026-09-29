@@ -21,7 +21,9 @@ function renderDialog(
 }
 
 const confirmButton = () =>
-  screen.getByRole("button", { name: /cerrar issue|procesando/i });
+  screen.getByRole("button", {
+    name: /cerrar incidencia|reconocer|procesando/i,
+  });
 
 const notasFactory = () => screen.getByRole("textbox"); // el único textbox del diálogo es "Notas"
 
@@ -59,6 +61,31 @@ describe("ResolutionDialog · no permite inventar la auditoría", () => {
   });
 });
 
+describe("ResolutionDialog · reconocer es una resolución con motivo (absorbe «Alertas»)", () => {
+  it("ofrece reconocer, corregir y descartar, cada una explicada", async () => {
+    renderDialog();
+    await userEvent.click(
+      screen.getByRole("combobox", { name: /resolución/i }),
+    );
+    expect(
+      await screen.findByText("Reconocer", { selector: "*" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/sigue pendiente hasta corregirla o descartarla/i),
+    ).toBeInTheDocument();
+  });
+
+  it("una incidencia ya reconocida no se puede volver a reconocer: sólo cerrarla", async () => {
+    renderDialog({ acknowledged: true });
+    await userEvent.click(
+      screen.getByRole("combobox", { name: /resolución/i }),
+    );
+    expect(
+      screen.queryByText(/sigue pendiente hasta corregirla o descartarla/i),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("ResolutionDialog · doble envío y errores", () => {
   it("deshabilita el botón mientras la mutación está en vuelo", () => {
     renderDialog({ isLoading: true });
@@ -82,7 +109,9 @@ describe("ResolutionDialog · doble envío y errores", () => {
 describe("ResolutionDialog · accesibilidad", () => {
   it("el diálogo se nombra con el issue", () => {
     renderDialog();
-    expect(screen.getByRole("dialog")).toHaveAccessibleName(/Cerrar issue #i1/);
+    expect(screen.getByRole("dialog")).toHaveAccessibleName(
+      /Resolver la incidencia #i1/,
+    );
   });
 
   it("Escape cancela", async () => {
