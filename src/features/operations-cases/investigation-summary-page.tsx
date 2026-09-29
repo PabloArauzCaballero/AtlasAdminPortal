@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Badge, StatusBadge } from "@/shared/components/ui/badges";
-import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, safeText } from "@/shared/lib/format";
@@ -19,21 +15,16 @@ import {
   CasosAbiertosSection,
   IdentidadYAgendaSection,
 } from "./investigation-summary-sections";
-import { ListCard } from "./list-card";
+import { ContactosYConsentimientos } from "./investigation-contact-tables";
 import { CustomerDecisionsPanel } from "./customer-decisions-panel";
 import { RecalculateRiskAction } from "./recalculate-risk-action";
-import {
-  useInvestigationSummary,
-  useResendContactVerificationMutation,
-} from "./hooks";
-import { MailCheck, Search } from "lucide-react";
+import { useInvestigationSummary } from "./hooks";
+import { Search } from "lucide-react";
 
 export function InvestigationSummaryPage({
   customerId,
 }: Readonly<{ customerId: string }>) {
   const summary = useInvestigationSummary(customerId);
-  const reenvio = useResendContactVerificationMutation();
-  const [reenvioAviso, setReenvioAviso] = useState<string | null>(null);
 
   return (
     <>
@@ -141,80 +132,11 @@ export function InvestigationSummaryPage({
 
           <IdentidadYAgendaSection data={summary.data} />
 
-          <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            <ListCard title="Contactos" empty="Sin contactos registrados.">
-              {summary.data.contacts.map((contact, index) => (
-                <li
-                  key={`${contact.contactType}-${index}`}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span>
-                    {safeText(contact.contactType)} · ···
-                    {safeText(contact.valueLast4)}
-                    {contact.isPrimary ? (
-                      <Badge tone="info" className="ml-2">
-                        Primario
-                      </Badge>
-                    ) : null}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <StatusBadge value={contact.status} />
-                    {contact.status === "unverified" &&
-                    (contact.contactType === "email" ||
-                      contact.contactType === "phone") ? (
-                      <Button
-                        variant="secondary"
-                        disabled={reenvio.isPending}
-                        onClick={() =>
-                          reenvio.mutate(
-                            {
-                              customerId,
-                              body: {
-                                contactType: contact.contactType as
-                                  "email" | "phone",
-                              },
-                            },
-                            {
-                              onSuccess: () =>
-                                setReenvioAviso("Código reenviado al cliente."),
-                              onError: (error) =>
-                                setReenvioAviso(
-                                  `No se pudo reenviar: ${isAtlasApiError(error) ? error.message : "inténtalo en un minuto."}`,
-                                ),
-                            },
-                          )
-                        }
-                      >
-                        <MailCheck className="h-3.5 w-3.5" />
-                        Reenviar código
-                      </Button>
-                    ) : null}
-                  </span>
-                </li>
-              ))}
-              {reenvioAviso ? (
-                <li className="py-1.5 text-xs text-atlas-muted" role="status">
-                  {reenvioAviso}
-                </li>
-              ) : null}
-            </ListCard>
-            <ListCard
-              title="Consentimientos"
-              empty="Sin consentimientos registrados."
-            >
-              {summary.data.consents.map((consent, index) => (
-                <li
-                  key={`${consent.purposeCode}-${index}`}
-                  className="flex items-center justify-between gap-2 py-1.5 text-sm"
-                >
-                  <span>{safeText(consent.purposeCode)}</span>
-                  <Badge tone={consent.granted ? "success" : "muted"}>
-                    {consent.granted ? "Otorgado" : "No otorgado"}
-                  </Badge>
-                </li>
-              ))}
-            </ListCard>
-          </section>
+          <ContactosYConsentimientos
+            customerId={customerId}
+            contactos={summary.data.contacts}
+            consentimientos={summary.data.consents}
+          />
 
           <CasosAbiertosSection data={summary.data} />
 

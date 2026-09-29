@@ -2,8 +2,9 @@
 
 import { KeyValueSection } from "@/shared/components/data-display/key-value";
 import { SeverityBadge, StatusBadge } from "@/shared/components/ui/badges";
-import { formatDateTime, formatNumber } from "@/shared/lib/format";
-import { ListCard } from "./list-card";
+import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
+import type { ColumnDef } from "@tanstack/react-table";
+import { SectionTable } from "@/shared/components/data-table/section-table";
 import type { getInvestigationSummary } from "./services";
 import {
   caseTypeLabel,
@@ -124,43 +125,108 @@ export function IdentidadYAgendaSection({ data }: Readonly<{ data: Resumen }>) {
 
 export function CasosAbiertosSection({ data }: Readonly<{ data: Resumen }>) {
   return (
-    <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
-      <ListCard
-        title={`Casos de revisión manual (${data.manualReviewCases.length})`}
-        empty="Sin casos de revisión manual abiertos."
-      >
-        {data.manualReviewCases.map((item) => (
-          <li
-            key={item.caseId}
-            className="flex items-center justify-between gap-2 py-1.5 text-sm"
-          >
-            <span className="font-mono text-xs">
-              #{item.caseId} · {caseTypeLabel(item.caseType)}
-            </span>
-            <StatusBadge value={item.status} />
-          </li>
-        ))}
-      </ListCard>
-      <ListCard
-        title={`Casos de fraude (${data.fraudCases.length})`}
-        empty="Sin casos de fraude abiertos."
-      >
-        {data.fraudCases.map((item) => (
-          <li
-            key={item.caseId}
-            className="flex items-center justify-between gap-2 py-1.5 text-sm"
-          >
-            <span className="font-mono text-xs">#{item.caseId}</span>
-            <span className="flex items-center gap-2">
-              <SeverityBadge value={item.severity} />
-              <StatusBadge value={item.caseStatus} />
-            </span>
-          </li>
-        ))}
-      </ListCard>
+    <section className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+      <SectionTable
+        title="Casos de revisión manual"
+        data={data.manualReviewCases}
+        columns={REVISION_MANUAL_COLUMNS}
+        searchText={(item) =>
+          `${item.caseId} ${item.caseCode ?? ""} ${caseTypeLabel(item.caseType)} ${item.priority ?? ""}`
+        }
+        searchPlaceholder="Buscar por número, código, tipo o prioridad…"
+        searchTooltip="Recorre todos los casos de revisión manual abiertos de este cliente: coincide con parte del número, del código, del tipo o de la prioridad."
+        emptyTitle="Sin casos de revisión manual abiertos."
+        emptyDescription="Cuando el Motor mande una decisión de este cliente a revisión humana, el caso aparecerá aquí."
+      />
+      <SectionTable
+        title="Casos de fraude"
+        data={data.fraudCases}
+        columns={FRAUDE_COLUMNS}
+        searchText={(item) =>
+          `${item.caseId} ${item.caseCode ?? ""} ${item.severity ?? ""} ${item.caseStatus ?? ""}`
+        }
+        searchPlaceholder="Buscar por número, código, gravedad o estado…"
+        searchTooltip="Recorre todos los casos de fraude abiertos de este cliente: coincide con parte del número, del código, de la gravedad o del estado."
+        emptyTitle="Sin casos de fraude abiertos."
+        emptyDescription="Cuando se abra un caso de fraude de este cliente aparecerá aquí."
+      />
     </section>
   );
 }
+
+type CasoRevision = Resumen["manualReviewCases"][number];
+type CasoFraude = Resumen["fraudCases"][number];
+
+const REVISION_MANUAL_COLUMNS: ColumnDef<CasoRevision>[] = [
+  {
+    header: "Caso",
+    accessorKey: "caseId",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">#{row.original.caseId}</span>
+    ),
+  },
+  {
+    header: "Código",
+    accessorKey: "caseCode",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">
+        {safeText(row.original.caseCode)}
+      </span>
+    ),
+  },
+  {
+    header: "Tipo",
+    accessorFn: (item) => caseTypeLabel(item.caseType),
+  },
+  {
+    header: "Prioridad",
+    accessorFn: (item) => safeText(item.priority),
+  },
+  {
+    header: "Estado",
+    accessorKey: "status",
+    cell: ({ row }) => <StatusBadge value={row.original.status} />,
+  },
+  {
+    header: "Abierto",
+    accessorKey: "openedAt",
+    cell: ({ row }) => formatDateTime(row.original.openedAt),
+  },
+];
+
+const FRAUDE_COLUMNS: ColumnDef<CasoFraude>[] = [
+  {
+    header: "Caso",
+    accessorKey: "caseId",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">#{row.original.caseId}</span>
+    ),
+  },
+  {
+    header: "Código",
+    accessorKey: "caseCode",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">
+        {safeText(row.original.caseCode)}
+      </span>
+    ),
+  },
+  {
+    header: "Gravedad",
+    accessorKey: "severity",
+    cell: ({ row }) => <SeverityBadge value={row.original.severity} />,
+  },
+  {
+    header: "Estado",
+    accessorKey: "caseStatus",
+    cell: ({ row }) => <StatusBadge value={row.original.caseStatus} />,
+  },
+  {
+    header: "Abierto",
+    accessorKey: "openedAt",
+    cell: ({ row }) => formatDateTime(row.original.openedAt),
+  },
+];
 
 function sugerencia(
   identidad: NonNullable<Resumen["latestIdentityVerification"]>,
