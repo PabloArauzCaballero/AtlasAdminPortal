@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGlobalSearch } from "./hooks";
+import { buildSearchResultColumns } from "./search-result-columns";
 import type { GlobalSearchKind, GlobalSearchResult } from "./types";
 import type { PaginationMeta } from "@/shared/api/types";
-import { Pagination } from "@/shared/components/data-table/pagination";
+import { DataTable } from "@/shared/components/data-table/data-table";
 import { DetailTabs } from "@/shared/components/navigation/detail-tabs";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import {
@@ -16,18 +16,12 @@ import {
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import {
-  MethodBadge,
-  PiiBadge,
-  RiskBadge,
-  StatusBadge,
-} from "@/shared/components/ui/badges";
-import {
   EmptyState,
   ErrorState,
   LoadingSkeleton,
 } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
-import { formatNumber, safeText } from "@/shared/lib/format";
+import { formatNumber } from "@/shared/lib/format";
 import { Search } from "lucide-react";
 
 export function GlobalSearchPage() {
@@ -158,6 +152,10 @@ function SearchResults({
   const tabLabel = (each: GlobalSearchKind) =>
     `${TOTAL_LABELS[TOTAL_KEY[each]]} (${formatNumber(totals[TOTAL_KEY[each]] ?? 0)})`;
   const tabs = KINDS.map(tabLabel);
+  const columns = useMemo(
+    () => buildSearchResultColumns((each) => KIND_LABELS[each] ?? each),
+    [],
+  );
   return (
     <div className="space-y-6">
       <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
@@ -187,71 +185,17 @@ function SearchResults({
               onKindChange(KINDS[tabs.indexOf(label)] ?? kind)
             }
           />
-          {results.length === 0 ? (
-            <EmptyState
-              title="Sin resultados de este tipo"
-              description="Prueba con otra pestaña u otro texto."
-            />
-          ) : null}
-          {results.map((result) => (
-            <ResultCard key={`${result.kind}-${result.id}`} result={result} />
-          ))}
-          {meta && meta.total > 0 ? (
-            <Pagination meta={meta} onPageChange={onPageChange} />
-          ) : null}
+          <DataTable
+            data={results}
+            columns={columns}
+            meta={meta && meta.total > 0 ? meta : undefined}
+            onPageChange={onPageChange}
+            emptyTitle="Sin resultados de este tipo"
+            emptyDescription="Prueba con otra pestaña u otro texto."
+          />
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function ResultCard({ result }: Readonly<{ result: GlobalSearchResult }>) {
-  const body = (
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-atlas-muted">
-          {KIND_LABELS[result.kind] ?? result.kind}
-        </p>
-        <h3 className="mt-1 truncate text-sm font-semibold text-atlas-text">
-          {result.title}
-        </h3>
-        <p className="mt-1 line-clamp-2 text-sm text-atlas-muted">
-          {safeText(result.subtitle)}
-        </p>
-      </div>
-      <ResultMeta result={result} />
-    </div>
-  );
-
-  // Sin destino seguro el resultado sigue informando, pero no navega.
-  if (!result.href) {
-    return (
-      <div className="block rounded-lg border border-atlas-border p-4">
-        {body}
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href={result.href}
-      className="block rounded-lg border border-atlas-border p-4 hover:bg-atlas-soft"
-    >
-      {body}
-    </Link>
-  );
-}
-
-function ResultMeta({ result }: Readonly<{ result: GlobalSearchResult }>) {
-  return (
-    <span className="inline-flex flex-wrap justify-end gap-2">
-      {result.method ? <MethodBadge method={result.method} /> : null}
-      {result.riskLevel ? <RiskBadge value={result.riskLevel} /> : null}
-      {result.status ? <StatusBadge value={result.status} /> : null}
-      {typeof result.containsPii === "boolean" ? (
-        <PiiBadge value={result.containsPii} />
-      ) : null}
-    </span>
   );
 }
 
