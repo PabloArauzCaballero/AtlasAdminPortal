@@ -44,17 +44,15 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     // fila y no un conteo: un filtro que devuelve menos filas puede seguir estando mal.
     await catalogoDeDatos.filtroDeBloque.elegir("ERP_BACKEND");
     await expect(catalogoDeDatos.tabla.elemento).toBeVisible();
+    await expect(catalogoDeDatos.tabla.celdasCon("ERP").first()).toBeVisible();
     await expect(
-      catalogoDeDatos.tabla.celdasCon("ERP Backend").first(),
-    ).toBeVisible();
-    await expect(catalogoDeDatos.tabla.celdasCon("Atlas Backend")).toHaveCount(
-      0,
-    );
+      catalogoDeDatos.tabla.celdasCon("Núcleo de Atlas"),
+    ).toHaveCount(0);
 
     // Y el motor de decisión, que guarda todo en `public`, también aparece con lo suyo.
     await catalogoDeDatos.filtroDeBloque.elegir("DECISION_ENGINE");
     await expect(
-      catalogoDeDatos.tabla.celdasCon("Decision Engine").first(),
+      catalogoDeDatos.tabla.celdasCon("Motor de decisiones").first(),
     ).toBeVisible();
   });
 
@@ -79,9 +77,9 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     await endpoints.filtroDeBloque.elegir("DECISION_ENGINE");
     await expect(endpoints.tabla.elemento).toBeVisible();
     await expect(
-      endpoints.tabla.celdasCon("Decision Engine").first(),
+      endpoints.tabla.celdasCon("Motor de decisiones").first(),
     ).toBeVisible();
-    await expect(endpoints.tabla.celdasCon("ERP Backend")).toHaveCount(0);
+    await expect(endpoints.tabla.celdasCon("ERP")).toHaveCount(0);
   });
 
   test("la pestaña Salud de la red reporta los tres bloques", async ({

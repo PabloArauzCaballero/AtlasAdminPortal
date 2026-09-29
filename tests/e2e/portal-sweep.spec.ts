@@ -24,7 +24,7 @@ type Route = {
 
 const STATIC_ROUTES: Route[] = [
   { path: "/internal", heading: /centro interno/i },
-  { path: "/internal/systems/endpoints", heading: /endpoints/i },
+  { path: "/internal/systems/endpoints", heading: /operaciones/i },
   { path: "/internal/systems/tools", heading: /herramientas|tools/i },
   // «Salud herramientas» es la pestaña Salud de Herramientas; su ruta vieja redirige ahí.
   { path: "/internal/systems/tools?tab=salud", heading: /herramientas/i },
@@ -69,7 +69,7 @@ const STATIC_ROUTES: Route[] = [
     heading: /preparación|release|disponibilidad/i,
   },
   { path: "/internal/qa/lab", heading: /laboratorio/i },
-  { path: "/internal/qa/suites", heading: /suites/i },
+  { path: "/internal/qa/suites", heading: /baterías de prueba/i },
   { path: "/internal/qa/runs", heading: /corridas/i },
   { path: "/internal/qa/stress", heading: /carga|stress/i },
   { path: "/internal/qa/stress/runs", heading: /carga|stress/i },
