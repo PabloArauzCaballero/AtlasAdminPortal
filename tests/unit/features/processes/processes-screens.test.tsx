@@ -157,8 +157,12 @@ describe("Procesos · ficha", () => {
     ])
       expect(screen.getByText(pregunta)).toBeInTheDocument();
     // Los contadores salen de `flowStats` del servidor (fixture: 3 con flujo, 2 críticos, 1 verificado).
-    expect(screen.getByText("Críticos").closest("section")).toHaveTextContent("2");
-    expect(screen.getByText("Con flujo en el mapa").closest("section")).toHaveTextContent("3");
+    expect(screen.getByText("Críticos").closest("section")).toHaveTextContent(
+      "2",
+    );
+    expect(
+      screen.getByText("Con flujo en el mapa").closest("section"),
+    ).toHaveTextContent("3");
     expect(screen.queryByTestId("etapa-contacts")).not.toBeInTheDocument();
   });
 

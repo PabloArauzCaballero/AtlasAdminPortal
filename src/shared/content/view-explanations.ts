@@ -35,7 +35,7 @@ export type ResolvedExplanation = {
 /**
  * ¿`pathname` cae bajo `prefix`? Un prefijo sin corchetes se compara con `startsWith`, como
  * siempre. Uno con `[param]` se compara por segmentos y el corchete vale cualquier segmento: es
- * lo que permite dar texto propio a `/internal/procesos/[code]/instancias`, cuyo código cambia.
+ * lo que permite dar texto propio a `/internal/procesos/[code]`, cuyo código cambia.
  */
 export function matchesPrefix(pathname: string, prefix: string): boolean {
   if (!prefix.includes("[")) return pathname.startsWith(prefix);
@@ -51,8 +51,8 @@ export function matchesPrefix(pathname: string, prefix: string): boolean {
 
 /**
  * Resuelve la explicación de módulo y vista para un pathname. Gana el prefijo
- * más largo tanto a nivel módulo como a nivel vista, así `/internal/systems/tools/health`
- * matchea la vista de salud y no la de herramientas.
+ * más largo tanto a nivel módulo como a nivel vista, así `/internal/flows/review`
+ * matchea la vista de revisión y no la del mapa de rutas.
  */
 export function resolveExplanation(
   pathname: string,

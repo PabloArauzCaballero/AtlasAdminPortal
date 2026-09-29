@@ -36,7 +36,7 @@ export function buildReadiness(input: BuildReadinessInput): ReadyItem[] {
   return [
     item(
       "review",
-      "Cola de revisión",
+      "Revisión del catálogo",
       counts.totalReview,
       5,
       20,

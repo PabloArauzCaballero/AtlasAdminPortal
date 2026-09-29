@@ -76,10 +76,7 @@ describe("assistScreenFor · la sección con su nombre del menú", () => {
       "Operaciones › Clientes › Investigación",
     ],
     ["/internal/qa/lab", "QA › Laboratorio QA"],
-    [
-      "/internal/procesos/P-06",
-      "Procesos",
-    ],
+    ["/internal/procesos/P-06", "Procesos"],
     ["/internal/settings/profile", "Administración › Perfil"],
   ])("%s → %s", (ruta, esperado) => {
     expect(assistScreenFor(ruta)).toBe(esperado);
