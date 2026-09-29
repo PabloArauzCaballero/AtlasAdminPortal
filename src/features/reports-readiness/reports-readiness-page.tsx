@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useCatalogSummary } from "@/features/systems/hooks";
+import { useCatalogSummary } from "@/features/systems/catalog-summary-hooks";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import {
   PageHeader,

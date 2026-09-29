@@ -40,9 +40,21 @@ export const NODE_TYPE_OPTIONS: Option[] = [
 ];
 
 export const SEVERITY_OPTIONS: Option[] = [
-  { value: "LOW", label: "Baja", description: "Lectura o impacto menor." },
-  { value: "MEDIUM", label: "Media", description: "Impacto moderado." },
-  { value: "HIGH", label: "Alta", description: "Cambia datos sensibles." },
+  {
+    value: "LOW",
+    label: "Baja",
+    description: "Sólo lectura o impacto menor.",
+  },
+  {
+    value: "MEDIUM",
+    label: "Media",
+    description: "Impacto moderado sobre la tabla.",
+  },
+  {
+    value: "HIGH",
+    label: "Alta",
+    description: "Cambia datos sensibles o de negocio.",
+  },
   {
     value: "CRITICAL",
     label: "Crítica",

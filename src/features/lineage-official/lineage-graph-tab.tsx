@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LayoutGrid, TableProperties } from "lucide-react";
-import { useLineageGraph } from "@/features/lineage-official/hooks";
+import { useLineageGraph } from "./hooks";
 import {
   buildLineageEdgeColumns,
   buildLineageNodeColumns,
-} from "@/features/lineage-official/lineage-columns";
-import { LineageGraphView } from "@/features/lineage-official/lineage-graph-view";
-import type { LineageGraphSummary } from "@/features/lineage-official/types";
+} from "./lineage-columns";
+import { LineageGraphView } from "./lineage-graph-view";
+import type { LineageGraphSummary } from "./types";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { MetricCard } from "@/shared/components/layout/metric-card";
@@ -19,7 +19,10 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
-import { NODE_TYPE_OPTIONS, useModuleOptions } from "./module-options";
+import {
+  NODE_TYPE_OPTIONS,
+  useModuleOptions,
+} from "@/features/lineage/module-options";
 
 type ViewMode = "table" | "graph";
 

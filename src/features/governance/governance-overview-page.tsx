@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCatalogSummary } from "@/features/systems/hooks";
+import { useCatalogSummary } from "@/features/systems/catalog-summary-hooks";
 import {
   UrlTabPanel,
   UrlTabs,

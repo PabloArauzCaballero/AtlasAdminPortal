@@ -73,7 +73,9 @@ describe("metadataPatch", () => {
 
   it("una retención borrada viaja como null (así la quita el servidor), nunca como cadena vacía", () => {
     const values = { ...metadataValuesFrom(ENTITY), retentionPolicyCode: "  " };
-    expect(metadataPatch(ENTITY, values)).toEqual({ retentionPolicyCode: null });
+    expect(metadataPatch(ENTITY, values)).toEqual({
+      retentionPolicyCode: null,
+    });
   });
 
   it("el estado llega en el formato del servidor aunque la tabla lo traiga en minúsculas", () => {
@@ -86,14 +88,22 @@ describe("metadataPatch", () => {
 describe("firstMetadataError — las mismas reglas que el servidor, antes de enviar", () => {
   it("no deja vaciar el propósito ni el responsable", () => {
     const base = metadataValuesFrom(ENTITY);
-    expect(firstMetadataError(ENTITY, { ...base, businessPurpose: "" })).toMatch(/propósito/);
-    expect(firstMetadataError(ENTITY, { ...base, dataOwner: " " })).toMatch(/responsable/);
+    expect(
+      firstMetadataError(ENTITY, { ...base, businessPurpose: "" }),
+    ).toMatch(/propósito/);
+    expect(firstMetadataError(ENTITY, { ...base, dataOwner: " " })).toMatch(
+      /responsable/,
+    );
   });
 
   it("exige los mínimos de longitud", () => {
     const base = metadataValuesFrom(ENTITY);
-    expect(firstMetadataError(ENTITY, { ...base, businessPurpose: "ab" })).toMatch(/3 caracteres/);
-    expect(firstMetadataError(ENTITY, { ...base, retentionPolicyCode: "R" })).toMatch(/2 caracteres/);
+    expect(
+      firstMetadataError(ENTITY, { ...base, businessPurpose: "ab" }),
+    ).toMatch(/3 caracteres/);
+    expect(
+      firstMetadataError(ENTITY, { ...base, retentionPolicyCode: "R" }),
+    ).toMatch(/2 caracteres/);
     expect(firstMetadataError(ENTITY, base)).toBeNull();
   });
 });

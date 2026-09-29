@@ -10,9 +10,9 @@ import {
   useUrlTab,
   type UrlTab,
 } from "@/shared/components/layout/url-tabs";
-import { LineageGraphTab } from "./lineage-graph-tab";
+import { LineageGraphTab } from "@/features/lineage-official/lineage-graph-tab";
 import { LineageNodesTab } from "./lineage-nodes-tab";
-import { LineageImpactTab } from "./lineage-impact-tab";
+import { LineageImpactTab } from "@/features/lineage-official/lineage-impact-tab";
 import { LineageDomainMapTab } from "./lineage-domain-map-tab";
 
 /**

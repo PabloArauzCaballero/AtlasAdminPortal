@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useLineageImpact } from "@/features/lineage-official/hooks";
-import { buildImpactColumns } from "@/features/lineage-official/lineage-columns";
+import { useLineageImpact } from "./hooks";
+import { buildImpactColumns } from "./lineage-columns";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { serverPagedColumns } from "@/shared/components/data-table/server-columns";
@@ -16,7 +16,7 @@ import {
   FAMILY_OPTIONS,
   SEVERITY_OPTIONS,
   useModuleOptions,
-} from "./module-options";
+} from "@/features/lineage/module-options";
 
 /**
  * Las aristas del linaje paginadas en el servidor: qué ruta toca qué tabla (con severidad) y qué

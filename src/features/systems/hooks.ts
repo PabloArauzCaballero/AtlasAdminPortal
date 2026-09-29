@@ -11,7 +11,6 @@ import type { QueryParams } from "@/shared/api/types";
 import {
   discoverEndpoints,
   getDomain,
-  getCatalogSummary,
   getDomainOverview,
   getTool,
   inferDataImpacts,
@@ -215,14 +214,6 @@ export function useDomains(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.domains(query),
     queryFn: () => listDomains(query),
-  });
-}
-
-/** Cifras del catálogo entero (`GET /systems/catalog/summary`), no de una página. */
-export function useCatalogSummary() {
-  return useQuery({
-    queryKey: queryKeys.catalogSummary,
-    queryFn: getCatalogSummary,
   });
 }
 

@@ -26,6 +26,12 @@ export const primaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Agrupa los datos por área de negocio con dueño y propósito, y fija qué significa cada tabla y cada campo para que producto, riesgo y soporte hablen de lo mismo.",
       },
+      "/internal/business-metadata/glossary": {
+        systems:
+          "Ficha de un término del glosario (`/internal/business-metadata/terms/:termId`), resuelta por su tipo e identificador: tablas, columnas y rutas relacionadas, claves foráneas reales y restricciones. La lista `/glossary` redirige a la pestaña «Términos» de «Dominios y glosario».",
+        business:
+          "Qué significa un dato concreto, de qué tabla sale y quién lo usa, para decidir sin interpretarlo a ojo.",
+      },
       "/internal/business-metadata/definitions": {
         systems:
           "Vocabulario semántico del motor de decisión (`/operations/definitions`): eventos, observaciones, atributos y features, paginados en el servidor, con búsqueda por código o nombre y conteos por tipo del filtro entero. No es el glosario de negocio.",

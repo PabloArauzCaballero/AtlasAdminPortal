@@ -8,6 +8,7 @@ export const operationsModuleExplanation: ModuleExplanation = {
     "/internal/jobs",
     "/internal/notifications",
     "/internal/my-notifications",
+    "/internal/exports",
     "/internal/files",
     "/internal/support",
     "/internal/views",
@@ -159,6 +160,12 @@ export const operationsModuleExplanation: ModuleExplanation = {
         "Bandeja personal alimentada por el mismo feed de la campana; marca leído por ítem o en bloque y se sincroniza con la salud de herramientas.",
       business:
         "El historial personal de avisos: qué me notificaron, cuándo, y qué sigue pendiente de atender.",
+    },
+    "/internal/exports": {
+      systems:
+        "Ruta retirada: redirige al catálogo de datos. Las descargas en JSON se hacen con el botón «Descargar JSON» de Endpoints, Catálogo de datos y Reglas de calidad, que baja el catálogo entero con la sesión de quien pulsa.",
+      business:
+        "Los catálogos se descargan desde la pantalla de cada uno; aquí no hay un historial de exportaciones.",
     },
   },
 };

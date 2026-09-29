@@ -137,7 +137,7 @@ export function GlossaryTermsTab() {
               }
             />
             <MetricCard
-              label="Dominios"
+              label="Dominios con términos"
               value={
                 facets.data ? formatNumber(facets.data.domains.length) : "—"
               }
