@@ -65,7 +65,7 @@ describe("Revisión de análisis de flujos · buscador", () => {
       screen.getByRole("heading", { name: "Revisión de análisis de flujos" }),
     ).toBeInTheDocument();
     await user.type(
-      screen.getByPlaceholderText("Buscar por ruta, handler, módulo o slug…"),
+      screen.getByPlaceholderText("Buscar por nombre, ruta o módulo…"),
       "loans",
     );
     await vi.waitFor(() =>
@@ -157,7 +157,7 @@ const FLOW = {
   findings: [],
 };
 
-describe("Ficha de un flujo · enlace al catálogo de endpoints", () => {
+describe("Ficha de un flujo · enlace al catálogo de operaciones", () => {
   beforeEach(() => {
     flowHooks.useFlow.mockReturnValue({
       isLoading: false,
@@ -173,7 +173,7 @@ describe("Ficha de un flujo · enlace al catálogo de endpoints", () => {
       "systems.endpoints.read",
     ]);
     expect(
-      screen.getByRole("link", { name: "Ver en el catálogo de endpoints" }),
+      screen.getByRole("link", { name: "Ver en el catálogo de operaciones" }),
     ).toHaveAttribute("href", "/internal/systems/endpoints?q=createLoan");
   });
 
@@ -182,7 +182,7 @@ describe("Ficha de un flujo · enlace al catálogo de endpoints", () => {
       "systems.flows.read",
     ]);
     expect(
-      screen.queryByRole("link", { name: "Ver en el catálogo de endpoints" }),
+      screen.queryByRole("link", { name: "Ver en el catálogo de operaciones" }),
     ).not.toBeInTheDocument();
   });
 });

@@ -33,6 +33,6 @@ export class EndpointsPage extends PaginaBase {
   }
 
   get titulo() {
-    return this.page.getByRole("heading", { name: "Catálogo de endpoints" });
+    return this.page.getByRole("heading", { name: "Catálogo de operaciones" });
   }
 }

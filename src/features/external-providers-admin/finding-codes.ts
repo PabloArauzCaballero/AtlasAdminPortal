@@ -30,7 +30,7 @@ const HALLAZGOS: Record<string, Explicacion> = {
     summary:
       "El proveedor está en el catálogo pero no hay código que sepa hablar con él.",
     action:
-      "Registrar su adaptador en el backend o retirar el proveedor del catálogo.",
+      "Pedir al equipo técnico que lo conecte o retirar el proveedor del catálogo.",
   },
   CONSENT_DISABLED_FOR_SENSITIVE_PROVIDER: {
     label: "Consulta sin consentimiento",

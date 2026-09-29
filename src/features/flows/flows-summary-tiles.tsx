@@ -32,7 +32,7 @@ export function FlowsSummaryTiles({
         label="Flujos"
         value={summary?.total ?? "—"}
         icon={GitBranch}
-        hint="Una fila por operación HTTP de cada bloque"
+        hint="Una fila por operación de cada sistema"
       />
       <button
         type="button"
@@ -55,28 +55,34 @@ export function FlowsSummaryTiles({
           label="Rotos"
           value={summary ? broken : "—"}
           tone={broken ? "critical" : "success"}
-          hint="Una corrida contradijo el mapa"
+          hint="Una llamada real contradijo el mapa"
         />
       </button>
-      <MetricCard
-        label="Desactualizados"
-        value={summary ? stale : "—"}
-        tone={stale ? "warning" : "default"}
-        hint="Cambió código desde la última verificación"
-      />
+      <button
+        type="button"
+        className="text-left"
+        onClick={() => setFilter("freshness", "STALE")}
+      >
+        <MetricCard
+          label="Desactualizados"
+          value={summary ? stale : "—"}
+          tone={stale ? "warning" : "default"}
+          hint="Cambió su código desde la última verificación"
+        />
+      </button>
       <MetricCard
         label="Escrituras públicas"
         value={summary?.publicWrites ?? "—"}
         icon={ShieldOff}
         tone={summary?.publicWrites ? "warning" : "default"}
-        hint="POST/PUT/PATCH/DELETE con @Public"
+        hint="Operaciones que cambian datos sin inicio de sesión"
       />
       <MetricCard
-        label="Críticos sin test"
+        label="Críticos sin pruebas"
         value={summary?.untestedCritical ?? "—"}
         icon={ShieldAlert}
         tone={summary?.untestedCritical ? "warning" : "success"}
-        hint="Riesgo HIGH o CRITICAL sin test que nombre la ruta"
+        hint="Riesgo alto o crítico sin ninguna prueba automática"
       />
     </div>
   );

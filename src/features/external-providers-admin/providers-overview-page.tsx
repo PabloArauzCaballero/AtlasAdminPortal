@@ -36,9 +36,9 @@ function AuthBrokerNotice({
       <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-atlas-muted">
         <KeyRound className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         <span>
-          La autenticación con proveedores aún no está delegada en el{" "}
-          <span className="font-mono">atlas-auth-broker-worker</span>; las
-          columnas &quot;Credencial&quot; y &quot;Token&quot; aparecerán vacías.
+          La autenticación con proveedores aún no está delegada en el servicio
+          de credenciales; las columnas &quot;Credencial&quot; y
+          &quot;Token&quot; aparecerán vacías.
         </span>
       </div>
     );
@@ -48,8 +48,8 @@ function AuthBrokerNotice({
       <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         <span>
-          El broker de autenticación no responde. Las llamadas a proveedores que
-          exijan credencial fallarán mientras dure la incidencia.
+          El servicio de credenciales no responde. Las llamadas a proveedores
+          que exijan credencial fallarán mientras dure la incidencia.
         </span>
       </div>
     );
@@ -111,14 +111,13 @@ export function ProvidersOverviewPage() {
         }
       />
       <BusinessContextNote>
-        &quot;Gestionar&quot; abre runtime (modo/estado + kill switch),
-        políticas de costo y una prueba real contra el proveedor. Reconfigurar
-        runtime y editar costos está restringido a{" "}
-        <span className="font-mono">admin</span>/
-        <span className="font-mono">platform_admin</span> en el backend. Las
-        columnas &quot;Credencial&quot; y &quot;Token&quot; vienen del{" "}
-        <span className="font-mono">atlas-auth-broker-worker</span>: describen
-        nuestra autenticación ante el proveedor, no la salud del proveedor.
+        &quot;Gestionar&quot; abre el modo de funcionamiento (modo, estado y
+        corte de emergencia), las políticas de costo y una prueba real contra el
+        proveedor. Cambiar el modo de funcionamiento y editar costos sólo lo
+        pueden hacer administradores y administradores de plataforma, y el
+        servidor lo comprueba. Las columnas &quot;Credencial&quot; y
+        &quot;Token&quot; vienen del servicio de credenciales: describen nuestra
+        autenticación ante el proveedor, no la salud del proveedor.
       </BusinessContextNote>
       <AuthBrokerNotice
         configured={authBroker.data?.configured}

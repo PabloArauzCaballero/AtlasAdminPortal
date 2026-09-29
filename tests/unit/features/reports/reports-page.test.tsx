@@ -109,9 +109,9 @@ describe("Reportería", () => {
 describe("Preparación del release — cobertura del catálogo", () => {
   it("los porcentajes se calculan sobre el catálogo entero del servidor, no sobre 100 filas", async () => {
     renderWithProviders(<ReportsReadinessPage embedded />);
-    expect(await tarjeta("Cobertura tablas")).toContain("75%");
-    expect(await tarjeta("Cobertura endpoints")).toContain("25%");
-    expect(await tarjeta("QA testable")).toContain("75%");
+    expect(await tarjeta("Cobertura de tablas")).toContain("75%");
+    expect(await tarjeta("Cobertura de operaciones")).toContain("25%");
+    expect(await tarjeta("Cobertura de pruebas")).toContain("75%");
     expect(
       peticiones.some((url) => url.searchParams.get("limit") === "100"),
     ).toBe(false);

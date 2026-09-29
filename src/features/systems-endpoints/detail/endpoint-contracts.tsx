@@ -13,14 +13,13 @@ export function EndpointContracts({
           Contratos operativos
         </h2>
         <p className="mt-1 text-sm text-atlas-muted">
-          Esta vista debe salir de la catalogación del backend: payload mínimo,
-          respuesta esperada, parámetros y headers. No debe depender de JSON
-          crudo visible al cliente.
+          Qué datos pide esta operación como mínimo, qué responde, y qué
+          parámetros y cabeceras acepta.
         </p>
       </div>
       <div className="space-y-6">
         <ContractTable
-          title="Payload mínimo"
+          title="Datos mínimos de entrada"
           value={endpoint.minPayloadSchema}
         />
         <ContractTable
@@ -31,11 +30,11 @@ export function EndpointContracts({
           }}
         />
         <ContractTable
-          title="Query params"
+          title="Parámetros de búsqueda"
           value={endpoint.queryParamsSchema}
         />
         <ContractTable
-          title="Path params / headers"
+          title="Parámetros de la ruta y cabeceras"
           value={{
             pathParams: endpoint.pathParamsSchema,
             headers: endpoint.headersSchema,

@@ -43,7 +43,7 @@ export function LearningCenterPage() {
     <PermissionGate permissions={PATHS_PERMISSIONS}>
       <PageHeader
         eyebrow="QA Console"
-        title="Aprender QA Lab"
+        title="Aprender el laboratorio QA"
         description="Aprende QA LAB paso a paso con recorridos guiados sobre las pantallas reales, o consulta la guía de referencia: cómo probar la API como si fueras el negocio y qué barreras impiden romper producción."
         actions={
           <Link href="/internal/qa/lab">

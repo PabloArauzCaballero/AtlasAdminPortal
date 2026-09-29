@@ -67,7 +67,7 @@ function AuthorizedBusinessDomainsPage() {
         icon={Boxes}
         eyebrow="Metadata de negocio"
         title="Dominios y glosario"
-        description="Cada dominio con sus tablas, las rutas que las tocan y sus suites, y el glosario de tablas y campos documentados. Las cifras las calcula el servidor sobre el catálogo completo."
+        description="Cada dominio con sus tablas, las operaciones que las tocan y sus baterías de prueba, y el glosario de tablas y campos documentados. Las cifras las calcula el servidor sobre el catálogo completo."
       />
       <BusinessContextNote>
         Atlas está dividido en dominios de negocio (onboarding, riesgo,
@@ -118,7 +118,7 @@ function DomainsTab() {
               }
             />
             <MetricCard
-              label="Endpoints"
+              label="Operaciones"
               value={formatNumber(overview.data.totals.endpoints)}
               hint={`${formatNumber(overview.data.unassigned.endpoints)} sin dominio (no tocan ninguna tabla catalogada)`}
             />
@@ -129,7 +129,7 @@ function DomainsTab() {
               tone={overview.data.unassigned.tables > 0 ? "warning" : "default"}
             />
             <MetricCard
-              label="Suites QA"
+              label="Baterías de prueba"
               value={formatNumber(overview.data.totals.testSuites)}
             />
           </section>
@@ -138,7 +138,7 @@ function DomainsTab() {
             <section>
               <SectionHeader
                 title="Tablas sin dominio"
-                description="Lo que falta clasificar, por módulo. Mientras no tengan dominio, sus endpoints tampoco aparecen en ninguna ficha."
+                description="Lo que falta clasificar, por módulo. Mientras no tengan dominio, sus operaciones tampoco aparecen en ninguna ficha."
               />
               <UnassignedModulesTable
                 modules={overview.data.unassigned.modules}
@@ -149,7 +149,7 @@ function DomainsTab() {
           <section>
             <SectionHeader
               title="Resumen por dominio"
-              description="Cada fila cruza tablas, endpoints y suites para detectar cobertura y huecos."
+              description="Cada fila cruza tablas, operaciones y baterías de prueba para detectar cobertura y huecos."
             />
             <DomainsTable domains={overview.data.items} />
           </section>

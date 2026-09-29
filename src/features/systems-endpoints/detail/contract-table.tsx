@@ -53,9 +53,9 @@ export function ContractTable({
         columns={COLUMNS}
         searchText={(row) => `${row.name} ${row.type} ${row.description}`}
         searchPlaceholder="Buscar por campo, tipo o descripción…"
-        searchTooltip="Recorre todos los campos de este contrato, que llegan enteros con la ficha del endpoint: coincide con parte del nombre, del tipo o de la descripción."
+        searchTooltip="Recorre todos los campos de este contrato, que llegan enteros con la ficha de la operación: coincide con parte del nombre, del tipo o de la descripción."
         emptyTitle="Contrato pendiente."
-        emptyDescription="Revisa la seed de payloads, respuestas esperadas o el proceso de descubrimiento de endpoints."
+        emptyDescription="Aún no se han documentado los datos de entrada ni las respuestas."
         emptyFilteredTitle="Ningún campo coincide con la búsqueda."
       />
     </section>

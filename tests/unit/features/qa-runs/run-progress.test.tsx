@@ -72,7 +72,7 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
   });
 
   it.each([null, false])(
-    "sin mockConfirmed === true (%s) no dice «Mock confirmado»",
+    "sin mockConfirmed === true (%s) no dice «Simulador confirmado»",
     async (mockConfirmed) => {
       api.getQaRun.mockResolvedValue(
         runFixture({
@@ -86,12 +86,16 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
       );
       renderWithProviders(<RunProgress runId="run-1" />);
 
-      expect(await screen.findByText("Mock sin confirmar")).toBeInTheDocument();
-      expect(screen.queryByText("Mock confirmado")).not.toBeInTheDocument();
+      expect(
+        await screen.findByText("Simulador sin confirmar"),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("Simulador confirmado"),
+      ).not.toBeInTheDocument();
     },
   );
 
-  it("con mockConfirmed true dice «Mock confirmado»", async () => {
+  it("con mockConfirmed true dice «Simulador confirmado»", async () => {
     api.getQaRun.mockResolvedValue(
       runFixture({
         evidence: {
@@ -104,7 +108,7 @@ describe("RunProgress · UI/contrato con respuestas simuladas del contrato QA", 
     );
     renderWithProviders(<RunProgress runId="run-1" />);
 
-    expect(await screen.findByText("Mock confirmado")).toBeInTheDocument();
+    expect(await screen.findByText("Simulador confirmado")).toBeInTheDocument();
   });
 
   it("la causa raíz va antes que los conteos por paso", async () => {

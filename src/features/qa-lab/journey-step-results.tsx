@@ -110,10 +110,13 @@ export function JourneyStepResults({
       <DataTable
         data={result.steps}
         columns={columns}
-        emptyTitle="El journey no ejecutó ningún paso."
+        emptyTitle="El recorrido no ejecutó ningún paso."
         emptyDescription="Agrega pasos a la secuencia y vuelve a ejecutarla."
       />
-      <JsonViewer title="Contexto final del journey" value={result.context} />
+      <JsonViewer
+        title="Valores guardados al final del recorrido"
+        value={result.context}
+      />
       <JsonViewer title="Resultado completo" value={result} />
     </div>
   );

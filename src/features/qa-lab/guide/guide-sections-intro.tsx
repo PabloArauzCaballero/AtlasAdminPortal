@@ -13,43 +13,42 @@ export function Panorama() {
       title="Un laboratorio, tres formas de probar"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        El QA Lab vive en{" "}
-        <code className="font-mono text-atlas-accent">/internal/qa/lab</code> y
-        se organiza en dos pestañas. <strong>Prueba unitaria</strong> toma un
-        endpoint del catálogo y ofrece dos tarjetas complementarias sobre él;{" "}
-        <strong>Journey (encadenado)</strong> ejecuta una secuencia de endpoints
-        simulando un flujo de negocio real.
+        El laboratorio QA se organiza en dos pestañas.{" "}
+        <strong>Prueba unitaria</strong> toma una operación del catálogo y
+        ofrece dos tarjetas complementarias sobre ella;{" "}
+        <strong>Recorrido (encadenado)</strong> ejecuta una secuencia de
+        operaciones simulando un flujo de negocio real.
       </p>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <FeatureCard
           icon={<FlaskConical className="h-5 w-5" />}
           title="Prueba funcional"
         >
-          ¿El endpoint responde lo correcto? Un request, con payload y criterios
-          de salida (status, JSON esperado, headers).
+          ¿La operación responde lo correcto? Una petición, con sus datos y
+          criterios de salida (código de respuesta, datos esperados, cabeceras).
         </FeatureCard>
         <FeatureCard
           icon={<Gauge className="h-5 w-5" />}
-          title="Prueba de stress"
+          title="Prueba de carga"
           iconClass="bg-emerald-50 text-emerald-700"
         >
-          ¿Aguanta carga? Ráfaga sintética con pacing por RPS, percentiles
-          p50/p95/p99 y umbrales de aprobación.
+          ¿Aguanta carga? Una ráfaga de peticiones a ritmo fijo por segundo, con
+          tiempos típicos y peores, y umbrales de aprobación.
         </FeatureCard>
         <FeatureCard
           icon={<Workflow className="h-5 w-5" />}
-          title="Journey encadenado"
+          title="Recorrido encadenado"
           iconClass="bg-amber-50 text-amber-700"
         >
-          ¿Funciona el flujo completo? Varios endpoints en orden, pasando datos
-          de una respuesta a la siguiente.
+          ¿Funciona el flujo completo? Varias operaciones en orden, pasando
+          datos de una respuesta a la siguiente.
         </FeatureCard>
       </div>
       <Note tone="tip" tag="Modelo mental">
         <strong>Funcional</strong> = ¿está bien un ladrillo? ·{" "}
-        <strong>Stress</strong> = ¿ese ladrillo aguanta peso? ·{" "}
-        <strong>Journey</strong> = ¿la pared completa se sostiene? Empieza
-        siempre por la funcional en <code>LOCAL</code> antes de subir la
+        <strong>Carga</strong> = ¿ese ladrillo aguanta peso? ·{" "}
+        <strong>Recorrido</strong> = ¿la pared completa se sostiene? Empieza
+        siempre por la funcional en el ambiente local antes de subir la
         intensidad.
       </Note>
     </Section>
@@ -62,7 +61,7 @@ export function Antes() {
       id="antes"
       num="01"
       kicker="Antes de empezar"
-      title="Target, permisos y el reflejo del dry-run"
+      title="Ambiente, permisos y el reflejo de la simulación"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
         Tres decisiones preceden a cualquier ejecución:{" "}
@@ -73,38 +72,38 @@ export function Antes() {
 
       <TargetsTable />
       <p className="text-sm text-atlas-muted">
-        También puedes fijar un <strong>host manual</strong> (validado como{" "}
-        <code className="font-mono">http(s)://…</code>) o elegir una ruta base
-        distinta a la del ambiente.
+        También puedes fijar una <strong>dirección manual</strong> (tiene que
+        empezar por http:// o https://) o elegir una ruta base distinta a la del
+        ambiente.
       </p>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <FeatureCard
           icon={<Radar className="h-5 w-5" />}
-          title="systems.endpoints.read"
+          title="Ver operaciones"
         >
           Entrar al lab y ver el catálogo. Sin él, la página ni siquiera dispara
           consultas.
         </FeatureCard>
         <FeatureCard
           icon={<KeyRound className="h-5 w-5" />}
-          title="systems.endpoints.execute"
+          title="Ejecutar operaciones"
         >
           Habilita el botón de la prueba funcional.
         </FeatureCard>
         <FeatureCard
           icon={<Gauge className="h-5 w-5" />}
-          title="systems.stress.execute"
+          title="Ejecutar pruebas de carga"
         >
-          Habilita la tarjeta de stress.
+          Habilita la tarjeta de prueba de carga.
         </FeatureCard>
       </div>
 
       <Note tone="warning" tag="Reflejo">
-        El botón nace en <strong>dry-run</strong>. En previsualización el lab
-        arma la petición exacta —URL, headers, payload— y te la muestra{" "}
-        <strong>sin enviarla</strong>. Es tu red de seguridad: revisa el request
-        antes de destildar &ldquo;Dry-run / modo seguro&rdquo;.
+        El botón nace en <strong>simulación</strong>. En previsualización el
+        laboratorio arma la petición exacta —dirección, cabeceras y datos— y te
+        la muestra <strong>sin enviarla</strong>. Es tu red de seguridad: revisa
+        la petición antes de desmarcar &ldquo;Simulación / modo seguro&rdquo;.
       </Note>
     </Section>
   );
@@ -115,15 +114,15 @@ export function Escenarios() {
     <Section
       id="escenarios"
       num="02"
-      kicker="Escenarios y headers"
-      title="Los headers los gestiona el lab por ti"
+      kicker="Escenarios y cabeceras"
+      title="Las cabeceras las gestiona el laboratorio por ti"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        No editas <code className="font-mono">Authorization</code> ni{" "}
-        <code className="font-mono">x-tenant-id</code> a mano: eliges un{" "}
-        <strong>escenario</strong> y el lab aplica el patch de headers correcto.
-        Sirve para probar el camino feliz y, sobre todo, los caminos de rechazo.
-        La tabla enseña, por escenario, qué cabecera se cambia y qué se espera.
+        No editas a mano la credencial de la sesión ni la empresa: eliges un{" "}
+        <strong>escenario</strong> y el laboratorio aplica las cabeceras
+        correctas. Sirve para probar el camino feliz y, sobre todo, los caminos
+        de rechazo. La tabla enseña, por escenario, qué cabecera se cambia y qué
+        se espera.
       </p>
       <ScenarioTable />
 
@@ -131,13 +130,11 @@ export function Escenarios() {
         El contrato de respuesta
       </h3>
       <p className="text-sm text-atlas-muted">
-        Todo endpoint responde con una de estas dos formas, y el lab valida
-        contra ella:
+        Toda operación responde de una de dos formas, y el laboratorio lo
+        comprueba: o trae los <strong>datos</strong> pedidos, o trae un{" "}
+        <strong>error</strong> con su código y su mensaje. Las dos llevan el
+        código de la petición y la hora.
       </p>
-      <pre className="atlas-scrollbar overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4">
-        <code className="font-mono text-[0.75rem] leading-6 text-slate-100">{`{ requestId, data, timestamp }
-{ requestId, error: { code, message }, timestamp }`}</code>
-      </pre>
     </Section>
   );
 }

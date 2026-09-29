@@ -110,7 +110,7 @@ function AuthorizedDocumentationGatePage() {
     <>
       <PageHeader
         icon={BadgeCheck}
-        eyebrow="Systems Ops · Mapa de rutas"
+        eyebrow="Sistemas · Mapa de rutas"
         title="Compuerta de documentación"
         description="Antes de certificar: flujos CRITICAL verificados sobre su código actual, sin escrituras desprotegidas ni deriva de permisos grave abiertas, cola de revisión sin pendientes de riesgo alto y el artefacto de cada bloque cargado."
       />

@@ -6,7 +6,7 @@ export const MOTIVO: Record<FlowReviewReason, { label: string; hint: string }> =
   {
     SIN_ANALISIS: {
       label: "Sin análisis",
-      hint: "No se pudo seguir el handler: del flujo sólo se conoce su ruta.",
+      hint: "No se pudo seguir la lógica: de la operación sólo se conoce su ruta.",
     },
     ANALISIS_PARCIAL: {
       label: "Análisis parcial",
@@ -14,7 +14,7 @@ export const MOTIVO: Record<FlowReviewReason, { label: string; hint: string }> =
     },
     HUECOS_SIN_RESOLVER: {
       label: "Huecos sin resolver",
-      hint: "SQL dinámico, profundidad máxima o un modelo sin tabla conocida.",
+      hint: "Consultas armadas al vuelo, demasiada profundidad o datos sin tabla conocida.",
     },
     EVENTO_DINAMICO: {
       label: "Evento de código dinámico",
@@ -27,8 +27,8 @@ export const ESTADO_AYUDA: Record<FlowReviewStatus, string> = {
   AUTO_DETECTED:
     "Detectado por el análisis; nadie ha pedido revisarlo todavía.",
   NEEDS_REVIEW: "Espera que una persona lo revise antes de darse por bueno.",
-  APPROVED: "Una persona aprobó este código del flujo.",
-  REJECTED: "Una persona rechazó este código del flujo.",
+  APPROVED: "Una persona aprobó esta versión de la operación.",
+  REJECTED: "Una persona rechazó esta versión de la operación.",
 };
 
 export const ESTADO: Record<FlowReviewStatus, { label: string; tone: Tono }> = {

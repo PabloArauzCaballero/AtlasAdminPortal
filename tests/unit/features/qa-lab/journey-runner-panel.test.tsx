@@ -91,11 +91,11 @@ async function writeSteps(json: string) {
 }
 
 function previewButton() {
-  return screen.getByRole("button", { name: /Previsualizar \(dry-run\)/ });
+  return screen.getByRole("button", { name: /Previsualizar \(simulación\)/ });
 }
 
 function realButton() {
-  return screen.getByRole("button", { name: /Ejecutar journey real/ });
+  return screen.getByRole("button", { name: /Ejecutar recorrido real/ });
 }
 
 describe("JourneyRunnerPanel · pasos por defecto", () => {
@@ -184,7 +184,7 @@ describe("JourneyRunnerPanel · ejecución", () => {
     expect(runJourneyBatch).not.toHaveBeenCalled();
   });
 
-  it("«Ejecutar journey real» pide confirmación mencionando la cantidad de personas", async () => {
+  it("«Ejecutar recorrido real» pide confirmación mencionando la cantidad de personas", async () => {
     render_();
     await writeSteps('[{"key":"a","endpointId":"ep-1"}]');
 
@@ -273,7 +273,9 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
     );
 
     expect(await screen.findByText("1/1 pasos OK")).toBeInTheDocument();
-    expect(screen.getByText("Contexto final del journey")).toBeInTheDocument();
+    expect(
+      screen.getByText("Valores guardados al final del recorrido"),
+    ).toBeInTheDocument();
   });
 
   it("un journey con pasos fallidos se ve como tal, no como uno vacío", async () => {
@@ -395,6 +397,8 @@ describe("JourneyRunnerPanel · resultado y errores", () => {
       screen.getByRole("button", { name: /detalle de la persona 1/ }),
     );
 
-    expect(screen.getByText("Contexto final del journey")).toBeInTheDocument();
+    expect(
+      screen.getByText("Valores guardados al final del recorrido"),
+    ).toBeInTheDocument();
   });
 });

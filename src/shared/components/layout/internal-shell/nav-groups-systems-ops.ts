@@ -26,11 +26,11 @@ import type { InternalNavGroup } from "./nav-config";
  * pestaña «Pasos y flujos» de cada proceso. Sus rutas viejas redirigen; aquí ya no tienen ítem.
  */
 export const systemsOpsGroup: InternalNavGroup = {
-  label: "Systems Ops",
+  label: "Sistemas",
   icon: Activity,
   items: [
     {
-      label: "Endpoints",
+      label: "Operaciones del sistema",
       href: "/internal/systems/endpoints",
       icon: Activity,
       permissions: ["systems.endpoints.read"],

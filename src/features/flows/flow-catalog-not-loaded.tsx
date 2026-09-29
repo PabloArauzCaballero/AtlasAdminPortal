@@ -17,7 +17,7 @@ export function FlowCatalogNotLoaded() {
     <div className="mb-6" data-testid="flow-catalog-not-loaded">
       <EmptyState
         title="El mapa de flujos no está cargado en este entorno"
-        description="Los flujos, sus hallazgos y las pantallas que los llaman salen del análisis del código, y en este entorno nunca se cargaron. Por eso las cifras de esta sección están en cero: no se ha medido nada, no es que no haya nada. Lo carga una persona con permiso de análisis de flujos desde AtlasFlowIntelligence (tools/load.mjs)."
+        description="Las operaciones, sus hallazgos y las pantallas que las llaman salen del análisis del código, y en este entorno todavía no se cargó. Lo carga el equipo técnico; hasta entonces las cifras están en cero: no se ha medido nada, no es que no haya nada."
       />
     </div>
   );

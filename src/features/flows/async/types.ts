@@ -84,41 +84,66 @@ export type PendingWorkResponse = {
 };
 
 /** `GET /systems/flows/rbac-drift`: pantallas cuyo menú pide algo que la API no aplica. */
-export type RbacDriftSeverity = "SIN_GUARDA" | "SOLO_ROL" | "PUBLIC";
+export type RbacDriftSeverity =
+  | "PERMISO_FUERA_DEL_CATALOGO"
+  | "MENU_PERMISO_DISTINTO"
+  | "SIN_GUARDA"
+  | "PUBLIC"
+  | "SOLO_ROL";
+
+/** Lo que el Core añadió el 2026-09-29; un Core anterior no lo manda. */
+type RbacDriftPermissions = {
+  /** Lo que exige la API. */
+  permissions?: string[];
+  /** Lo que la API exige y el menú no pide. */
+  missingFromMenu?: string[];
+  /** Lo que se exige y la base no tiene: nadie puede tenerlo. */
+  missingFromCatalog?: string[];
+};
 
 export type RbacDriftScreen = {
   clientCode: string;
   route: string;
   navPermissions: string[];
   navRoles: string[];
-  calls: Array<{
-    flowId: string;
-    method: string;
-    path: string;
-    severity: RbacDriftSeverity;
-    roles: string[];
-  }>;
+  calls: Array<
+    {
+      flowId: string | null;
+      method: string | null;
+      path: string | null;
+      severity: RbacDriftSeverity;
+      roles: string[];
+    } & RbacDriftPermissions
+  >;
 };
 
-/** Una llamada de una pantalla, ya aplanada: la fila de la tabla de deriva. */
+/**
+ * Un hallazgo, ya aplanado: la fila de la tabla de deriva. `flowId`, `method` y `path` son nulos
+ * cuando el hallazgo es del menú; `clientCode` y `route`, cuando es de una operación que ninguna
+ * pantalla observada llamó.
+ */
 export type RbacDriftItem = {
-  clientCode: string;
-  route: string;
+  clientCode: string | null;
+  route: string | null;
   navPermissions: string[];
   navRoles: string[];
-  flowId: string;
-  method: string;
-  path: string;
+  flowId: string | null;
+  method: string | null;
+  path: string | null;
   severity: RbacDriftSeverity;
   roles: string[];
-};
+} & RbacDriftPermissions;
 
 export type RbacDriftSummary = {
   screensWithDrift: number;
   calls: number;
-  bySeverity: Record<RbacDriftSeverity, number>;
+  /** Hallazgos que dejan a alguien fuera (catálogo, menú distinto, sin guarda). */
+  breaking?: number;
+  bySeverity: Partial<Record<RbacDriftSeverity, number>>;
   /** Clientes con deriva en el conjunto entero: las opciones del filtro «Cliente». */
   clients: string[];
+  /** Permisos exigidos que la base no tiene. */
+  permissionsOutsideCatalog?: string[];
 };
 
 export type RbacDriftQuery = {
@@ -137,6 +162,8 @@ export type RbacDriftResponse = {
   /** Clientes cuyas pantallas llaman a otro bloque: aquí no se mide su deriva. */
   notMeasured?: string[];
   screensWithObservedEdges: number;
+  /** Falso si la base no tiene catálogo de permisos: entonces no se afirma que falte ninguno. */
+  catalogMeasured?: boolean;
   truncated: boolean;
   screens: RbacDriftScreen[];
 };

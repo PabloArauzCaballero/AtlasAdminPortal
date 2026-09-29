@@ -72,20 +72,18 @@ export function QaLabDocsPanel() {
             title="Credencial y cabeceras"
             points={[
               "Tu sesión, ninguna, una credencial falsa o el token de otro actor; en las tres últimas tu cookie no viaja.",
-              "x-tenant-id (empresa) sale de tu sesión salvo que el escenario la quite.",
-              "x-idempotency-key (anti-duplicados) nueva en cada petición que cambia datos.",
+              "Empresa (sale de tu sesión) salvo que el escenario la quite.",
+              "Una protección contra duplicados nueva en cada petición que cambia datos.",
             ]}
           />
           <DocCard
             icon={<Layers className="h-4 w-4" />}
             title="Forma de la respuesta"
-            points={[]}
-          >
-            <pre className="mt-1 overflow-x-auto rounded-lg bg-slate-950 p-3 font-mono text-[11px] leading-5 text-slate-100">
-              {`{ requestId, data, timestamp }
-{ requestId, error: { code, message }, timestamp }`}
-            </pre>
-          </DocCard>
+            points={[
+              "O trae los datos pedidos, o trae un error con su código y su mensaje.",
+              "Las dos formas llevan el código de la petición y la hora.",
+            ]}
+          />
           <DocCard
             icon={<Lock className="h-4 w-4" />}
             title="Seguridad"

@@ -145,7 +145,7 @@ export function TrafficRoutesTable({
           emptyDescription={
             hayFiltro
               ? "Quita el texto o el filtro para volver a ver todas las rutas."
-              : "Prueba con una ventana más amplia o revisa que `system_action_logs` esté recibiendo eventos."
+              : "Prueba con una ventana más amplia. Si sigue vacío, puede que no se estén registrando las peticiones: avisa al equipo técnico."
           }
         />
       ) : null}

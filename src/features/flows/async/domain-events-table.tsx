@@ -114,7 +114,7 @@ export function DomainEventsTable({
       <p className="mb-3 text-xs text-atlas-muted">
         Ventana de {domainEvents.windowDays} días
         {domainEvents.clampedByRetention
-          ? " (recortada a la retención del outbox: más atrás ya se purgaron los procesados)"
+          ? " (recortada a lo que guarda la cola de eventos: más atrás ya se borraron los procesados)"
           : ""}
         . Se clasifica contra el registro de eventos actual.
         {domainEvents.truncated

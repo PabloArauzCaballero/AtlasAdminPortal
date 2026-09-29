@@ -39,7 +39,7 @@ describe("ViewExplainer · resolución de módulo", () => {
   it("nombra el módulo al que pertenece la ruta", () => {
     renderAt("/internal/systems/endpoints");
 
-    expect(toggle()).toHaveTextContent("Systems Ops");
+    expect(toggle()).toHaveTextContent("Sistemas");
   });
 
   it("un prefijo alternativo del mismo módulo lo resuelve igual", () => {
@@ -47,7 +47,7 @@ describe("ViewExplainer · resolución de módulo", () => {
     // el mismo módulo.
     renderAt("/internal/review-queue");
 
-    expect(toggle()).toHaveTextContent("Systems Ops");
+    expect(toggle()).toHaveTextContent("Sistemas");
   });
 });
 

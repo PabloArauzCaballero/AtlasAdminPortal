@@ -20,11 +20,11 @@ const url = (path: string): string => path;
 
 const SECTIONS = [
   "Un laboratorio, tres formas de probar",
-  "Target, permisos y el reflejo del dry-run",
-  "Los headers los gestiona el lab por ti",
-  "¿El endpoint responde lo que promete?",
+  "Ambiente, permisos y el reflejo de la simulación",
+  "Las cabeceras las gestiona el laboratorio por ti",
+  "¿La operación responde lo que promete?",
   "¿Aguanta la carga — y a qué precio en latencia?",
-  "Encadenar endpoints: la salida de uno alimenta al siguiente",
+  "Encadenar operaciones: la salida de una alimenta a la siguiente",
   "Por qué es difícil hacerte daño con esto",
   "Dónde quedan las corridas",
 ];
@@ -51,7 +51,7 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Aprender QA Lab",
+        name: "Aprender el laboratorio QA",
       }),
     ).toBeVisible();
     expect(page.url(), "no rebota a login").not.toContain("/internal/login");
@@ -80,14 +80,14 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     await expect(nav).toBeVisible();
     await clickAndNavigate(
       page,
-      nav.getByRole("link", { name: /Journey encadenado/ }),
+      nav.getByRole("link", { name: /Recorrido encadenado/ }),
       /#journey$/,
       "el índice no llevó al ancla #journey tras el clic",
     );
     await expect(
       page.getByRole("heading", {
         level: 2,
-        name: "Encadenar endpoints: la salida de uno alimenta al siguiente",
+        name: "Encadenar operaciones: la salida de una alimenta a la siguiente",
       }),
     ).toBeInViewport();
   });
@@ -143,21 +143,21 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     expect(clip).toContain("{{customerId}}");
   });
 
-  // La guía es una pestaña de «Aprender QA Lab», que vive en el menú QA junto al lab.
+  // La guía es una pestaña de «Aprender el laboratorio QA», que vive en el menú QA junto al lab.
   test("el menú QA lleva del lab a la guía", async ({ page }) => {
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
     await clickAndNavigate(
       page,
-      page.getByRole("link", { name: "Aprender QA Lab" }).first(),
+      page.getByRole("link", { name: "Aprender el laboratorio QA" }).first(),
       /\/internal\/qa\/aprender$/,
-      "Aprender QA Lab no abrió tras el clic en el menú QA",
+      "Aprender el laboratorio QA no abrió tras el clic en el menú QA",
     );
     await page.getByRole("button", { name: "Guía de referencia" }).click();
     await expect(page).toHaveURL(/\/internal\/qa\/aprender\?tab=guia$/);
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Aprender QA Lab",
+        name: "Aprender el laboratorio QA",
       }),
     ).toBeVisible();
   });

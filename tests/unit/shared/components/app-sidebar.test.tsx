@@ -155,13 +155,13 @@ describe("AppSidebar · grupos", () => {
     // No debe quedar la cabecera "Systems Ops" abriendo un cajón vacío.
     renderSidebar({ permissions: [] });
 
-    expect(verGrupo("Systems Ops")).toBe(false);
+    expect(verGrupo("Sistemas")).toBe(false);
   });
 
   it("basta un ítem visible para que el grupo aparezca", () => {
     renderSidebar({ permissions: ["systems.tools.read"] });
 
-    expect(verGrupo("Systems Ops")).toBe(true);
+    expect(verGrupo("Sistemas")).toBe(true);
   });
 
   it("el grupo aparece con solo los ítems concedidos dentro", () => {
@@ -179,7 +179,7 @@ describe("AppSidebar · grupos", () => {
     expect(verGrupo("Procesos")).toBe(true);
     expect(verEnlace("Procesos")).toBe(true);
     // No cuelga de Systems Ops: quien sólo lee procesos no ve ese grupo.
-    expect(verGrupo("Systems Ops")).toBe(false);
+    expect(verGrupo("Sistemas")).toBe(false);
   });
 
   it("tras la fusión, Systems Ops no lista «Procesos de negocio», «Panel de control» ni «Salud herramientas»", () => {

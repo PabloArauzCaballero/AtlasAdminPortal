@@ -171,8 +171,8 @@ function AuthorizedEndpointsPage() {
     <>
       <PageHeader
         icon={Route}
-        title="Catálogo de endpoints"
-        description="Rutas de LOS TRES bloques del ecosistema, desde `/systems/endpoints`. No se usan rutas hardcodeadas como datos finales."
+        title="Catálogo de operaciones"
+        description="Las operaciones de todos los sistemas de Atlas, tal como están registradas."
         actions={
           <ExportDownloadButton
             downloadUrl="/api/v1/systems/endpoints"

@@ -36,7 +36,7 @@ beforeEach(() => {
   searchParams = new URLSearchParams();
 });
 
-describe("Aprender QA Lab: Recorridos y Guía de referencia", () => {
+describe("Aprender el laboratorio QA: Recorridos y Guía de referencia", () => {
   it("?tab=guia abre la guía y conserva «Abrir el lab»", () => {
     permissions = ["systems.endpoints.read"];
     searchParams = new URLSearchParams("tab=guia");

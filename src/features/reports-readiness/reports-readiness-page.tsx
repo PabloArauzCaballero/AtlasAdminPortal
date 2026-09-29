@@ -71,13 +71,13 @@ function AuthorizedReportsReadinessPage({
         <PageHeader
           icon={Rocket}
           eyebrow="Reporterías"
-          title="Readiness Release"
-          description="Esta vista mide si el catálogo, los endpoints y QA ya tienen suficiente metadata para construir reportes y widgets reales, sin inventar métricas."
+          title="Preparación para salir"
+          description="Mide si el catálogo, las operaciones y las pruebas ya tienen suficientes metadatos para construir reportes reales, sin inventar cifras."
         />
       ) : (
         <SectionHeader
-          title="Readiness de metadata para reportes"
-          description="Cobertura complementaria para confirmar que el release cuenta con metadata y QA suficientes."
+          title="Metadatos listos para reportes"
+          description="Cobertura complementaria para confirmar que la versión tiene metadatos y pruebas suficientes."
         />
       )}
       {summary.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -96,19 +96,19 @@ function AuthorizedReportsReadinessPage({
         <div className="space-y-6">
           <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              label="Cobertura tablas"
+              label="Cobertura de tablas"
               value={`${readiness.tableCoverage}%`}
             />
             <MetricCard
-              label="Cobertura endpoints"
+              label="Cobertura de operaciones"
               value={`${readiness.endpointCoverage}%`}
             />
             <MetricCard
-              label="QA testable"
+              label="Cobertura de pruebas"
               value={`${readiness.qaCoverage}%`}
             />
             <MetricCard
-              label="Suites activas"
+              label="Baterías de prueba activas"
               value={formatNumber(readiness.enabledSuites)}
             />
           </section>
@@ -116,7 +116,7 @@ function AuthorizedReportsReadinessPage({
           <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
             <section>
               <SectionHeader
-                title="Bloques listos para reporting"
+                title="Sistemas listos para reportes"
                 description="Señales mínimas antes de crear reportes ejecutivos y de riesgo."
               />
               <ReadinessSignalsTable
@@ -126,11 +126,11 @@ function AuthorizedReportsReadinessPage({
                     coverage: readiness.tableCoverage,
                   },
                   {
-                    label: "Endpoints con propósito de negocio",
+                    label: "Operaciones con propósito de negocio",
                     coverage: readiness.endpointCoverage,
                   },
                   {
-                    label: "Endpoints testables desde QA",
+                    label: "Operaciones que se pueden probar",
                     coverage: readiness.qaCoverage,
                   },
                 ]}
@@ -141,17 +141,17 @@ function AuthorizedReportsReadinessPage({
               <CardHeader>
                 <SectionHeader
                   title="Fuentes candidatas"
-                  description="No son reportes finales; son fuentes candidatas por metadata financiera/riesgo."
+                  description="No son reportes finales: son fuentes candidatas por sus metadatos financieros o de riesgo."
                   className="mb-0"
                 />
               </CardHeader>
               <CardContent className="space-y-3">
                 <MetricCard
-                  label="Tablas financieras/riesgo"
+                  label="Tablas financieras o de riesgo"
                   value={formatNumber(readiness.riskTables)}
                 />
                 <MetricCard
-                  label="Endpoints disponibles"
+                  label="Operaciones disponibles"
                   value={formatNumber(readiness.routes)}
                 />
                 <MetricCard
@@ -166,7 +166,7 @@ function AuthorizedReportsReadinessPage({
             <CardHeader>
               <SectionHeader
                 title="Accesos rápidos"
-                description="Completa la metadata que falta directamente en cada módulo."
+                description="Completa los metadatos que faltan directamente en cada módulo."
                 className="mb-0"
               />
             </CardHeader>
@@ -182,13 +182,13 @@ function AuthorizedReportsReadinessPage({
                   className="rounded-md border border-atlas-border p-4 font-medium text-atlas-text hover:bg-atlas-soft"
                   href="/internal/systems/endpoints"
                 >
-                  Revisar endpoints
+                  Revisar operaciones
                 </Link>
                 <Link
                   className="rounded-md border border-atlas-border p-4 font-medium text-atlas-text hover:bg-atlas-soft"
                   href="/internal/qa/suites"
                 >
-                  Revisar QA
+                  Revisar pruebas
                 </Link>
                 <Link
                   className="rounded-md border border-atlas-border p-4 font-medium text-atlas-text hover:bg-atlas-soft"

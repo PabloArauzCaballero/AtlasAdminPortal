@@ -116,7 +116,7 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     // La navegación tiene que llevar a la pestaña, no sólo la URL escrita a mano.
     // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
     await page.goto("/internal");
-    await abrirGrupoDelMenu(page, "Systems Ops");
+    await abrirGrupoDelMenu(page, "Sistemas");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Salud de la red" }),
@@ -141,7 +141,7 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
 
     // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
     await page.goto("/internal");
-    await abrirGrupoDelMenu(page, "Systems Ops");
+    await abrirGrupoDelMenu(page, "Sistemas");
     await clickAndNavigate(
       page,
       page.getByRole("link", { name: "Artefactos del motor" }),

@@ -17,16 +17,15 @@ export function Journey() {
     <Section
       id="journey"
       num="05"
-      kicker="Journey encadenado"
-      title="Encadenar endpoints: la salida de uno alimenta al siguiente"
+      kicker="Recorrido encadenado"
+      title="Encadenar operaciones: la salida de una alimenta a la siguiente"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Segunda pestaña del lab. Un recorrido es una{" "}
+        Segunda pestaña del laboratorio. Un recorrido es una{" "}
         <strong>lista ordenada de pasos</strong>; cada paso puede{" "}
         <strong>extraer</strong> un valor de su respuesta y los siguientes lo
-        reinyectan con{" "}
-        <code className="font-mono text-atlas-accent">{"{{variable}}"}</code>.
-        Así validas un flujo de negocio entero, no un ladrillo suelto.
+        reutilizan escribiendo su nombre entre dobles llaves. Así validas un
+        flujo de negocio entero, no un ladrillo suelto.
       </p>
 
       <h3 className="text-base font-semibold text-atlas-text">
@@ -41,48 +40,37 @@ export function Journey() {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <FeatureCard
           icon={<Layers className="h-5 w-5" />}
-          title="Campos por paso (en el JSON)"
+          title="Qué lleva cada paso"
         >
-          <code className="font-mono">key</code>,{" "}
-          <code className="font-mono">endpointId</code>,{" "}
-          <code className="font-mono">payload</code>,{" "}
-          <code className="font-mono">pathParams</code>,{" "}
-          <code className="font-mono">queryParams</code>,{" "}
-          <code className="font-mono">headers</code>,{" "}
-          <code className="font-mono">expectedStatusCodes</code>,{" "}
-          <code className="font-mono">extract</code>,{" "}
-          <code className="font-mono">authMode</code> y{" "}
-          <code className="font-mono">allowMutations</code>. Cada paso puede
-          tener su propio modo de identificación.
+          Un nombre, la operación que llama, los datos que envía, los parámetros
+          de la ruta y de la búsqueda, las cabeceras, los códigos de respuesta
+          que se aceptan, qué valores extrae, cómo se identifica y si puede
+          cambiar datos. Cada paso puede tener su propio modo de identificación.
         </FeatureCard>
         <FeatureCard
           icon={<Workflow className="h-5 w-5" />}
           title="Extraer y sustituir"
         >
-          <code className="font-mono">extract</code> lee la respuesta por ruta
-          con puntos (<code className="font-mono">data.customerId</code>).{" "}
-          <code className="font-mono text-atlas-accent">
-            {"{{customerId}}"}
-          </code>{" "}
-          se sustituye en cualquier texto del cuerpo, la ruta, la consulta o las
-          cabeceras de los pasos siguientes.
+          Cada paso puede guardar un valor de su respuesta, por ejemplo el
+          número de cliente, con un nombre. Ese nombre se sustituye por el valor
+          en los datos, la ruta, la búsqueda o las cabeceras de los pasos
+          siguientes.
         </FeatureCard>
       </div>
 
       <Note tone="critical" tag="Atención">
-        En <strong>dry-run (simulación) el recorrido no extrae valores</strong>:
-        la previsualización no ejecuta de verdad, así que{" "}
-        <code className="font-mono">{"{{customerId}}"}</code> se queda literal y
-        el paso 3 fallará al resolver la ruta. Para ver el encadenamiento{" "}
-        <strong>real</strong> hay que destildar dry-run (en <code>LOCAL</code>,
-        o con doble confirmación fuera de él).
+        En <strong>simulación el recorrido no extrae valores</strong>: la
+        previsualización no ejecuta de verdad, así que el número de cliente no
+        llega al paso 3 y ese paso fallará al armar la ruta. Para ver el
+        encadenamiento <strong>real</strong> hay que desmarcar la simulación (en
+        el ambiente local, o con doble confirmación fuera de él).
       </Note>
       <p className="text-sm text-atlas-muted">
-        La &ldquo;lista de pasos encadenados&rdquo; es justamente esa lista en
-        JSON: no se sube un archivo, se <strong>pega o edita</strong> en el
-        editor del lab. El resultado trae los pasos totales, aprobados y
-        fallidos, las variables acumuladas y, por paso, método, dirección final,
-        código HTTP, latencia y lo que extrajo.
+        La &ldquo;lista de pasos encadenados&rdquo; es justamente esa lista: no
+        se sube un archivo, se <strong>pega o edita</strong> en el editor del
+        laboratorio. El resultado trae los pasos totales, aprobados y fallidos,
+        los valores guardados y, por paso, método, dirección final, código de
+        respuesta, tiempo y lo que extrajo.
       </p>
 
       <Note tone="tip" tag="Tercera pestaña">
@@ -117,9 +105,9 @@ export function Seguridad() {
           title="Doble confirmación"
           iconClass="bg-red-50 text-red-700"
         >
-          Un cambio real fuera de <code>LOCAL</code> exige marcar la casilla{" "}
-          <strong>y</strong> teclear <code className="font-mono">EJECUTAR</code>
-          . Sin eso, el diálogo no deja continuar.
+          Un cambio real fuera del ambiente local exige marcar la casilla{" "}
+          <strong>y</strong> teclear la palabra EJECUTAR. Sin eso, el diálogo no
+          deja continuar.
         </FeatureCard>
         <FeatureCard
           icon={<ShieldCheck className="h-5 w-5" />}
@@ -135,9 +123,8 @@ export function Seguridad() {
           title="Ticket de aprobación"
           iconClass="bg-amber-50 text-amber-700"
         >
-          Una carga real fuera de <code>LOCAL</code> exige un ticket (p. ej.{" "}
-          <code className="font-mono">CHG-123</code>); sin él la corrida se
-          bloquea por seguridad.
+          Una carga real fuera del ambiente local exige un número de ticket de
+          cambio aprobado; sin él la corrida se bloquea por seguridad.
         </FeatureCard>
       </div>
     </Section>
@@ -153,8 +140,8 @@ export function Historial() {
       title="Dónde quedan las corridas"
     >
       <p className="max-w-3xl text-[0.9375rem] leading-7 text-atlas-muted">
-        Las pruebas sueltas del lab (funcional y carga) y el editor de pasos del
-        recorrido corren en tu navegador y{" "}
+        Las pruebas sueltas del laboratorio (funcional y carga) y el editor de
+        pasos del recorrido corren en tu navegador y{" "}
         <strong>no se guardan en ningún historial</strong>: si necesitas
         conservar una, descarga su registro. Lo que sí queda guardado vive en
         otras pantallas:
@@ -169,7 +156,8 @@ export function Historial() {
           </p>
           <p className="mt-1 text-sm text-atlas-muted">
             <strong className="text-atlas-text">Ejecuciones QA</strong> — las
-            corridas de suites y los recorridos que se lanzan en el servidor.
+            corridas de baterías de prueba y los recorridos que se lanzan en el
+            servidor.
           </p>
         </Link>
         <Link
@@ -187,11 +175,12 @@ export function Historial() {
         </Link>
       </div>
       <Note tone="tip" tag="Ruta sugerida">
-        Selecciona la ruta → <strong>funcional en dry-run</strong> para ver la
-        petición → funcional real en <code>LOCAL</code> → <strong>carga</strong>{" "}
-        suave (5 peticiones/s durante 30 s) leyendo el gráfico → arma el{" "}
-        <strong>recorrido</strong> del flujo y ejecútalo real en{" "}
-        <code>LOCAL</code>. Solo entonces sube a <code>STAGING</code>.
+        Elige la operación → <strong>funcional en simulación</strong> para ver
+        la petición → funcional real en el ambiente local →{" "}
+        <strong>carga</strong> suave (5 peticiones por segundo durante 30
+        segundos) leyendo el gráfico → arma el <strong>recorrido</strong> del
+        flujo y ejecútalo real en local. Sólo entonces pasa al ambiente de
+        preproducción.
       </Note>
     </Section>
   );

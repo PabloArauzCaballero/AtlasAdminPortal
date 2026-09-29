@@ -20,7 +20,7 @@ import { SuiteForm } from "./suite-form";
 import { SuiteStepsSection } from "./suite-steps-section";
 import { ClipboardList } from "lucide-react";
 
-const tabs = ["Resumen", "Pasos", "Config", "Ejecución"];
+const tabs = ["Resumen", "Pasos", "Configuración", "Ejecución"];
 
 export function TestSuiteDetailPage(props: Readonly<{ suiteId: string }>) {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -50,7 +50,7 @@ function AuthorizedTestSuiteDetailPage({
           description={
             isAtlasApiError(suite.error)
               ? suite.error.message
-              : "No se pudo cargar la suite."
+              : "No se pudo cargar la batería de prueba."
           }
           requestId={
             isAtlasApiError(suite.error) ? suite.error.requestId : undefined
@@ -62,11 +62,11 @@ function AuthorizedTestSuiteDetailPage({
         <>
           <PageHeader
             icon={ClipboardList}
-            eyebrow={`Suite #${suite.data.suite.suiteId}`}
+            eyebrow={`Batería #${suite.data.suite.suiteId}`}
             title={suite.data.suite.name}
             description={
               suite.data.suite.description ??
-              "Suite sin descripción documentada."
+              "Batería sin descripción documentada."
             }
             actions={
               <>
@@ -75,7 +75,9 @@ function AuthorizedTestSuiteDetailPage({
                   value={suite.data.suite.isEnabled ? "ACTIVE" : "DISABLED"}
                 />
                 {canAuthor ? (
-                  <Button onClick={() => setEditing(true)}>Editar suite</Button>
+                  <Button onClick={() => setEditing(true)}>
+                    Editar batería
+                  </Button>
                 ) : null}
               </>
             }
@@ -112,11 +114,11 @@ function AuthorizedTestSuiteDetailPage({
                   value: suite.data.suite.environmentScope.join(", "),
                 },
                 {
-                  label: "Requiere seed",
+                  label: "Requiere datos de prueba cargados",
                   value: formatBoolean(suite.data.suite.requiresSeedData),
                 },
                 {
-                  label: "Safe production",
+                  label: "Segura en producción",
                   value: formatBoolean(suite.data.suite.isSafeForProduction),
                 },
                 {
@@ -131,7 +133,7 @@ function AuthorizedTestSuiteDetailPage({
           {activeTab === "Pasos" ? (
             <SuiteStepsSection suiteId={suiteId} steps={suite.data.steps} />
           ) : null}
-          {activeTab === "Config" ? (
+          {activeTab === "Configuración" ? (
             <SuiteConfigTable steps={suite.data.steps} />
           ) : null}
           {activeTab === "Ejecución" ? (

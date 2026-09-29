@@ -11,6 +11,7 @@ import {
   RiskBadge,
 } from "@/shared/components/ui/badges";
 
+import { CLIENT_OPTIONS, labelFrom } from "./filter-options";
 import { type Flow } from "./types";
 
 /**
@@ -40,7 +41,7 @@ export function buildFlowColumns(
       ),
     },
     {
-      header: "Bloque",
+      header: "Sistema",
       accessorKey: "systemCode",
       cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
     },
@@ -50,7 +51,7 @@ export function buildFlowColumns(
       cell: ({ row }) => (
         <Link
           className="text-atlas-accent underline"
-          title="Ver grafo del módulo"
+          title="Ver el diagrama del módulo"
           href={`/internal/flows/graph?systemCode=${row.original.systemCode}&module=${row.original.module}`}
         >
           {row.original.module}
@@ -72,15 +73,17 @@ export function buildFlowColumns(
           return <Badge tone="info">Permiso interno</Badge>;
         if (flow.roles.length)
           return <Badge tone="default">{flow.roles.length} roles</Badge>;
-        return <Badge tone="muted">Sólo JWT</Badge>;
+        return <Badge tone="muted">Sólo sesión</Badge>;
       },
     },
     {
-      header: "Callers",
+      header: "Quién la llama",
       accessorKey: "callers",
       cell: ({ row }) =>
         row.original.callers.length ? (
-          row.original.callers.join(", ")
+          row.original.callers
+            .map((caller) => labelFrom(CLIENT_OPTIONS, caller))
+            .join(", ")
         ) : (
           <span className="text-atlas-muted">—</span>
         ),
@@ -91,19 +94,23 @@ export function buildFlowColumns(
       cell: ({ row }) => {
         const flow = row.original;
         return (
-          <span className="inline-flex items-center gap-1 text-xs">
-            <span title="Test que nombra la ruta">
-              {flow.testStatus === "TESTED" ? "T✓" : "T✗"}
+          <span className="inline-flex flex-wrap items-center gap-1 text-xs">
+            <span>
+              {flow.testStatus === "TESTED" ? "Con pruebas" : "Sin pruebas"}
             </span>
-            <span title="En el contrato OpenAPI">
+            <span className="text-atlas-muted">·</span>
+            <span>
               {flow.contractStatus === "IN_CONTRACT"
-                ? "C✓"
+                ? "Documentada"
                 : flow.contractStatus === "CODE_ONLY"
-                  ? "C✗"
-                  : "C—"}
+                  ? "Sin contrato"
+                  : "Contrato sin revisar"}
             </span>
             {flow.findingsCount ? (
-              <Badge tone="warning">{flow.findingsCount}</Badge>
+              <Badge tone="warning">
+                {flow.findingsCount} hallazgo
+                {flow.findingsCount === 1 ? "" : "s"}
+              </Badge>
             ) : null}
           </span>
         );

@@ -205,7 +205,7 @@ test.describe("Flujos (stack real)", () => {
         .first()
         .click();
       await expect(
-        page.getByRole("dialog").getByText(/corridas sin error de servidor/),
+        page.getByRole("dialog").getByText(/llamadas sin error del servidor/),
       ).toBeVisible({ timeout: 20_000 });
       await capture(page, testInfo, "ficha con evidencia de runtime");
       await page.keyboard.press("Escape");
@@ -249,7 +249,7 @@ test.describe("Flujos (stack real)", () => {
       });
 
       // Buscar un nodo lo centra y resalta su camino.
-      await page.getByLabel("Buscar nodo").fill("test-suites/:p/run");
+      await page.getByLabel("Buscar recuadro").fill("test-suites/:p/run");
       // La búsqueda centra y resalta: se espera al resaltado, que es lo que se va a capturar.
       await expect(
         page.locator("[data-node-highlighted='true']").first(),

@@ -96,7 +96,7 @@ describe("QaLabGuidePage · estructura completa", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Aprender QA Lab",
+        name: "Aprender el laboratorio QA",
       }),
     ).toBeInTheDocument();
     expect(
@@ -113,11 +113,11 @@ describe("QaLabGuidePage · estructura completa", () => {
 
     for (const title of [
       "Un laboratorio, tres formas de probar",
-      "Target, permisos y el reflejo del dry-run",
-      "Los headers los gestiona el lab por ti",
-      "¿El endpoint responde lo que promete?",
+      "Ambiente, permisos y el reflejo de la simulación",
+      "Las cabeceras las gestiona el laboratorio por ti",
+      "¿La operación responde lo que promete?",
       "¿Aguanta la carga — y a qué precio en latencia?",
-      "Encadenar endpoints: la salida de uno alimenta al siguiente",
+      "Encadenar operaciones: la salida de una alimenta a la siguiente",
       "Por qué es difícil hacerte daño con esto",
       "Dónde quedan las corridas",
     ]) {
@@ -136,20 +136,19 @@ describe("QaLabGuidePage · estructura completa", () => {
       "#panorama",
     );
     expect(
-      within(nav).getByRole("link", { name: /Journey encadenado/ }),
+      within(nav).getByRole("link", { name: /Recorrido encadenado/ }),
     ).toHaveAttribute("href", "#journey");
   });
 
   it("documenta los tres targets y sus reglas", () => {
     renderWithProviders(<QaLabGuidePage />);
 
-    // "LOCAL"/"STAGING" también aparecen como <code> en otras secciones, así
-    // que se acota a la tabla de targets (la primera de la página).
+    // Se acota a la tabla de ambientes (la primera de la página).
     const targetsTable = screen.getAllByRole("table")[0];
-    expect(within(targetsTable).getByText("LOCAL")).toBeInTheDocument();
-    expect(within(targetsTable).getByText("STAGING")).toBeInTheDocument();
+    expect(within(targetsTable).getByText("Local")).toBeInTheDocument();
+    expect(within(targetsTable).getByText("Preproducción")).toBeInTheDocument();
     expect(
-      within(targetsTable).getByText("PRODUCTION_READONLY"),
+      within(targetsTable).getByText("Producción (sólo lectura)"),
     ).toBeInTheDocument();
     expect(screen.getByText(/techo duro es de/)).toBeInTheDocument();
   });
@@ -167,9 +166,9 @@ describe("ScenarioTable · matriz de escenarios y cabeceras como tabla", () => {
     ).toEqual([
       "Escenario",
       "Qué cambia",
-      "Authorization",
-      "x-tenant-id",
-      "x-idempotency-key",
+      "Credencial",
+      "Empresa (sale de tu sesión)",
+      "Protección contra duplicados",
       "Resultado esperado",
     ]);
     // 1 fila de cabecera + los 8 escenarios del lab.
@@ -207,7 +206,7 @@ describe("TargetsTable y DialsTable · referencia de la guía", () => {
       within(table)
         .getAllByRole("columnheader")
         .map((header) => header.textContent),
-    ).toEqual(["Ambiente", "Qué permite", "Base URL"]);
+    ).toEqual(["Ambiente", "Qué permite", "Dirección"]);
     expect(within(table).getAllByRole("row")).toHaveLength(5);
   });
 
@@ -248,8 +247,8 @@ describe("GuideStressChart · simulación del avance", () => {
       screen.getByRole("button", { name: /Repetir corrida/ }),
     ).toBeInTheDocument();
 
-    // La celda de Requests ya no es cero.
-    const requests = screen.getByText("Requests").parentElement;
+    // La celda de Peticiones ya no es cero.
+    const requests = screen.getByText("Peticiones").parentElement;
     expect(requests?.textContent).toMatch(/[1-9]/);
   });
 

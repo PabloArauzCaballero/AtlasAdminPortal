@@ -142,7 +142,7 @@ describe("JourneyStepResults · tabla de pasos", () => {
     render(<JourneyStepResults result={runResult([])} />);
 
     expect(
-      screen.getByText("El journey no ejecutó ningún paso."),
+      screen.getByText("El recorrido no ejecutó ningún paso."),
     ).toBeInTheDocument();
   });
 });

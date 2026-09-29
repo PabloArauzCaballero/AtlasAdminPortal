@@ -15,7 +15,7 @@ const API_DOCS =
 
 const COLUMNS: ColumnDef<ConsumerEndpoint>[] = [
   {
-    header: "Endpoint",
+    header: "Operación",
     id: "endpoint",
     accessorFn: (endpoint) => `${endpoint.method} ${endpoint.path}`,
     cell: ({ row }) => (
@@ -54,9 +54,9 @@ export function ConsumerEndpointsTable({
         `${endpoint.method} ${endpoint.path} ${endpoint.purpose}`
       }
       searchPlaceholder="Buscar por método, ruta o para qué se llama…"
-      searchTooltip="Recorre los endpoints de esta decisión, que son pocos y llegan todos con su ficha: coincide con parte del método, de la ruta o de su propósito."
-      emptyTitle="Ningún endpoint dispara esta decisión."
-      emptyFilteredTitle="Ningún endpoint coincide con la búsqueda."
+      searchTooltip="Recorre las operaciones de esta decisión, que son pocos y llegan todos con su ficha: coincide con parte del método, de la ruta o de su propósito."
+      emptyTitle="Ninguna operación dispara esta decisión."
+      emptyFilteredTitle="Ninguna operación coincide con la búsqueda."
     />
   );
 }

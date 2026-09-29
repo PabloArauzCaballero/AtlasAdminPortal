@@ -74,12 +74,13 @@ describe("Mapa de rutas · los seis filtros y el de verificación son visibles y
   it("cada filtro trae su ⓘ y «Rotos» ya no filtra a escondidas", async () => {
     renderAs(<FlowsPage />, ["systems.flows.read"]);
     for (const nombre of [
-      "Bloque",
+      "Sistema",
       "Módulo",
       "Riesgo",
       "Verificación",
+      "Al día",
       "Cliente",
-      "Tests",
+      "Pruebas",
       "Hallazgos",
     ]) {
       expect(
@@ -94,6 +95,11 @@ describe("Mapa de rutas · los seis filtros y el de verificación son visibles y
     await filtrarPor(/^Verificación/, "BROKEN");
     expect(flowHooks.useFlows).toHaveBeenLastCalledWith(
       expect.objectContaining({ verification: "BROKEN", page: 1 }),
+    );
+    // «Desactualizados» ya no es una cifra muda: filtra en el servidor por frescura.
+    await filtrarPor(/^Al día/, "STALE");
+    expect(flowHooks.useFlows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ freshness: "STALE", page: 1 }),
     );
   });
 

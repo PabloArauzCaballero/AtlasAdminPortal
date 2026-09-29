@@ -27,7 +27,7 @@ describe("resolveExplanation · gana el prefijo más largo", () => {
     // `/internal/flows/review`: debe ganar la segunda.
     const resolved = resolveExplanation("/internal/flows/review");
 
-    expect(resolved?.module.module).toBe("Systems Ops");
+    expect(resolved?.module.module).toBe("Sistemas");
     expect(resolved?.view?.systems).toContain("Los flujos de riesgo alto");
   });
 
@@ -55,7 +55,7 @@ describe("resolveExplanation · gana el prefijo más largo", () => {
     // declara vista propia: debe heredar la del listado, no quedarse sin nada.
     const resolved = resolveExplanation("/internal/systems/endpoints/ep_123");
 
-    expect(resolved?.module.module).toBe("Systems Ops");
+    expect(resolved?.module.module).toBe("Sistemas");
     expect(resolved?.view?.systems).toContain(
       "Lista de todas las operaciones del inventario",
     );
@@ -65,7 +65,7 @@ describe("resolveExplanation · gana el prefijo más largo", () => {
     // `/internal/systems` matchea el módulo pero ninguna de sus vistas.
     const resolved = resolveExplanation("/internal/systems");
 
-    expect(resolved?.module.module).toBe("Systems Ops");
+    expect(resolved?.module.module).toBe("Sistemas");
     expect(resolved?.view).toBeNull();
   });
 });
@@ -184,7 +184,7 @@ describe("view-explanations · integridad de la configuración", () => {
     // Si un archivo dejara de agregarse, sus rutas devolverían null en silencio.
     const names = moduleExplanations.map((entry) => entry.module);
 
-    expect(names).toContain("Systems Ops");
+    expect(names).toContain("Sistemas");
     expect(names).toContain("Operaciones");
     expect(names).toContain("Administración");
     expect(new Set(names).size).toBe(names.length);

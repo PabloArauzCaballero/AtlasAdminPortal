@@ -41,8 +41,8 @@ function AuthorizedFlowGraphPage() {
   const moduleGraph = useModuleGraph(systemCode, moduleName, includeRoles);
   const query = flowId ? flowGraph : moduleGraph;
   const title = flowId
-    ? "Grafo del flujo"
-    : `Grafo del módulo ${moduleName ?? ""}`;
+    ? "Diagrama de la operación"
+    : `Diagrama del módulo ${moduleName ?? ""}`;
 
   const setOpen = useCallback(
     (id: string | null) => {
@@ -56,7 +56,7 @@ function AuthorizedFlowGraphPage() {
 
   if (!flowId && !(systemCode && moduleName)) {
     return (
-      <ErrorState description="Indica un flujo (?flow=) o un bloque y módulo (?systemCode=&module=)." />
+      <ErrorState description="Elige un flujo, o un sistema y un módulo, desde el mapa de rutas." />
     );
   }
 
@@ -64,12 +64,12 @@ function AuthorizedFlowGraphPage() {
     <>
       <PageHeader
         icon={Waypoints}
-        eyebrow="Systems Ops · Mapa de rutas"
+        eyebrow="Sistemas · Mapa de rutas"
         title={title}
         description={
           flowId
-            ? "Cliente → endpoint → autorización → handler → services → tablas y ramas de error, resuelto por tipo desde el código. Lo que el análisis no alcanza (SQL dinámico, profundidad) aparece como nodo punteado con su motivo, nunca como un hecho."
-            : "Todos los flujos del módulo compartiendo clientes, controllers, services y tablas. Pulsa un endpoint para abrir su ficha; busca un nodo para centrarlo; selecciona para resaltar su camino."
+            ? "Quién la llama → operación → autorización → lógica → tablas y errores posibles, sacado del código. Lo que el análisis no alcanza aparece como un recuadro punteado con su motivo, nunca como un hecho."
+            : "Todas las operaciones del módulo, con quién las llama, la lógica que usan y las tablas que tocan. Pulsa una operación para abrir su ficha; busca un recuadro para centrarlo; selecciónalo para resaltar su camino."
         }
         actions={
           <div className="flex gap-2">
@@ -95,7 +95,7 @@ function AuthorizedFlowGraphPage() {
           description={
             isAtlasApiError(query.error)
               ? query.error.message
-              : "No se pudo cargar el grafo."
+              : "No se pudo cargar el diagrama."
           }
           requestId={
             isAtlasApiError(query.error) ? query.error.requestId : undefined

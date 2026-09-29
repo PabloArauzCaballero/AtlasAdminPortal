@@ -42,7 +42,7 @@ export const TOOL_STATUS_OPTIONS: Option[] = [
   {
     value: "DEPRECATED",
     label: "Obsoleta",
-    description: "Se va a retirar; no debería usarse en código nuevo.",
+    description: "Se va a retirar; no debería usarse en cambios nuevos.",
   },
   {
     value: "DISABLED",

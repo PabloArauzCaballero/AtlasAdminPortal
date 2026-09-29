@@ -31,7 +31,7 @@ export function FlowsHeaderActions({
           onClick={() =>
             verify.mutate({ systemCode: "ATLAS_BACKEND", windowDays: 30 })
           }
-          title="Cruza el catálogo con las corridas reales de system_action_logs (30 días) y recalcula la frescura contra el commit desplegado"
+          title="Cruza el mapa con las peticiones reales de los últimos 30 días y vuelve a comprobar si el código cambió desde la versión desplegada"
         >
           {verify.isPending ? "Verificando…" : "Verificar con corridas"}
         </Button>
@@ -39,17 +39,13 @@ export function FlowsHeaderActions({
       {verify.data ? (
         <span className="text-xs text-atlas-muted" data-testid="verify-result">
           {verify.data.verified} verificados · {verify.data.broken} rotos ·{" "}
-          {verify.data.unverified} sin corridas · {verify.data.routesWithRuns}{" "}
+          {verify.data.unverified} sin llamadas · {verify.data.routesWithRuns}{" "}
           rutas con tráfico
         </span>
       ) : null}
       {lastImport ? (
         <span className="text-xs text-atlas-muted">
-          Última carga: {lastImport.systemCode} @{" "}
-          <span className="font-mono">
-            {lastImport.analyzedCommit?.slice(0, 7) ?? "—"}
-          </span>{" "}
-          · {formatDateTime(lastImport.createdAt)}
+          Datos del análisis del {formatDateTime(lastImport.createdAt)}
         </span>
       ) : null}
     </div>

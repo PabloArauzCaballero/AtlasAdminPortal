@@ -90,7 +90,7 @@ function AuthorizedReviewQueuePage() {
     <>
       <PageHeader
         icon={ClipboardCheck}
-        eyebrow="Systems Ops"
+        eyebrow="Sistemas"
         title="Revisión del catálogo"
         description="Confirma o descarta lo que el escáner detectó: rutas, tablas, columnas, impactos y herramientas. Cada decisión guarda su motivo."
         actions={

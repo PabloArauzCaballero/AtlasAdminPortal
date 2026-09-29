@@ -198,15 +198,14 @@ function Canvas({ graph, onSelectFlow }: Props) {
       <div className="absolute left-3 top-3 z-10 flex w-72 items-center gap-2">
         <Input
           value={search}
-          placeholder="Buscar nodo y centrar…"
+          placeholder="Buscar un recuadro y centrarlo…"
           onChange={(event) => onSearch(event.target.value)}
-          aria-label="Buscar nodo"
+          aria-label="Buscar recuadro"
         />
       </div>
       <div className="absolute right-3 top-3 z-10 rounded bg-white/90 px-2 py-1 text-[11px] text-atlas-muted shadow-subtle">
-        {graph.stats.nodes} nodos · {graph.stats.edges} aristas ·{" "}
-        {graph.stats.unknown} sin resolver · layout {layout.elapsedMs} ms
-        {renderMs !== null ? ` · render ${renderMs} ms` : ""}
+        {graph.stats.nodes} recuadros · {graph.stats.edges} conexiones ·{" "}
+        {graph.stats.unknown} sin resolver
       </div>
       <ReactFlow
         nodes={nodes}

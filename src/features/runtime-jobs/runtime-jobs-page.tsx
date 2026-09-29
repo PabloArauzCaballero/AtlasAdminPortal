@@ -32,7 +32,7 @@ const ENSAYO_OPTIONS = [
   {
     value: "no",
     label: "Sólo en real",
-    description: "El backend no admite ensayo: se ejecuta de verdad o no.",
+    description: "No admite ensayo: se ejecuta de verdad o no.",
   },
 ];
 
@@ -63,20 +63,18 @@ export function RuntimeJobsPanel() {
   return (
     <div className="space-y-4">
       <BusinessContextNote>
-        Todos los jobs arrancan en <strong>ensayo (dry-run)</strong> a
-        propósito: reportan lo que harían sin escribir nada. La ejecución real
-        exige confirmación explícita y, en los jobs que borran o anonimizan,
-        teclear el código del job. El backend los restringe además a los roles{" "}
-        <span className="font-mono">admin</span>,{" "}
-        <span className="font-mono">platform_admin</span> y{" "}
-        <span className="font-mono">system</span>. Cada ejecución queda en la
-        pestaña «Historial» con su número de corrida.
+        Todas las tareas arrancan en <strong>ensayo</strong> a propósito:
+        cuentan lo que harían sin escribir nada. La ejecución real exige
+        confirmación explícita y, en las tareas que borran o anonimizan, teclear
+        el código de la tarea. El servidor además las restringe a
+        administradores, administradores de plataforma y procesos del sistema.
+        Cada ejecución queda en la pestaña «Historial» con su número de corrida.
       </BusinessContextNote>
 
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar job por nombre, código o para qué sirve…"
-        searchTooltip="Recorre el catálogo de jobs, que es un conjunto cerrado y pequeño que llega entero con la pantalla: coincide con parte del nombre, del código, de lo que resuelve o de lo que hace en los sistemas."
+        searchPlaceholder="Buscar tarea por nombre, código o para qué sirve…"
+        searchTooltip="Recorre el catálogo de tareas, que es un conjunto cerrado y pequeño que llega entero con la pantalla: coincide con parte del nombre, del código, de lo que resuelve o de lo que hace en los sistemas."
         filters={[
           {
             name: "impacto",
@@ -88,7 +86,7 @@ export function RuntimeJobsPanel() {
           {
             name: "ensayo",
             label: "Ensayo",
-            tooltip: "Si el job admite correr primero sin escribir nada.",
+            tooltip: "Si la tarea admite correr primero sin escribir nada.",
             value: ensayo,
             options: ENSAYO_OPTIONS,
           },
@@ -108,13 +106,13 @@ export function RuntimeJobsPanel() {
       <DataTable
         data={visibles}
         columns={columns}
-        emptyTitle="Ningún job coincide con la búsqueda."
+        emptyTitle="Ninguna tarea coincide con la búsqueda."
         emptyDescription="Prueba con otro texto o quita los filtros."
       />
 
       <DrawerPanel
         open={running !== null}
-        title={running ? `Ejecutar: ${running.title}` : "Ejecutar un job"}
+        title={running ? `Ejecutar: ${running.title}` : "Ejecutar una tarea"}
         onClose={() => setRunning(null)}
       >
         {running ? (

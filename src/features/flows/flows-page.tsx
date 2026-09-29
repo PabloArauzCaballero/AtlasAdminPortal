@@ -30,6 +30,7 @@ import { groupCount } from "./services";
 import type { Flow } from "./types";
 import {
   CLIENT_OPTIONS,
+  FRESHNESS_OPTIONS,
   RISK_OPTIONS,
   SYSTEM_OPTIONS,
   TESTED_OPTIONS,
@@ -59,6 +60,7 @@ type Filters = {
   kind: string;
   risk: string;
   verification: string;
+  freshness: string;
   caller: string;
   tested: string;
   withFindings: string;
@@ -70,6 +72,7 @@ const EMPTY: Filters = {
   kind: "",
   risk: "",
   verification: "",
+  freshness: "",
   caller: "",
   tested: "",
   withFindings: "",
@@ -141,7 +144,7 @@ function AuthorizedFlowsPage() {
     <>
       <PageHeader
         icon={Waypoints}
-        eyebrow="Systems Ops"
+        eyebrow="Sistemas"
         title="Mapa de rutas"
         description="Una fila por operación de la plataforma, sacada del código: qué puede hacer cada usuario, con qué autorización, y qué le falta (contrato, pruebas, quién la llama). Abrir una ficha nunca ejecuta la operación. Los procesos de negocio que usan estas operaciones están en «Procesos»."
         actions={<FlowsHeaderActions verify={verify} lastImport={lastImport} />}
@@ -156,8 +159,8 @@ function AuthorizedFlowsPage() {
       />
       <FilterBar
         search={filters.q}
-        searchPlaceholder="Buscar por nombre, ruta, handler, controlador, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, el identificador legible, la ruta, el handler, la clase del controlador y el módulo del flujo."
+        searchPlaceholder="Buscar por nombre, ruta o módulo…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre de la operación, su ruta y su módulo."
         onSearchChange={(value) => setFilter("q", value)}
         onFilterChange={setFilter}
         onClear={() => {
@@ -167,10 +170,10 @@ function AuthorizedFlowsPage() {
         filters={[
           {
             name: "systemCode",
-            label: "Bloque",
+            label: "Sistema",
             value: filters.systemCode,
             tooltip:
-              "Deja sólo los flujos del bloque elegido: núcleo, motor, ERP o tableros.",
+              "Deja sólo las operaciones del sistema elegido: núcleo, Motor, ERP o tableros.",
             options: SYSTEM_OPTIONS,
           },
           {
@@ -178,7 +181,7 @@ function AuthorizedFlowsPage() {
             label: "Módulo",
             value: filters.module,
             tooltip:
-              "Deja sólo los flujos de un módulo. Las opciones salen del servidor y se acotan al bloque elegido.",
+              "Deja sólo las operaciones de un módulo. Las opciones se acotan al sistema elegido.",
             options: moduleOptions,
           },
           {
@@ -198,16 +201,24 @@ function AuthorizedFlowsPage() {
             options: VERIFICATION_OPTIONS,
           },
           {
+            name: "freshness",
+            label: "Al día",
+            value: filters.freshness,
+            tooltip:
+              "Separa las operaciones cuyo código cambió desde la última verificación de las que siguen al día.",
+            options: FRESHNESS_OPTIONS,
+          },
+          {
             name: "caller",
             label: "Cliente",
             value: filters.caller,
             tooltip:
-              "Deja sólo los flujos que llama ese cliente: un portal, la app del cliente u otro bloque.",
+              "Deja sólo las operaciones que llama ese cliente: un portal, la app del cliente u otro sistema.",
             options: CLIENT_OPTIONS,
           },
           {
             name: "tested",
-            label: "Tests",
+            label: "Pruebas",
             value: filters.tested,
             tooltip:
               "Separa los flujos que una prueba automática ejercita de los que no.",
@@ -247,14 +258,14 @@ function AuthorizedFlowsPage() {
           emptyDescription={
             summary.data?.total
               ? "Prueba con otros filtros."
-              : "Aún no se cargó ningún artefacto de flows:derive. Corre la derivación y carga el resultado con systems.flows.analyze."
+              : "Aún no se ha cargado el análisis de flujos."
           }
         />
       ) : null}
       <section className="mt-6">
         <SectionHeader
           title="Hallazgos"
-          description="Lo que los detectores encontraron al cruzar código, contrato, clientes y tests. Los falsos positivos conocidos están documentados en la herramienta."
+          description="Lo que el análisis encontró al cruzar el código, lo documentado, quién llama a cada operación y las pruebas."
         />
         <FlowsFindingsTable />
       </section>

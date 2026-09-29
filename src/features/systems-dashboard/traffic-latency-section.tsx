@@ -32,7 +32,7 @@ export function TrafficLatencySection() {
       <CardHeader className="flex flex-wrap items-center justify-between gap-3">
         <SectionHeader
           title="Tráfico y latencia"
-          description="Agregado de `system_action_logs` (duración real por request). Sin datos si no hay tráfico registrado en la ventana elegida."
+          description="Calculado con la duración real de cada petición registrada. Sin datos si no hubo tráfico en la ventana elegida."
           className="mb-0"
         />
         <div className="flex flex-wrap items-center gap-3">

@@ -139,21 +139,21 @@ export function JourneyRunnerPanel() {
               tryExecute();
             }}
           >
-            Previsualizar (dry-run)
+            Previsualizar (simulación)
           </Button>
           <Button
             variant="primary"
             isLoading={
               !config.dryRun && (runMutation.isPending || endpoints.isLoading)
             }
-            loadingText="Ejecutando journey real…"
+            loadingText="Ejecutando recorrido real…"
             disabled={!parsedSteps.ok}
             onClick={() => {
               patchConfig({ dryRun: false });
               tryExecute();
             }}
           >
-            Ejecutar journey real
+            Ejecutar recorrido real
           </Button>
         </div>
         {runMutation.data ? (
@@ -162,7 +162,9 @@ export function JourneyRunnerPanel() {
       </CardContent>
       <ConfirmDialog
         open={confirmOpen}
-        title={config.dryRun ? "Confirmar dry-run" : "Confirmar journey real"}
+        title={
+          config.dryRun ? "Confirmar simulación" : "Confirmar recorrido real"
+        }
         description={
           config.dryRun
             ? `Se previsualizarán ${parsedSteps.ok ? parsedSteps.value.length : 0} pasos encadenados en ${config.environment}. No se manda tráfico real.`

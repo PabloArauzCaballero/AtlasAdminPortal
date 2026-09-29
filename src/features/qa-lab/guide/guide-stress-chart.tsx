@@ -87,7 +87,7 @@ export function GuideStressChart() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-atlas-border px-4 py-3">
         <div>
           <h3 className="text-sm font-semibold text-atlas-text">
-            Evolución de latencia y hits durante el stress
+            Evolución del tiempo de respuesta y las peticiones durante la carga
           </h3>
           <p className="text-xs text-atlas-muted">
             Simulación didáctica · cada punto agrupa las solicitudes por
@@ -115,9 +115,9 @@ export function GuideStressChart() {
           value={`${progress} / ${TOTAL_SECONDS}`}
           tone="accent"
         />
-        <Stat label="Requests" value={formatNumber(totalRequests)} />
+        <Stat label="Peticiones" value={formatNumber(totalRequests)} />
         <Stat
-          label="p95 latencia"
+          label="Tiempo del 95 %"
           value={`${formatNumber(currentP95)} ms`}
           tone="info"
         />
@@ -134,7 +134,7 @@ export function GuideStressChart() {
             <div className="rounded-md bg-atlas-soft px-3 py-1 text-xs text-atlas-text">
               <span className="font-semibold">seg. {active.second}</span>
               {" · "}
-              {formatNumber(active.count)} hits · p95{" "}
+              {formatNumber(active.count)} peticiones · 95 %{" "}
               {formatNumber(active.p95LatencyMs)} ms
               {active.errorCount > 0
                 ? ` · ${formatNumber(active.errorCount)} errores`
@@ -246,8 +246,8 @@ function Stat({
 function Legend() {
   return (
     <div className="flex flex-wrap gap-3 text-xs text-atlas-muted">
-      <span>barra: hits por segundo</span>
-      <span>línea sólida: p95</span>
+      <span>barra: peticiones por segundo</span>
+      <span>línea sólida: tiempo del 95 %</span>
       <span>línea punteada: promedio</span>
       <span>punto rojo: segundo con errores</span>
     </div>

@@ -123,7 +123,7 @@ function AuthorizedTestSuitesPage() {
     <>
       <PageHeader
         icon={ClipboardList}
-        title="Suites QA registradas"
+        title="Baterías de prueba registradas"
         description="Las suites de prueba guardadas en el sistema. ¿Quieres lanzar peticiones sueltas contra otra dirección?"
         actions={
           <div className="flex gap-2">

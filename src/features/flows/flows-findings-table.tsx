@@ -10,12 +10,13 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { useFlowFindings } from "./hooks";
 import {
   FINDING_KIND_OPTIONS,
+  labelFrom,
   RISK_OPTIONS,
   SYSTEM_OPTIONS,
 } from "./filter-options";
 import type { FlowFinding } from "./types";
 
-/** Hallazgos de los detectores de Flujos, abiertos por defecto. */
+/** Hallazgos del análisis de Flujos, abiertos por defecto. */
 export function FlowsFindingsTable() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
@@ -41,16 +42,18 @@ export function FlowsFindingsTable() {
         header: "Tipo",
         accessorKey: "kind",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.kind}</span>
+          <span className="text-xs">
+            {labelFrom(FINDING_KIND_OPTIONS, row.original.kind)}
+          </span>
         ),
       },
       {
-        header: "Bloque",
+        header: "Sistema",
         accessorKey: "systemCode",
         cell: ({ row }) => <BlockBadge value={row.original.systemCode} />,
       },
       {
-        header: "Referencia",
+        header: "Dónde",
         accessorKey: "ref",
         cell: ({ row }) => (
           <span className="font-mono text-xs">{row.original.ref}</span>
@@ -105,15 +108,15 @@ export function FlowsFindingsTable() {
             label: "Tipo",
             value: kind,
             tooltip:
-              "Deja sólo los hallazgos de un detector concreto: escrituras sin guarda, contratos que derivan, rutas huérfanas…",
+              "Deja sólo los hallazgos de una clase: escrituras sin protección, contratos desalineados, rutas que nadie llama, pasos de proceso sin pantalla…",
             options: FINDING_KIND_OPTIONS,
           },
           {
             name: "systemCode",
-            label: "Bloque",
+            label: "Sistema",
             value: systemCode,
             tooltip:
-              "Deja sólo los hallazgos de las rutas de ese bloque: núcleo, motor, ERP o tableros.",
+              "Deja sólo los hallazgos de ese sistema: núcleo, Motor, ERP o tableros.",
             options: SYSTEM_OPTIONS,
           },
         ]}
@@ -141,7 +144,7 @@ export function FlowsFindingsTable() {
           meta={findings.data.meta}
           onPageChange={setPage}
           emptyTitle="Sin hallazgos abiertos"
-          emptyDescription="Los detectores no encontraron nada con estos filtros, o el mapa de rutas aún no se cargó."
+          emptyDescription="El análisis no encontró nada con estos filtros, o el mapa de rutas aún no se cargó."
         />
       ) : null}
     </>
