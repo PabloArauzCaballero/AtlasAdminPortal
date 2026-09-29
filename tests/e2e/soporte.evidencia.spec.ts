@@ -146,6 +146,12 @@ const CANALES = {
       lastMessageAt: "2026-09-07T10:06:00.000Z",
     },
   ],
+  meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+  summary: {
+    total: 2,
+    withoutCase: 1,
+    oldestRequestedAt: "2026-09-07T10:05:00.000Z",
+  },
 };
 
 const TRANSCRIPCION = {
@@ -304,10 +310,20 @@ async function capturar(page: Page, nombre: string): Promise<void> {
   await page.screenshot({ path: `${SALIDA}/${nombre}.png`, fullPage: true });
 }
 
+/** Sin conversaciones mías: la sección «Mis conversaciones» no se pinta, y la presencia sale de aquí. */
+const MI_MESA = {
+  agentProfileId: "9",
+  presenceState: "AVAILABLE",
+  channels: [],
+  meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+  summary: { total: 0, waitingAgent: 0, withoutCase: 0 },
+};
+
 const RUTAS_BASE: readonly Ruta[] = [
   [/\/internal\/support\/cases$/, CASOS],
   [/\/internal\/support\/queues$/, COLAS],
   [/\/internal\/support\/desk\/queue$/, CANALES],
+  [/\/internal\/support\/desk\/mine$/, MI_MESA],
 ];
 
 test("Soporte — bandeja de casos", async ({ page }) => {

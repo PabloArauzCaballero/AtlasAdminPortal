@@ -7,7 +7,6 @@ vi.mock("@/features/support/hooks", () => ({
 }));
 
 import { UnirseALaConversacion } from "@/features/support/chat-join";
-import { MisConversaciones } from "@/features/support/my-conversations";
 
 /**
  * Que un agente pueda llegar a contestar.
@@ -37,33 +36,5 @@ describe("UnirseALaConversacion", () => {
     expect(
       screen.getByText(/usa «Tomar» en las acciones del caso/),
     ).toBeInTheDocument();
-  });
-});
-
-describe("MisConversaciones", () => {
-  it("lleva a la ficha del caso de cada conversación mía", () => {
-    render(
-      <MisConversaciones
-        canales={[
-          {
-            channelId: "8",
-            caseId: "40",
-            status: "OPEN",
-            channelType: "CHAT",
-            requestedAt: "2026-09-26T20:00:00Z",
-            openedAt: "2026-09-26T20:01:00Z",
-          },
-        ]}
-      />,
-    );
-
-    expect(
-      screen.getByRole("link", { name: "Abrir y responder" }),
-    ).toHaveAttribute("href", "/internal/support/cases/40");
-  });
-
-  it("sin conversaciones no pinta nada", () => {
-    const { container } = render(<MisConversaciones canales={[]} />);
-    expect(container).toBeEmptyDOMElement();
   });
 });

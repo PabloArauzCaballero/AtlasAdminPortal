@@ -159,8 +159,12 @@ export const queryKeys = {
   supportCategories: ["support", "catalog", "categories"] as const,
   supportQueues: ["support", "catalog", "queues"] as const,
   supportCodes: ["support", "catalog", "codes"] as const,
-  supportDeskQueue: ["support", "desk", "queue"] as const,
-  supportDeskMine: ["support", "desk", "mine"] as const,
+  supportDeskQueue: (params: unknown) =>
+    ["support", "desk", "queue", params] as const,
+  supportDeskMine: (params: unknown) =>
+    ["support", "desk", "mine", params] as const,
+  /** Sólo la presencia: una página de una fila de «mine», que la trae aparte de la lista. */
+  supportDeskPresence: ["support", "desk", "presence"] as const,
   supportAgents: ["support", "agents"] as const,
   supportTranscript: (channelId: string) =>
     ["support", "channel", channelId, "transcript"] as const,

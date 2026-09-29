@@ -13,11 +13,21 @@ export async function listStagingItems(
     "/operations/catalog-staging-items",
     { query },
   );
+  const total = response.total ?? 0;
+  const pageSize = response.pageSize ?? query.limit;
   return {
     items: response.items ?? [],
-    total: response.total ?? 0,
+    total,
     page: response.page ?? query.page,
-    pageSize: response.pageSize ?? query.pageSize,
+    pageSize,
+    // Un servidor anterior no manda `meta`: se arma con lo que sí manda, para que la tabla pagine.
+    meta: response.meta ?? {
+      page: response.page ?? query.page,
+      limit: pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    },
+    ...(response.summary ? { summary: response.summary } : {}),
   };
 }
 
