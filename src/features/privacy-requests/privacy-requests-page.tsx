@@ -41,7 +41,7 @@ const FILTROS_VACIOS = { status: "", type: "", overdue: "" };
 
 function AuthorizedPrivacyRequestsPage() {
   const [page, setPage] = useState(1);
-  const [customerId, setCustomerId] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const solicitudes = usePrivacyRequests({
     page,
@@ -49,7 +49,7 @@ function AuthorizedPrivacyRequestsPage() {
     ...(filtros.status ? { status: filtros.status } : {}),
     ...(filtros.type ? { type: filtros.type } : {}),
     ...(filtros.overdue ? { overdue: filtros.overdue } : {}),
-    ...(customerId ? { customerId } : {}),
+    ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
   });
   const columns = useMemo(() => buildPrivacyRequestColumns(), []);
   const data = solicitudes.data;
@@ -88,9 +88,9 @@ function AuthorizedPrivacyRequestsPage() {
       ) : null}
 
       <FilterBar
-        search={customerId}
-        searchPlaceholder="Id de cliente…"
-        searchTooltip="Muestra sólo las solicitudes de ese cliente (su id numérico)."
+        search={busqueda}
+        searchPlaceholder="Código de solicitud o de cliente…"
+        searchTooltip="Busca por parte del código de la solicitud o del código del cliente (CUS-…), sin distinguir mayúsculas."
         filters={[
           {
             name: "status",
@@ -115,7 +115,7 @@ function AuthorizedPrivacyRequestsPage() {
           },
         ]}
         onSearchChange={(valor) => {
-          setCustomerId(valor.replace(/\D/g, ""));
+          setBusqueda(valor);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
@@ -124,7 +124,7 @@ function AuthorizedPrivacyRequestsPage() {
         }}
         onClear={() => {
           setFiltros(FILTROS_VACIOS);
-          setCustomerId("");
+          setBusqueda("");
           setPage(1);
         }}
       />

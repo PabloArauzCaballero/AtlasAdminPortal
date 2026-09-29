@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { QueryParams } from "@/shared/api/types";
 import {
   decidePartner,
@@ -21,6 +26,7 @@ export function usePartnerQueue(query: QueryParams) {
   return useQuery({
     queryKey: [...COLA, query],
     queryFn: () => listPartnerQueue(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -63,10 +69,12 @@ export function useDecidePartnerMutation(partnerId: string) {
 
 const QR_PENDIENTES = [...RAIZ, "qr-codes", "pending"] as const;
 
-export function useQrPendingReview() {
+/** Una página de la cola de QR: cada tarjeta descarga su imagen, así que no se traen todos. */
+export function useQrPendingReview(query: QueryParams) {
   return useQuery({
-    queryKey: QR_PENDIENTES,
-    queryFn: listQrPendingReview,
+    queryKey: [...QR_PENDIENTES, query],
+    queryFn: () => listQrPendingReview(query),
+    placeholderData: keepPreviousData,
   });
 }
 

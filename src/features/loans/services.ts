@@ -12,7 +12,6 @@ import type {
   LoanPortfolioPage,
   LoanRating,
   LoanRatingHistory,
-  RatingScale,
   RegisterPaymentInput,
   RegisterPaymentResult,
   ReversePaymentInput,
@@ -69,10 +68,6 @@ export function getLoanRatingHistory(loanId: string, limit = 20) {
     `/operations/loans/${id(loanId)}/rating-history`,
     { query: { limit } },
   );
-}
-
-export function getRatingScale() {
-  return apiRequest<RatingScale>("/operations/rating-scale");
 }
 
 /** El PDF lo compone el servidor con los mismos números que ve el cliente en la app. */

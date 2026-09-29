@@ -72,9 +72,10 @@ export function decidePartner(
  * quiere, y hasta que una persona lo aprueba la app del cliente NO lo enseña. Hasta el 2026-09-14
  * ningún QR salía de `pending_review` porque no existía esta pantalla ni su ruta.
  */
-export function listQrPendingReview() {
+export function listQrPendingReview(query: QueryParams) {
   return apiRequest<PartnerQrPendingResponse>(
     "/operations/partners/qr-codes/pending",
+    { query },
   );
 }
 

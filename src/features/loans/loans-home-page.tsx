@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Landmark } from "lucide-react";
 import {
   LOAN_PORTFOLIO_ROLE_LIST,
@@ -10,26 +10,19 @@ import {
   LOAN_READ_ROLE_LIST,
 } from "@/shared/auth/portal-roles";
 import { RoleGate } from "@/shared/auth/role-gate";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Field, Input } from "@/shared/components/ui/input";
-import { LoadingSkeleton } from "@/shared/components/ui/states";
-import { CarteraError } from "./cartera-error";
-import { useRatingScale } from "./hooks";
-import { formatRate } from "./loan-ui";
 import { LoansPortfolioTable } from "./loans-portfolio-table";
-import type { RatingScaleGrade } from "./types";
 
 /** Un identificador de la base: entero positivo, como lo valida el servidor. */
 const ES_ID = /^[1-9][0-9]*$/;
 
 /**
  * Entrada a la cartera: la tabla paginada de todos los préstamos (`GET /operations/loans`), abrir
- * uno por su número o la ficha de un cliente, y la escala de calificación.
+ * uno por su número o la ficha de un cliente. La escala de calificación vive en «Calificación de cartera».
  *
  * La lista la puede leer también cumplimiento; abrir la ficha, no. Por eso el acceso por número
  * va con el gate de lectura del préstamo y la tabla con el de la cartera.
@@ -41,7 +34,7 @@ export function LoansHomePage() {
         icon={Landmark}
         eyebrow="Cartera"
         title="Préstamos"
-        description="Toda la cartera, filtrable por estado, tramo de mora y código. Abre un préstamo por su número o la cartera de un cliente desde su ficha. Debajo, la escala con la que se califica cada deuda."
+        description="Toda la cartera, filtrable por estado, tramo de mora y código. Abre un préstamo por su número o la cartera de un cliente desde su ficha."
       />
       <BusinessContextNote>
         Desembolsar se hace desde la ficha del cliente, sobre su solicitud
@@ -53,7 +46,17 @@ export function LoansHomePage() {
         </RoleGate>
         <LoansPortfolioTable />
         <RoleGate roles={LOAN_RATING_ROLE_LIST} fallback={null}>
-          <Escala />
+          <p className="text-sm text-atlas-muted">
+            La escala de calificación vigente (categorías, días de atraso y
+            previsión) y la cartera por categoría están en{" "}
+            <Link
+              href="/internal/operations/portfolio"
+              className="text-atlas-accent underline"
+            >
+              Calificación de cartera
+            </Link>
+            .
+          </p>
         </RoleGate>
       </div>
     </RoleGate>
@@ -121,72 +124,6 @@ function Buscar() {
           </Field>
         </form>
       </div>
-    </Card>
-  );
-}
-
-const COLUMNAS_ESCALA: ColumnDef<RatingScaleGrade>[] = [
-  {
-    accessorKey: "grade",
-    header: "Categoría",
-    cell: ({ row }) => (
-      <Badge tone={row.original.tone}>{row.original.grade}</Badge>
-    ),
-  },
-  { accessorKey: "label", header: "Significado" },
-  {
-    id: "mora",
-    header: "Días de atraso",
-    cell: ({ row }) => (
-      <span className="tabular-nums">
-        {row.original.maxDaysPastDue === null
-          ? `${row.original.minDaysPastDue} o más`
-          : `${row.original.minDaysPastDue} – ${row.original.maxDaysPastDue}`}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "provisionRate",
-    header: "Previsión",
-    cell: ({ row }) => (
-      <span className="tabular-nums">
-        {formatRate(row.original.provisionRate)}
-      </span>
-    ),
-  },
-  { accessorKey: "help", header: "Cómo se lee" },
-];
-
-function Escala() {
-  const escala = useRatingScale();
-  const grades = useMemo(() => escala.data?.grades ?? [], [escala.data]);
-  return (
-    <Card className="p-5">
-      <h2 className="mb-1 text-base font-semibold text-atlas-text">
-        Escala de calificación vigente
-      </h2>
-      <p className="mb-4 text-sm text-atlas-muted">
-        {escala.data
-          ? `Política ${escala.data.policyCode} ${escala.data.versionCode}. `
-          : null}
-        Es regulatoria y versionada: se lee del servidor, nunca se copia aquí.
-      </p>
-      {escala.isLoading ? <LoadingSkeleton rows={4} /> : null}
-      {escala.error ? (
-        <CarteraError
-          error={escala.error}
-          generico="No hay política de calificación activa: sin ella no se califica ninguna deuda."
-          onRetry={() => void escala.refetch()}
-        />
-      ) : null}
-      {escala.data ? (
-        <DataTable
-          data={grades}
-          columns={COLUMNAS_ESCALA}
-          emptyTitle="La política vigente no tiene categorías."
-          emptyDescription="Revisa la política de calificación activa."
-        />
-      ) : null}
     </Card>
   );
 }

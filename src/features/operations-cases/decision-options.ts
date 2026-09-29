@@ -146,10 +146,15 @@ export const IDENTITY_DECISIONS: Option[] = [
 ];
 
 /** Estados y prioridades de caso que devuelve la cola: los que no estén aquí van sin descripción. */
+/**
+ * Los estados que el servidor ESCRIBE en un caso: `open` al abrirlo, `in_progress` cuando fraude
+ * pide más investigación y `closed` al decidir. Es un catálogo fijo: antes las opciones salían de
+ * los casos de la página cargada y un estado que no estaba en esa página no se podía elegir.
+ */
 export const WORK_QUEUE_STATUS_HELP: Record<string, string> = {
-  open: "Abierto y sin analista: nadie lo ha tomado todavía.",
-  in_review: "Un analista lo tiene tomado y está trabajando en él.",
-  pending: "Espera algo externo (el cliente o otro equipo) para avanzar.",
+  open: "Abierto: espera decisión.",
+  in_progress:
+    "Fraude pidió más investigación: sigue abierto y alguien lo está trabajando.",
   closed: "Ya tiene decisión registrada y no admite más acciones.",
 };
 

@@ -1,3 +1,4 @@
+import type { PaginationMeta } from "@/shared/api/types";
 /**
  * Calificación de cartera y salud de la entrega de desenlaces.
  *
@@ -72,7 +73,11 @@ export type ExhaustedOutcome = {
   observedAt: string | null;
 };
 
-export type ExhaustedOutcomeList = { items: ExhaustedOutcome[] };
+/** `meta` es opcional: un servidor anterior al 2026-09-29 devolvía los 100 más antiguos sin total. */
+export type ExhaustedOutcomeList = {
+  items: ExhaustedOutcome[];
+  meta?: PaginationMeta;
+};
 
 /** Una calificación tal y como la devuelve recalificar (sólo lo que la pantalla enseña). */
 export type RatingSnapshot = { grade?: string; gradeLabel?: string } | null;

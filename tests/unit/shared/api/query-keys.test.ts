@@ -209,7 +209,6 @@ const invalidationContracts: Array<[string, Array<readonly unknown[]>]> = [
       queryKeys.investigationSummary("cus_1"),
       queryKeys.sessionInvestigationSummary("ses_1"),
       queryKeys.customerAuditFeed("cus_1"),
-      queryKeys.customerAuditEvents("cus_1", { page: 1 }),
     ],
   ],
   [

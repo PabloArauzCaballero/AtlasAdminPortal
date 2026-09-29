@@ -64,8 +64,8 @@ describe("assistScreenFor · la sección con su nombre del menú", () => {
     ["/internal/support/cases/5001", "Operaciones › Soporte › Casos"],
     ["/internal/support/knowledge", "Operaciones › Base de conocimiento"],
     [
-      "/internal/operations/manual-review-cases",
-      "Operaciones › Revisión manual",
+      "/internal/operations/pending-contacts",
+      "Operaciones › Contactos sin verificar",
     ],
     [
       "/internal/operations/credit/applications/from-case",

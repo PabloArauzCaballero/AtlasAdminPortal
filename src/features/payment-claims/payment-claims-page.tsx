@@ -21,14 +21,13 @@ import { usePaymentClaims } from "./hooks";
 import {
   PAYMENT_CLAIM_AGE_OPTIONS,
   PAYMENT_CLAIM_STATUS_OPTIONS,
-  isValidCustomerIdFilter,
 } from "./labels";
 import type { PaymentClaimsFilters } from "./types";
 
 const SIN_FILTROS: PaymentClaimsFilters = {
   status: "",
   partnerId: "",
-  customerId: "",
+  q: "",
   olderThanHours: "",
   page: 1,
 };
@@ -51,9 +50,7 @@ export function PaymentClaimsPage() {
 
 function AuthorizedPaymentClaimsPage() {
   const [filters, setFilters] = useState<PaymentClaimsFilters>(SIN_FILTROS);
-  // Con texto que no es un número no se pregunta al servidor: se avisa aquí y la tabla espera.
-  const idValido = isValidCustomerIdFilter(filters.customerId);
-  const claims = usePaymentClaims(filters, idValido);
+  const claims = usePaymentClaims(filters);
   const columns = useMemo(
     () =>
       buildPaymentClaimColumns((partnerId) =>
@@ -97,9 +94,9 @@ function AuthorizedPaymentClaimsPage() {
         </section>
       ) : null}
       <FilterBar
-        search={filters.customerId}
-        searchPlaceholder="N.º de cliente…"
-        searchTooltip="Número interno del cliente (el de su ficha), sólo cifras. Deja sólo sus avisos."
+        search={filters.q}
+        searchPlaceholder="Código de aviso, de cliente o comercio…"
+        searchTooltip="Busca por parte del código del aviso, del código del cliente (CUS-…) o del nombre comercial o legal del comercio, sin distinguir mayúsculas."
         filters={[
           {
             name: "status",
@@ -118,7 +115,7 @@ function AuthorizedPaymentClaimsPage() {
               "Deja sólo los avisos enviados hace más de ese tiempo, para encontrar lo que lleva demasiado esperando.",
           },
         ]}
-        onSearchChange={(customerId) => cambiar({ customerId })}
+        onSearchChange={(q) => cambiar({ q })}
         onFilterChange={(name, value) => cambiar({ [name]: value })}
         onClear={() => setFilters(SIN_FILTROS)}
       />
@@ -141,17 +138,8 @@ function AuthorizedPaymentClaimsPage() {
           </Button>
         ) : null}
       </div>
-      {!idValido ? (
-        <p
-          role="alert"
-          className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
-        >
-          El número de cliente sólo lleva cifras, sin letras, espacios ni ceros
-          delante. Es el número de su ficha.
-        </p>
-      ) : null}
-      {idValido && claims.isLoading ? <LoadingSkeleton rows={6} /> : null}
-      {idValido && claims.error ? (
+      {claims.isLoading ? <LoadingSkeleton rows={6} /> : null}
+      {claims.error ? (
         <ErrorState
           description={
             isAtlasApiError(claims.error)
@@ -164,7 +152,7 @@ function AuthorizedPaymentClaimsPage() {
           onRetry={() => void claims.refetch()}
         />
       ) : null}
-      {idValido && claims.data ? (
+      {claims.data ? (
         <Card>
           <CardHeader>
             <SectionHeader

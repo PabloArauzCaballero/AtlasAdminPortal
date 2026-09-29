@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from "@/shared/api/types";
+import type { PaginatedResponse, PaginationMeta } from "@/shared/api/types";
 
 export type WorkItemType = "manual_review" | "fraud";
 
@@ -7,6 +7,8 @@ export type WorkQueueItem = {
   caseId: string;
   caseCode: string | null;
   customerId: string | null;
+  /** El código del cliente (`CUS-…`); `null` en un servidor anterior al 2026-09-29. */
+  customerCode?: string | null;
   priority: string | null;
   status: string | null;
   reasonCode: string | null;
@@ -22,7 +24,13 @@ export type WorkQueueItem = {
   createdAt: string;
 };
 
-export type WorkQueueListResponse = PaginatedResponse<WorkQueueItem>;
+/**
+ * `summary.byType`: cuántos casos de cada cola cumplen los filtros (sin el de la cola). La cola que
+ * el rol no puede ver no viene —ni como cero—. Opcional: un servidor anterior no lo manda.
+ */
+export type WorkQueueListResponse = PaginatedResponse<WorkQueueItem> & {
+  summary?: { byType: Partial<Record<WorkItemType, number>> };
+};
 
 export type ManualReviewDecision =
   | "approved"
@@ -207,6 +215,21 @@ export type PendingContactVerificationItem = {
 
 export type PendingContactVerificationResponse = {
   items: PendingContactVerificationItem[];
+  /** Paginación del servidor. Opcional: un servidor anterior devolvía los 200 más recientes sin más. */
+  meta?: PaginationMeta;
+  /** De toda la cola (no de la página ni del filtro). */
+  summary?: { total: number; email: number; phone: number };
+};
+
+/**
+ * Lo que responde el reenvío. `deliveryStatus` dice qué pasó DE VERDAD con el proveedor: un 200
+ * con `delivery_failed` significa que el código se generó pero no salió. `deliveredChannel` es el
+ * canal por el que salió (con la reserva encendida, un SMS puede haber salido por correo).
+ */
+export type ResendContactVerificationResult = {
+  deliveryStatus?: "sent" | "delivery_failed" | string;
+  deliveredChannel?: string;
+  expiresAt?: string;
 };
 
 export type ResendContactVerificationInput = {
