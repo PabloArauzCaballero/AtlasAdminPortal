@@ -10,11 +10,12 @@ import {
 } from "@/shared/components/layout/page-header";
 import { MetricCard } from "@/shared/components/layout/metric-card";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
-import { StatusBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Rocket } from "lucide-react";
+
+import { ReadinessSignalsTable } from "./readiness-signals-table";
 
 export function ReportsReadinessPage({
   embedded = false,
@@ -113,43 +114,28 @@ function AuthorizedReportsReadinessPage({
           </section>
 
           <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <SectionHeader
-                  title="Bloques listos para reporting"
-                  description="Señales mínimas antes de crear reportes ejecutivos y de riesgo."
-                  className="mb-0"
-                />
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  ["Tablas con propósito de negocio", readiness.tableCoverage],
-                  [
-                    "Endpoints con propósito de negocio",
-                    readiness.endpointCoverage,
-                  ],
-                  ["Endpoints testables desde QA", readiness.qaCoverage],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between rounded-md border border-atlas-border p-3"
-                  >
-                    <span className="text-sm font-medium text-atlas-text">
-                      {label}
-                    </span>
-                    <StatusBadge
-                      value={
-                        Number(value) >= 80
-                          ? "READY"
-                          : Number(value) >= 50
-                            ? "NEEDS_REVIEW"
-                            : "INCOMPLETE"
-                      }
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <section>
+              <SectionHeader
+                title="Bloques listos para reporting"
+                description="Señales mínimas antes de crear reportes ejecutivos y de riesgo."
+              />
+              <ReadinessSignalsTable
+                signals={[
+                  {
+                    label: "Tablas con propósito de negocio",
+                    coverage: readiness.tableCoverage,
+                  },
+                  {
+                    label: "Endpoints con propósito de negocio",
+                    coverage: readiness.endpointCoverage,
+                  },
+                  {
+                    label: "Endpoints testables desde QA",
+                    coverage: readiness.qaCoverage,
+                  },
+                ]}
+              />
+            </section>
 
             <Card>
               <CardHeader>
