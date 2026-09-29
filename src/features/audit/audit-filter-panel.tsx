@@ -37,12 +37,24 @@ export function filtrosDeBarra(
     }));
 }
 
-/** Los campos que se escriben (fechas, código, identificadores), salvo el buscador. */
+/**
+ * Qué campo va en el buscador de la barra. Con un servidor que publica `q` (búsqueda libre por ruta y
+ * rol, desde el 2026-09-29) es ése, y el Request ID pasa a los campos de abajo; con uno anterior, el
+ * buscador sigue siendo el Request ID exacto.
+ */
+export function campoBuscador(
+  campos: ActionLogFilterField[],
+): "q" | "requestId" {
+  return campos.some((campo) => campo.name === "q") ? "q" : "requestId";
+}
+
+/** Los campos que se escriben (fechas, código, identificadores), salvo el del buscador. */
 export function camposLibres(
   campos: ActionLogFilterField[],
 ): ActionLogFilterField[] {
+  const buscador = campoBuscador(campos);
   return campos.filter(
-    (campo) => !DESPLEGABLES.has(campo.control) && campo.name !== "requestId",
+    (campo) => !DESPLEGABLES.has(campo.control) && campo.name !== buscador,
   );
 }
 
@@ -50,8 +62,8 @@ export function camposLibres(
  * La barra de filtros de la auditoría, construida desde el catálogo que publica el servidor.
  *
  * Los conjuntos (método, riesgo, módulo, tipo de actor, datos personales) van como desplegables en
- * la barra; fechas, código de respuesta y correlación, como campos debajo. El buscador sigue
- * siendo el Request ID, que es lo que se pega cuando alguien reporta un fallo.
+ * la barra; fechas, código de respuesta e identificadores, como campos debajo. El buscador busca en
+ * la ruta y en el rol del actor (`q`), o en el Request ID si el servidor todavía no publica `q`.
  */
 export function AuditFilterPanel({
   campos,
@@ -67,15 +79,24 @@ export function AuditFilterPanel({
   const set = (nombre: string, valor: string) =>
     onChange(aplicarFiltro(estado, nombre, valor));
   const libres = camposLibres(campos);
+  const buscador = campoBuscador(campos);
 
   return (
     <div className="mb-4 space-y-3">
       <FilterBar
-        search={estado.requestId ?? ""}
-        searchPlaceholder="Filtrar por Request ID…"
-        searchTooltip="Identificador de una petición concreta; lo muestra cualquier error del portal."
+        search={estado[buscador] ?? ""}
+        searchPlaceholder={
+          buscador === "q"
+            ? "Buscar por ruta o rol de quien la hizo…"
+            : "Filtrar por Request ID…"
+        }
+        searchTooltip={
+          buscador === "q"
+            ? "Busca en el servidor, sin distinguir mayúsculas, en la plantilla de la ruta, la URL (sin datos sensibles) y el rol del actor."
+            : "Identificador de una petición concreta; lo muestra cualquier error del portal."
+        }
         filters={filtrosDeBarra(campos, estado)}
-        onSearchChange={(valor) => set("requestId", valor)}
+        onSearchChange={(valor) => set(buscador, valor)}
         onFilterChange={set}
         onClear={onClear}
       />

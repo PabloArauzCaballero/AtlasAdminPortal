@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -22,6 +27,7 @@ export function useSchemaVersions(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.schemaVersions(query),
     queryFn: () => listSchemaVersions(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -45,6 +51,7 @@ export function useSchemaTables(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.schemaTables(query),
     queryFn: () => listSchemaTables(query),
+    placeholderData: keepPreviousData,
     enabled: Boolean(query.versionId),
   });
 }
@@ -73,6 +80,7 @@ export function useSchemaChangeLog(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.schemaChangeLog(query),
     queryFn: () => listSchemaChangeLog(query),
+    placeholderData: keepPreviousData,
   });
 }
 

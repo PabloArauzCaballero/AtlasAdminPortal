@@ -23,7 +23,7 @@ export function SchemaChangeLogTable({
 }: Readonly<{ pageSize?: number }>) {
   const [page, setPage] = useState(1);
   const [approvalStatus, setApprovalStatus] = useState("");
-  const [requesterUserId, setRequesterUserId] = useState("");
+  const [q, setQ] = useState("");
   const [deciding, setDeciding] = useState<SchemaChangeLog | null>(null);
   const { hasPermission } = useAuth();
   const canApprove = hasPermission(SCHEMA_APPROVE_PERMISSION);
@@ -31,8 +31,9 @@ export function SchemaChangeLogTable({
   const changeLog = useSchemaChangeLog({
     limit: pageSize,
     offset: (page - 1) * pageSize,
-    approvalStatus,
-    requesterUserId,
+    ...(approvalStatus ? { approvalStatus } : {}),
+    // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
+    ...(q.trim() ? { q: q.trim() } : {}),
   });
   const columns = useMemo(
     () => buildChangeLogColumns((change) => setDeciding(change), canApprove),
@@ -42,18 +43,21 @@ export function SchemaChangeLogTable({
   return (
     <>
       <FilterBar
-        search={requesterUserId}
-        searchPlaceholder="Buscar por ID de solicitante…"
+        search={q}
+        searchPlaceholder="Buscar por tabla propuesta o tipo de cambio…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el tipo de cambio (p. ej. CREATE_TABLE), el tipo de objeto afectado, la tabla propuesta y las notas de aprobación."
         filters={[
           {
             name: "approvalStatus",
             label: "Estado",
             value: approvalStatus,
             options: statusOptions,
+            tooltip:
+              "En qué punto de la aprobación de cuatro ojos está la propuesta.",
           },
         ]}
         onSearchChange={(value) => {
-          setRequesterUserId(value);
+          setQ(value);
           setPage(1);
         }}
         onFilterChange={(name, value) => {
@@ -62,7 +66,7 @@ export function SchemaChangeLogTable({
         }}
         onClear={() => {
           setApprovalStatus("");
-          setRequesterUserId("");
+          setQ("");
           setPage(1);
         }}
       />
@@ -88,7 +92,11 @@ export function SchemaChangeLogTable({
           columns={columns}
           meta={changeLog.data.meta}
           onPageChange={setPage}
-          emptyTitle="No hay propuestas de cambio para este filtro."
+          emptyTitle={
+            q.trim()
+              ? "Ninguna propuesta coincide con la búsqueda."
+              : "No hay propuestas de cambio para este filtro."
+          }
         />
       ) : null}
       {deciding ? (
