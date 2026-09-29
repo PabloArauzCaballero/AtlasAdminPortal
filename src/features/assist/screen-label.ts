@@ -3,7 +3,6 @@ import {
   navGroups,
   navItems,
 } from "@/shared/components/layout/internal-shell/nav-config";
-import { CASE_QUEUE_NAV_ITEMS } from "@/shared/components/layout/internal-shell/nav-items-case-queues";
 import { supportNavItems } from "@/shared/components/layout/internal-shell/nav-items-support";
 
 /**
@@ -56,7 +55,7 @@ function entradas(): Entrada[] {
           : `${grupo.label} › ${item.label}`,
     })),
   );
-  const operaciones = [...CASE_QUEUE_NAV_ITEMS, ...supportNavItems].map(
+  const operaciones = supportNavItems.map(
     (item) => ({ href: item.href, label: `${OPERACIONES} › ${item.label}` }),
   );
   return [...sueltos, ...agrupados, ...operaciones, ...SIN_ITEM_EN_MENU];

@@ -33,8 +33,13 @@ function WorkItemTypeBadge({
   );
 }
 
+/**
+ * `canDecide` dice si el rol de la sesión puede decidir ESE tipo de caso (el `@Roles` de cada
+ * ruta de decisión). Sin él, «Decidir» se ofrecía a quien el servidor iba a contestar 403.
+ */
 export function buildWorkQueueColumns(
   onDecide: (item: WorkQueueItem) => void,
+  canDecide: (item: WorkQueueItem) => boolean = () => true,
 ): ColumnDef<WorkQueueItem>[] {
   return [
     {
@@ -78,8 +83,9 @@ export function buildWorkQueueColumns(
           <Link
             href={`/internal/operations/customers/${row.original.customerId}/investigation-summary`}
             className="font-mono text-xs text-atlas-accent underline"
+            title={`Cliente #${row.original.customerId}`}
           >
-            #{row.original.customerId}
+            {row.original.customerCode ?? `#${row.original.customerId}`}
           </Link>
         ) : (
           <span className="text-atlas-muted">—</span>
@@ -118,7 +124,11 @@ export function buildWorkQueueColumns(
        */
       meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) => (
-        <AccionDeFila item={row.original} onDecide={onDecide} />
+        <AccionDeFila
+          item={row.original}
+          onDecide={onDecide}
+          canDecide={canDecide(row.original)}
+        />
       ),
     },
   ];
@@ -135,9 +145,11 @@ export function buildWorkQueueColumns(
 function AccionDeFila({
   item,
   onDecide,
+  canDecide,
 }: Readonly<{
   item: WorkQueueItem;
   onDecide: (item: WorkQueueItem) => void;
+  canDecide: boolean;
 }>) {
   /*
    * Un caso `CR-…` es el caso propio de una solicitud de crédito: el backend rechaza cerrarlo aquí
@@ -196,6 +208,16 @@ function AccionDeFila({
         title={`Ejecución ${item.decisionExecutionId}`}
       >
         Se decide en el Motor
+      </span>
+    );
+  }
+
+  if (!canDecide) {
+    return (
+      <span className="text-xs text-atlas-muted">
+        {item.workItemType === "fraud"
+          ? "Decide fraude o administración"
+          : "Decide operación, riesgo o administración"}
       </span>
     );
   }

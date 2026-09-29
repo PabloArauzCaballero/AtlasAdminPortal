@@ -2,8 +2,6 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type {
   BehaviorSummary,
-  CaseCursorPage,
-  CaseQueue,
   ClearMatchesInput,
   ClearMatchesResult,
   ComplianceScreeningResult,
@@ -71,14 +69,4 @@ export function recalculateRisk(customerId: string) {
       headers: { "x-idempotency-key": idempotencyKey("risk-recheck") },
     },
   );
-}
-
-const CASE_QUEUE_PATH: Record<CaseQueue, string> = {
-  manual_review: "/operations/manual-review-cases",
-  fraud: "/operations/fraud-cases",
-};
-
-/** Una página por cursor de una de las dos colas (no combinadas). */
-export function listCasesByCursor(queue: CaseQueue, query: QueryParams) {
-  return apiRequest<CaseCursorPage>(CASE_QUEUE_PATH[queue], { query });
 }

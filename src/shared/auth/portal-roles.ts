@@ -171,12 +171,52 @@ export const DECISION_ARTIFACT_ROLE_LIST: string[] = [
 
 /**
  * `OperationsController` (clase): cola de trabajo, contactos sin verificar, expediente del cliente
- * y la cola de revisión manual. `fraud_analyst` NO entra aquí (sólo en `fraud-cases`), ni
- * `readonly_auditor` ni QA: sin `roles` el ítem les salía y respondía 403.
+ * y la cola de revisión manual. Ni `readonly_auditor` ni QA: sin `roles` el ítem les salía y
+ * respondía 403. `fraud_analyst` sólo entra a la cola de trabajo, y sólo a su pestaña «Fraude»
+ * (`GET work-queue?queue=fraud`): ver `WORK_QUEUE_ROLE_LIST`.
  */
 export const OPERATIONS_CASE_ROLE_LIST: string[] = [
   "internal_operator",
   "risk_analyst",
+  "compliance_analyst",
+  "admin",
+  "platform_admin",
+];
+
+/**
+ * `GET /operations/work-queue`: el `@Roles` de la ruta añade `fraud_analyst` a la clase, y el
+ * servidor le responde 403 a cualquier cola que no sea `queue=fraud`.
+ */
+export const WORK_QUEUE_ROLE_LIST: string[] = [
+  ...OPERATIONS_CASE_ROLE_LIST,
+  "fraud_analyst",
+];
+
+/** `POST /operations/manual-review-cases/:id/decision` (`@Roles`): sin cumplimiento ni fraude. */
+export const MANUAL_REVIEW_DECIDE_ROLE_LIST: string[] = [
+  "internal_operator",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+];
+
+/** `POST /operations/fraud-cases/:id/decision` (`@Roles`): sólo fraude y administración. */
+export const FRAUD_DECIDE_ROLE_LIST: string[] = [
+  "fraud_analyst",
+  "admin",
+  "platform_admin",
+];
+
+/** `POST /operations/customers/:id/compliance/screening` (`CustomerVerificationController`). */
+export const COMPLIANCE_SCREENING_ROLE_LIST: string[] = [
+  "compliance_analyst",
+  "risk_analyst",
+  "admin",
+  "platform_admin",
+];
+
+/** `POST /operations/customers/:id/compliance/clear-matches` (`CustomerVerificationController`). */
+export const COMPLIANCE_CLEAR_ROLE_LIST: string[] = [
   "compliance_analyst",
   "admin",
   "platform_admin",

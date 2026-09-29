@@ -96,21 +96,21 @@ export const operationsModuleExplanation: ModuleExplanation = {
     },
     "/internal/operations/work-queue": {
       systems:
-        "Cola priorizada de casos operativos (revisión manual, fraude, compliance) servida por el backend según el rol del usuario.",
+        "GET /operations/work-queue con `queue` (all / manual_review / fraud, pestaña `?cola=`), `q` (código de cliente o de caso), estado y prioridad, paginado en el servidor y con `summary.byType` para las cifras. `fraud_analyst` sólo entra con `queue=fraud`. Las rutas /internal/operations/manual-review-cases y /fraud-cases redirigen aquí.",
       business:
-        "El 'inbox' del analista: qué caso atender ahora y con qué prioridad, sin planillas paralelas.",
+        "El 'inbox' del analista: los casos de revisión manual y de fraude que esperan decisión, en una sola cola con una pestaña por tipo, sin planillas paralelas.",
     },
     "/internal/operations/manual-review-cases": {
       systems:
-        "Cola de revisión manual sola, paginada por cursor (GET /operations/manual-review-cases). Mismas filas y misma acción de decidir que la cola combinada, sin su coste de paginar por posición.",
+        "Ruta antigua: redirige a /internal/operations/work-queue?cola=manual_review conservando sus parámetros.",
       business:
-        "Las altas que esperan a una persona, sin mezclarlas con fraude, para recorrerlas enteras aunque sean muchas.",
+        "La revisión manual es ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/operations/fraud-cases": {
       systems:
-        "Cola de casos de fraude sola, paginada por cursor (GET /operations/fraud-cases). La decisión sigue restringida a analistas de fraude y administración.",
+        "Ruta antigua: redirige a /internal/operations/work-queue?cola=fraud conservando sus parámetros.",
       business:
-        "Qué patrones de fraude hay abiertos y sobre qué clientes, para que el equipo de fraude los atienda por orden.",
+        "Los casos de fraude son ahora una pestaña de la «Cola de trabajo».",
     },
     "/internal/files": {
       systems:
