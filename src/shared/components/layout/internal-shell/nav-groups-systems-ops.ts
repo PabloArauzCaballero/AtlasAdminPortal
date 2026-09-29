@@ -69,7 +69,8 @@ export const systemsOpsGroup: InternalNavGroup = {
       label: "Herramientas",
       href: "/internal/systems/tools",
       icon: Wrench,
-      permissions: ["systems.tools.read"],
+      // Catálogo o Salud: cada pestaña pide el suyo, y con uno de los dos ya hay algo que ver.
+      permissions: ["systems.tools.read", "systems.tools.health.read"],
     },
     {
       label: "Salud de la red",
