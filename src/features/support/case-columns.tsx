@@ -29,6 +29,7 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
   return [
     {
       header: "Caso",
+      enableSorting: false,
       accessorKey: "caseNumber",
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -53,6 +54,7 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
        * para la acción, pero clavar no ensancha: lo que sobraba era una columna.
        */
       header: "Asunto",
+      enableSorting: false,
       accessorKey: "title",
       cell: ({ row }) => (
         <div className="min-w-0 max-w-[34ch]">
@@ -67,11 +69,13 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
     },
     {
       header: "Prioridad",
+      enableSorting: false,
       accessorKey: "priority",
       cell: ({ row }) => <PrioridadBadge value={row.original.priority} />,
     },
     {
       header: "Estado",
+      enableSorting: false,
       accessorKey: "internalStatus",
       cell: ({ row }) => (
         <EstadoCasoBadge value={row.original.internalStatus} />
@@ -79,6 +83,7 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
     },
     {
       header: "Sensibilidad",
+      enableSorting: false,
       accessorKey: "sensitivity",
       cell: ({ row }) => <SensibilidadBadge value={row.original.sensitivity} />,
     },
@@ -88,6 +93,7 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
        * número tal cual en vez de inventar un nombre que la respuesta no trae.
        */
       header: "Agente",
+      enableSorting: false,
       accessorKey: "assigneeAgentId",
       cell: ({ row }) =>
         row.original.assigneeAgentId ? (
@@ -100,11 +106,13 @@ export function buildSupportCaseColumns(): ColumnDef<SupportCase>[] {
     },
     {
       header: "Abierto",
+      enableSorting: false,
       accessorKey: "openedAt",
       cell: ({ row }) => formatDateTime(row.original.openedAt),
     },
     {
       header: "Acción",
+      enableSorting: false,
       /*
        * Clavada a la derecha por la misma razón que en la cola de operaciones: con nueve columnas
        * la fila se sale de la tarjeta y el único enlace de la fila queda fuera de la pantalla, sin

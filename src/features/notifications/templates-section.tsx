@@ -2,18 +2,57 @@
 
 import { useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
+import { Pagination } from "@/shared/components/data-table/pagination";
 import { Badge } from "@/shared/components/ui/badges";
 import { Button } from "@/shared/components/ui/button";
-import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { safeText } from "@/shared/lib/format";
 import { useNotificationTemplates } from "./hooks";
 import { NotificationChannelBadge } from "./notification-columns";
+import { CHANNEL_OPTIONS } from "./notification-options";
 import { TemplateForm } from "./template-form";
 import type { NotificationTemplate } from "./types";
 
+const POR_PAGINA = 12;
+
+const ACTIVA_OPTIONS = [
+  {
+    value: "true",
+    label: "Activas",
+    description: "Las que Atlas usa hoy al generar mensajes.",
+  },
+  {
+    value: "false",
+    label: "Inactivas",
+    description: "Apagadas: se conservan pero no generan mensajes.",
+  },
+];
+
+/**
+ * Las plantillas, paginadas y filtradas en el servidor.
+ *
+ * Antes se pedían `limit=100` de una vez y se pintaban todas: la plantilla 101 no aparecía en
+ * ningún sitio y nada lo decía. Ahora hay pie de página con el total real, un buscador que viaja
+ * como `q` (código, título y asunto) y los filtros de canal y activa que el servidor ya admitía.
+ */
 export function TemplatesSection() {
-  const templates = useNotificationTemplates({ page: 1, limit: 100 });
+  const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
+  const [channel, setChannel] = useState("");
+  const [active, setActive] = useState("");
+  const templates = useNotificationTemplates({
+    page,
+    limit: POR_PAGINA,
+    q: q.trim(),
+    channel,
+    active,
+  });
   const [editing, setEditing] = useState<NotificationTemplate | "new" | null>(
     null,
   );
@@ -36,6 +75,43 @@ export function TemplatesSection() {
         />
       ) : null}
 
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por código, título o asunto…"
+        searchTooltip="Busca en el servidor, en todas las plantillas: coincide con parte del código, de la plantilla del título o de la del asunto."
+        filters={[
+          {
+            name: "channel",
+            label: "Canal",
+            value: channel,
+            options: CHANNEL_OPTIONS,
+            tooltip: "Por qué vía sale el mensaje que genera la plantilla.",
+          },
+          {
+            name: "active",
+            label: "Activa",
+            value: active,
+            options: ACTIVA_OPTIONS,
+            tooltip: "Si Atlas la usa hoy o quedó apagada.",
+          },
+        ]}
+        onSearchChange={(valor) => {
+          setQ(valor);
+          setPage(1);
+        }}
+        onFilterChange={(nombre, valor) => {
+          if (nombre === "channel") setChannel(valor);
+          if (nombre === "active") setActive(valor);
+          setPage(1);
+        }}
+        onClear={() => {
+          setQ("");
+          setChannel("");
+          setActive("");
+          setPage(1);
+        }}
+      />
+
       {templates.isLoading ? <LoadingSkeleton rows={5} /> : null}
       {templates.error ? (
         <ErrorState
@@ -52,16 +128,27 @@ export function TemplatesSection() {
           onRetry={() => void templates.refetch()}
         />
       ) : null}
-      {templates.data ? (
-        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {templates.data.items.map((template) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onEdit={() => setEditing(template)}
-            />
-          ))}
-        </div>
+      {templates.data && templates.data.items.length === 0 ? (
+        <EmptyState
+          title="Ninguna plantilla coincide."
+          description="Prueba con otra búsqueda o quita los filtros de canal y estado."
+        />
+      ) : null}
+      {templates.data && templates.data.items.length > 0 ? (
+        <>
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            {templates.data.items.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onEdit={() => setEditing(template)}
+              />
+            ))}
+          </div>
+          {templates.data.meta ? (
+            <Pagination meta={templates.data.meta} onPageChange={setPage} />
+          ) : null}
+        </>
       ) : null}
     </div>
   );

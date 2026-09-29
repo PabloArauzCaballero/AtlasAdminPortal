@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   createKnowledgeArticle,
@@ -24,6 +29,7 @@ export function useKnowledgeArticles(query: KnowledgeArticlesQuery) {
     queryKey: queryKeys.supportKnowledgeArticles(query),
     queryFn: () => listKnowledgeArticles(query),
     retry: false,
+    placeholderData: keepPreviousData,
   });
 }
 

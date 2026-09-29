@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -26,6 +31,7 @@ export function useNotificationMessages(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.notificationMessages(query),
     queryFn: () => listNotificationMessages(query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -61,6 +67,7 @@ export function useNotificationTemplates(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.notificationTemplates(query),
     queryFn: () => listNotificationTemplates(query),
+    placeholderData: keepPreviousData,
   });
 }
 

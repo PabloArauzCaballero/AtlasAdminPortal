@@ -72,11 +72,13 @@ export function buildNotificationMessageColumns(
   return [
     {
       header: "Fecha",
+      enableSorting: false,
       accessorKey: "createdAt",
       cell: ({ row }) => formatDateTime(row.original.createdAt),
     },
     {
       header: "Canal",
+      enableSorting: false,
       accessorKey: "channel",
       cell: ({ row }) => (
         <NotificationChannelBadge value={row.original.channel} />
@@ -84,6 +86,7 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Destinatario",
+      enableSorting: false,
       accessorKey: "recipientType",
       cell: ({ row }) => (
         <span className="font-mono text-xs">
@@ -93,11 +96,13 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Plantilla",
+      enableSorting: false,
       accessorKey: "templateCode",
       cell: ({ row }) => safeText(row.original.templateCode),
     },
     {
       header: "Categoría",
+      enableSorting: false,
       accessorKey: "category",
       cell: ({ row }) => (
         <NotificationCategoryBadge value={row.original.category} />
@@ -105,6 +110,7 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Título / asunto",
+      enableSorting: false,
       accessorKey: "title",
       cell: ({ row }) => (
         <span className="line-clamp-1 max-w-xs">
@@ -114,6 +120,7 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Estado",
+      enableSorting: false,
       accessorKey: "status",
       cell: ({ row }) => (
         <NotificationStatusBadge value={row.original.status} />
@@ -121,6 +128,7 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Correlación",
+      enableSorting: false,
       accessorKey: "correlationId",
       cell: ({ row }) => (
         <span className="font-mono text-[11px] text-atlas-muted">
@@ -130,6 +138,7 @@ export function buildNotificationMessageColumns(
     },
     {
       header: "Detalle",
+      enableSorting: false,
       cell: ({ row }) => (
         <button
           type="button"

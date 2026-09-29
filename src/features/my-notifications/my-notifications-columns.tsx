@@ -16,11 +16,13 @@ export function buildMyNotificationColumns(
   return [
     {
       header: "Fecha",
+      enableSorting: false,
       accessorKey: "createdAt",
       cell: ({ row }) => formatDateTime(row.original.createdAt),
     },
     {
       header: "Canal",
+      enableSorting: false,
       accessorKey: "channel",
       cell: ({ row }) => (
         <NotificationChannelBadge value={row.original.channel} />
@@ -28,6 +30,7 @@ export function buildMyNotificationColumns(
     },
     {
       header: "Categoría",
+      enableSorting: false,
       accessorKey: "category",
       cell: ({ row }) => (
         <NotificationCategoryBadge value={row.original.category} />
@@ -35,6 +38,7 @@ export function buildMyNotificationColumns(
     },
     {
       header: "Notificación",
+      enableSorting: false,
       accessorKey: "title",
       cell: ({ row }) => (
         <div className="max-w-md">
@@ -49,6 +53,7 @@ export function buildMyNotificationColumns(
     },
     {
       header: "Estado",
+      enableSorting: false,
       cell: ({ row }) =>
         row.original.readAt ? (
           <span className="text-xs text-atlas-muted">

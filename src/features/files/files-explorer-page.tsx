@@ -27,10 +27,26 @@ const TONO_DE_ESTADO: Record<
 };
 
 const ESTADOS = [
-  { label: "Abierto", value: "abierto" },
-  { label: "Enviado", value: "enviado" },
-  { label: "Cerrado", value: "cerrado" },
-  { label: "Purgado", value: "purgado" },
+  {
+    label: "Abierto",
+    value: "abierto",
+    description: "Todavía recibe archivos: el alta o el trámite siguen en curso.",
+  },
+  {
+    label: "Enviado",
+    value: "enviado",
+    description: "Se envió la solicitud y quedó firmado lo que había entonces.",
+  },
+  {
+    label: "Cerrado",
+    value: "cerrado",
+    description: "Ya no admite archivos nuevos; se conserva para consulta.",
+  },
+  {
+    label: "Purgado",
+    value: "purgado",
+    description: "Venció su retención y se borraron los archivos del almacén.",
+  },
 ];
 
 /*
@@ -40,8 +56,16 @@ const ESTADOS = [
  * quien busca el QR de un comercio no debería abrir la carpeta de un cliente por descarte.
  */
 const TIPOS_DE_SUJETO = [
-  { label: "Cliente", value: "customer" },
-  { label: "Comercio", value: "partner" },
+  {
+    label: "Cliente",
+    value: "customer",
+    description: "La carpeta de una persona: carnet, selfie, extractos y evaluación.",
+  },
+  {
+    label: "Comercio",
+    value: "partner",
+    description: "La carpeta de un negocio: QR de cobro, poderes y documentos del ERP.",
+  },
 ];
 
 const ETIQUETA_DE_SUJETO: Record<string, string> = {
@@ -85,6 +109,7 @@ function ExploradorAutorizado() {
     () => [
       {
         header: "Expediente",
+        enableSorting: false,
         accessorKey: "customerCode",
         cell: ({ row }) => (
           <span className="flex items-center gap-2">
@@ -101,6 +126,7 @@ function ExploradorAutorizado() {
       },
       {
         header: "Estado",
+        enableSorting: false,
         accessorKey: "estado",
         cell: ({ row }) => (
           <Badge tone={TONO_DE_ESTADO[row.original.estado]}>
@@ -118,6 +144,7 @@ function ExploradorAutorizado() {
          * caso necesita saberlo antes de abrirlo.
          */
         header: "Manifiesto",
+        enableSorting: false,
         accessorKey: "manifestPresente",
         cell: ({ row }) =>
           row.original.manifestPresente ? (
@@ -128,6 +155,7 @@ function ExploradorAutorizado() {
       },
       {
         header: "Archivos",
+        enableSorting: false,
         accessorKey: "nodosTotal",
         cell: ({ row }) => (
           <span className="tabular-nums">{row.original.nodosTotal ?? "—"}</span>
@@ -135,6 +163,7 @@ function ExploradorAutorizado() {
       },
       {
         header: "Tamaño",
+        enableSorting: false,
         accessorKey: "bytesTotal",
         cell: ({ row }) => (
           <span className="tabular-nums">
@@ -144,6 +173,7 @@ function ExploradorAutorizado() {
       },
       {
         header: "Enviado",
+        enableSorting: false,
         accessorKey: "enviadoEn",
         cell: ({ row }) =>
           row.original.enviadoEn
@@ -152,6 +182,7 @@ function ExploradorAutorizado() {
       },
       {
         header: "Abierto",
+        enableSorting: false,
         accessorKey: "creadoEn",
         cell: ({ row }) => formatDateTimeBO(row.original.creadoEn),
       },
@@ -159,15 +190,11 @@ function ExploradorAutorizado() {
     [],
   );
 
-  if (expedientes.isLoading) return <LoadingSkeleton />;
-  if (expedientes.error)
-    return (
-      <ErrorState
-        title="No se pudo traer la lista de expedientes."
-        onRetry={() => void expedientes.refetch()}
-      />
-    );
-
+  /*
+   * Carga y error se pintan DONDE va la tabla, no en lugar de la página: con un `return` temprano
+   * cada tecla del buscador desmontaba la barra entera —se perdía el foco y lo escrito— mientras
+   * llegaba la respuesta.
+   */
   return (
     <>
       <PageHeader
@@ -187,7 +214,8 @@ function ExploradorAutorizado() {
       </BusinessContextNote>
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por código de cliente o nombre del comercio…"
+        searchPlaceholder="Buscar por código de cliente, nombre o NIT del comercio…"
+        searchTooltip="Busca en el servidor, en todos los expedientes: coincide con parte del código del cliente, de la razón social o el nombre comercial del comercio, o de su NIT. Si escribes sólo números, también encuentra el expediente cuyo sujeto tiene exactamente ese número."
         onSearchChange={(valor) => {
           setQ(valor);
           setPage(1);
@@ -209,18 +237,34 @@ function ExploradorAutorizado() {
             label: "Tipo",
             value: subjectType,
             options: TIPOS_DE_SUJETO,
+            tooltip: "Deja sólo las carpetas de personas o sólo las de comercios.",
           },
-          { name: "estado", label: "Estado", value: estado, options: ESTADOS },
+          {
+            name: "estado",
+            label: "Estado",
+            value: estado,
+            options: ESTADOS,
+            tooltip: "En qué punto de su vida está la carpeta: abierta, enviada, cerrada o purgada.",
+          },
         ]}
       />
+      {expedientes.isLoading ? <LoadingSkeleton rows={6} /> : null}
+      {expedientes.error ? (
+        <ErrorState
+          title="No se pudo traer la lista de expedientes."
+          onRetry={() => void expedientes.refetch()}
+        />
+      ) : null}
+      {expedientes.data ? (
       <DataTable
-        data={expedientes.data?.items ?? []}
+        data={expedientes.data.items}
         columns={columns}
-        meta={expedientes.data?.meta}
+        meta={expedientes.data.meta}
         onPageChange={setPage}
         emptyTitle="Ningún expediente coincide."
         emptyDescription="Los expedientes se abren solos al empezar un onboarding de cliente o al crearse un comercio. Los clientes anteriores necesitan el relleno histórico."
       />
+      ) : null}
     </>
   );
 }

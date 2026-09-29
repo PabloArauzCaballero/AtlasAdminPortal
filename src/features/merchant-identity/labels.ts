@@ -1,5 +1,6 @@
 import type { Option } from "@/shared/lib/options";
 import { formatNumber } from "@/shared/lib/format";
+import type { PaginationMeta } from "@/shared/api/types";
 
 /**
  * Los estados de una identidad de comercio, en palabras de quien la administra.
@@ -77,4 +78,51 @@ export function formatCount(query: {
   if (query.error) return "—";
   if (query.isLoading || query.total === undefined) return "…";
   return formatNumber(query.total);
+}
+
+/**
+ * Los estados de una petición de acceso, para el filtro de la cola. Catálogo fijo (el enum del
+ * backend), no sacado de las filas cargadas.
+ */
+export const PROVISIONING_STATUS_OPTIONS: Option[] = [
+  {
+    value: "pending",
+    label: PROVISIONING_STATUS_LABELS.pending,
+    description: "Esperan que alguien del equipo las conceda o las rechace.",
+  },
+  {
+    value: "provisioned",
+    label: PROVISIONING_STATUS_LABELS.provisioned,
+    description: "Ya tienen identidad creada con los datos que mandó el ERP.",
+  },
+  {
+    value: "rejected",
+    label: PROVISIONING_STATUS_LABELS.rejected,
+    description: "Se cerraron con un motivo que el ERP lee para corregir.",
+  },
+];
+
+/**
+ * La paginación de un listado de este módulo: el `meta` canónico si el backend lo manda, o el
+ * mismo cálculo a partir de los campos sueltos si es un backend anterior.
+ */
+export function paginationOf(list: {
+  page: number;
+  limit: number;
+  total: number;
+  meta?: PaginationMeta;
+}): PaginationMeta {
+  return (
+    list.meta ?? {
+      page: list.page,
+      limit: list.limit,
+      total: list.total,
+      totalPages: Math.max(1, Math.ceil(list.total / Math.max(1, list.limit))),
+    }
+  );
+}
+
+/** Pasar a suspendida o dada de baja corta el acceso: se justifica. Reactivar, no hace falta. */
+export function statusChangeNeedsReason(destino: string): boolean {
+  return destino === "suspended" || destino === "disabled";
 }

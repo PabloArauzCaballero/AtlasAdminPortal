@@ -41,9 +41,21 @@ export type SupportCase = {
   originContext: Record<string, unknown> | null;
 };
 
+/**
+ * Lo que cuenta el servidor sobre TODO el filtro (no sobre la página): cuántos casos hay, cuántos
+ * son P1/P2 y cuántos no tienen agente, con la misma regla de visibilidad que la lista.
+ */
+export type SupportCaseSummary = {
+  total: number;
+  highPriority: number;
+  unassigned: number;
+};
+
 export type SupportCaseListResponse = {
   cases: SupportCase[];
   nextCursor: SupportCursor | null;
+  /** Opcional: un backend anterior al 2026-09-29 no lo manda. */
+  summary?: SupportCaseSummary;
 };
 
 export type SupportChannel = {
@@ -283,11 +295,3 @@ export type CreateAgentInput = {
   maxConcurrentChannels: number;
 };
 
-/** Lo que el selector de «Habilitar a una persona» necesita de un usuario interno. */
-export type InternalUserForDesk = {
-  id: string;
-  email: string;
-  fullName: string;
-  status: string;
-  roles: string[];
-};

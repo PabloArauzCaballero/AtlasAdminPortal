@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -20,6 +25,8 @@ export function useInternalUsers(query: QueryParams = {}) {
   return useQuery({
     queryKey: queryKeys.internalUsers(query),
     queryFn: () => listInternalUsers(query),
+    // Cambiar de página o de filtro no vacía la tabla: sigue la anterior hasta que llega la nueva.
+    placeholderData: keepPreviousData,
   });
 }
 

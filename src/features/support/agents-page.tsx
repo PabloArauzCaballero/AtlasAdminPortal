@@ -4,13 +4,18 @@ import {
   CAPACIDAD_OPTIONS,
   CUALQUIER_COLA,
   NIVEL_OPTIONS,
-  PRESENCIA_OPTIONS,
   queueOptions,
 } from "./support-options";
+import {
+  ESTADO_AGENTE_OPTIONS,
+  buildAgentColumns,
+  filtrarAgentes,
+} from "./agent-columns";
 import { useMemo, useState } from "react";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { PageHeader } from "@/shared/components/layout/page-header";
-import { Badge } from "@/shared/components/ui/badges";
+import { DataTable } from "@/shared/components/data-table/data-table";
+import { FilterBar } from "@/shared/components/data-table/filter-bar";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Select } from "@/shared/components/ui/input";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
@@ -21,10 +26,8 @@ import {
   useSupportAgents,
   useSupportQueues,
 } from "./hooks";
-import { legible } from "./labels";
 import { SelectorUsuarioInterno } from "./internal-user-picker";
 import { AccesoASoporte } from "./support-access-state";
-import type { Option } from "@/shared/lib/options";
 import { UserPlus } from "lucide-react";
 
 /**
@@ -51,6 +54,22 @@ export function SupportAgentsPage() {
   const [maxConcurrentChannels, setMaxConcurrentChannels] = useState("3");
 
   const listo = /^[1-9][0-9]*$/.test(internalUserId.trim());
+  const [q, setQ] = useState("");
+  const [estado, setEstado] = useState("");
+  const [nivel, setNivel] = useState("");
+  const visibles = useMemo(
+    () => filtrarAgentes(agentes.data?.agents ?? [], { q, estado, nivel }),
+    [agentes.data, q, estado, nivel],
+  );
+  const columnas = useMemo(
+    () =>
+      buildAgentColumns({
+        onQuitar: (id) => dardebaja.mutate(id),
+        quitando: dardebaja.variables ?? null,
+        ocupado: dardebaja.isPending,
+      }),
+    [dardebaja],
+  );
   const yaEnLaMesa = useMemo(
     () =>
       new Set(
@@ -167,6 +186,38 @@ export function SupportAgentsPage() {
         ) : null}
       </section>
 
+      <FilterBar
+        search={q}
+        searchPlaceholder="Buscar por nombre o correo…"
+        searchTooltip="La lista de la mesa llega completa del servidor (todos los agentes, sin páginas), así que la búsqueda recorre a todos: coincide con parte del nombre o del correo."
+        filters={[
+          {
+            name: "estado",
+            label: "Estado",
+            value: estado,
+            options: ESTADO_AGENTE_OPTIONS,
+            tooltip: "Deja sólo los perfiles activos o sólo los dados de baja.",
+          },
+          {
+            name: "nivel",
+            label: "Nivel",
+            value: nivel,
+            options: NIVEL_OPTIONS,
+            tooltip: "Deja sólo a quien atiende en esa línea de la mesa.",
+          },
+        ]}
+        onSearchChange={setQ}
+        onFilterChange={(nombre, valor) => {
+          if (nombre === "estado") setEstado(valor);
+          if (nombre === "nivel") setNivel(valor);
+        }}
+        onClear={() => {
+          setQ("");
+          setEstado("");
+          setNivel("");
+        }}
+      />
+
       {agentes.isLoading ? <LoadingSkeleton rows={4} /> : null}
       {agentes.error ? (
         <AccesoASoporte
@@ -183,62 +234,17 @@ export function SupportAgentsPage() {
       ) : null}
 
       {agentes.data && agentes.data.agents.length > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {agentes.data.agents.map((agente) => (
-            <article
-              key={agente.agentProfileId}
-              className="space-y-2 rounded-xl border border-atlas-border bg-white p-4 shadow-subtle"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-atlas-text">
-                    {agente.fullName ??
-                      `Usuario interno #${agente.internalUserId}`}
-                  </p>
-                  <p className="truncate text-xs text-atlas-muted">
-                    {agente.email ?? "Sin correo registrado"}
-                  </p>
-                </div>
-                <Badge tone={agente.isActive ? "success" : "muted"}>
-                  {agente.isActive ? "Activo" : "Dado de baja"}
-                </Badge>
-              </div>
-              <p className="text-xs text-atlas-muted">
-                {etiqueta(NIVEL_OPTIONS, agente.supportLevel)} ·{" "}
-                {etiqueta(PRESENCIA_OPTIONS, agente.presenceState)}
-              </p>
-              <p className="text-xs text-atlas-muted">
-                Ocupación {agente.activeChannelCount} de{" "}
-                {agente.maxConcurrentChannels} chats
-              </p>
-              {agente.isActive ? (
-                <Button
-                  className="h-8 w-full px-2 text-xs"
-                  isLoading={
-                    dardebaja.isPending &&
-                    dardebaja.variables === agente.agentProfileId
-                  }
-                  disabled={dardebaja.isPending}
-                  onClick={() => dardebaja.mutate(agente.agentProfileId)}
-                >
-                  Quitar de la mesa
-                </Button>
-              ) : null}
-            </article>
-          ))}
-        </div>
+        <DataTable
+          data={visibles}
+          columns={columnas}
+          emptyTitle="Ningún agente coincide con estos filtros."
+          emptyDescription="Prueba con otro nombre o quita los filtros de estado y nivel."
+        />
       ) : null}
 
       {dardebaja.error && isAtlasApiError(dardebaja.error) ? (
         <p className="mt-3 text-xs text-red-700">{dardebaja.error.message}</p>
       ) : null}
     </>
-  );
-}
-
-/** El nombre de un código de nivel o presencia; si el mapa no lo tiene, en texto corrido. */
-function etiqueta(opciones: Option[], codigo: string): string {
-  return (
-    opciones.find((opcion) => opcion.value === codigo)?.label ?? legible(codigo)
   );
 }

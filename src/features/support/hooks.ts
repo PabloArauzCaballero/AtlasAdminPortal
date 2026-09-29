@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import type { QueryParams } from "@/shared/api/types";
 import {
@@ -15,7 +20,6 @@ import {
   getSupportCaseTimeline,
   getSupportCodes,
   getMyDesk,
-  listInternalUsersForDesk,
   listQueuedChannels,
   listSupportAgents,
   listSupportCases,
@@ -43,6 +47,8 @@ export function useSupportCases(query: QueryParams) {
   return useQuery({
     queryKey: queryKeys.supportCases(query),
     queryFn: () => listSupportCases(query),
+    // Cambiar de filtro o de página no vacía la bandeja mientras llega la siguiente.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -116,14 +122,6 @@ export function useSupportAgents() {
   return useQuery({
     queryKey: queryKeys.supportAgents,
     queryFn: listSupportAgents,
-    retry: false,
-  });
-}
-
-export function useInternalUsersForDesk() {
-  return useQuery({
-    queryKey: ["support", "internal-users"],
-    queryFn: listInternalUsersForDesk,
     retry: false,
   });
 }

@@ -1,3 +1,5 @@
+import type { PaginationMeta } from "@/shared/api/types";
+
 export const MERCHANT_USER_STATUSES = [
   "invited",
   "active",
@@ -21,12 +23,16 @@ export type MerchantUserProfile = {
   [key: string]: unknown;
 };
 
-/** El listado no usa `{items, meta}`: devuelve los tres campos sueltos. */
+/**
+ * El listado devuelve los tres campos sueltos y, desde el 2026-09-29, también el `meta` canónico.
+ * `meta` es opcional para no romper contra un backend anterior.
+ */
 export type MerchantUserList = {
   items: MerchantUserProfile[];
   page: number;
   limit: number;
   total: number;
+  meta?: PaginationMeta;
 };
 
 export const MERCHANT_PROVISIONING_STATUSES = [
@@ -70,6 +76,7 @@ export type MerchantProvisioningList = {
   page: number;
   limit: number;
   total: number;
+  meta?: PaginationMeta;
 };
 
 /**

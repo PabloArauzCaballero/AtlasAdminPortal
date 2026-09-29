@@ -39,6 +39,7 @@ export function buildIdentityColumns(
     {
       accessorKey: "fullName",
       header: "Usuario",
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate font-medium text-atlas-text">
@@ -53,6 +54,7 @@ export function buildIdentityColumns(
     {
       accessorKey: "status",
       header: "Estado",
+      enableSorting: false,
       cell: ({ row }) => (
         <Badge tone={statusTone(row.original.status)} dot>
           {merchantUserStatusLabel(row.original.status)}
@@ -62,16 +64,19 @@ export function buildIdentityColumns(
     {
       accessorKey: "mustChangePassword",
       header: "Debe cambiar clave",
+      enableSorting: false,
       cell: ({ row }) => formatBoolean(row.original.mustChangePassword),
     },
     {
       accessorKey: "lastLoginAt",
       header: "Último acceso",
+      enableSorting: false,
       cell: ({ row }) => formatDateTime(row.original.lastLoginAt),
     },
     {
       id: "actions",
       header: "Acciones",
+      enableSorting: false,
       meta: { pinRight: true } satisfies AtlasColumnMeta,
       cell: ({ row }) =>
         puedeCambiar ? (
@@ -120,6 +125,7 @@ export function buildRequestColumns(
     {
       accessorKey: "accountName",
       header: "Comercio",
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="w-[24ch]">
           <p className="truncate font-medium text-atlas-text">
@@ -134,6 +140,7 @@ export function buildRequestColumns(
     {
       accessorKey: "fullName",
       header: "Persona",
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="w-[26ch]">
           <p className="truncate text-atlas-text">{row.original.fullName}</p>
@@ -146,6 +153,7 @@ export function buildRequestColumns(
     {
       accessorKey: "requestedAt",
       header: "Pedido",
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="w-[22ch]">
           <p className="truncate text-atlas-text">
@@ -165,6 +173,7 @@ export function buildRequestColumns(
     {
       id: "actions",
       header: "Decisión",
+      enableSorting: false,
       /*
        * El ESTADO va dentro de esta celda y no en una columna propia.
        *

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { queryKeys } from "@/shared/api/query-keys";
 import { explicarError } from "./errores";
@@ -27,6 +32,8 @@ export function useExpedientes(params: {
   return useQuery({
     queryKey: queryKeys.expedientes(params),
     queryFn: () => api.listarExpedientes(params),
+    // Cada tecla del buscador es otra clave: sin esto la tabla se vaciaba y volvía a llenarse.
+    placeholderData: keepPreviousData,
   });
 }
 
