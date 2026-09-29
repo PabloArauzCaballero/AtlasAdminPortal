@@ -1,5 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   afterAll,
   afterEach,
@@ -148,5 +149,31 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona", () => {
       screen.getByText(/lo hace el equipo de Operaciones de comercios/),
     ).toBeInTheDocument();
     expect(document.body.textContent).not.toContain("partner.qr.review");
+  });
+});
+
+describe("PartnerQrReviewQueue — por páginas (P2, 2026-09-29)", () => {
+  it("pide una página con límite y pasa a la siguiente con el total del servidor", async () => {
+    const pedidas: URLSearchParams[] = [];
+    server.use(
+      http.get(
+        `${API_BASE}/operations/partners/qr-codes/pending`,
+        ({ request }) => {
+          pedidas.push(new URL(request.url).searchParams);
+          return HttpResponse.json({
+            data: {
+              items: [PENDIENTE],
+              meta: { page: 1, limit: 10, total: 23, totalPages: 3 },
+            },
+          });
+        },
+      ),
+    );
+    render();
+    await waitFor(() => expect(screen.getByText("CPA")).toBeInTheDocument());
+    expect(pedidas.at(-1)?.get("limit")).toBe("10");
+    expect(screen.getByText(/23 registros/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+    await waitFor(() => expect(pedidas.at(-1)?.get("page")).toBe("2"));
   });
 });
