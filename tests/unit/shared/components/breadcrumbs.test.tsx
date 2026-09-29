@@ -53,7 +53,11 @@ describe("Breadcrumbs · rutas", () => {
   it("traduce los segmentos conocidos a etiquetas de negocio", () => {
     renderAt("/internal/data-quality/issues");
 
-    expect(crumbs()).toEqual(["Inicio", "Calidad de datos", "Issues"]);
+    expect(crumbs()).toEqual([
+      "Inicio",
+      "Calidad de datos",
+      "Issues de calidad",
+    ]);
   });
 
   it("un segmento sin traducción se muestra crudo en vez de desaparecer", () => {

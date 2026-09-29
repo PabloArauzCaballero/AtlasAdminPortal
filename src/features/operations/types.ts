@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from "@/shared/api/types";
+import type { PaginatedResponse, PaginationMeta } from "@/shared/api/types";
 
 export type ContextCatalog = {
   catalogId: string;
@@ -16,9 +16,28 @@ export type ContextCatalog = {
     validUntil: string | null;
   } | null;
 };
-export type CatalogListResponse = { items: ContextCatalog[] };
+/** `meta` y `summary` los manda AtlasBackend desde WP2 (2026-09-29); uno anterior no los trae. */
+export type CatalogListResponse = {
+  items: ContextCatalog[];
+  meta?: PaginationMeta;
+  summary?: {
+    total: number;
+    active: number;
+    published: number;
+    withoutVersion: number;
+  };
+};
 
+/** Las cuatro listas traen sólo las filas de la página; `summary` cuenta cada tipo con el filtro entero. */
 export type DefinitionListResponse = {
+  meta?: PaginationMeta;
+  summary?: {
+    total: number;
+    events: number;
+    observations: number;
+    attributes: number;
+    features: number;
+  };
   observations: Array<{
     observationDefinitionId: string;
     observationCode: string;
@@ -176,17 +195,33 @@ export type RiskPolicyCurrent = {
 
 export type DataQualityIssue = {
   issueId: string;
+  /** En mayúsculas (LOW…CRITICAL); `null` si la incidencia no tiene regla. */
   severity: string | null;
   entityType: string | null;
   entityId: string | null;
-  issueCode: string;
-  status: string;
+  issueCode: string | null;
+  ruleName?: string | null;
+  status: string | null;
   detectedAt: string | null;
+  /** `null` mientras siga pendiente, también si está reconocida. */
   resolvedAt: string | null;
+  resolutionNotes?: string | null;
 };
-export type DataQualityIssueListResponse = PaginatedResponse<DataQualityIssue>;
+/** Conteos del filtro entero. «Pendiente» = sin revisar + reconocida (lo mismo que el semáforo de salida). */
+export type DataQualityIssueSummary = {
+  total: number;
+  pending: number;
+  unreviewed: number;
+  acknowledged: number;
+  closed: number;
+  byStatus: Record<string, number>;
+};
+export type DataQualityIssueListResponse =
+  PaginatedResponse<DataQualityIssue> & {
+    summary?: DataQualityIssueSummary;
+  };
 export type ResolveDataQualityIssueInput = {
-  resolution: "resolved" | "ignored";
+  resolution: "acknowledged" | "resolved" | "ignored";
   reasonCode: string;
   notes: string;
 };

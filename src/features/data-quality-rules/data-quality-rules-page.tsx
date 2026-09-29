@@ -13,7 +13,10 @@ import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
-import { uniqueTextOptions } from "@/shared/lib/options";
+import {
+  RULE_STATUS_OPTIONS,
+  SEVERITY_OPTIONS,
+} from "@/features/data-quality-issues/quality-options";
 import { buildRuleColumns } from "./rule-columns";
 import { useDataQualityRules } from "./hooks";
 import { ShieldCheck } from "lucide-react";
@@ -29,6 +32,12 @@ export function DataQualityRulesPage() {
   );
 }
 
+/**
+ * Las opciones de los filtros son fijas (antes salían de la página cargada y se autorrestringían) y
+ * los dos filtros viajan a AtlasBackend, que antes los descartaba. Las tarjetas salen de `summary`,
+ * que cuenta TODAS las reglas del filtro; antes «Críticas» sumaba la página y comparaba contra
+ * `CRITICAL` datos guardados en minúscula, así que decía siempre 0.
+ */
 function AuthorizedDataQualityRulesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
@@ -37,14 +46,8 @@ function AuthorizedDataQualityRulesPage() {
   const rules = useDataQualityRules({ page, limit: 20, q, severity, status });
   const items = useMemo(() => rules.data?.items ?? [], [rules.data]);
   const columns = useMemo(() => buildRuleColumns(), []);
-  const severityOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.severity)),
-    [items],
-  );
-  const statusOptions = useMemo(
-    () => uniqueTextOptions(items.map((item) => item.status)),
-    [items],
-  );
+  const summary = rules.data?.summary;
+  const filtered = Boolean(q || severity || status);
 
   return (
     <>
@@ -52,23 +55,27 @@ function AuthorizedDataQualityRulesPage() {
         icon={ShieldCheck}
         eyebrow="Reglas de calidad"
         title="Reglas de calidad"
-        description="Catálogo real de reglas de calidad, severidad, dueño, estado y última ejecución."
+        description="Catálogo de reglas de calidad: qué comprueban, su severidad, si están activas y cuántas incidencias tienen pendientes."
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar regla, código, tabla o dueño…"
+        searchPlaceholder="Buscar por código, nombre, tabla o campo…"
+        searchTooltip="Busca el texto dentro del código, el nombre, la tabla o el campo de la regla."
         filters={[
           {
             name: "severity",
             label: "Severidad",
+            tooltip: "Qué tan grave es un dato que no cumple la regla.",
             value: severity,
-            options: severityOptions,
+            options: SEVERITY_OPTIONS,
           },
           {
             name: "status",
             label: "Estado",
+            tooltip:
+              "Si la regla está encendida o apagada en el catálogo; no es una ejecución.",
             value: status,
-            options: statusOptions,
+            options: RULE_STATUS_OPTIONS,
           },
         ]}
         onSearchChange={(value) => {
@@ -87,7 +94,6 @@ function AuthorizedDataQualityRulesPage() {
           setPage(1);
         }}
       />
-      {rules.isLoading ? <LoadingSkeleton rows={6} /> : null}
       {rules.error ? (
         <ErrorState
           description={
@@ -101,47 +107,53 @@ function AuthorizedDataQualityRulesPage() {
           onRetry={() => void rules.refetch()}
         />
       ) : null}
-      {rules.data ? (
-        <div className="space-y-6">
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Reglas"
-              value={formatNumber(rules.data.meta.total)}
+      <div className="space-y-6">
+        <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Reglas"
+            value={formatNumber(summary?.total ?? rules.data?.meta.total)}
+          />
+          <MetricCard label="Activas" value={formatNumber(summary?.active)} />
+          <MetricCard
+            label="Críticas"
+            value={formatNumber(summary?.critical)}
+          />
+          <MetricCard
+            label="Incidencias pendientes"
+            value={formatNumber(summary?.pendingIssues)}
+          />
+        </section>
+        <Card>
+          <CardHeader>
+            <SectionHeader
+              title="Inventario de reglas"
+              description="Ordenadas de más a menos grave. «Pendientes» cuenta las incidencias sin revisar o reconocidas sin corregir."
+              className="mb-0"
             />
-            <MetricCard label="Visibles" value={formatNumber(items.length)} />
-            <MetricCard
-              label="Críticas"
-              value={formatNumber(
-                items.filter((i) => i.severity === "CRITICAL").length,
-              )}
-            />
-            <MetricCard
-              label="Issues abiertos"
-              value={formatNumber(
-                items.reduce((sum, item) => sum + item.openIssues, 0),
-              )}
-            />
-          </section>
-          <Card>
-            <CardHeader>
-              <SectionHeader
-                title="Inventario de reglas"
-                description="Las reglas vienen desde BD; la interfaz no define tipos ni targets fijos."
-                className="mb-0"
-              />
-            </CardHeader>
-            <CardContent>
+          </CardHeader>
+          <CardContent>
+            {rules.isLoading ? <LoadingSkeleton rows={6} /> : null}
+            {rules.data ? (
               <DataTable
                 data={items}
                 columns={columns}
                 meta={rules.data.meta}
                 onPageChange={setPage}
-                emptyTitle="No hay reglas de calidad para los filtros actuales."
+                emptyTitle={
+                  filtered
+                    ? "No hay reglas de calidad para los filtros actuales."
+                    : "Todavía no hay reglas de calidad."
+                }
+                emptyDescription={
+                  filtered
+                    ? "Prueba a quitar algún filtro."
+                    : "Las reglas se publican con el paquete de políticas de gobierno."
+                }
               />
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
     </>
   );
 }

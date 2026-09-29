@@ -112,7 +112,6 @@ export const queryKeys = {
     ["internal", "lineage", "impact", params] as const,
   jobRuns: (params: unknown) => ["internal", "jobs", params] as const,
   jobRun: (jobRunId: string) => ["internal", "jobs", jobRunId] as const,
-  alerts: (params: unknown) => ["internal", "alerts", params] as const,
   dataExports: (params: unknown) => ["internal", "exports", params] as const,
   dataExport: (exportId: string) => ["internal", "exports", exportId] as const,
   notificationMessages: (params: unknown) =>

@@ -50,7 +50,18 @@ export function ConsentDocumentsPage() {
       {documents.error ? (
         <ErrorState
           title="No pudimos cargar los documentos"
-          description="Reintenta en unos segundos."
+          description={
+            isAtlasApiError(documents.error)
+              ? documents.error.message
+              : "Reintenta en unos segundos."
+          }
+          requestId={
+            isAtlasApiError(documents.error)
+              ? documents.error.requestId
+              : undefined
+          }
+          // Sin esto, el error decía «reintenta» y no había con qué: había que recargar la página.
+          onRetry={() => void documents.refetch()}
         />
       ) : null}
 

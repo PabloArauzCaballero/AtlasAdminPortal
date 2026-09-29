@@ -10,13 +10,23 @@ export type DataQualityRule = {
   ruleType: string;
   severity: string;
   status: string;
+  /** Siempre `null`: la tabla no guarda frecuencia ni dueño (antes eran constantes del servicio). */
   frequency: string | null;
   owner: string | null;
   expectedAction: string | null;
   checkConfig: JsonRecord | null;
-  lastRunAt: string | null;
-  lastRunStatus: string | null;
+  /** Cuándo cambió la DEFINICIÓN. Las reglas no se ejecutan: no existe «última ejecución». */
+  definitionUpdatedAt: string | null;
+  /** Incidencias pendientes (sin revisar o reconocidas) del tenant. */
   openIssues: number;
+};
+
+/** Conteos del filtro entero (no de la página), calculados por AtlasBackend. */
+export type DataQualityRuleSummary = {
+  total: number;
+  critical: number;
+  active: number;
+  pendingIssues: number;
 };
 
 export type DataQualityRuleRun = {
@@ -29,4 +39,7 @@ export type DataQualityRuleRun = {
   summary: JsonRecord | null;
 };
 
-export type DataQualityRuleListResponse = PaginatedResponse<DataQualityRule>;
+export type DataQualityRuleListResponse = PaginatedResponse<DataQualityRule> & {
+  /** Opcional: un AtlasBackend anterior no lo manda. */
+  summary?: DataQualityRuleSummary;
+};
