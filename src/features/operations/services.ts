@@ -2,9 +2,7 @@ import { apiRequest } from "@/shared/api/client";
 import type { QueryParams } from "@/shared/api/types";
 import type { DefinitionsPackageInput } from "./definitions-package-schema";
 import type { DataGovernancePolicyPackageInput } from "./governance-package-schema";
-import type { CreateRiskRulesetVersionInput } from "./risk-ruleset-schema";
 import type {
-  ActivateRulesetInput,
   CatalogDecisionInput,
   CatalogDecisionResult,
   CatalogIngestionInput,
@@ -105,33 +103,6 @@ export function upsertDefinitionsPackage(body: DefinitionsPackageInput) {
       method: "POST",
       body,
       headers: { "x-idempotency-key": idempotencyKey("definitions-package") },
-    },
-  );
-}
-
-export function createRiskRulesetVersion(body: CreateRiskRulesetVersionInput) {
-  return apiRequest<Record<string, unknown>>(
-    "/operations/risk-policy/ruleset-versions",
-    {
-      method: "POST",
-      body,
-      headers: {
-        "x-idempotency-key": idempotencyKey("ruleset-version-create"),
-      },
-    },
-  );
-}
-
-export function activateRiskRulesetVersion(
-  rulesetVersionId: string,
-  body: ActivateRulesetInput,
-) {
-  return apiRequest<Record<string, unknown>>(
-    `/operations/risk-policy/ruleset-versions/${rulesetVersionId}/activate`,
-    {
-      method: "POST",
-      body,
-      headers: { "x-idempotency-key": idempotencyKey("ruleset-activate") },
     },
   );
 }

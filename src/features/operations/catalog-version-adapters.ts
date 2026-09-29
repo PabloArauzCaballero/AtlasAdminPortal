@@ -9,8 +9,6 @@ import type {
   CatalogIngestionInput,
   CreateCatalogVersionInput,
 } from "./catalog-version-types";
-import type { ActivateRulesetForm } from "./risk-ruleset-schema";
-import type { ActivateRulesetInput } from "./catalog-version-types";
 
 /**
  * Traducen el formulario (todo strings, como lo edita el operador) al body que
@@ -90,14 +88,5 @@ export function toCatalogIngestionInput(
       rawPayload: jsonRecordOrEmpty(item.rawPayloadText),
       aiSuggested: item.aiSuggested,
     })),
-  };
-}
-
-export function toActivateRulesetInput(
-  form: ActivateRulesetForm,
-): ActivateRulesetInput {
-  return {
-    activationReason: form.activationReason.trim(),
-    effectiveFrom: omitIfBlank(form.effectiveFrom),
   };
 }
