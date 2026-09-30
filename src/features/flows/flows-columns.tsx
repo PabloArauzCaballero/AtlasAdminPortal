@@ -3,6 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 import Link from "next/link";
+import { Workflow } from "lucide-react";
 
 import {
   Badge,
@@ -38,6 +39,23 @@ export function buildFlowColumns(
           <MethodBadge method={row.original.httpMethod} />
           {row.original.path}
         </button>
+      ),
+    },
+    {
+      // Lo que se viene a buscar a esta pantalla es el FLUJO: quién llama, qué pasa y dónde
+      // escribe. El diagrama existía, pero sólo se llegaba desde el módulo o desde la ficha.
+      id: "flujo",
+      header: "Flujo",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <Link
+          href={`/internal/flows/graph?flow=${row.original.id}`}
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-atlas-border bg-white px-2.5 py-1 text-xs font-medium text-atlas-accent hover:bg-atlas-soft"
+          data-testid={`ver-flujo-${row.original.id}`}
+        >
+          <Workflow className="h-3.5 w-3.5" aria-hidden />
+          Ver flujo
+        </Link>
       ),
     },
     {

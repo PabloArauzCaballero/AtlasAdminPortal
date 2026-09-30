@@ -1,7 +1,5 @@
 "use client";
 
-import { GitBranch, ShieldAlert, ShieldOff } from "lucide-react";
-
 import { MetricCard } from "@/shared/components/layout/metric-card";
 
 import { type FlowsSummary } from "./types";
@@ -26,64 +24,87 @@ export function FlowsSummaryTiles({
   stale: number;
   setFilter: (name: string, value: string) => void;
 }>) {
+  /*
+   * Seis tarjetas del MISMO alto y sin iconos sueltos.
+   *
+   * Antes tres iban dentro de un botón que no se estiraba —más bajas que las demás— y sólo tres
+   * llevaban icono, así que la fila parecía de piezas distintas y nada decía cuáles se podían
+   * pulsar. Ahora todas ocupan la celda entera y las que filtran la tabla lo dicen en su texto.
+   */
+  const filtra = (name: string, value: string, label: string) => ({
+    onClick: () => setFilter(name, value),
+    "aria-label": `${label}: filtrar la tabla`,
+  });
   return (
-    <div className="mb-6 grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+    <div className="mb-6 grid auto-rows-fr gap-4 md:grid-cols-3 xl:grid-cols-6">
       <MetricCard
+        className="h-full"
         label="Flujos"
         value={summary?.total ?? "—"}
-        icon={GitBranch}
         hint="Una fila por operación de cada sistema"
       />
-      <button
-        type="button"
-        className="text-left"
-        onClick={() => setFilter("risk", "CRITICAL")}
-      >
+      <FilterTile {...filtra("risk", "CRITICAL", "Críticos")}>
         <MetricCard
+          className="h-full"
           label="Críticos"
           value={summary ? critical : "—"}
           tone="critical"
-          hint="Escriben en identidad, crédito, dinero o borran"
+          hint="Escriben en identidad, crédito, dinero o borran. Toca para filtrar."
         />
-      </button>
-      <button
-        type="button"
-        className="text-left"
-        onClick={() => setFilter("verification", "BROKEN")}
-      >
+      </FilterTile>
+      <FilterTile {...filtra("verification", "BROKEN", "Rotos")}>
         <MetricCard
+          className="h-full"
           label="Rotos"
           value={summary ? broken : "—"}
           tone={broken ? "critical" : "success"}
-          hint="Una llamada real contradijo el mapa"
+          hint="Una llamada real contradijo el mapa. Toca para filtrar."
         />
-      </button>
-      <button
-        type="button"
-        className="text-left"
-        onClick={() => setFilter("freshness", "STALE")}
-      >
+      </FilterTile>
+      <FilterTile {...filtra("freshness", "STALE", "Desactualizados")}>
         <MetricCard
+          className="h-full"
           label="Desactualizados"
           value={summary ? stale : "—"}
           tone={stale ? "warning" : "default"}
-          hint="Cambió su código desde la última verificación"
+          hint="Cambió su código desde la última verificación. Toca para filtrar."
         />
-      </button>
+      </FilterTile>
       <MetricCard
+        className="h-full"
         label="Escrituras públicas"
         value={summary?.publicWrites ?? "—"}
-        icon={ShieldOff}
         tone={summary?.publicWrites ? "warning" : "default"}
-        hint="Operaciones que cambian datos sin inicio de sesión"
+        hint="Cambian datos sin inicio de sesión"
       />
       <MetricCard
+        className="h-full"
         label="Críticos sin pruebas"
         value={summary?.untestedCritical ?? "—"}
-        icon={ShieldAlert}
         tone={summary?.untestedCritical ? "warning" : "success"}
-        hint="Riesgo alto o crítico sin ninguna prueba automática"
+        hint="Riesgo alto o crítico sin prueba automática"
       />
     </div>
+  );
+}
+
+function FilterTile({
+  children,
+  onClick,
+  "aria-label": ariaLabel,
+}: Readonly<{
+  children: React.ReactNode;
+  onClick: () => void;
+  "aria-label": string;
+}>) {
+  return (
+    <button
+      type="button"
+      className="h-full rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/50"
+      onClick={onClick}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </button>
   );
 }

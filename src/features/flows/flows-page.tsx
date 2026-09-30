@@ -1,7 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Waypoints } from "lucide-react";
+import { Waypoints, Workflow } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -234,6 +235,18 @@ function AuthorizedFlowsPage() {
           },
         ]}
       />
+      {filters.systemCode && filters.module ? (
+        <div className="mb-3 flex justify-end">
+          <Link
+            href={`/internal/flows/graph?systemCode=${filters.systemCode}&module=${filters.module}`}
+            className="inline-flex items-center gap-2 rounded-xl border border-atlas-border bg-white px-3 py-2 text-sm font-medium text-atlas-accent hover:bg-atlas-soft"
+            data-testid="ver-diagrama-modulo"
+          >
+            <Workflow className="h-4 w-4" aria-hidden />
+            Ver el diagrama del módulo {filters.module}
+          </Link>
+        </div>
+      ) : null}
       {flows.isLoading ? <LoadingSkeleton rows={10} /> : null}
       {flows.error ? (
         <ErrorState
