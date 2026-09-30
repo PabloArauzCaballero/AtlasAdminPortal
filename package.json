@@ -73,7 +73,7 @@
     "yarn": ">=1.22.22 <2"
   },
   "resolutions": {
-    "brace-expansion": "^2.0.2",
+    "brace-expansion": "^2.1.7",
     "browserslist": "^4.28.7",
     "js-yaml": "^4.3.2",
     "nanoid": "^3.3.18",
@@ -82,7 +82,7 @@
     "undici": "^7.29.1"
   },
   "overrides": {
-    "brace-expansion": "^2.0.2",
+    "brace-expansion": "^2.1.7",
     "browserslist": "^4.28.7",
     "js-yaml": "^4.3.2",
     "nanoid": "^3.3.18",
