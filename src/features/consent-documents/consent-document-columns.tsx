@@ -27,6 +27,25 @@ function statusTone(status: string | null): "success" | "muted" | "warning" {
 }
 
 /**
+ * El cuerpo en texto corrido para la tabla: sin marcas de Markdown (`##`, guiones, negritas) y con
+ * los saltos de línea colapsados.
+ *
+ * La celda pintaba el Markdown crudo en monoespaciado y, además, entero: `block` pisaba el
+ * `display` que necesita `line-clamp`, así que el recorte a dos líneas nunca se aplicaba y una sola
+ * fila ocupaba la pantalla. Con texto corrido, el recorte funciona y se lee como lo que es.
+ */
+export function plainExcerpt(markdown: string | null, max = 160): string {
+  if (!markdown) return "";
+  const plano = markdown
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/[*_`>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plano.length > max ? `${plano.slice(0, max).trimEnd()}…` : plano;
+}
+
+/**
  * Columnas de la tabla de documentos. La tabla pagina en el servidor, así que ninguna columna se
  * ofrece ordenable: reordenar sólo la página cargada prometería un orden global.
  */
@@ -111,11 +130,17 @@ export function buildConsentDocumentColumns(
       accessorKey: "bodyMarkdown",
       // El cuerpo se muestra recortado: quien administra necesita reconocer el documento de un
       // vistazo; leerlo entero es lo que hace el modo edición, donde además se puede corregir.
-      cell: ({ row }) => (
-        <span className="line-clamp-2 block max-w-sm whitespace-pre-wrap font-mono text-xs leading-5 text-atlas-muted">
-          {row.original.bodyMarkdown ?? "(sin texto)"}
-        </span>
-      ),
+      cell: ({ row }) =>
+        row.original.bodyMarkdown ? (
+          <span
+            className="line-clamp-2 max-w-sm text-xs leading-5 text-atlas-muted"
+            title={plainExcerpt(row.original.bodyMarkdown, 600)}
+          >
+            {plainExcerpt(row.original.bodyMarkdown)}
+          </span>
+        ) : (
+          <span className="text-atlas-muted">(sin texto)</span>
+        ),
     },
     {
       id: "acciones",
