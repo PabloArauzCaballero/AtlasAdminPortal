@@ -127,16 +127,25 @@ export function Piece({
             .filter((bullet) => bullet.text.trim())
             .map((bullet, index) => (
               <li key={index} className="flex items-start gap-2">
-                <span
-                  aria-hidden
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                    bullet.emphasis
-                      ? "bg-atlas-accentSoft text-atlas-accent"
-                      : "bg-emerald-50 text-emerald-700"
-                  }`}
-                >
-                  ✓
-                </span>
+                {bullet.iconImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- data URI de 96 px
+                  <img
+                    src={bullet.iconImage}
+                    alt=""
+                    className="mt-0.5 h-5 w-5 shrink-0 object-contain"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                      bullet.emphasis
+                        ? "bg-atlas-accentSoft text-atlas-accent"
+                        : "bg-emerald-50 text-emerald-700"
+                    }`}
+                  >
+                    ✓
+                  </span>
+                )}
                 <span
                   className={`break-words text-[13px] leading-5 ${
                     bullet.emphasis

@@ -8,6 +8,8 @@ export type ContentActionKind = "whatsapp" | "link" | "screen" | "tour";
 export type ContentBullet = {
   text: string;
   icon?: string | null;
+  /** Icono cargado desde el portal (data URI PNG/WebP ≤ 32 KB). Gana sobre `icon`. */
+  iconImage?: string | null;
   emphasis?: boolean;
 };
 
