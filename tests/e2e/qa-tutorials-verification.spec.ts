@@ -33,6 +33,20 @@ const USER_ID = process.env.E2E_USER_ID ?? "1";
 const EVIDENCIA =
   process.env.E2E_EVIDENCIA_DIR ?? "../_evidencia-tutoriales-2026-09-15";
 
+/**
+ * Cuánto se espera a que un paso del tutorial avance o se resalte.
+ *
+ * Antes era 15 s (12 s en los opcionales) fijados a mano, y eso se saltaba la política de tiempos
+ * de `playwright.config.ts`: en CI el portal, Postgres, Redis y el backend comparten 2 vCPU, y una
+ * navegación puede pasar de 15 s cuando el backend hace su primera sincronización del catálogo
+ * (45 s tras arrancar). El 2026-09-30 «Interpretar una ejecución» falló así en ~2 de cada 10
+ * corridas —las dos pasadas seguidas, y en el intento siguiente verde—: la captura del fallo
+ * enseña «Cargando página» aún activo 15 s después del clic, es decir, la navegación sí estaba en
+ * marcha. Se usa el mismo margen que el `expect` del resto de la suite (45 s en CI); un paso que de
+ * verdad no avanza sigue fallando, sólo que más tarde.
+ */
+const ESPERA_DEL_PASO = process.env.CI ? 45_000 : 15_000;
+
 test.describe.configure({ mode: "serial" });
 test.setTimeout(240_000);
 
@@ -160,7 +174,7 @@ async function walkTutorial(p: Page, tutorial: TutorialDefinition) {
     const step = tutorial.steps[index];
     const box = dialog(p);
     await expect(box, `${tutorial.id}/${step.id}: tarjeta visible`).toBeVisible(
-      { timeout: 15_000 },
+      { timeout: ESPERA_DEL_PASO },
     );
     await expect(
       box,
@@ -185,7 +199,7 @@ async function walkTutorial(p: Page, tutorial: TutorialDefinition) {
               "Tutorial completado",
             ),
           {
-            timeout: 15_000,
+            timeout: ESPERA_DEL_PASO,
             message: `${tutorial.id}/${step.id}: avanza tras la acción`,
           },
         )
@@ -209,7 +223,7 @@ async function walkTutorial(p: Page, tutorial: TutorialDefinition) {
                 .isVisible()
                 .catch(() => false)),
             {
-              timeout: 12_000,
+              timeout: ESPERA_DEL_PASO,
               message: `${tutorial.id}/${step.id}: resaltado o aviso claro`,
             },
           )
@@ -218,7 +232,7 @@ async function walkTutorial(p: Page, tutorial: TutorialDefinition) {
         await expect(
           spot,
           `${tutorial.id}/${step.id}: el elemento «${step.target}» debe estar resaltado`,
-        ).toBeVisible({ timeout: 12_000 });
+        ).toBeVisible({ timeout: ESPERA_DEL_PASO });
         await expect(box).not.toContainText("No veo en pantalla");
       }
     }
