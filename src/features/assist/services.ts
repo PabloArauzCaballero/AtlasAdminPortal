@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { apiRequest } from "@/shared/api/client";
 
 /**
@@ -64,4 +65,50 @@ export function getAssistConversation(): Promise<AssistConversation> {
   return apiRequest<AssistConversation>("/internal/assist/conversation", {
     query: { surface: ASSIST_SURFACE },
   });
+}
+
+/** Una conversación de la lista del historial (la respuesta ya viene de la más reciente a la más antigua). */
+const conversationSummarySchema = z.object({
+  conversationId: z.string().min(1),
+  title: z.string().nullish(),
+  updatedAt: z.string(),
+  turnCount: z.number().int().nonnegative().catch(0),
+});
+const conversationListSchema = z.object({
+  conversations: z.array(conversationSummarySchema),
+});
+
+export type AssistConversationSummary = z.infer<
+  typeof conversationSummarySchema
+>;
+
+/** Las conversaciones de esta persona en este portal (Core devuelve las 30 más recientes). */
+export async function listAssistConversations(): Promise<
+  AssistConversationSummary[]
+> {
+  const list = await apiRequest("/internal/assist/conversations", {
+    query: { surface: ASSIST_SURFACE },
+    schema: conversationListSchema,
+  });
+  return list.conversations;
+}
+
+/** Una conversación del historial con todos sus turnos, para abrirla y seguirla. */
+export function getAssistConversationById(
+  conversationId: string,
+): Promise<AssistConversation> {
+  return apiRequest<AssistConversation>(
+    `/internal/assist/conversations/${encodeURIComponent(conversationId)}`,
+    { query: { surface: ASSIST_SURFACE } },
+  );
+}
+
+/** Borra una conversación del historial. `deleted` es 0 si ya no existía. */
+export function deleteAssistConversation(
+  conversationId: string,
+): Promise<{ deleted: number }> {
+  return apiRequest<{ deleted: number }>(
+    `/internal/assist/conversations/${encodeURIComponent(conversationId)}`,
+    { method: "DELETE", query: { surface: ASSIST_SURFACE } },
+  );
 }

@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Loader2, SendHorizontal, Sparkles, X } from "lucide-react";
+import {
+  History,
+  Loader2,
+  SendHorizontal,
+  Sparkles,
+  SquarePen,
+  X,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DialogShell } from "@/shared/components/ui/dialog-shell";
 import { Textarea } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/cn";
 import { ASSIST_DISABLED_MESSAGE } from "./assist-errors";
 import { AssistBubbles } from "./assist-bubbles";
+import { AssistHistory } from "./assist-history";
 import { MAX_PROMPT_LENGTH, type AssistState } from "./use-assist";
 
 /**
@@ -31,19 +39,33 @@ export function AssistPanel({
   const titleId = useId();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const { bubbles, status, loadHistory, send, retry } = assist;
+  const [view, setView] = useState<"chat" | "history">("chat");
+  const { bubbles, status, loadHistory, send, retry, nuevaConversacion } =
+    assist;
   const disabled = status.phase === "disabled";
   const busy = status.phase === "sending" || status.phase === "loading";
 
   useEffect(() => {
     if (open) void loadHistory();
+    // Al cerrar, la próxima vez se abre en el chat, no en la lista.
+    else setView("chat");
   }, [open, loadHistory]);
 
   // La última burbuja siempre a la vista, también la del «Pensando…».
   useEffect(() => {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
-  }, [bubbles, status, open]);
+  }, [bubbles, status, open, view]);
+
+  const newReasonId = useId();
+  // La razón se dice en pantalla, no sólo en un `title`: un botón apagado no da foco ni tooltip fiable.
+  const newReason =
+    status.phase === "sending"
+      ? "Espera a que el asistente responda para empezar otra."
+      : bubbles.length === 0
+        ? "Ya estás en una conversación nueva."
+        : "";
+  const canStartNew = newReason === "";
 
   const submit = (text: string) => {
     if (disabled || busy) return;
@@ -84,105 +106,143 @@ export function AssistPanel({
         </Button>
       </div>
 
-      <p className="border-b border-atlas-border bg-atlas-accentWash px-4 py-2 text-xs text-atlas-text">
-        No escribas contraseñas, códigos ni datos personales.
-      </p>
-
-      <div
-        ref={listRef}
-        role="log"
-        aria-live="polite"
-        aria-label="Conversación con el asistente"
-        className="atlas-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-4"
-      >
-        {status.phase === "loading" ? (
-          <p className="flex items-center gap-2 text-sm text-atlas-muted">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Cargando la conversación…
-          </p>
-        ) : null}
-
-        <AssistBubbles
-          bubbles={bubbles}
-          showSuggestions={
-            bubbles.length === 0 && status.phase !== "loading" && !disabled
-          }
-          suggestionsDisabled={busy}
-          onSuggestion={submit}
-        />
-
-        {status.phase === "sending" ? (
-          <p className="flex items-center gap-2 text-sm text-atlas-muted">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Pensando…
-          </p>
-        ) : null}
-
-        {disabled ? (
-          <p className="rounded-xl border border-atlas-border bg-atlas-soft px-3 py-2 text-sm text-atlas-text">
-            {ASSIST_DISABLED_MESSAGE}
-          </p>
-        ) : null}
-
-        {status.phase === "error" ? (
-          <div
-            role="alert"
-            className="space-y-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-atlas-critical"
-          >
-            <p>{status.message}</p>
-            {status.canRetry ? (
-              <Button
-                variant="secondary"
-                className="h-8"
-                onClick={() => retry(screen)}
-              >
-                Reintentar
-              </Button>
-            ) : null}
-          </div>
+      <div className="flex flex-wrap items-center gap-2 border-b border-atlas-border px-4 py-2">
+        <Button
+          className="h-8"
+          onClick={() => {
+            if (nuevaConversacion()) setView("chat");
+          }}
+          disabled={!canStartNew}
+          aria-describedby={newReason ? newReasonId : undefined}
+        >
+          <SquarePen className="h-4 w-4" aria-hidden="true" />
+          Nueva conversación
+        </Button>
+        <Button
+          className="h-8"
+          variant={view === "history" ? "primary" : "secondary"}
+          onClick={() => setView("history")}
+          aria-pressed={view === "history"}
+        >
+          <History className="h-4 w-4" aria-hidden="true" />
+          Historial
+        </Button>
+        {newReason ? (
+          <span id={newReasonId} className="w-full text-xs text-atlas-muted">
+            {newReason}
+          </span>
         ) : null}
       </div>
 
-      <form
-        className="flex items-end gap-2 border-t border-atlas-border px-3 py-3"
-        onSubmit={(event) => {
-          event.preventDefault();
-          submit(draft);
-        }}
-      >
-        <Textarea
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            // Enter envía; Shift+Enter hace salto de línea; mientras se compone (IME) no se envía.
-            if (
-              event.key === "Enter" &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
+      {view === "history" ? (
+        <AssistHistory
+          assist={assist}
+          onBack={() => setView("chat")}
+          onOpened={() => setView("chat")}
+        />
+      ) : (
+        <>
+          <p className="border-b border-atlas-border bg-atlas-accentWash px-4 py-2 text-xs text-atlas-text">
+            No escribas contraseñas, códigos ni datos personales.
+          </p>
+
+          <div
+            ref={listRef}
+            role="log"
+            aria-live="polite"
+            aria-label="Conversación con el asistente"
+            className="atlas-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-4"
+          >
+            {status.phase === "loading" ? (
+              <p className="flex items-center gap-2 text-sm text-atlas-muted">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                Cargando la conversación…
+              </p>
+            ) : null}
+
+            <AssistBubbles
+              bubbles={bubbles}
+              showSuggestions={
+                bubbles.length === 0 && status.phase !== "loading" && !disabled
+              }
+              suggestionsDisabled={busy}
+              onSuggestion={submit}
+            />
+
+            {status.phase === "sending" ? (
+              <p className="flex items-center gap-2 text-sm text-atlas-muted">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                Pensando…
+              </p>
+            ) : null}
+
+            {disabled ? (
+              <p className="rounded-xl border border-atlas-border bg-atlas-soft px-3 py-2 text-sm text-atlas-text">
+                {ASSIST_DISABLED_MESSAGE}
+              </p>
+            ) : null}
+
+            {status.phase === "error" ? (
+              <div
+                role="alert"
+                className="space-y-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-atlas-critical"
+              >
+                <p>{status.message}</p>
+                {status.canRetry ? (
+                  <Button
+                    variant="secondary"
+                    className="h-8"
+                    onClick={() => retry(screen)}
+                  >
+                    Reintentar
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          <form
+            className="flex items-end gap-2 border-t border-atlas-border px-3 py-3"
+            onSubmit={(event) => {
               event.preventDefault();
               submit(draft);
-            }
-          }}
-          maxLength={MAX_PROMPT_LENGTH}
-          rows={2}
-          disabled={disabled}
-          aria-label="Tu pregunta para el asistente"
-          placeholder={
-            disabled ? "El asistente está apagado" : "Escribe tu pregunta…"
-          }
-          className={cn("max-h-40 min-h-0 flex-1 resize-none py-2")}
-        />
-        <Button
-          type="submit"
-          variant="primary"
-          className="h-10 w-10 px-0"
-          disabled={disabled || busy || !draft.trim()}
-          aria-label="Enviar pregunta"
-        >
-          <SendHorizontal className="h-4 w-4" aria-hidden="true" />
-        </Button>
-      </form>
+            }}
+          >
+            <Textarea
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                // Enter envía; Shift+Enter hace salto de línea; mientras se compone (IME) no se envía.
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  submit(draft);
+                }
+              }}
+              maxLength={MAX_PROMPT_LENGTH}
+              rows={2}
+              disabled={disabled}
+              aria-label="Tu pregunta para el asistente"
+              placeholder={
+                disabled ? "El asistente está apagado" : "Escribe tu pregunta…"
+              }
+              className={cn("max-h-40 min-h-0 flex-1 resize-none py-2")}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              className="h-10 w-10 px-0"
+              disabled={disabled || busy || !draft.trim()}
+              aria-label="Enviar pregunta"
+            >
+              <SendHorizontal className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </form>
+        </>
+      )}
     </DialogShell>
   );
 }

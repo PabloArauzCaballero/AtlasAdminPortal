@@ -6,7 +6,12 @@ import {
   isAssistDisabled,
   isAssistInFlight,
 } from "./assist-errors";
-import { askAssist, getAssistConversation } from "./services";
+import {
+  askAssist,
+  getAssistConversation,
+  type AssistConversation,
+} from "./services";
+import { useAssistHistory } from "./use-assist-history";
 
 /**
  * El estado del asistente, del lado de la pantalla.
@@ -62,6 +67,19 @@ export function newClientMessageId(): string {
   return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
 }
 
+/** Cada turno del servidor son dos burbujas: la pregunta y la respuesta. */
+function turnsToBubbles(thread: AssistConversation | null): AssistBubble[] {
+  return (thread?.turns ?? []).flatMap((turn) => [
+    { id: `${turn.turnId}-p`, role: "persona" as const, text: turn.prompt },
+    {
+      id: turn.turnId,
+      role: "asistente" as const,
+      text: turn.reply,
+      suggestHandoff: turn.suggestHandoff,
+    },
+  ]);
+}
+
 const esperar = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -73,6 +91,7 @@ export function useAssist() {
   const [bubbles, setBubbles] = useState<AssistBubble[]>([]);
   const [status, setStatus] = useState<AssistStatus>({ phase: "idle" });
   const conversationId = useRef<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const pending = useRef<Pending | null>(null);
   const inFlight = useRef(false);
   const loaded = useRef(false);
@@ -94,21 +113,8 @@ export function useAssist() {
       const thread = await getAssistConversation();
       if (!mounted.current) return;
       conversationId.current = thread?.conversationId ?? null;
-      setBubbles(
-        (thread?.turns ?? []).flatMap((turn) => [
-          {
-            id: `${turn.turnId}-p`,
-            role: "persona" as const,
-            text: turn.prompt,
-          },
-          {
-            id: turn.turnId,
-            role: "asistente" as const,
-            text: turn.reply,
-            suggestHandoff: turn.suggestHandoff,
-          },
-        ]),
-      );
+      setActiveId(conversationId.current);
+      setBubbles(turnsToBubbles(thread));
       setStatus({ phase: "ready" });
     } catch (error) {
       if (!mounted.current) return;
@@ -140,6 +146,7 @@ export function useAssist() {
           if (!mounted.current) return;
           conversationId.current =
             answer.conversationId ?? conversationId.current;
+          setActiveId(conversationId.current);
           setBubbles((current) => [
             ...current,
             {
@@ -209,7 +216,50 @@ export function useAssist() {
     [ask],
   );
 
-  return { bubbles, status, loadHistory, send, retry };
+  /** Deja el hilo en blanco: la próxima pregunta abre una conversación NUEVA. No llama al servidor. */
+  const reset = useCallback(() => {
+    conversationId.current = null;
+    pending.current = null;
+    setActiveId(null);
+    setBubbles([]);
+    setStatus((current) =>
+      current.phase === "disabled" ? current : { phase: "ready" },
+    );
+  }, []);
+
+  const applyThread = useCallback((thread: AssistConversation) => {
+    conversationId.current = thread.conversationId;
+    pending.current = null;
+    setActiveId(thread.conversationId);
+    setBubbles(turnsToBubbles(thread));
+    setStatus({ phase: "ready" });
+  }, []);
+
+  /** «Nueva conversación»: no hace nada mientras hay una pregunta en curso. */
+  const nuevaConversacion = useCallback((): boolean => {
+    if (inFlight.current) return false;
+    reset();
+    return true;
+  }, [reset]);
+
+  const historial = useAssistHistory({
+    activeId,
+    inFlight,
+    mounted,
+    applyThread,
+    reset,
+  });
+
+  return {
+    bubbles,
+    status,
+    loadHistory,
+    send,
+    retry,
+    nuevaConversacion,
+    historial,
+    activeId,
+  };
 }
 
 export type AssistState = ReturnType<typeof useAssist>;
