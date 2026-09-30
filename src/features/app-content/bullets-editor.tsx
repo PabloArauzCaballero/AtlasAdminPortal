@@ -3,6 +3,7 @@
 import { Plus, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { IconPicker } from "./icon-picker";
 import type { ContentBullet } from "./types";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 
@@ -48,19 +49,16 @@ export function BulletsEditor({
             data-testid={`bullet-${contentKey}-${index}`}
             className="h-10 min-w-48 flex-1"
           />
-          <Input
-            value={bullet.icon ?? ""}
-            placeholder="icono"
-            onChange={(event) =>
+          <IconPicker
+            bullet={bullet}
+            testId={`icon-${contentKey}-${index}`}
+            onChange={(cambios) =>
               onChange((current) =>
                 current.map((item, position) =>
-                  position === index
-                    ? { ...item, icon: event.target.value || null }
-                    : item,
+                  position === index ? { ...item, ...cambios } : item,
                 ),
               )
             }
-            className="h-10 w-28 shrink-0 text-xs"
           />
           <label className="flex shrink-0 items-center gap-1.5 text-xs text-atlas-text">
             <input
