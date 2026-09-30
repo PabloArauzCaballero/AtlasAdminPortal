@@ -25,6 +25,7 @@ export function MetricCard({
   hint,
   icon: Icon,
   tone = "default",
+  className,
 }: Readonly<{
   label: string;
   value: unknown;
@@ -37,10 +38,14 @@ export function MetricCard({
    * pide atención.
    */
   tone?: Tone;
+  className?: string;
 }>) {
   const styles = TONES[tone];
   return (
-    <Card interactive className="group relative overflow-hidden">
+    <Card
+      interactive
+      className={cn("group relative overflow-hidden", className)}
+    >
       <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-atlas-accentSoft opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       <CardContent className="relative flex items-start gap-3 p-4">
         {Icon ? (
