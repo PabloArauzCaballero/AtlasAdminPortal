@@ -89,6 +89,10 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN yarn build
+# El commit que se construye, sellado en la imagen: el smoke de TEST lo compara con el empujado.
+# Va después de `yarn build` para que cambiar de commit no invalide la caché de la compilación.
+ARG SOURCE_COMMIT=""
+RUN node scripts/write-build-info.mjs build-info.json
 # Este portal no tiene `public/`. La copia de más abajo es incondicional —Docker no sabe copiar «si
 # existe»— así que se garantiza el directorio aquí.
 RUN mkdir -p public
@@ -108,6 +112,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # `public/` no viaja dentro de `standalone`: Next lo deja fuera y pide copiarlo aparte, igual que
 # `.next/static`. Sin esta línea la imagen no serviría ningún recurso estático.
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/build-info.json ./build-info.json
 
 USER nextjs
 EXPOSE 5273

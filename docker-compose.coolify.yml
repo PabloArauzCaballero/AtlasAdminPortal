@@ -76,6 +76,8 @@ services:
         # `environment:` porque `output: 'standalone'` serializa la configuración de Next dentro
         # del `server.js` del build — definirla al arrancar no cambia el destino ya horneado.
         INTERNAL_API_ORIGIN: 'http://atlas-backend:3005'
+        # Si Coolify lo inyecta, se usa; si llega vacío, el build lo lee de `.git`.
+        SOURCE_COMMIT: '${SOURCE_COMMIT:-}'
     # `init: true` reparte SIGTERM al proceso de Node: sin un init como PID 1, el apagado no es
     # ordenado. Se pone aquí y no con un binario en la imagen para no depender de `apt`.
     init: true

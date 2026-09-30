@@ -6,7 +6,11 @@
 # allí mismo. Mandar la copia local, además de lento, arriesga hornear un build viejo.
 node_modules
 .next
-.git
+.git/
+# Sólo lo justo para saber qué commit se construye (scripts/write-build-info.mjs); nada del historial.
+!.git/HEAD
+!.git/packed-refs
+!.git/refs
 .turbo
 test-results
 playwright-report

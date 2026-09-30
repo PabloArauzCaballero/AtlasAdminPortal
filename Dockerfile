@@ -19,6 +19,10 @@ COPY . .
 # dentro del contexto de construcción — sin él, el portal se construiría contra los valores por
 # defecto y el tester llamaría a un origen que no es el suyo.
 RUN yarn build
+# El commit que se construye, sellado en la imagen: el smoke de TEST lo compara con el empujado.
+# Va después de `yarn build` para que cambiar de commit no invalide la caché de la compilación.
+ARG SOURCE_COMMIT=""
+RUN node scripts/write-build-info.mjs build-info.json
 # Este portal no tiene `public/`. La copia de más abajo es incondicional —Docker no sabe copiar «si
 # existe»— así que se garantiza el directorio aquí; si algún día se añaden recursos estáticos, la
 # imagen ya los sirve sin tocar nada.
@@ -39,6 +43,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # `public/` no viaja dentro de `standalone`: Next lo deja fuera y su documentación pide copiarlo
 # aparte, igual que `.next/static`. Sin esta línea la imagen no serviría ningún recurso estático.
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/build-info.json ./build-info.json
 
 USER nextjs
 EXPOSE 5273
