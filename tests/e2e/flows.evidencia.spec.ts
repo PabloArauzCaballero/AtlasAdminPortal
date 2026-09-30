@@ -192,7 +192,7 @@ test.describe("Flujos (stack real)", () => {
         Number(resultado.match(/(\d+) verificados/)?.[1] ?? 0),
       ).toBeGreaterThan(0);
       await page
-        .getByLabel("Buscar por ruta, handler, módulo o slug…")
+        .getByLabel("Buscar por nombre, ruta o módulo…")
         .fill("systems/flows");
       await expect(tabla.locator("tbody tr").first()).toBeVisible({
         timeout: 20_000,
@@ -205,13 +205,11 @@ test.describe("Flujos (stack real)", () => {
         .first()
         .click();
       await expect(
-        page.getByRole("dialog").getByText(/corridas sin error de servidor/),
+        page.getByRole("dialog").getByText(/llamadas sin error del servidor/),
       ).toBeVisible({ timeout: 20_000 });
       await capture(page, testInfo, "ficha con evidencia de runtime");
       await page.keyboard.press("Escape");
-      await page
-        .getByLabel("Buscar por ruta, handler, módulo o slug…")
-        .fill("");
+      await page.getByLabel("Buscar por nombre, ruta o módulo…").fill("");
 
       // Grafo del módulo más grande (systems-ops: ~60 rutas) para medir layout y render.
       await page.goto(
@@ -249,7 +247,7 @@ test.describe("Flujos (stack real)", () => {
       });
 
       // Buscar un nodo lo centra y resalta su camino.
-      await page.getByLabel("Buscar nodo").fill("test-suites/:p/run");
+      await page.getByLabel("Buscar recuadro").fill("test-suites/:p/run");
       // La búsqueda centra y resalta: se espera al resaltado, que es lo que se va a capturar.
       await expect(
         page.locator("[data-node-highlighted='true']").first(),

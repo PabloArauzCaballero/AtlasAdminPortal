@@ -85,7 +85,7 @@ const SCENARIO_COLUMNS: ColumnDef<QaScenarioDefinition>[] = [
   },
   {
     id: "auth",
-    header: "Authorization",
+    header: "Credencial",
     enableSorting: false,
     cell: ({ row }) =>
       headerCell(row.original, (patch) => (
@@ -97,7 +97,7 @@ const SCENARIO_COLUMNS: ColumnDef<QaScenarioDefinition>[] = [
   },
   {
     id: "tenant",
-    header: "x-tenant-id",
+    header: "Empresa (sale de tu sesión)",
     enableSorting: false,
     cell: ({ row }) =>
       headerCell(row.original, (patch) => (
@@ -109,7 +109,7 @@ const SCENARIO_COLUMNS: ColumnDef<QaScenarioDefinition>[] = [
   },
   {
     id: "idempotency",
-    header: "x-idempotency-key",
+    header: "Protección contra duplicados",
     enableSorting: false,
     cell: ({ row }) =>
       headerCell(row.original, (patch) => (
@@ -146,7 +146,7 @@ type TargetRow = {
   url: string;
 };
 
-const EJECUTAR = <code className="font-mono text-atlas-accent">EJECUTAR</code>;
+const EJECUTAR = <strong>EJECUTAR</strong>;
 
 const TARGETS: TargetRow[] = [
   {
@@ -158,31 +158,35 @@ const TARGETS: TargetRow[] = [
         cambio real exige teclear {EJECUTAR}.
       </>
     ),
-    url: "NEXT_PUBLIC_API_BASE_URL (p. ej. /api/v1 del portal)",
+    url: "La dirección de la API del portal",
   },
   {
     id: "local",
-    badge: <Badge tone="success">LOCAL</Badge>,
+    badge: <Badge tone="success">Local</Badge>,
     permits:
       "Tu máquina: todo, incluido un cambio real sin fricción extra. Sólo sirve si abriste el portal en tu ordenador.",
-    url: "localhost:3005/api/v1",
+    url: "Tu ordenador (puerto 3005)",
   },
   {
     id: "staging",
-    badge: <Badge tone="info">STAGING</Badge>,
-    permits: <>Funcional y stress reales; mutación exige teclear {EJECUTAR}.</>,
-    url: "NEXT_PUBLIC_STAGING_API_BASE_URL",
+    badge: <Badge tone="info">Preproducción</Badge>,
+    permits: (
+      <>
+        Funcional y carga reales; un cambio de datos exige teclear {EJECUTAR}.
+      </>
+    ),
+    url: "La dirección de preproducción configurada",
   },
   {
     id: "prod",
-    badge: <Badge tone="critical">PRODUCTION_READONLY</Badge>,
+    badge: <Badge tone="critical">Producción (sólo lectura)</Badge>,
     permits: (
       <>
-        Solo dry-run. Toda ejecución real y todo stress quedan{" "}
+        Sólo simulación. Toda ejecución real y toda prueba de carga quedan{" "}
         <strong>bloqueados</strong>.
       </>
     ),
-    url: "NEXT_PUBLIC_PROD_READONLY_API_BASE_URL",
+    url: "La dirección de producción configurada",
   },
 ];
 
@@ -208,7 +212,7 @@ export function TargetsTable() {
       },
       {
         id: "url",
-        header: "Base URL",
+        header: "Dirección",
         accessorFn: (row) => row.url,
         cell: ({ row }) => (
           <span className="font-mono text-xs text-atlas-muted">
@@ -227,7 +231,7 @@ type DialRow = { name: string; controls: string; range: string };
 const DIALS: DialRow[] = [
   {
     name: "Peticiones por segundo",
-    controls: "Ritmo que se intenta sostener (RPS).",
+    controls: "Ritmo que se intenta sostener.",
     range: "1 – 500",
   },
   {
@@ -248,7 +252,7 @@ const DIALS: DialRow[] = [
   {
     name: "Tope de peticiones",
     controls:
-      "Techo duro. Si RPS × duración lo supera, la corrida se recorta aquí.",
+      "Techo duro. Si peticiones por segundo × duración lo supera, la corrida se recorta aquí.",
     range: "1 – 10.000",
   },
 ];

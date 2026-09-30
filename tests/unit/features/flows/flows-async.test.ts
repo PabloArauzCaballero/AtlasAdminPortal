@@ -58,6 +58,8 @@ describe("etiquetas", () => {
       .sort();
     expect(rojos).toEqual([
       "MENSAJE_SIN_SALIDA",
+      "MENU_PERMISO_DISTINTO",
+      "PERMISO_FUERA_DEL_CATALOGO",
       "SALTADOS",
       "SIN_GUARDA",
       "SIN_REGISTRO",

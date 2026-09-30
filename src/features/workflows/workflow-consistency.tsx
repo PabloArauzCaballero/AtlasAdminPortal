@@ -31,11 +31,11 @@ export function WorkflowConsistencyPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-atlas-text">
-            Consistencia con los endpoints reales
+            Consistencia con las operaciones reales
           </h3>
           <p className="text-xs text-atlas-muted">
-            Compara cada paso sembrado con las rutas que este proceso tiene
-            montadas.
+            Compara cada paso registrado con las operaciones que este proceso
+            tiene disponibles.
           </p>
         </div>
         <Button

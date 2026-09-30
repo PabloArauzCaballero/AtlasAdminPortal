@@ -1,3 +1,7 @@
+import type {
+  RbacDriftItem,
+  RbacDriftSeverity,
+} from "@/features/flows/async/types";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -52,10 +56,7 @@ function renderAs(ui: React.ReactElement) {
   return render(<AuthProvider>{ui}</AuthProvider>);
 }
 
-const item = (
-  route: string,
-  severity: "SIN_GUARDA" | "SOLO_ROL" | "PUBLIC",
-) => ({
+const item = (route: string, severity: RbacDriftSeverity): RbacDriftItem => ({
   clientCode: "ADMIN_PORTAL",
   route,
   navPermissions: ["x.read"],
@@ -68,7 +69,7 @@ const item = (
 });
 
 const deriva = (
-  items: ReturnType<typeof item>[],
+  items: RbacDriftItem[],
   meta = { page: 1, limit: 20, total: items.length, totalPages: 1 },
 ) => ({
   screensWithObservedEdges: 5,
@@ -102,15 +103,15 @@ describe("Deriva de permisos · tabla en el servidor", () => {
     );
     renderAs(<RbacDriftPage />);
     esTablaHomogenea(
-      ["Pantalla", "El menú pide", "Desenlace", "Llamada", "Roles de la API"],
-      /Buscar por pantalla, ruta, método o flujo/,
+      ["Qué pasa", "Pantalla", "Operación", "Qué hacer"],
+      /Buscar por pantalla, operación o permiso/,
     );
     expect(filasDeDatos()).toHaveLength(2);
     // «Llamadas sin guarda» sale del `summary` (3), no de sumar la página (1).
     expect(
       screen.getByText("Llamadas sin guarda").closest("div"),
     ).toHaveTextContent("3");
-    await filtrarPor(/^Desenlace/, "SIN_GUARDA");
+    await filtrarPor(/^Qué pasa/, "SIN_GUARDA");
     expect(asyncHooks.useRbacDrift).toHaveBeenLastCalledWith(
       expect.objectContaining({ severity: "SIN_GUARDA", page: 1, limit: 20 }),
     );
@@ -118,12 +119,48 @@ describe("Deriva de permisos · tabla en el servidor", () => {
     expect(asyncHooks.useRbacDrift).toHaveBeenLastCalledWith(
       expect.objectContaining({ clientCode: "MOTOR_PORTAL" }),
     );
-    await buscar(/Buscar por pantalla, ruta, método o flujo/, "loans");
+    await buscar(/Buscar por pantalla, operación o permiso/, "loans");
     await vi.waitFor(() =>
       expect(asyncHooks.useRbacDrift).toHaveBeenLastCalledWith(
         expect.objectContaining({ q: "loans", page: 1 }),
       ),
     );
+  });
+
+  it("dice en palabras qué pasa: menú con otro permiso, permiso que no existe, y enlaza a la ficha", () => {
+    asyncHooks.useRbacDrift.mockReturnValue(
+      consulta(
+        deriva([
+          {
+            ...item("/internal/qr", "MENU_PERMISO_DISTINTO"),
+            navPermissions: ["partner.qr.read"],
+            missingFromMenu: ["partner.qr.review"],
+          },
+          {
+            ...item("/internal/qr", "PERMISO_FUERA_DEL_CATALOGO"),
+            flowId: null,
+            method: null,
+            path: null,
+            missingFromCatalog: ["qr.inexistente"],
+          },
+        ]),
+      ),
+    );
+    renderAs(<RbacDriftPage />);
+    expect(
+      screen.getByText(
+        "El menú deja entrar con «partner.qr.read» pero la pantalla pide «partner.qr.review»: quien entra verá «sin permiso».",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /El menú pide «qr.inexistente», un permiso que no existe en la base/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Ver la ficha de la operación" }),
+    ).toHaveAttribute("href", "/internal/flows?flow=flow_aaaaaaaaaaaa");
+    expect(screen.getByText("Es el menú")).toBeInTheDocument();
   });
 
   it("pagina con el meta del servidor", async () => {
@@ -148,11 +185,9 @@ describe("Deriva de permisos · tabla en el servidor", () => {
     asyncHooks.useRbacDrift.mockReturnValue(consulta(deriva([])));
     const { unmount } = renderAs(<RbacDriftPage />);
     expect(screen.getByText("Sin deriva en lo observado")).toBeInTheDocument();
-    await buscar(/Buscar por pantalla, ruta, método o flujo/, "zzz");
+    await buscar(/Buscar por pantalla, operación o permiso/, "zzz");
     expect(
-      await screen.findByText(
-        "Ninguna llamada coincide con la búsqueda o los filtros.",
-      ),
+      await screen.findByText("Nada coincide con la búsqueda o los filtros."),
     ).toBeInTheDocument();
     unmount();
     const refetch = vi.fn();

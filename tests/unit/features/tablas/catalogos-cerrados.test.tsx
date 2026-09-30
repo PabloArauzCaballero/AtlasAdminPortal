@@ -258,7 +258,7 @@ describe("Endpoints de una decisión y contratos del endpoint", () => {
         ]}
       />,
     );
-    expect(cabeceras()).toEqual(["Endpoint", "Para qué la llama"]);
+    expect(cabeceras()).toEqual(["Operación", "Para qué la llama"]);
     await buscar(/Buscar por método, ruta o para qué se llama/, "riesgo");
     await esperarFilas(1);
     expect(filasDeDatos()[0]).toHaveTextContent("/risk/score");

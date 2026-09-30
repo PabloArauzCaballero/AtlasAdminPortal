@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { ShieldAlert } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { DataTable } from "@/shared/components/data-table/data-table";
@@ -14,15 +15,17 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useRbacDrift } from "./hooks";
 import { DRIFT } from "./labels";
+import { driftAction, driftSentence } from "./rbac-drift-words";
 import type { RbacDriftItem, RbacDriftResponse } from "./types";
 import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
+import { CLIENT_OPTIONS, labelFrom } from "../filter-options";
 
 const PAGE_SIZE = 20;
 
 /**
- * Pantallas cuyo menú pide un permiso que la API no aplica, medido sobre las llamadas que DE VERDAD
- * salieron de cada pantalla. Sin uso real no hay nada que medir, y la vista lo dice en vez de
- * enseñar una lista vacía que se leería como «no hay deriva».
+ * Lo que deja a alguien delante de «sin permiso» o abre una puerta que el menú promete cerrada: un
+ * permiso que la base no tiene, un menú que pide un permiso distinto del de la operación, o una
+ * operación sin protección. Cada fila lo dice en una frase y enlaza a la ficha de la operación.
  */
 export function RbacDriftPage() {
   return (
@@ -33,7 +36,7 @@ export function RbacDriftPage() {
 }
 
 export function contarSinGuarda(data: RbacDriftResponse | undefined): number {
-  if (data?.summary) return data.summary.bySeverity.SIN_GUARDA;
+  if (data?.summary) return data.summary.bySeverity.SIN_GUARDA ?? 0;
   return (data?.screens ?? []).reduce(
     (n, pantalla) =>
       n +
@@ -52,53 +55,63 @@ const SEVERITY_OPTIONS = (Object.keys(DRIFT) as Array<keyof typeof DRIFT>).map(
 
 const COLUMNS: ColumnDef<RbacDriftItem>[] = [
   {
-    header: "Pantalla",
-    accessorKey: "route",
+    header: "Qué pasa",
+    id: "what",
     cell: ({ row }) => (
-      <div>
-        <p className="font-mono text-xs">{row.original.route}</p>
-        <p className="text-xs text-atlas-muted">{row.original.clientCode}</p>
+      <div className="max-w-md space-y-1">
+        <Badge tone={DRIFT[row.original.severity].tone} dot>
+          {DRIFT[row.original.severity].label}
+        </Badge>
+        <p className="text-sm text-atlas-text">{driftSentence(row.original)}</p>
       </div>
     ),
   },
   {
-    header: "El menú pide",
-    id: "menu",
+    header: "Pantalla",
+    accessorKey: "route",
+    cell: ({ row }) =>
+      row.original.route ? (
+        <div>
+          <p className="font-mono text-xs">{row.original.route}</p>
+          <p className="text-xs text-atlas-muted">
+            {labelFrom(CLIENT_OPTIONS, row.original.clientCode)}
+          </p>
+        </div>
+      ) : (
+        <span className="text-xs text-atlas-muted">
+          Ninguna pantalla la llamó todavía
+        </span>
+      ),
+  },
+  {
+    header: "Operación",
+    id: "call",
+    cell: ({ row }) =>
+      row.original.flowId ? (
+        <div className="space-y-1">
+          <span className="flex items-center gap-2">
+            {row.original.method ? (
+              <MethodBadge method={row.original.method} />
+            ) : null}
+            <span className="font-mono text-xs">{row.original.path}</span>
+          </span>
+          <Link
+            className="text-xs text-atlas-accent underline"
+            href={`/internal/flows?flow=${encodeURIComponent(row.original.flowId)}`}
+          >
+            Ver la ficha de la operación
+          </Link>
+        </div>
+      ) : (
+        <span className="text-xs text-atlas-muted">Es el menú</span>
+      ),
+  },
+  {
+    header: "Qué hacer",
+    id: "action",
     cell: ({ row }) => (
       <span className="block max-w-xs text-xs text-atlas-muted">
-        {[...row.original.navPermissions, ...row.original.navRoles].join(
-          ", ",
-        ) || "—"}
-      </span>
-    ),
-  },
-  {
-    header: "Desenlace",
-    accessorKey: "severity",
-    cell: ({ row }) => (
-      <span title={DRIFT[row.original.severity].hint}>
-        <Badge tone={DRIFT[row.original.severity].tone} dot>
-          {DRIFT[row.original.severity].label}
-        </Badge>
-      </span>
-    ),
-  },
-  {
-    header: "Llamada",
-    id: "call",
-    cell: ({ row }) => (
-      <span className="flex items-center gap-2">
-        <MethodBadge method={row.original.method} />
-        <span className="font-mono text-xs">{row.original.path}</span>
-      </span>
-    ),
-  },
-  {
-    header: "Roles de la API",
-    id: "roles",
-    cell: ({ row }) => (
-      <span className="text-xs text-atlas-muted">
-        {row.original.roles.length ? row.original.roles.join(", ") : "—"}
+        {driftAction(row.original)}
       </span>
     ),
   },
@@ -133,7 +146,13 @@ function AuthorizedRbacDriftPage() {
   });
   const data = query.data;
   const summary = data?.summary;
+  const porClase = summary?.bySeverity ?? {};
   const sinGuarda = contarSinGuarda(data);
+  const averias =
+    summary?.breaking ??
+    (porClase.PERMISO_FUERA_DEL_CATALOGO ?? 0) +
+      (porClase.MENU_PERMISO_DISTINTO ?? 0) +
+      sinGuarda;
   const columns = useMemo(() => withoutClientSorting(COLUMNS), []);
   const hayFiltro = Boolean(q.trim() || severity || clientCode);
 
@@ -141,45 +160,64 @@ function AuthorizedRbacDriftPage() {
     <>
       <PageHeader
         icon={ShieldAlert}
-        eyebrow="Systems Ops · Mapa de rutas"
+        eyebrow="Sistemas · Mapa de rutas"
         title="Deriva de permisos"
-        description="Pantallas cuyo menú exige un permiso que la API no aplica en las llamadas que se hicieron desde ellas. Sólo «Sin guarda» es una avería; «Sólo rol» y «Pública» son otra conversación."
+        description="Dónde el menú y la operación no piden lo mismo, y qué permisos se exigen sin existir. Lo primero de la lista deja a alguien delante de «sin permiso» o abre una puerta que el menú promete cerrada."
       />
       <FlowCatalogNotLoaded />
-      <div className="mb-6 grid gap-4 md:grid-cols-3">
+      <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Pantallas con llamadas observadas"
-          value={data?.screensWithObservedEdges ?? "—"}
+          label="Averías que dejan fuera a alguien"
+          value={data ? averias : "—"}
           icon={ShieldAlert}
-          hint="Últimos 30 días, por la pantalla que declara cada llamada"
+          tone={averias ? "critical" : "success"}
+          hint="Permisos que no existen, menús que piden otro permiso y operaciones sin protección"
         />
         <MetricCard
-          label="Pantallas con deriva"
-          value={summary?.screensWithDrift ?? data?.screens.length ?? "—"}
+          label="Permisos que la base no tiene"
+          value={summary?.permissionsOutsideCatalog?.length ?? "—"}
+          tone={
+            summary?.permissionsOutsideCatalog?.length ? "critical" : "default"
+          }
+          hint={summary?.permissionsOutsideCatalog?.join(", ") || undefined}
+        />
+        <MetricCard
+          label="Menús que piden otro permiso"
+          value={data ? (porClase.MENU_PERMISO_DISTINTO ?? 0) : "—"}
+          tone={porClase.MENU_PERMISO_DISTINTO ? "warning" : "default"}
         />
         <MetricCard
           label="Llamadas sin guarda"
           value={data ? sinGuarda : "—"}
           tone={sinGuarda ? "warning" : "success"}
+          hint={`Sobre ${data?.screensWithObservedEdges ?? "—"} pantallas usadas en los últimos 30 días`}
         />
       </div>
+      {data?.catalogMeasured === false ? (
+        <p className="mb-4 text-xs text-amber-700">
+          En este entorno la base no tiene cargado el catálogo de permisos: no
+          se puede comprobar si falta alguno.
+        </p>
+      ) : null}
       {data?.notMeasured?.length ? (
         <p className="mb-4 text-xs text-atlas-muted">
-          No se mide aquí para {data.notMeasured.join(", ")}: sus pantallas
-          llaman a otros bloques, y la deriva se calcula contra los endpoints de
-          AtlasBackend. Que no aparezcan no significa que no tengan deriva.
+          No se mide aquí para{" "}
+          {data.notMeasured
+            .map((code) => labelFrom(CLIENT_OPTIONS, code))
+            .join(", ")}
+          : sus pantallas llaman a otros sistemas. Que no aparezcan no significa
+          que no tengan deriva.
         </p>
       ) : null}
       {data?.truncated ? (
         <p className="mb-4 text-xs text-amber-700">
-          La consulta de llamadas vino cortada: esto opina sobre datos
-          incompletos.
+          La consulta vino cortada: esto opina sobre datos incompletos.
         </p>
       ) : null}
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por pantalla, ruta, método o flujo…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el cliente, la ruta de la pantalla, el método, la ruta de la API llamada y el identificador del flujo."
+        searchPlaceholder="Buscar por pantalla, operación o permiso…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en la pantalla, la operación, su ruta y los permisos que piden el menú y la operación."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -198,10 +236,10 @@ function AuthorizedRbacDriftPage() {
         filters={[
           {
             name: "severity",
-            label: "Desenlace",
+            label: "Qué pasa",
             value: severity,
             tooltip:
-              "Separa las llamadas «Sin guarda» —la avería— de las «Sólo rol» y las «Públicas», que son otra puerta o una decisión declarada.",
+              "Las tres primeras dejan a alguien fuera o abren una puerta; «Pública» y «Decide por rol» son informativas.",
             options: SEVERITY_OPTIONS,
           },
           {
@@ -212,8 +250,8 @@ function AuthorizedRbacDriftPage() {
               "Deja sólo las pantallas de un cliente. Las opciones son los clientes con deriva en todo el conjunto, no sólo los de esta página.",
             options: (summary?.clients ?? []).map((value) => ({
               value,
-              label: value,
-              description: `Pantallas del cliente ${value}.`,
+              label: labelFrom(CLIENT_OPTIONS, value),
+              description: `Pantallas de ${labelFrom(CLIENT_OPTIONS, value)}.`,
             })),
           },
         ]}
@@ -240,17 +278,17 @@ function AuthorizedRbacDriftPage() {
           onPageChange={setPage}
           emptyTitle={
             hayFiltro
-              ? "Ninguna llamada coincide con la búsqueda o los filtros."
+              ? "Nada coincide con la búsqueda o los filtros."
               : data.screensWithObservedEdges === 0
                 ? "Aún no hay llamadas atribuidas a pantallas"
                 : "Sin deriva en lo observado"
           }
           emptyDescription={
             hayFiltro
-              ? "Quita el texto o los filtros para volver a ver todas las llamadas."
+              ? "Quita el texto o los filtros para volver a verlo todo."
               : data.screensWithObservedEdges === 0
-                ? "La deriva se mide sobre lo que las pantallas llamaron de verdad. Sin uso real, una lista vacía no significa que no haya deriva."
-                : "Todas las llamadas observadas desde pantallas con permiso de menú exigen ese permiso en la API."
+                ? "El desajuste entre menú y operación se mide sobre lo que las pantallas llamaron de verdad. Sin uso real, una lista vacía no significa que no lo haya."
+                : "Cada pantalla usada pide en el menú lo mismo que exigen sus operaciones, y todos los permisos existen."
           }
         />
       ) : null}

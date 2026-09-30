@@ -122,9 +122,9 @@ function AuthorizedPendingWorkPage() {
     <>
       <PageHeader
         icon={Hourglass}
-        eyebrow="Systems Ops · Mapa de rutas"
+        eyebrow="Sistemas · Mapa de rutas"
         title="Trabajo pendiente"
-        description="Lo que cada flujo deja encargado al responder (eventos del outbox), si alguien lo recoge y qué eventos de dominio terminan de verdad en un aviso."
+        description="Lo que cada flujo deja encargado al responder (la cola de eventos), si alguien lo recoge y qué eventos de dominio terminan de verdad en un aviso."
         actions={
           <Select
             name="ventana"
@@ -194,7 +194,7 @@ function AuthorizedPendingWorkPage() {
             />
             {data.truncated ? (
               <p role="status" className="mb-3 text-xs text-amber-800">
-                {`Sólo se enseñan las ${data.limit ?? data.flows.length} rutas con el pendiente más antiguo: hay más que encolan trabajo. Los totales de arriba sí cuentan todo el outbox.`}
+                {`Sólo se enseñan las ${data.limit ?? data.flows.length} rutas con el pendiente más antiguo: hay más que encolan trabajo. Los totales de arriba sí cuentan toda la cola de eventos.`}
               </p>
             ) : null}
             <FilterBar
@@ -238,7 +238,7 @@ function AuthorizedPendingWorkPage() {
               emptyDescription={
                 hayFiltro
                   ? "Quita el texto o el filtro para volver a ver todas las rutas."
-                  : "No hay eventos del outbox atribuibles a una petición en estos días."
+                  : "No hay eventos de la cola atribuibles a una petición en estos días."
               }
             />
           </section>

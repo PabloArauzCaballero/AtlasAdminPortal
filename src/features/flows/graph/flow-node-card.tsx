@@ -38,24 +38,28 @@ const STYLE: Record<
   ENDPOINT: {
     icon: Waypoints,
     border: "border-atlas-accent",
-    eyebrow: "ENDPOINT",
+    eyebrow: "OPERACIÓN",
   },
   GUARD: {
     icon: ShieldCheck,
     border: "border-amber-300",
     eyebrow: "AUTORIZACIÓN",
   },
-  HANDLER: { icon: Code2, border: "border-emerald-300", eyebrow: "HANDLER" },
+  HANDLER: {
+    icon: Code2,
+    border: "border-emerald-300",
+    eyebrow: "LÓGICA DE ENTRADA",
+  },
   CONTROLLER: {
     icon: Boxes,
     border: "border-emerald-300",
-    eyebrow: "CONTROLLER",
+    eyebrow: "PUNTO DE ENTRADA",
   },
-  SERVICE: { icon: Cog, border: "border-emerald-300", eyebrow: "SERVICE" },
+  SERVICE: { icon: Cog, border: "border-emerald-300", eyebrow: "LÓGICA" },
   REPOSITORY: {
     icon: Boxes,
     border: "border-emerald-300",
-    eyebrow: "REPOSITORY",
+    eyebrow: "ACCESO A DATOS",
   },
   DATABASE: { icon: Database, border: "border-violet-300", eyebrow: "TABLA" },
   ERROR: {
@@ -66,7 +70,7 @@ const STYLE: Record<
   BLOCK_CALL: {
     icon: Send,
     border: "border-orange-300",
-    eyebrow: "HTTP SALIENTE",
+    eyebrow: "LLAMADA A OTRO SERVICIO",
   },
   // Un evento que el flujo publica: el flujo no termina al responder. El texto dice quién lo recoge,
   // no si avisa a alguien, que se mide en «Trabajo pendiente».
@@ -80,6 +84,13 @@ const STYLE: Record<
     border: "border-dashed border-atlas-muted",
     eyebrow: "SIN RESOLVER",
   },
+};
+
+const RISK_WORD: Record<string, string> = {
+  CRITICAL: "Crítico",
+  HIGH: "Alto",
+  MEDIUM: "Medio",
+  LOW: "Bajo",
 };
 
 export function FlowNodeCard({
@@ -122,7 +133,7 @@ export function FlowNodeCard({
               risk === "LOW" && "bg-emerald-50 text-emerald-700",
             )}
           >
-            {risk}
+            {RISK_WORD[risk] ?? risk}
           </span>
         ) : null}
       </div>

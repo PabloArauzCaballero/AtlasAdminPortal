@@ -47,7 +47,7 @@ const COLUMNS: ColumnDef<DomainOverviewItem>[] = [
     ),
   },
   {
-    header: "Endpoints",
+    header: "Operaciones",
     accessorKey: "endpoints",
     cell: ({ row }) => formatNumber(row.original.endpoints),
   },
@@ -57,7 +57,7 @@ const COLUMNS: ColumnDef<DomainOverviewItem>[] = [
     cell: ({ row }) => formatNumber(row.original.tables),
   },
   {
-    header: "Suites",
+    header: "Baterías de prueba",
     accessorKey: "testSuites",
     cell: ({ row }) => formatNumber(row.original.testSuites),
   },

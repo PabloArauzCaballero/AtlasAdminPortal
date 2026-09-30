@@ -123,20 +123,26 @@ describe("StatusBadge", () => {
 
 describe("RiskBadge", () => {
   it.each([
-    ["CRITICAL", "critical"],
-    ["HIGH", "warning"],
-    ["MEDIUM", "info"],
-    ["LOW", "success"],
-  ])("riesgo %s es %s", (value, tone) => {
+    ["CRITICAL", "Crítico", "critical"],
+    ["HIGH", "Alto", "warning"],
+    ["MEDIUM", "Medio", "info"],
+    ["LOW", "Bajo", "success"],
+  ])("riesgo %s se lee «%s» y es %s", (value, label, tone) => {
     render(<RiskBadge value={value} />);
 
-    expect(toneOf(value)).toBe(tone);
+    expect(toneOf(label)).toBe(tone);
   });
 
-  it("no distingue mayúsculas pero muestra el valor tal cual llega", () => {
+  it("no distingue mayúsculas y lo dice en palabras", () => {
     render(<RiskBadge value="critical" />);
 
-    expect(toneOf("critical")).toBe("critical");
+    expect(toneOf("Crítico")).toBe("critical");
+  });
+
+  it("un nivel que no conoce se enseña tal cual antes que perderlo", () => {
+    render(<RiskBadge value="EXTREMO" />);
+
+    expect(toneOf("EXTREMO")).toBe("default");
   });
 
   it("sin riesgo es muted y lo dice con palabras", () => {

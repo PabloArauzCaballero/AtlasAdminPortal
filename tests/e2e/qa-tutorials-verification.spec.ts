@@ -123,8 +123,8 @@ test("el velo bloquea los clics detrás del tutorial", async () => {
   // El primer paso abre su pestaña por URL; se espera a que asiente.
   await expect(page).toHaveURL(/tab=unitaria/);
   const tutorialUrl = page.url();
-  // Un clic donde está el enlace «Suites QA» del menú lateral, detrás del velo.
-  const link = page.getByRole("link", { name: "Suites QA" });
+  // Un clic donde está el enlace «Baterías de prueba» del menú lateral, detrás del velo.
+  const link = page.getByRole("link", { name: "Baterías de prueba" });
   const box = await link.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);

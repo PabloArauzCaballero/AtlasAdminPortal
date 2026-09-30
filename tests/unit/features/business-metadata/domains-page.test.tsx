@@ -131,7 +131,7 @@ describe("BusinessDomainsPage — el mapa lo calcula el backend", () => {
     const cabeceras = within(fila.closest("table")!)
       .getAllByRole("columnheader")
       .map((th) => th.textContent);
-    expect(celdas[cabeceras.indexOf("Endpoints")]).toBe("57");
+    expect(celdas[cabeceras.indexOf("Operaciones")]).toBe("57");
     expect(celdas[cabeceras.indexOf("Tablas")]).toBe("18");
     expect(celdas[cabeceras.indexOf("Críticos")]).toBe("9");
     // Los totales globales salen del backend: 432 endpoints, no 100.
@@ -172,9 +172,9 @@ describe("BusinessDomainsPage — el mapa lo calcula el backend", () => {
       "Dominio",
       "Revisión",
       "Descripción",
-      "Endpoints",
+      "Operaciones",
       "Tablas",
-      "Suites",
+      "Baterías de prueba",
       "PII",
       "Críticos",
       "En revisión",

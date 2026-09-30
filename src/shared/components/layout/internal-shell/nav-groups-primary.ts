@@ -207,13 +207,13 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         permissions: ["systems.endpoints.read"],
       },
       {
-        label: "Aprender QA Lab",
+        label: "Aprender el laboratorio QA",
         href: "/internal/qa/aprender",
         icon: GraduationCap,
         permissions: ["systems.endpoints.read"],
       },
       {
-        label: "Suites QA",
+        label: "Baterías de prueba",
         href: "/internal/qa/suites",
         icon: ClipboardCheck,
         permissions: ["systems.qa.read"],

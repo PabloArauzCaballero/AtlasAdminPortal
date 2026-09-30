@@ -2,7 +2,7 @@ import type { ModuleExplanation } from "./view-explanations-types";
 
 /** «Systems Ops» con sus flujos, aparte para que cada archivo de explicaciones quepa en 300 líneas. */
 export const systemsOpsModuleExplanation: ModuleExplanation = {
-  module: "Systems Ops",
+  module: "Sistemas",
   prefixes: ["/internal/systems", "/internal/review-queue", "/internal/flows"],
   systems:
     "Hace el inventario automático de las operaciones, herramientas y tablas de cada bloque de Atlas, detecta qué datos toca cada operación y vigila en vivo si las herramientas críticas responden.",

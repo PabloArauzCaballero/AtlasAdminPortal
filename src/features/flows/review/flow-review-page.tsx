@@ -175,15 +175,15 @@ function AuthorizedFlowReviewPage() {
     <>
       <PageHeader
         icon={ClipboardCheck}
-        eyebrow="Systems Ops · Mapa de rutas"
+        eyebrow="Sistemas · Mapa de rutas"
         title="Revisión de análisis de flujos"
         description="Flujos de riesgo alto cuyo análisis no se puede dar por bueno solo, y los ya revisados cuyo código cambió. Aprobar un flujo es aprobar ESE código: si cambia, vuelve aquí."
       />
       <FlowCatalogNotLoaded />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por ruta, handler, módulo o slug…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre, la ruta, el handler, el controlador, el módulo y el identificador legible del flujo."
+        searchPlaceholder="Buscar por nombre, ruta o módulo…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el nombre de la operación, su ruta y su módulo."
         filters={[
           {
             name: "estado",

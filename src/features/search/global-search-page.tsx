@@ -91,12 +91,12 @@ function AuthorizedGlobalSearchPage() {
         icon={Search}
         eyebrow="Búsqueda"
         title="Búsqueda global"
-        description="Busca en el catálogo técnico del portal: endpoints (ruta, nombre de ruta o módulo), tablas (tabla, entidad o módulo), reglas de calidad (código, nombre o tabla objetivo) y reportes. No busca clientes ni préstamos."
+        description="Busca en el catálogo técnico del portal: operaciones (ruta, nombre o módulo), tablas (tabla, entidad o módulo), reglas de calidad (código, nombre o tabla objetivo) y reportes. No busca clientes ni préstamos."
       />
       {!q ? (
         <EmptyState
           title="Escribe una búsqueda desde la barra superior."
-          description="Busca endpoints, tablas, reglas de calidad y reportes. Un cliente se abre desde la cola de trabajo o las vistas del negocio."
+          description="Busca operaciones, tablas, reglas de calidad y reportes. Un cliente se abre desde la cola de trabajo o las vistas del negocio."
         />
       ) : null}
       {q && search.isLoading ? <LoadingSkeleton rows={6} /> : null}
@@ -201,13 +201,13 @@ function SearchResults({
 
 /** Los nombres que el backend usa para cada tipo de resultado, en palabras. */
 const TOTAL_LABELS: Record<string, string> = {
-  endpoints: "Endpoints",
+  endpoints: "Operaciones",
   tables: "Tablas",
   qualityRules: "Reglas de calidad",
   reports: "Reportes",
 };
 const KIND_LABELS: Record<string, string> = {
-  endpoint: "Endpoint",
+  endpoint: "Operación",
   table: "Tabla",
   quality_rule: "Regla de calidad",
   report: "Reporte",

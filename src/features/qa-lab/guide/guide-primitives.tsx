@@ -6,10 +6,10 @@ import { cn } from "@/shared/lib/cn";
 export const SECTIONS = [
   { id: "panorama", num: "00", label: "Panorama" },
   { id: "antes", num: "01", label: "Antes de empezar" },
-  { id: "escenarios", num: "02", label: "Escenarios y headers" },
+  { id: "escenarios", num: "02", label: "Escenarios y cabeceras" },
   { id: "funcional", num: "03", label: "Prueba funcional" },
-  { id: "stress", num: "04", label: "Prueba de stress" },
-  { id: "journey", num: "05", label: "Journey encadenado" },
+  { id: "stress", num: "04", label: "Prueba de carga" },
+  { id: "journey", num: "05", label: "Recorrido encadenado" },
   { id: "seguridad", num: "06", label: "Guardarraíles" },
   { id: "historial", num: "07", label: "Historial" },
 ] as const;

@@ -18,7 +18,7 @@ export const DIAGNOSIS: Record<PendingWorkDiagnosis, Etiqueta> = {
   SIN_CONSUMIDOR: {
     label: "Sin consumidor aquí",
     tone: "warning",
-    hint: "Nadie consume el outbox en este entorno: los pendientes no dicen nada de los flujos.",
+    hint: "Nadie recoge la cola de eventos en este entorno: los pendientes no dicen nada de los flujos.",
   },
   SALTADOS: {
     label: "El consumidor salta eventos",
@@ -61,20 +61,30 @@ export const CONSUMER: Record<DomainEventConsumer, Etiqueta> = {
 };
 
 export const DRIFT: Record<RbacDriftSeverity, Etiqueta> = {
-  SIN_GUARDA: {
-    label: "Sin guarda",
+  PERMISO_FUERA_DEL_CATALOGO: {
+    label: "Permiso que no existe",
     tone: "critical",
-    hint: "La API no exige ni el permiso del menú ni ningún rol.",
+    hint: "Se exige un permiso que la base no tiene: nadie puede tenerlo, ni un superadministrador.",
   },
-  SOLO_ROL: {
-    label: "Sólo rol",
-    tone: "warning",
-    hint: "La API deniega por rol, no por el permiso que pide el menú.",
+  MENU_PERMISO_DISTINTO: {
+    label: "El menú pide otro permiso",
+    tone: "critical",
+    hint: "El menú deja entrar con un permiso y la operación pide otro: quien entra ve «sin permiso».",
+  },
+  SIN_GUARDA: {
+    label: "Sin protección",
+    tone: "critical",
+    hint: "La operación no pide ni el permiso del menú ni ningún rol.",
   },
   PUBLIC: {
     label: "Pública",
     tone: "info",
-    hint: "La ruta es pública a propósito.",
+    hint: "La operación es pública a propósito. Informativo.",
+  },
+  SOLO_ROL: {
+    label: "Decide por rol",
+    tone: "muted",
+    hint: "La operación deniega por rol, no por el permiso que pide el menú. Informativo.",
   },
 };
 

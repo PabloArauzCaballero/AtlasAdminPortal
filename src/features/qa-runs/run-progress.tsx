@@ -97,10 +97,10 @@ export function RunProgress({
           <Badge tone={verdict.tone}>Veredicto: {verdict.label}</Badge>
           {data.evidence.mockConfirmed === true ? (
             <Badge tone="success" icon={BadgeCheck}>
-              Mock confirmado
+              Simulador confirmado
             </Badge>
           ) : data.evidence.mockNamespace ? (
-            <Badge tone="muted">Mock sin confirmar</Badge>
+            <Badge tone="muted">Simulador sin confirmar</Badge>
           ) : null}
           {!terminal ? (
             <Button

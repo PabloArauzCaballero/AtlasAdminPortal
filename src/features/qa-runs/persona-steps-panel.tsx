@@ -39,7 +39,7 @@ const ATTEMPT_COLUMNS: ColumnDef<Attempt>[] = [
   },
   {
     id: "requestId",
-    header: "Request ID",
+    header: "Código de la petición",
     enableSorting: false,
     cell: ({ row }) => (
       <span className="font-mono text-xs">{row.original.requestId ?? "—"}</span>

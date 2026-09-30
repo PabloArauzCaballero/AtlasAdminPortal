@@ -1,3 +1,4 @@
+import { RISK_LABELS } from "@/shared/lib/risk-labels";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 
@@ -121,7 +122,7 @@ export function RiskBadge({ value }: Readonly<{ value?: string | null }>) {
             : "default";
   return (
     <Badge tone={value ? tone : "muted"} dot>
-      {value ?? "Sin riesgo"}
+      {value ? (RISK_LABELS[normalized ?? ""] ?? value) : "Sin riesgo"}
     </Badge>
   );
 }
@@ -239,9 +240,9 @@ const blockTones: Record<string, "info" | "success" | "warning"> = {
 };
 
 const blockLabels: Record<string, string> = {
-  ATLAS_BACKEND: "Atlas Backend",
-  DECISION_ENGINE: "Decision Engine",
-  ERP_BACKEND: "ERP Backend",
+  ATLAS_BACKEND: "Núcleo de Atlas",
+  DECISION_ENGINE: "Motor de decisiones",
+  ERP_BACKEND: "ERP",
 };
 
 export function BlockBadge({ value }: Readonly<{ value?: string | null }>) {

@@ -34,11 +34,11 @@ describe("Jobs · Ejecutar ahora como tabla", () => {
 
   it("el buscador y los filtros recortan las filas, y sin coincidencias lo dicen", async () => {
     renderWithProviders(<RuntimeJobsPanel />);
-    fireEvent.change(screen.getByRole("textbox", { name: /Buscar job/ }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /Buscar tarea/ }), {
       target: { value: "purge-idempotency" },
     });
     await waitFor(() => expect(filas()).toHaveLength(2));
-    fireEvent.change(screen.getByRole("textbox", { name: /Buscar job/ }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /Buscar tarea/ }), {
       target: { value: "" },
     });
     await waitFor(() => expect(filas()).toHaveLength(RUNTIME_JOBS.length + 1));
@@ -48,11 +48,11 @@ describe("Jobs · Ejecutar ahora como tabla", () => {
       "destructive",
     );
     await waitFor(() => expect(filas()).toHaveLength(destructivos + 1));
-    fireEvent.change(screen.getByRole("textbox", { name: /Buscar job/ }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /Buscar tarea/ }), {
       target: { value: "zzz" },
     });
     expect(
-      await screen.findByText("Ningún job coincide con la búsqueda."),
+      await screen.findByText("Ninguna tarea coincide con la búsqueda."),
     ).toBeInTheDocument();
   });
 

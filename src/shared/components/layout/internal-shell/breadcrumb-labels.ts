@@ -23,7 +23,7 @@ export const breadcrumbLabels: Record<string, string> = {
   // Sin esta entrada la miga de pan escribía el segmento crudo de la ruta: «events».
   events: "Eventos de dominio",
   "partner-contracts": "Contrato de comercios",
-  endpoints: "Endpoints",
+  endpoints: "Operaciones del sistema",
   governance: "Gobierno de datos",
   "privacy-requests": "Solicitudes de privacidad",
   glossary: "Glosario",

@@ -136,7 +136,7 @@ export function ColumnCatalogSection({
         }
         emptyDescription={
           columns.length === 0
-            ? "El backend todavía no devolvió columnas para esta tabla."
+            ? "Todavía no hay columnas registradas para esta tabla."
             : "Prueba con otro texto o quita los filtros."
         }
       />
