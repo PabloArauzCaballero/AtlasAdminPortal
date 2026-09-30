@@ -263,6 +263,7 @@ export function AppContentPage() {
         </div>
         <div className="lg:sticky lg:top-4">
           <PhonePreview
+            surface={surface}
             surfaceLabel={current.label}
             draft={draft}
             published={published}
