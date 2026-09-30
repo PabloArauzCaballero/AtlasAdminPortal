@@ -1,7 +1,8 @@
 "use client";
 
 import { Smartphone } from "lucide-react";
-import type { ContentActionKind, ContentBullet } from "./types";
+import { PhoneScreen } from "./phone-screens";
+import type { ContentActionKind, ContentBullet, ContentSurface } from "./types";
 
 /** Lo que se está escribiendo ahora mismo, tal cual está en el formulario (sin guardar). */
 export type PreviewDraft = {
@@ -26,10 +27,12 @@ export type PreviewDraft = {
  * no quede vacío y sirva también para revisar de un vistazo.
  */
 export function PhonePreview({
+  surface,
   surfaceLabel,
   draft,
   published,
 }: Readonly<{
+  surface: ContentSurface;
   surfaceLabel: string;
   draft: PreviewDraft | null;
   published: PreviewDraft[];
@@ -57,9 +60,13 @@ export function PhonePreview({
                 Nada publicado todavía. Escribe una pieza y aparecerá aquí.
               </p>
             ) : null}
-            {pieces.map((piece, index) => (
-              <Piece key={index} piece={piece} isDraft={draft !== null} />
-            ))}
+            {pieces.length > 0 ? (
+              <PhoneScreen
+                surface={surface}
+                pieces={pieces}
+                isDraft={draft !== null}
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -67,7 +74,7 @@ export function PhonePreview({
   );
 }
 
-function Piece({
+export function Piece({
   piece,
   isDraft,
 }: Readonly<{ piece: PreviewDraft; isDraft: boolean }>) {
