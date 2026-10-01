@@ -22,7 +22,7 @@ export function buildEntryColumns(
       accessorKey: "title",
       cell: ({ row }) => (
         <div
-          className="max-w-xs"
+          className="max-w-[14rem]"
           data-testid={`app-content-${row.original.contentKey}`}
         >
           <p className="text-sm font-semibold text-atlas-text">
@@ -52,8 +52,10 @@ export function buildEntryColumns(
           return <span className="text-atlas-muted">—</span>;
         }
         return (
-          <div className="max-w-md space-y-0.5 text-xs">
-            {subtitle ? <p className="text-atlas-text">{subtitle}</p> : null}
+          <div className="max-w-[20rem] space-y-0.5 text-xs">
+            {subtitle ? (
+              <p className="line-clamp-2 text-atlas-text">{subtitle}</p>
+            ) : null}
             {bodyMd ? (
               <p className="line-clamp-2 whitespace-pre-wrap text-atlas-muted">
                 {bodyMd}
@@ -80,7 +82,7 @@ export function buildEntryColumns(
       // escriba a un número que no existe.
       cell: ({ row }) =>
         row.original.resolvedAction ? (
-          <div className="flex max-w-xs flex-wrap items-baseline gap-1.5 text-xs">
+          <div className="flex max-w-[9rem] flex-wrap items-baseline gap-1.5 text-xs">
             <span className="font-medium text-atlas-text">
               {row.original.resolvedAction.label}
             </span>

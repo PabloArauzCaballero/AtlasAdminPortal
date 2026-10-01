@@ -121,7 +121,9 @@ export function PhonePreview({
           }}
         >
           <div
-            className="absolute left-0 top-0 origin-top-left overflow-y-auto"
+            // Sin barras: la del eje vertical (15 px) ensanchaba el lienzo escalado y asomaba una barra
+            // horizontal y una franja blanca debajo. Se sigue desplazando con rueda y dedo.
+            className="absolute left-0 top-0 origin-top-left overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{
               width,
               height,

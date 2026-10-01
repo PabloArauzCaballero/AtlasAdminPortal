@@ -45,6 +45,7 @@ export function DataTable<T>({
   onPageChange,
   emptyTitle = "No hay registros para mostrar.",
   emptyDescription = "Aún no hay configuración registrada para este apartado.",
+  fit = false,
 }: Readonly<{
   data: T[];
   columns: ColumnDef<T>[];
@@ -52,6 +53,13 @@ export function DataTable<T>({
   onPageChange?: (page: number) => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  /**
+   * La tabla se ajusta al ancho disponible y el texto de las celdas se parte, en lugar de desbordar y
+   * desplazarse. Por defecto NO: la mayoría de tablas tienen columnas que no deben partirse (ids, cifras)
+   * y se desplazan. Lo pide una pantalla que comparte fila con otra cosa —el celular de «Contenido de la
+   * app»— y a la que sólo quedan ~500 px: ahí el texto salía cortado a media palabra tras una barra.
+   */
+  fit?: boolean;
 }>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const tablaRef = useRef<HTMLTableElement>(null);
@@ -104,7 +112,10 @@ export function DataTable<T>({
            */}
           <table
             ref={tablaRef}
-            className="w-full min-w-max select-text border-collapse text-sm"
+            className={cn(
+              "w-full select-text border-collapse text-sm",
+              fit ? "min-w-0 [&_td]:break-words" : "min-w-max",
+            )}
           >
             <thead className="sticky top-0 z-10 bg-[#F7F7F8] text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-atlas-muted shadow-[0_1px_0_0_theme(colors.atlas.border)]">
               {table.getHeaderGroups().map((headerGroup) => (
