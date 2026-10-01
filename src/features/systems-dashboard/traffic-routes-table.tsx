@@ -11,6 +11,7 @@ import { Badge, MethodBadge } from "@/shared/components/ui/badges";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime, formatNumber } from "@/shared/lib/format";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 20;
 
@@ -81,7 +82,7 @@ export function TrafficRoutesTable({
   const [method, setMethod] = useState("");
   const routes = useTrafficRoutesPage(
     windowHours,
-    { q: q.trim(), method, page, limit: PAGE_SIZE },
+    { q: q.trim(), method, page, limit: usePageSize(PAGE_SIZE) },
     { live },
   );
   const columns = useMemo(() => withoutClientSorting(COLUMNS), []);

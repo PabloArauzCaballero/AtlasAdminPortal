@@ -15,6 +15,7 @@ import { buildCampaignColumns } from "./campaign-columns";
 import { CAMPAIGN_STATUS_OPTIONS } from "./campaign-options";
 import { useCampaigns } from "./hooks";
 import { SegmentsSection } from "./segments-section";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const tabs = ["Campañas", "Segmentos"];
 
@@ -40,7 +41,12 @@ function AuthorizedCampaignsPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
 
-  const campaigns = useCampaigns({ page, limit: 20, status, search });
+  const campaigns = useCampaigns({
+    page,
+    limit: usePageSize(20),
+    status,
+    search,
+  });
   const columns = useMemo(() => buildCampaignColumns(), []);
 
   return (

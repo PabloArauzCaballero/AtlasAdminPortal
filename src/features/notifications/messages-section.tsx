@@ -15,6 +15,7 @@ import {
   RECIPIENT_TYPE_OPTIONS,
 } from "./notification-options";
 import type { NotificationMessage } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * La pestaña «Mensajes»: todo lo que Atlas mandó, con su estado de entrega.
@@ -37,7 +38,7 @@ export function MessagesSection({
 
   const messages = useNotificationMessages({
     page,
-    limit: 20,
+    limit: usePageSize(20),
     q: q.trim(),
     status,
     channel,

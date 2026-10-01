@@ -30,6 +30,7 @@ import {
   WORK_QUEUE_TABS,
   type WorkQueueTab,
 } from "./work-queue-tabs";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -69,7 +70,7 @@ function AuthorizedWorkQueuePage() {
 
   const cola = useWorkQueue({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     queue: activa.value,
     status,
     priority,

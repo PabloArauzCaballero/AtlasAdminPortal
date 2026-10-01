@@ -15,8 +15,6 @@ import type {
   QaJourneyIterationResult,
 } from "./journey-types";
 
-const PAGE_SIZE = 25;
-
 const OUTCOME_OPTIONS: Option[] = [
   {
     value: "OK",
@@ -72,7 +70,6 @@ export function JourneyBatchResults({
 }: Readonly<{ batch: QaJourneyBatchResult }>) {
   const [q, setQ] = useState("");
   const [outcome, setOutcome] = useState("");
-  const [page, setPage] = useState(1);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const filtered = useMemo(
     () => filterIterations(batch.runs, q, outcome),
@@ -88,9 +85,6 @@ export function JourneyBatchResults({
   if (batch.iterations === 1 && batch.runs[0]) {
     return <JourneyStepResults result={batch.runs[0].result} />;
   }
-  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
-  const current = Math.min(page, totalPages);
-  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const open = batch.runs.find((run) => run.index === openIndex);
   return (
     <div className="space-y-3">
@@ -119,28 +113,18 @@ export function JourneyBatchResults({
         ]}
         onSearchChange={(value) => {
           setQ(value);
-          setPage(1);
         }}
         onFilterChange={(_name, value) => {
           setOutcome(value);
-          setPage(1);
         }}
         onClear={() => {
           setQ("");
           setOutcome("");
-          setPage(1);
         }}
       />
       <DataTable
-        data={shown}
+        data={filtered}
         columns={columns}
-        meta={{
-          page: current,
-          limit: PAGE_SIZE,
-          total: filtered.length,
-          totalPages,
-        }}
-        onPageChange={setPage}
         emptyTitle="Ninguna persona coincide con la búsqueda."
         emptyDescription="Cambia el texto o quita el filtro de resultado."
       />

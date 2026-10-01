@@ -13,6 +13,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import type { Option } from "@/shared/lib/options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export const TERM_TYPE_OPTIONS: Option[] = [
   {
@@ -43,7 +44,13 @@ export function GlossaryTermsTab() {
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [domain, setDomain] = useState(searchParams.get("domain") ?? "");
   const [type, setType] = useState(searchParams.get("type") ?? "");
-  const terms = useBusinessTerms({ page, limit: 20, q, domain, type });
+  const terms = useBusinessTerms({
+    page,
+    limit: usePageSize(20),
+    q,
+    domain,
+    type,
+  });
   const facets = useBusinessTermFacets();
   const columns = useMemo(
     () => serverPagedColumns(buildBusinessTermColumns()),

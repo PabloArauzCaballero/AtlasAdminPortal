@@ -19,6 +19,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ToolsHealthSection } from "./tools-health-section";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Wrench } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export const TOOLS_READ = "systems.tools.read";
 export const TOOLS_HEALTH_READ = "systems.tools.health.read";
@@ -110,7 +111,7 @@ function ToolsCatalog() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
-  const tools = useTools({ page, limit: 20, q, status });
+  const tools = useTools({ page, limit: usePageSize(20), q, status });
   const items = useMemo(() => tools.data?.items ?? [], [tools.data?.items]);
   const columns = useMemo<ColumnDef<ToolItem>[]>(
     () => [

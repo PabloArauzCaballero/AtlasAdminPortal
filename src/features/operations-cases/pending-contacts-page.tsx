@@ -18,6 +18,7 @@ import {
 import { buildPendingContactsColumns } from "./pending-contacts-columns";
 import { resendNotice, type ResendNotice } from "./pending-contacts-notice";
 import type { PendingContactVerificationItem } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 25;
 
@@ -48,7 +49,7 @@ export function PendingContactsPage() {
   const [contactType, setContactType] = useState("");
   const pending = usePendingContactVerification({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q: search.trim(),
     contactType,
   });

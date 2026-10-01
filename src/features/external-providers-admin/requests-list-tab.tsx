@@ -10,6 +10,7 @@ import type { Option } from "@/shared/lib/options";
 import { useProviderRequests, useProviders } from "./hooks";
 import { buildRequestColumns } from "./request-columns";
 import { APROBACION_OPTIONS, DESENLACE_OPTIONS } from "./request-filters";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGINA = 25;
 
@@ -37,7 +38,7 @@ export function RequestsListTab() {
     approvalStatus: approvalStatus || undefined,
     customerId: /^\d+$/.test(cliente) ? cliente : undefined,
     days,
-    limit: PAGINA,
+    limit: usePageSize(PAGINA),
     offset: (page - 1) * PAGINA,
   });
   const columns = useMemo(() => buildRequestColumns(), []);

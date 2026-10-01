@@ -10,6 +10,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { buildJobRunColumns } from "./job-columns";
 import { useJobRuns } from "./hooks";
 import { JOB_QUEUE_OPTIONS, JOB_STATUS_OPTIONS } from "./labels";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /** Pestaña «Historial» de Jobs: cada corrida registrada en `system_job_runs`. */
 export function JobHistoryTab() {
@@ -17,7 +18,7 @@ export function JobHistoryTab() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [queue, setQueue] = useState("");
-  const jobs = useJobRuns({ page, limit: 20, q, status, queue });
+  const jobs = useJobRuns({ page, limit: usePageSize(20), q, status, queue });
   const items = useMemo(() => jobs.data?.items ?? [], [jobs.data]);
   const columns = useMemo(() => buildJobRunColumns(), []);
   const byStatus = jobs.data?.summary?.byStatus;

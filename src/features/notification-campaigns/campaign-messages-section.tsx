@@ -15,6 +15,7 @@ import { formatDateTime } from "@/shared/lib/format";
 import { CAMPAIGN_CHANNEL_OPTIONS } from "./campaign-options";
 import { useCampaignMessages } from "./hooks";
 import type { CampaignMessage } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /** Un aviso por persona y canal, con su estado de entrega. */
 export function CampaignMessagesSection({
@@ -26,7 +27,7 @@ export function CampaignMessagesSection({
   const [recipientId, setRecipientId] = useState("");
   const messages = useCampaignMessages(campaignId, {
     page,
-    limit: 20,
+    limit: usePageSize(20),
     status,
     channel,
     recipientId,

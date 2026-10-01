@@ -10,6 +10,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
 import { useExhaustedOutcomes } from "./hooks";
 import { buildBacklogColumns } from "./portfolio-columns";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 25;
 const ES_ID = /^[1-9]\d*$/;
@@ -27,7 +28,7 @@ export function PortfolioBacklog({ visible }: Readonly<{ visible: boolean }>) {
   const backlog = useExhaustedOutcomes(
     {
       page,
-      limit: POR_PAGINA,
+      limit: usePageSize(POR_PAGINA),
       // El servidor exige un número: con otra cosa a medio escribir no se filtra.
       ...(ES_ID.test(prestamo) ? { loanId: prestamo } : {}),
     },

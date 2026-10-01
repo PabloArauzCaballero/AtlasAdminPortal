@@ -41,6 +41,7 @@ import {
 import { buildFlowColumns } from "./flows-columns";
 import { FlowsSummaryTiles } from "./flows-summary-tiles";
 import { FlowCatalogNotLoaded } from "./flow-catalog-not-loaded";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const option = (value: string) => ({ label: value, value });
 
@@ -105,7 +106,7 @@ function AuthorizedFlowsPage() {
     [pathname, router, searchParams],
   );
 
-  const flows = useFlows({ page, limit: 20, ...filters });
+  const flows = useFlows({ page, limit: usePageSize(20), ...filters });
   const summary = useFlowsSummary();
   const modules = useFlowModules();
   const imports = useFlowImports();

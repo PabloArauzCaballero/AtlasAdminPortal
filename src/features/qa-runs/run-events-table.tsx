@@ -9,8 +9,6 @@ import { formatDateTime } from "@/shared/lib/format";
 import { describeRunEvent } from "./run-events";
 import type { QaRunEvent } from "./run-extras-types";
 
-const PAGE_SIZE = 25;
-
 type Row = { event: QaRunEvent; label: string; detail: string };
 
 const COLUMNS: ColumnDef<Row>[] = [
@@ -60,7 +58,6 @@ export function RunEventsTable({
   live,
 }: Readonly<{ events: readonly QaRunEvent[]; live: boolean }>) {
   const [q, setQ] = useState("");
-  const [page, setPage] = useState(1);
   const rows = useMemo<Row[]>(
     () =>
       events.map((event) => {
@@ -80,9 +77,6 @@ export function RunEventsTable({
     );
   }, [rows, q]);
   const columns = useMemo(() => withoutClientSorting(COLUMNS), []);
-  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
-  const current = Math.min(page, totalPages);
-  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   return (
     <div className="space-y-3" aria-live={live ? "polite" : undefined}>
       <FilterBar
@@ -91,23 +85,14 @@ export function RunEventsTable({
         searchTooltip="Recorre todos los hitos del diario leídos hasta ahora en este navegador (el servidor los entrega por cursor y aquí se acumulan): coincide con parte del hito o de su detalle, o con su número."
         onSearchChange={(value) => {
           setQ(value);
-          setPage(1);
         }}
         onClear={() => {
           setQ("");
-          setPage(1);
         }}
       />
       <DataTable
-        data={shown}
+        data={filtered}
         columns={columns}
-        meta={{
-          page: current,
-          limit: PAGE_SIZE,
-          total: filtered.length,
-          totalPages,
-        }}
-        onPageChange={setPage}
         emptyTitle="Ningún hito coincide con la búsqueda."
         emptyDescription="Cambia el texto de la búsqueda."
       />

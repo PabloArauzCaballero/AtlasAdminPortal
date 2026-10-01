@@ -48,14 +48,14 @@ function KeyValueItem({ item }: Readonly<{ item: Item }>) {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-1 px-4 py-3 transition-colors odd:bg-white even:bg-slate-50/60 sm:grid-cols-[220px_1fr] sm:items-start sm:gap-4",
+        "grid grid-cols-1 gap-1 px-4 py-3 transition-colors odd:bg-white even:bg-slate-50/60 sm:grid-cols-[minmax(7rem,13rem)_minmax(0,1fr)] sm:items-start sm:gap-4",
         toneClass(item.tone),
       )}
     >
       <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-atlas-muted">
         {item.label}
       </dt>
-      <dd className="min-h-5 break-words text-sm font-medium leading-6 text-atlas-text">
+      <dd className="min-h-5 min-w-0 text-sm [overflow-wrap:anywhere] font-medium leading-6 text-atlas-text">
         {item.mono && typeof value === "string" ? (
           <CopyableCode value={value} />
         ) : (

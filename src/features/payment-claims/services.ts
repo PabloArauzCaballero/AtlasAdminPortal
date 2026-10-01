@@ -15,6 +15,7 @@ export const PAYMENT_CLAIMS_PAGE_SIZE = 25;
  */
 export async function listPaymentClaims(
   filters: PaymentClaimsFilters,
+  pageSize: number = PAYMENT_CLAIMS_PAGE_SIZE,
 ): Promise<PaymentClaimsPage> {
   const response = await apiRequest<PaymentClaimsApiResponse>(
     "/operations/payment-claims",
@@ -25,7 +26,7 @@ export async function listPaymentClaims(
         q: filters.q.trim(),
         olderThanHours: filters.olderThanHours,
         page: filters.page,
-        pageSize: PAYMENT_CLAIMS_PAGE_SIZE,
+        pageSize,
       },
     },
   );

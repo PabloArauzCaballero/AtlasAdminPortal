@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Columns3,
@@ -24,6 +25,7 @@ import { useSchemaNames, useSchemaTables, useSchemaVersion } from "./hooks";
 import { buildSchemaTableColumns } from "./schema-table-columns";
 import { SchemaPicker } from "./schema-picker";
 import { SchemaInventoryMissingNote } from "./schema-inventory-missing-note";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 50;
 
@@ -39,16 +41,20 @@ const PAGE_SIZE = 50;
 export function SchemaVersionDetailPage({
   versionId,
 }: Readonly<{ versionId: string }>) {
-  const [schemaName, setSchemaName] = useState<string | null>(null);
+  const params = useSearchParams();
+  const [schemaName, setSchemaName] = useState<string | null>(
+    params.get("schema"),
+  );
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
 
   const version = useSchemaVersion(versionId);
   const schemas = useSchemaNames(versionId);
+  const limit = usePageSize(PAGE_SIZE);
   const tables = useSchemaTables({
     versionId,
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit,
+    offset: (page - 1) * limit,
     ...(schemaName ? { schemaName } : {}),
     // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
     ...(q.trim() ? { q: q.trim() } : {}),

@@ -16,17 +16,29 @@ import { ProposeTableForm } from "./propose-table-form";
 import { buildSchemaVersionColumns } from "./schema-version-columns";
 import { SchemaChangeLogTable } from "./schema-change-log-table";
 import { SchemaInventoryMissingNote } from "./schema-inventory-missing-note";
+import { SchemaVersionsIndex } from "./schema-versions-index";
 import { Database } from "lucide-react";
 import { useAuth } from "@/shared/auth/auth-context";
 import { SCHEMA_PROPOSE_PERMISSION } from "./change-actor";
+import type { SchemaVersion } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
+
+/** La versión vigente (o, sin ninguna activa, la primera de la página) con su índice de esquemas. */
+function SchemaVersionsIndexFor({
+  items,
+}: Readonly<{ items: SchemaVersion[] }>) {
+  const vigente = items.find((version) => version.isActive) ?? items[0];
+  return vigente ? <SchemaVersionsIndex version={vigente} /> : null;
+}
 
 export function SchemaVersionsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [proposing, setProposing] = useState(false);
+  const limit = usePageSize(20);
   const versions = useSchemaVersions({
-    limit: 20,
-    offset: (page - 1) * 20,
+    limit,
+    offset: (page - 1) * limit,
     // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
     ...(q.trim() ? { q: q.trim() } : {}),
   });
@@ -103,6 +115,9 @@ export function SchemaVersionsPage() {
             .filter((version) => version.tablesCount === 0)
             .map((version) => version.versionCode)}
         />
+      ) : null}
+      {versions.data ? (
+        <SchemaVersionsIndexFor items={versions.data.items} />
       ) : null}
       {versions.data ? (
         <DataTable

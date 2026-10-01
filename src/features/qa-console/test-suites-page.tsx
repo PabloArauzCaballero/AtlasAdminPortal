@@ -27,6 +27,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { ClipboardList } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function TestSuitesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -46,7 +47,7 @@ function AuthorizedTestSuitesPage() {
   const [q, setQ] = useState("");
   const [suiteType, setSuiteType] = useState("");
   const [creating, setCreating] = useState(false);
-  const suites = useTestSuites({ page, limit: 20, q, suiteType });
+  const suites = useTestSuites({ page, limit: usePageSize(20), q, suiteType });
   const items = useMemo(() => suites.data?.items ?? [], [suites.data?.items]);
   const filtering = Boolean(q || suiteType);
 

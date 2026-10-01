@@ -17,6 +17,7 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildGovernedColumns } from "./governed-columns";
 import { useGovernedView, useGovernedViewFacets } from "./hooks";
 import { GOVERNED_VIEWS, type GovernedViewKey } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * Vistas gobernadas del negocio.
@@ -43,6 +44,7 @@ function AuthorizedGovernedViewsPage() {
   const [viewKey, setViewKey] = useState<GovernedViewKey>("customers");
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
+  const limit = usePageSize(20);
   const [facets, setFacets] = useState<Record<string, string>>({});
 
   const definition = GOVERNED_VIEWS.find((item) => item.key === viewKey)!;
@@ -52,7 +54,7 @@ function AuthorizedGovernedViewsPage() {
    * eso sólo se envían los de la vista activa y no el estado acumulado de las anteriores.
    */
   const query = useMemo(() => {
-    const activos: Record<string, string | number> = { page, limit: 20 };
+    const activos: Record<string, string | number> = { page, limit };
     if (q) activos.q = q;
     for (const filtro of definition.filters) {
       if (facets[filtro.name]) {
@@ -60,7 +62,7 @@ function AuthorizedGovernedViewsPage() {
       }
     }
     return activos;
-  }, [page, q, facets, definition]);
+  }, [page, limit, q, facets, definition]);
 
   const vista = useGovernedView(viewKey, query);
   const valores = useGovernedViewFacets(viewKey);

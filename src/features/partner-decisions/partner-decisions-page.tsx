@@ -19,6 +19,7 @@ import { buildPartnerQueueColumns } from "./partner-queue-columns";
 import { PartnerFileDrawer } from "./partner-file-drawer";
 import { PartnerQrReviewQueue } from "./partner-qr-review";
 import type { PartnerQueueItem } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * Verificación de comercios.
@@ -65,7 +66,11 @@ function AuthorizedPartnerDecisionsPage() {
   const [abierto, setAbierto] = useState<PartnerQueueItem | null>(null);
 
   const [busqueda, setBusqueda] = useState("");
-  const cola = usePartnerQueue({ page, limit: 25, q: busqueda.trim() });
+  const cola = usePartnerQueue({
+    page,
+    limit: usePageSize(25),
+    q: busqueda.trim(),
+  });
   const items = useMemo(() => cola.data?.items ?? [], [cola.data]);
   const columns = useMemo(
     () =>

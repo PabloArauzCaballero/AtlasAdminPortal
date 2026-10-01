@@ -16,6 +16,7 @@ import { cn } from "@/shared/lib/cn";
 import type { PaginationMeta } from "@/shared/api/types";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 import { Pagination } from "./pagination";
+import { useLocalPagination } from "./use-local-pagination";
 
 /**
  * Metadatos por columna que esta tabla entiende.
@@ -72,6 +73,15 @@ export function DataTable<T>({
     getSortedRowModel: getSortedRowModel(),
   });
 
+  // Sin `meta` del servidor la tabla llegó entera: se parte aquí, con los mismos controles.
+  const local = useLocalPagination(data.length, !meta);
+  const filas = table.getRowModel().rows;
+  const filasVisibles = local.meta
+    ? filas.slice((local.page - 1) * local.limit, local.page * local.limit)
+    : filas;
+  const pie = meta ?? local.meta;
+  const cambiarPagina = meta ? onPageChange : local.setPage;
+
   if (data.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
@@ -127,7 +137,7 @@ export function DataTable<T>({
               ))}
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {table.getRowModel().rows.map((row) => (
+              {filasVisibles.map((row) => (
                 <tr
                   key={row.id}
                   className="group transition-colors duration-100 hover:bg-atlas-soft/70"
@@ -157,7 +167,7 @@ export function DataTable<T>({
           </table>
         </div>
       </div>
-      {meta ? <Pagination meta={meta} onPageChange={onPageChange} /> : null}
+      {pie ? <Pagination meta={pie} onPageChange={cambiarPagina} /> : null}
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
   SEVERITY_OPTIONS,
   useModuleOptions,
 } from "@/features/lineage/module-options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * Las aristas del linaje paginadas en el servidor: qué ruta toca qué tabla (con severidad) y qué
@@ -32,7 +33,7 @@ export function LineageImpactTab() {
   const [domain, setDomain] = useState(searchParams.get("domain") ?? "");
   const impact = useLineageImpact({
     page,
-    limit: 20,
+    limit: usePageSize(20),
     q,
     severity,
     family,

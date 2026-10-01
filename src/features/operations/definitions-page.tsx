@@ -25,6 +25,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber, safeText } from "@/shared/lib/format";
 import { withoutClientSorting } from "@/shared/components/data-table/without-client-sorting";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function DefinitionsPage() {
   // Los hooks viven en el hijo: aquí saldrían antes de que el gate decidiera.
@@ -45,7 +46,13 @@ function AuthorizedDefinitionsPage() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
-  const definitions = useDefinitions({ page, limit: 20, q, type, status });
+  const definitions = useDefinitions({
+    page,
+    limit: usePageSize(20),
+    q,
+    type,
+    status,
+  });
   const summary = definitions.data?.summary;
   const rows = useMemo(
     () => (definitions.data ? toRows(definitions.data) : []),

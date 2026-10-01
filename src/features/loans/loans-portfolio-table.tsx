@@ -14,6 +14,7 @@ import { CarteraError } from "./cartera-error";
 import { buildLoanColumns } from "./customer-portfolio-columns";
 import { usePortfolioLoans } from "./hooks";
 import { DELINQUENCY_BUCKET_OPTIONS, LOAN_STATUS_OPTIONS } from "./loan-labels";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 25;
 
@@ -41,7 +42,7 @@ export function LoansPortfolioTable() {
     delinquencyBucket: tramo || undefined,
     q: codigoBuscado || undefined,
     page,
-    pageSize: POR_PAGINA,
+    pageSize: usePageSize(POR_PAGINA),
   });
   const columnas = useMemo(
     () =>
