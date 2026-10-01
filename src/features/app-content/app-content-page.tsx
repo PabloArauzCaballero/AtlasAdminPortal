@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileText, Plus } from "lucide-react";
 import { apiErrorText, isAtlasApiError } from "@/shared/api/errors";
 import { PermissionGate } from "@/shared/auth/permission-gate";
@@ -90,6 +90,14 @@ export function AppContentPage() {
         })),
     [publishedContent.data],
   );
+  // El formulario se abre ARRIBA de la tabla: si se pulsó «Editar» en una fila de abajo, queda fuera de
+  // la vista y parece que no pasó nada. Se lleva la vista hasta él.
+  useEffect(() => {
+    if (editing)
+      document
+        .getElementById("app-content-editor")
+        ?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }, [editing]);
   const hayFiltros = q.trim() !== "" || visibilidad !== "";
   const summary = content.data?.summary;
 
@@ -168,7 +176,7 @@ export function AppContentPage() {
           </PermissionGate>
 
           {editing ? (
-            <div className="mb-4">
+            <div className="mb-4" id="app-content-editor">
               <EntryEditor
                 key={editing.contentId}
                 entry={editing}
@@ -249,6 +257,7 @@ export function AppContentPage() {
                 <DataTable
                   data={content.data.items}
                   columns={columns}
+                  fit
                   meta={content.data.meta}
                   onPageChange={setPage}
                   emptyTitle={
