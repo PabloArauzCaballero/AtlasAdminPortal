@@ -76,6 +76,10 @@ export function AppContentPage() {
         .filter((entry) => entry.isActive)
         .map((entry) => ({
           contentKey: entry.contentKey,
+          icon:
+            typeof entry.metadata?.icon === "string"
+              ? entry.metadata.icon
+              : undefined,
           title: entry.title ?? "",
           subtitle: entry.subtitle ?? "",
           body: entry.bodyMd ?? "",

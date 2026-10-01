@@ -80,6 +80,30 @@ export const SURFACES: readonly SurfaceOption[] = [
       "Perfil no muestra ninguna explicación de la línea ni del puntaje hasta que se publique aquí la primera pieza. Sale como una tarjeta bajo el puntaje.",
     readByApp: true,
   },
+  {
+    value: "tour",
+    label: "Recorrido guiado",
+    hint: "Los tres pasos que explican la pantalla de Inicio",
+    whenEmpty:
+      "La app usa los pasos del recorrido de fábrica hasta que se publique aquí una pieza con la clave del paso (inicio.linea, inicio.escanear, inicio.pagos).",
+    readByApp: true,
+  },
+  {
+    value: "signup",
+    label: "Alta: promesas",
+    hint: "Qué se le dice a la persona sobre cada dato que se le pide al registrarse",
+    whenEmpty:
+      "La app usa las promesas de fábrica hasta que se publique aquí la pieza de ese dato. Son texto con implicaciones legales: las firma quien responde de la política de privacidad.",
+    readByApp: true,
+  },
+  {
+    value: "privacy",
+    label: "Privacidad",
+    hint: "La pantalla «Tus datos»: permisos, derechos y plazos",
+    whenEmpty:
+      "La pantalla Privacidad usa sus textos de fábrica hasta que se publique aquí la primera pieza.",
+    readByApp: true,
+  },
 ];
 
 export function surfaceOption(surface: ContentSurface): SurfaceOption {

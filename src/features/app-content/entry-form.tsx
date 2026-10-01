@@ -4,10 +4,13 @@ import { Minus, Plus } from "lucide-react";
 import { Field, Input, Textarea } from "@/shared/components/ui/input";
 import { ActionEditor } from "./action-editor";
 import { BulletsEditor } from "./bullets-editor";
+import { IconPicker } from "./icon-picker";
 import type { ContentActionKind, ContentBullet } from "./types";
 
 /** Todo lo que se puede configurar de una pieza. Es el mismo para crear y para editar. */
 export type EntryFormState = {
+  /** Icono de la pieza (`metadata.icon`). Vacío = sin icono. */
+  icon: string;
   title: string;
   subtitle: string;
   body: string;
@@ -52,6 +55,7 @@ export function EntryFormFields({
   onChange,
   bodyLabel,
   titleLabel,
+  pieceIcon = false,
   ids,
 }: Readonly<{
   contentKey: string;
@@ -59,6 +63,8 @@ export function EntryFormFields({
   onChange: (cambios: Partial<EntryFormState>) => void;
   bodyLabel: string;
   titleLabel: string;
+  /** Esta superficie pinta un icono por pieza (recorrido y promesas del alta). */
+  pieceIcon?: boolean;
   ids: EntryFormIds;
 }>) {
   const orden = (valor: number) =>
@@ -69,6 +75,21 @@ export function EntryFormFields({
   return (
     <div className="flex flex-col gap-4">
       <Seccion titulo="Texto" ayuda="Lo primero que lee la persona en la app.">
+        {pieceIcon ? (
+          <Field
+            label="Icono de la pieza"
+            tooltip="El icono que la app dibuja junto a esta pieza. Si no eliges ninguno, usa el de fábrica."
+          >
+            <IconPicker
+              bullet={{ text: "", icon: state.icon || "check" }}
+              testId={`pieza-icono-${contentKey}`}
+              allowUpload={false}
+              onChange={(cambios) =>
+                onChange({ icon: cambios.icon ?? state.icon })
+              }
+            />
+          </Field>
+        ) : null}
         <Field
           label={titleLabel}
           tooltip="Encabezado que ve el cliente en la app; en preguntas frecuentes, la pregunta tal cual."

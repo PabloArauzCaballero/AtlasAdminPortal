@@ -9,8 +9,16 @@ import { useSaveAppContent } from "./hooks";
 import type { PreviewDraft } from "./phone-preview";
 import type { AppContentEntry } from "./types";
 
+/** `metadata` con el icono de la pieza puesto o quitado, sin tocar el resto de sus claves. */
+function conIcono(metadata: Record<string, unknown>, icono: string) {
+  const { icon: _anterior, ...resto } = metadata ?? {};
+  void _anterior;
+  return icono ? { ...resto, icon: icono } : resto;
+}
+
 function estadoInicial(entry: AppContentEntry): EntryFormState {
   return {
+    icon: typeof entry.metadata?.icon === "string" ? entry.metadata.icon : "",
     title: entry.title ?? "",
     subtitle: entry.subtitle ?? "",
     body: entry.bodyMd ?? "",
@@ -50,6 +58,7 @@ export function EntryEditor({
   useEffect(() => {
     onDraftChange({
       contentKey: entry.contentKey,
+      icon: state.icon || undefined,
       title: state.title,
       subtitle: state.subtitle,
       body: state.body,
@@ -75,7 +84,8 @@ export function EntryEditor({
         bullets: state.bullets.filter(
           (bullet) => bullet.text.trim().length > 0,
         ),
-        metadata: entry.metadata,
+        // El icono de la pieza vive en `metadata.icon`; el resto de la metadata se conserva tal cual.
+        metadata: conIcono(entry.metadata, state.icon),
         actionKind: state.actionKind,
         actionLabel: state.actionKind ? state.actionLabel : null,
         actionValue: state.actionKind ? state.actionValue : null,
@@ -109,6 +119,7 @@ export function EntryEditor({
           onChange={cambiar}
           bodyLabel={entry.surface === "faq" ? "Respuesta" : "Texto"}
           titleLabel={entry.surface === "faq" ? "Pregunta" : "Título"}
+          pieceIcon={entry.surface === "tour" || entry.surface === "signup"}
           ids={{
             title: `title-${entry.contentKey}`,
             subtitle: `subtitle-${entry.contentKey}`,
