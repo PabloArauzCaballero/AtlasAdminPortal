@@ -132,6 +132,7 @@ export function PrivacyScreen({
 }
 
 const GRUPOS: Record<string, string> = {
+  extracto: "Subir el extracto",
   registro: "Crear tu cuenta",
   economia: "Tu situación económica",
   domicilio: "Tu domicilio",

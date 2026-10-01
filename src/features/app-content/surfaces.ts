@@ -104,6 +104,14 @@ export const SURFACES: readonly SurfaceOption[] = [
       "La pantalla Privacidad usa sus textos de fábrica hasta que se publique aquí la primera pieza.",
     readByApp: true,
   },
+  {
+    value: "copy",
+    label: "Textos de pantallas",
+    hint: "Frases sueltas de la app: estados vacíos, avisos, rechazos del QR",
+    whenEmpty:
+      "La app usa sus textos de fábrica hasta que se publique aquí la pieza de ese texto. Cada pieza dice en `donde` qué pantalla y qué lugar cambia.",
+    readByApp: true,
+  },
 ];
 
 export function surfaceOption(surface: ContentSurface): SurfaceOption {
