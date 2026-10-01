@@ -86,6 +86,7 @@ export function ActionEditor({
         label="Tipo de botón"
         tooltip="Lo que pasa cuando la persona toca el botón al final de la pieza."
       >
+        {/* sin-ayuda: el tooltip lo pinta el Field que lo envuelve */}
         <OptionSelect
           name={`action-kind-${contentKey}`}
           testId={`action-kind-${contentKey}`}
@@ -117,7 +118,11 @@ export function ActionEditor({
               data-testid={`action-label-${contentKey}`}
             />
           </Field>
-          <Field label="Destino" hint={ayuda?.hint}>
+          <Field
+            label="Destino"
+            hint={ayuda?.hint}
+            tooltip="A dónde lleva el botón: el número de WhatsApp, la dirección web o la pantalla de la app, según el tipo que elegiste."
+          >
             <Input
               value={value}
               list={kind === "screen" ? `pantallas-${contentKey}` : undefined}
