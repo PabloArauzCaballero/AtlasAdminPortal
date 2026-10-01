@@ -34,7 +34,7 @@ export function buildDataImpactColumns(): ColumnDef<DataEntityImpact>[] {
       cell: ({ row }) => formatBoolean(row.original.requiresAuditLog),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -72,7 +72,7 @@ export function buildFieldColumns(): ColumnDef<FieldImpact>[] {
       cell: ({ row }) => safeText(row.original.validationRule ?? "—"),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -105,7 +105,7 @@ export function buildToolColumns(): ColumnDef<ToolRequirement>[] {
       cell: ({ row }) => formatBoolean(row.original.requiresStressTest),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />

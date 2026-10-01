@@ -62,7 +62,7 @@ export function EndpointPicker({
           />
           <input
             className="h-11 rounded-lg border border-atlas-border bg-white px-3 text-sm font-mono"
-            placeholder="endpointId"
+            placeholder="Número de operación"
             value={manualId}
             onChange={(event) => setManualId(event.target.value)}
           />

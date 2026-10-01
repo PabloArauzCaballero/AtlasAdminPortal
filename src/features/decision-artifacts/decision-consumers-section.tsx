@@ -24,7 +24,7 @@ export function DecisionConsumersSection({
       <Card testId="decision-endpoints">
         <CardHeader>
           <h3 className="text-sm font-semibold text-atlas-text">
-            Endpoints que la llaman
+            Operaciones que la llaman
           </h3>
           <p className="text-xs text-atlas-muted">
             Si cambias esta política, esto es lo que se ve afectado.

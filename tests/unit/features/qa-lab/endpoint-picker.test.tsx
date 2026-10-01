@@ -184,7 +184,10 @@ describe("EndpointPicker · elegir endpoint", () => {
     const onSelect = vi.fn();
     render(<EndpointPicker selectedId="" onSelect={onSelect} />);
 
-    await userEvent.type(screen.getByPlaceholderText("endpointId"), "ep-99");
+    await userEvent.type(
+      screen.getByPlaceholderText("Número de operación"),
+      "ep-99",
+    );
     await userEvent.click(
       screen.getByRole("button", { name: "Cargar operación" }),
     );
@@ -201,7 +204,10 @@ describe("EndpointPicker · elegir endpoint", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Cargar operación" }),
     );
-    await userEvent.type(screen.getByPlaceholderText("endpointId"), "   ");
+    await userEvent.type(
+      screen.getByPlaceholderText("Número de operación"),
+      "   ",
+    );
     await userEvent.click(
       screen.getByRole("button", { name: "Cargar operación" }),
     );
@@ -213,7 +219,10 @@ describe("EndpointPicker · elegir endpoint", () => {
     const onSelect = vi.fn();
     render(<EndpointPicker selectedId="" onSelect={onSelect} />);
 
-    await userEvent.type(screen.getByPlaceholderText("endpointId"), "  ep-5  ");
+    await userEvent.type(
+      screen.getByPlaceholderText("Número de operación"),
+      "  ep-5  ",
+    );
     await userEvent.click(
       screen.getByRole("button", { name: "Cargar operación" }),
     );

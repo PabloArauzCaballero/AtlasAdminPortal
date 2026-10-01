@@ -89,7 +89,7 @@ export function RawData({ value }: Readonly<{ value: unknown }>) {
         {abierto ? "Ocultar datos crudos" : "Ver datos crudos"}
       </button>
       {abierto ? (
-        <JsonViewer title="Respuesta del backend" value={value} />
+        <JsonViewer title="Respuesta del servidor" value={value} />
       ) : null}
     </div>
   );

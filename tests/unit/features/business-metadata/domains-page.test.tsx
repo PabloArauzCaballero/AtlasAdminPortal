@@ -175,7 +175,7 @@ describe("BusinessDomainsPage — el mapa lo calcula el backend", () => {
       "Operaciones",
       "Tablas",
       "Baterías de prueba",
-      "PII",
+      "Datos personales",
       "Críticos",
       "En revisión",
       "Módulos",

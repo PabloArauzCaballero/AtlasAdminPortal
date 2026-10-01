@@ -62,7 +62,7 @@ const COLUMNS: ColumnDef<DomainOverviewItem>[] = [
     cell: ({ row }) => formatNumber(row.original.testSuites),
   },
   {
-    header: "PII",
+    header: "Datos personales",
     accessorKey: "piiTables",
     cell: ({ row }) => formatNumber(row.original.piiTables),
   },
@@ -100,7 +100,7 @@ const COLUMNS: ColumnDef<DomainOverviewItem>[] = [
             href={`/internal/systems/endpoints?q=${encodeURIComponent(primaryModule)}`}
             className={LINK}
           >
-            Endpoints
+            Operaciones
           </Link>
           <Link
             href={`/internal/data-catalog/tables?q=${encodeURIComponent(primaryModule)}`}
@@ -145,12 +145,12 @@ const FILTERS: LocalListFilter<DomainOverviewItem>[] = [
     options: [
       {
         value: "yes",
-        label: "Con PII",
+        label: "Con datos personales",
         description: "Al menos una de sus tablas guarda datos personales.",
       },
       {
         value: "no",
-        label: "Sin PII",
+        label: "Sin datos personales",
         description: "Ninguna de sus tablas guarda datos personales.",
       },
     ],

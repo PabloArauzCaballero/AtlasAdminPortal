@@ -112,7 +112,7 @@ function AuthorizedDocumentationGatePage() {
         icon={BadgeCheck}
         eyebrow="Sistemas · Mapa de rutas"
         title="Compuerta de documentación"
-        description="Antes de certificar: flujos CRITICAL verificados sobre su código actual, sin escrituras desprotegidas ni deriva de permisos grave abiertas, cola de revisión sin pendientes de riesgo alto y el artefacto de cada bloque cargado."
+        description="Antes de certificar: flujos de riesgo crítico verificados sobre su código actual, sin escrituras desprotegidas ni deriva de permisos grave abiertas, cola de revisión sin pendientes de riesgo alto y el artefacto de cada bloque cargado."
       />
       <FlowCatalogNotLoaded />
       <div className="mb-6 grid gap-4 md:grid-cols-4">

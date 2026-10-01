@@ -53,12 +53,12 @@ export function buildColumnReviewColumns(
       ),
     },
     {
-      header: "PII",
+      header: "Datos personales",
       accessorKey: "containsPii",
       cell: ({ row }) => <PiiBadge value={row.original.containsPii ?? false} />,
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />

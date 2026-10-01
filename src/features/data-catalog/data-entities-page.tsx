@@ -140,7 +140,7 @@ function AuthorizedDataEntitiesPage() {
           ),
         },
         {
-          header: "Review",
+          header: "Revisión",
           accessorKey: "reviewStatus",
           cell: ({ row }) => (
             <ReviewStatusBadge value={row.original.reviewStatus} />

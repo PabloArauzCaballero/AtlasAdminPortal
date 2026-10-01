@@ -51,7 +51,7 @@ export function buildRelatedEndpointColumns(
       cell: ({ row }) => formatBoolean(row.original.requiresAuditLog),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
