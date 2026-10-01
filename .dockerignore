@@ -7,6 +7,9 @@
 node_modules
 .next
 .git
+!.git/HEAD
+!.git/packed-refs
+!.git/refs
 .turbo
 test-results
 playwright-report
