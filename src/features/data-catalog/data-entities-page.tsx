@@ -25,6 +25,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Database } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const reviewOptions = [
   { label: "Auto detectado", value: "AUTO_DETECTED" },
@@ -54,7 +55,13 @@ function AuthorizedDataEntitiesPage() {
   // acotado al producto que se estaba investigando, sin obligar a repetir el filtro a mano.
   const [block, setBlock] = useState(searchParams.get("block") ?? "");
   const blocks = usePlatformBlocks();
-  const entities = useDataEntities({ page, limit: 20, q, reviewStatus, block });
+  const entities = useDataEntities({
+    page,
+    limit: usePageSize(20),
+    q,
+    reviewStatus,
+    block,
+  });
 
   const blockOptions = useMemo(
     () =>

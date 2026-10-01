@@ -19,6 +19,7 @@ import {
   GOVERNANCE_POLICY_TYPE_OPTIONS,
   useGovernancePolicySearch,
 } from "./governance-policy-search";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function DataGovernancePoliciesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -40,7 +41,12 @@ function AuthorizedDataGovernancePoliciesPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [type, setType] = useState("");
-  const policies = useGovernancePolicySearch({ page, limit: 20, q, type });
+  const policies = useGovernancePolicySearch({
+    page,
+    limit: usePageSize(20),
+    q,
+    type,
+  });
   const columns = useMemo(() => buildGovernancePolicyColumns(), []);
   const summary = policies.data?.summary;
   const filtered = Boolean(q || type);

@@ -14,6 +14,7 @@ import {
   TIPO_CANAL_OPTIONS,
 } from "./desk-columns";
 import { useMyDesk } from "./hooks";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -35,7 +36,7 @@ export function MisConversaciones() {
   const [page, setPage] = useState(1);
   const mia = useMyDesk({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q: q.trim() || undefined,
     status: status || undefined,
     channelType: channelType || undefined,

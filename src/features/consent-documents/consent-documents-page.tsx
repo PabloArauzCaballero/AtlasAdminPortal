@@ -14,6 +14,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAuth } from "@/shared/auth/auth-context";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -54,7 +55,12 @@ export function ConsentDocumentsPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
-  const documents = useConsentDocuments({ page, limit: POR_PAGINA, q, status });
+  const documents = useConsentDocuments({
+    page,
+    limit: usePageSize(POR_PAGINA),
+    q,
+    status,
+  });
   const [editing, setEditing] = useState<ConsentDocument | null>(null);
   // Corregir un texto legal es `governance.policies.manage`; el backend lo exige. Sin él, el botón
   // sólo llevaba a un «No pudimos guardar» sin explicación.

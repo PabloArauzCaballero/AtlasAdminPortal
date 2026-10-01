@@ -23,6 +23,7 @@ import {
   isMockEndpointId,
   searchMockProviderEndpoints,
 } from "./mock-provider-endpoints";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function EndpointPicker({
   selectedId,
@@ -30,7 +31,7 @@ export function EndpointPicker({
 }: Readonly<{ selectedId: string; onSelect: (endpointId: string) => void }>) {
   const [q, setQ] = useState("");
   const [manualId, setManualId] = useState(selectedId);
-  const endpoints = useLabEndpoints({ page: 1, limit: 10, q });
+  const endpoints = useLabEndpoints({ page: 1, limit: usePageSize(10), q });
   const columns = useMemo(() => buildColumns(onSelect), [onSelect]);
   const mockMatches = useMemo(() => searchMockProviderEndpoints(q), [q]);
 

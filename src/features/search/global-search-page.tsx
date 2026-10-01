@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGlobalSearch } from "./hooks";
+import { SEARCH_PAGE_SIZE } from "./services";
 import { buildSearchResultColumns } from "./search-result-columns";
 import type { GlobalSearchKind, GlobalSearchResult } from "./types";
 import type { PaginationMeta } from "@/shared/api/types";
@@ -23,6 +24,7 @@ import {
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { Search } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function GlobalSearchPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -64,7 +66,7 @@ function AuthorizedGlobalSearchPage() {
   // La página vuelve a 1 al cambiar de búsqueda o de pestaña.
   const pageKey = `${q}|${kind}`;
   const page = pageState.key === pageKey ? pageState.page : 1;
-  const search = useGlobalSearch(q, kind, page);
+  const search = useGlobalSearch(q, kind, page, usePageSize(SEARCH_PAGE_SIZE));
   const totals = useMemo(() => search.data?.totals ?? {}, [search.data]);
 
   const selectKind = useCallback(

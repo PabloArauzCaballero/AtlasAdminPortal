@@ -13,6 +13,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { buildEndpointColumns, buildEntityColumns } from "./lineage-columns";
 import { useModuleOptions } from "./module-options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 20;
 
@@ -30,12 +31,12 @@ export function LineageNodesTab() {
   const entities = useDataEntities({
     ...filters,
     page: tablesPage,
-    limit: PAGE_SIZE,
+    limit: usePageSize(PAGE_SIZE),
   });
   const endpoints = useEndpoints({
     ...filters,
     page: routesPage,
-    limit: PAGE_SIZE,
+    limit: usePageSize(PAGE_SIZE),
   });
   const modules = useModuleOptions();
   const entityColumns = useMemo(

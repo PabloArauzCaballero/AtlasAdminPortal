@@ -37,6 +37,8 @@ const checks = [
     allowed: new Set([
       "src/shared/auth/session-storage.ts",
       "src/shared/lib/local-search-history.ts",
+      // Filas por página: preferencia de la persona, la misma en todas las tablas.
+      "src/shared/lib/page-size.ts",
       // Progreso de tutoriales de QA LAB (fuente: el navegador) y recorrido en curso.
       "src/features/qa-tutorials/progress-storage.ts",
     ]),

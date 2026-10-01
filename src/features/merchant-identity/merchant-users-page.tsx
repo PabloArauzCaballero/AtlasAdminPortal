@@ -28,6 +28,7 @@ import { buildIdentityColumns } from "./merchant-user-columns";
 import { ProvisioningQueue } from "./provisioning-queue";
 import { StatusChangeDialog } from "./status-change-dialog";
 import type { MerchantUserProfile } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * Identidades del canal del comercio.
@@ -66,7 +67,7 @@ function AuthorizedMerchantUsersPage() {
 
   const usuarios = useMerchantUsers({
     page,
-    limit: 25,
+    limit: usePageSize(25),
     ...(status ? { status } : {}),
     // `q` busca en correo, nombre y código de usuario (ILIKE en el servidor). Antes se mandaba
     // `email`, que exige el correo EXACTO: escribir la mitad no encontraba a nadie.

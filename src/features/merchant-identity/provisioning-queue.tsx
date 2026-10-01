@@ -22,6 +22,7 @@ import type {
   MerchantProvisioningRequest,
   MerchantProvisioningResult,
 } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 10;
 
@@ -46,7 +47,7 @@ export function ProvisioningQueue() {
   const [status, setStatus] = useState("pending");
   const query = useProvisioningRequests({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     ...(status ? { status } : {}),
     ...(q.trim() ? { q: q.trim() } : {}),
   });

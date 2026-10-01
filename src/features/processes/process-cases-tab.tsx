@@ -12,6 +12,7 @@ import {
 import { useProcessInstances } from "./hooks";
 import { InstanceProgress } from "./instance-progress";
 import { InstancesList, StatusCounts } from "./instances-list";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 25;
 
@@ -45,7 +46,7 @@ export function ProcessCasesTab({ code }: Readonly<{ code: string }>) {
     status,
     search,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: usePageSize(PAGE_SIZE),
   });
   const data = instances.data;
 

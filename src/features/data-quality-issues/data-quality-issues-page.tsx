@@ -23,6 +23,7 @@ import { ResolutionDialog } from "./resolution-dialog";
 import type { ResolutionForm } from "./resolution-schema";
 import type { DataQualityIssue } from "@/features/operations/types";
 import { TriangleAlert } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function DataQualityIssuesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -51,7 +52,13 @@ function AuthorizedDataQualityIssuesPage() {
   // La página sólo recuerda QUÉ incidencia se está resolviendo; los campos
   // (resolución, motivo, notas) viven en el formulario del diálogo.
   const [activeIssue, setActiveIssue] = useState<DataQualityIssue | null>(null);
-  const issues = useDataQualityIssues({ page, limit: 20, q, status, severity });
+  const issues = useDataQualityIssues({
+    page,
+    limit: usePageSize(20),
+    q,
+    status,
+    severity,
+  });
   const resolveMutation = useResolveDataQualityIssueMutation();
   const items = issues.data?.items ?? [];
   const summary = issues.data?.summary;

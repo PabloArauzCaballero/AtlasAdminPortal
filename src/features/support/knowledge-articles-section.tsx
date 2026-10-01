@@ -20,6 +20,7 @@ import {
   ESTADO_VERSION,
   type KnowledgeArticleRow,
 } from "./knowledge-types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -77,7 +78,7 @@ export function KnowledgeArticlesSection({
     audience,
     search: search.trim(),
     page,
-    pageSize: POR_PAGINA,
+    pageSize: usePageSize(POR_PAGINA),
   });
 
   const columnas = useMemo<ColumnDef<KnowledgeArticleRow>[]>(

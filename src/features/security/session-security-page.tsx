@@ -37,9 +37,11 @@ export function SessionSecurityPage() {
         <MetricCard label="Alertas" value={warnings} />
         <MetricCard label="Bloqueos" value={blocked} />
       </section>
-      <div className="mt-6 grid gap-4 grid-cols-1 xl:grid-cols-[1.3fr_1fr]">
-        <SessionChecksTable checks={checks} />
-        <Card>
+      <div className="mt-6 grid gap-4 grid-cols-1 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
+          <SessionChecksTable checks={checks} />
+        </div>
+        <Card className="min-w-0">
           <CardHeader>
             <h2 className="text-sm font-semibold">Perfil activo</h2>
           </CardHeader>

@@ -22,6 +22,7 @@ import {
 import { buildRuleColumns } from "./rule-columns";
 import { useDataQualityRules } from "./hooks";
 import { ShieldCheck } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function DataQualityRulesPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -45,7 +46,13 @@ function AuthorizedDataQualityRulesPage() {
   const [q, setQ] = useState("");
   const [severity, setSeverity] = useState("");
   const [status, setStatus] = useState("");
-  const rules = useDataQualityRules({ page, limit: 20, q, severity, status });
+  const rules = useDataQualityRules({
+    page,
+    limit: usePageSize(20),
+    q,
+    severity,
+    status,
+  });
   const items = useMemo(() => rules.data?.items ?? [], [rules.data]);
   const columns = useMemo(() => buildRuleColumns(), []);
   const summary = rules.data?.summary;

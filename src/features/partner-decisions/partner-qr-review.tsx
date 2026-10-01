@@ -13,6 +13,7 @@ import { useQrPendingReview } from "./hooks";
 import { PartnerQrDialog } from "./partner-qr-dialog";
 import { buildQrColumns, TIPO_QR_OPTIONS } from "./partner-qr-columns";
 import type { PartnerQrPending } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const QR_POR_PAGINA = 10;
 
@@ -37,7 +38,7 @@ export function PartnerQrReviewQueue() {
   const [abierto, setAbierto] = useState<PartnerQrPending | null>(null);
   const cola = useQrPendingReview({
     page,
-    limit: QR_POR_PAGINA,
+    limit: usePageSize(QR_POR_PAGINA),
     q: q.trim() || undefined,
     qrKind: qrKind || undefined,
   });

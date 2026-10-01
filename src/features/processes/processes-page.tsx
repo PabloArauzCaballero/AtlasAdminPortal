@@ -12,6 +12,7 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import {
   EMPTY_PROCESS_FILTERS,
   filterProcesses,
+  PROCESSES_PAGE_SIZE,
   type ProcessFilters,
 } from "./filter";
 import { useProcesses } from "./hooks";
@@ -24,6 +25,7 @@ import {
 } from "./labels";
 import { buildProcessColumns } from "./processes-columns";
 import { ProcessesSummaryTiles } from "./processes-summary-tiles";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function ProcessesPage() {
   // El gate envuelve un componente aparte: con los hooks aquí la consulta saldría antes de que
@@ -71,9 +73,10 @@ function AuthorizedProcessesPage() {
       ),
     [items],
   );
+  const pageSize = usePageSize(PROCESSES_PAGE_SIZE);
   const visible = useMemo(
-    () => filterProcesses(items ?? [], filters, page),
-    [items, filters, page],
+    () => filterProcesses(items ?? [], filters, page, pageSize),
+    [items, filters, page, pageSize],
   );
 
   return (

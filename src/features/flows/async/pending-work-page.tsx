@@ -21,6 +21,7 @@ import { usePendingWork } from "./hooks";
 import { DIAGNOSIS, fecha } from "./labels";
 import type { PendingWorkFlow } from "./types";
 import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const VENTANAS = [7, 30, 90];
 const PAGE_SIZE = 20;
@@ -67,7 +68,7 @@ function AuthorizedPendingWorkPage() {
     q: q.trim(),
     state,
     page,
-    limit: PAGE_SIZE,
+    limit: usePageSize(PAGE_SIZE),
   });
   const data = query.data;
   const diagnostico = data ? DIAGNOSIS[data.diagnosis] : null;

@@ -26,6 +26,7 @@ import type {
   NotificationPolicy,
   NotificationPolicyQuery,
 } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -77,7 +78,7 @@ export function NotificationPoliciesPage() {
 
   const query: NotificationPolicyQuery = {
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q,
     ...filtros,
   };

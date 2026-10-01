@@ -28,6 +28,7 @@ import {
   isOwnVersion,
   type KnowledgeVersionRow,
 } from "./knowledge-types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -68,7 +69,7 @@ export function KnowledgeVersionsPanel() {
   const versiones = useKnowledgeVersions({
     status,
     page,
-    pageSize: POR_PAGINA,
+    pageSize: usePageSize(POR_PAGINA),
   });
 
   const columnas = useMemo<ColumnDef<KnowledgeVersionRow>[]>(
@@ -153,11 +154,11 @@ export function KnowledgeVersionsPanel() {
 
   return (
     <section className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="space-y-3">
         <h2 className="text-sm font-semibold text-atlas-text">
           Versiones en curso
         </h2>
-        <div className="w-full sm:w-72">
+        <div className="w-full sm:max-w-sm">
           <Field
             label="Cola"
             tooltip="Qué versiones ver según el paso en que están: por aprobar, por publicar o en borrador."

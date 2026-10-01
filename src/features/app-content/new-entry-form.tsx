@@ -5,9 +5,11 @@ import { apiErrorText } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, Input } from "@/shared/components/ui/input";
+import { OptionSelect } from "@/shared/components/ui/option-select";
 import { EntryFormFields, type EntryFormState } from "./entry-form";
 import { useSaveAppContent } from "./hooks";
 import type { PreviewDraft } from "./phone-preview";
+import { SURFACES } from "./surfaces";
 import type { ContentSurface } from "./types";
 
 /** Lo que acepta el servidor como clave: la app busca por ella, así que sin espacios ni tildes. */
@@ -35,10 +37,13 @@ const VACIO: EntryFormState = {
  */
 export function NewEntryForm({
   surface,
+  onSurfaceChange,
   onClose,
   onDraftChange,
 }: Readonly<{
   surface: ContentSurface;
+  /** Cambia la pantalla de la pieza SIN cerrar el formulario ni perder lo escrito. */
+  onSurfaceChange: (surface: ContentSurface) => void;
   onClose: () => void;
   onDraftChange: (draft: PreviewDraft | null) => void;
 }>) {
@@ -98,7 +103,23 @@ export function NewEntryForm({
     <Card testId="app-content-new">
       <CardContent>
         <h3 className="text-lg font-semibold text-atlas-text">Nueva pieza</h3>
-        <div className="mb-4 mt-3">
+        <div className="mb-4 mt-3 flex flex-col gap-3">
+          <Field
+            label="Pantalla"
+            tooltip="La pantalla de la app donde se verá esta pieza. Las pantallas sin piezas no tienen pestaña: se estrenan desde aquí."
+          >
+            <OptionSelect
+              name="new-content-surface"
+              testId="new-content-surface"
+              options={SURFACES.map((option) => ({
+                value: option.value,
+                label: option.label,
+                description: option.hint,
+              }))}
+              value={surface}
+              onChange={(next) => onSurfaceChange(next as ContentSurface)}
+            />
+          </Field>
           <Field
             label="Clave"
             tooltip="Nombre interno con el que la app encuentra la pieza. Si ya existe una con esta clave, se reemplaza."

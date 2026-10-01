@@ -12,6 +12,7 @@ import { CHANNEL_OPTIONS } from "./notification-options";
 import { buildTemplateColumns } from "./template-columns";
 import { TemplateForm } from "./template-form";
 import type { NotificationTemplate } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 12;
 
@@ -42,7 +43,7 @@ export function TemplatesSection() {
   const [active, setActive] = useState("");
   const templates = useNotificationTemplates({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q: q.trim(),
     channel,
     active,

@@ -17,6 +17,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { isAtlasApiError } from "@/shared/api/errors";
 import type { PaginationMeta } from "@/shared/api/types";
 import type { InternalUsersListResponse } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 25;
 
@@ -50,7 +51,7 @@ function AuthorizedUsersPage() {
   // encontraba a quien casualmente estuviera en la página cargada.
   const users = useInternalUsers({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q: q.trim(),
     status,
     role,

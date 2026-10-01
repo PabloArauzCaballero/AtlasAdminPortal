@@ -11,13 +11,19 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatNumber } from "@/shared/lib/format";
-import { useAppContent, usePublishedAppContent } from "./hooks";
+import {
+  useAppContent,
+  usePublishedAppContent,
+  useSurfaceCounts,
+} from "./hooks";
 import { EntryEditor } from "./entry-editor";
 import { buildEntryColumns } from "./entry-columns";
 import { NewEntryForm } from "./new-entry-form";
+import { SurfaceTabs } from "./surface-tabs";
 import { PhonePreview, type PreviewDraft } from "./phone-preview";
 import { APP_CONTENT_MANAGE, SURFACES, surfaceOption } from "./surfaces";
 import type { AppContentEntry, ContentSurface } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -59,7 +65,7 @@ export function AppContentPage() {
   const [visibilidad, setVisibilidad] = useState<"true" | "false" | "">("");
   const content = useAppContent(surface, {
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q,
     active: visibilidad,
   });
@@ -108,6 +114,7 @@ export function AppContentPage() {
         .getElementById("app-content-editor")
         ?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }, [editing]);
+  const counts = useSurfaceCounts(SURFACES.map((option) => option.value));
   const hayFiltros = q.trim() !== "" || visibilidad !== "";
   const summary = content.data?.summary;
 
@@ -120,35 +127,18 @@ export function AppContentPage() {
         description="Todo lo que el cliente lee y no es un dato suyo. Se edita aquí y llega a la app sin publicar una versión."
       />
 
-      <div
-        className="mb-5 flex flex-wrap gap-2"
-        data-testid="app-content-surfaces"
-      >
-        {SURFACES.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => {
-              setSurface(option.value);
-              setCreating(false);
-              setEditing(null);
-              setPage(1);
-              setQ("");
-              setVisibilidad("");
-            }}
-            title={option.hint}
-            data-testid={`surface-${option.value}`}
-            aria-pressed={surface === option.value}
-            className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/50 focus-visible:ring-offset-1 ${
-              surface === option.value
-                ? "border-atlas-accent/30 bg-atlas-accentSoft text-atlas-accent shadow-subtle"
-                : "border-atlas-border bg-white text-atlas-muted hover:border-slate-300 hover:bg-atlas-soft hover:text-atlas-text"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      <SurfaceTabs
+        surface={surface}
+        counts={counts}
+        onSelect={(next) => {
+          setSurface(next);
+          setCreating(false);
+          setEditing(null);
+          setPage(1);
+          setQ("");
+          setVisibilidad("");
+        }}
+      />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
@@ -165,8 +155,13 @@ export function AppContentPage() {
             {creating ? (
               <div className="mb-4">
                 <NewEntryForm
-                  key={surface}
                   surface={surface}
+                  onSurfaceChange={(next) => {
+                    setSurface(next);
+                    setPage(1);
+                    setQ("");
+                    setVisibilidad("");
+                  }}
                   onClose={() => setCreating(false)}
                   onDraftChange={setDraft}
                 />

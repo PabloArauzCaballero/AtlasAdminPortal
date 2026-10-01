@@ -18,6 +18,7 @@ import { uniqueTextOptions } from "@/shared/lib/options";
 import { buildReportColumns } from "./report-columns";
 import { useReports } from "./hooks";
 import { ChartColumn } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function ReportsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -35,7 +36,13 @@ function AuthorizedReportsPage() {
   const [q, setQ] = useState("");
   const [domain, setDomain] = useState("");
   const [status, setStatus] = useState("");
-  const reports = useReports({ page, limit: 20, q, domain, status });
+  const reports = useReports({
+    page,
+    limit: usePageSize(20),
+    q,
+    domain,
+    status,
+  });
   const items = useMemo(() => reports.data?.items ?? [], [reports.data]);
   const columns = useMemo(() => serverPagedColumns(buildReportColumns()), []);
   // Las opciones salen del catálogo entero que publica el servidor, no de la página cargada.

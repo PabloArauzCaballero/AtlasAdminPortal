@@ -15,6 +15,7 @@ import { formatNumber } from "@/shared/lib/format";
 import { usePrivacyRequests } from "./hooks";
 import { OVERDUE_OPTIONS, STATUS_OPTIONS, TYPE_OPTIONS } from "./labels";
 import { buildPrivacyRequestColumns } from "./privacy-request-columns";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export const PRIVACY_READ_PERMISSION = "privacy.requests.read";
 export const PRIVACY_MANAGE_PERMISSION = "privacy.requests.manage";
@@ -45,7 +46,7 @@ function AuthorizedPrivacyRequestsPage() {
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const solicitudes = usePrivacyRequests({
     page,
-    pageSize: 25,
+    pageSize: usePageSize(25),
     ...(filtros.status ? { status: filtros.status } : {}),
     ...(filtros.type ? { type: filtros.type } : {}),
     ...(filtros.overdue ? { overdue: filtros.overdue } : {}),

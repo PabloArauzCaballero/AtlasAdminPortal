@@ -17,6 +17,7 @@ import { useStagingItems } from "./catalog-staging-hooks";
 import { editableTarget, MAX_BATCH } from "./catalog-staging-logic";
 import type { StagingDecision, StagingItem } from "./catalog-staging-types";
 import type { ContextCatalog } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -55,7 +56,7 @@ export function CatalogStagingPanel({
     ...(q.trim() ? { q: q.trim() } : {}),
     ...(origen ? { aiSuggested: origen === "true" } : {}),
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
   });
   const target = editableTarget(currentVersion);
   const rows = useMemo(() => items.data?.items ?? [], [items.data]);

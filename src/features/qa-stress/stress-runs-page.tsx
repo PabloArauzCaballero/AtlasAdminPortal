@@ -20,6 +20,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Waves } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const statusOptions = STRESS_RUN_STATUS_OPTIONS;
 const environmentOptions = ENVIRONMENT_OPTIONS;
@@ -41,7 +42,13 @@ function AuthorizedStressRunsPage() {
   const [status, setStatus] = useState("");
   const [environment, setEnvironment] = useState("");
   const [selectedRun, setSelectedRun] = useState<StressRun | null>(null);
-  const runs = useStressRuns({ page, limit: 20, q, status, environment });
+  const runs = useStressRuns({
+    page,
+    limit: usePageSize(20),
+    q,
+    status,
+    environment,
+  });
   const columns = useMemo<ColumnDef<StressRun>[]>(
     () => [
       {
