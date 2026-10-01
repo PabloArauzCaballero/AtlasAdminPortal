@@ -52,6 +52,7 @@ export function IconPicker({
             className="h-10 w-10 shrink-0 rounded-lg border border-atlas-border bg-white object-contain p-1"
           />
         ) : (
+          // sin-ayuda: cada opción es un icono con su dibujo al lado; elegirlo no tiene consecuencias que explicar
           <OptionSelect
             name={`${testId}-nombre`}
             options={ICON_OPTIONS}
