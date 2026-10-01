@@ -46,7 +46,7 @@ export function buildEndpointColumns(
       cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -101,7 +101,7 @@ export function buildEntityColumns(
       cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />

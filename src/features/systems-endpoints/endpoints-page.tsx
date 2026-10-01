@@ -98,7 +98,7 @@ function AuthorizedEndpointsPage() {
         cell: ({ row }) => <ModuleBadge value={row.original.module} />,
       },
       {
-        header: "Backend",
+        header: "Servicio",
         accessorKey: "backendService",
         cell: ({ row }) => (
           <span className="rounded-full border border-atlas-border bg-atlas-soft px-2 py-0.5 font-mono text-[11px] text-atlas-muted">
@@ -107,7 +107,7 @@ function AuthorizedEndpointsPage() {
         ),
       },
       {
-        header: "QA",
+        header: "Pruebas",
         cell: ({ row }) => (
           <Link
             className="text-xs font-semibold text-atlas-accent underline"
@@ -123,27 +123,27 @@ function AuthorizedEndpointsPage() {
         cell: ({ row }) => <RiskBadge value={row.original.riskLevel} />,
       },
       {
-        header: "PII",
+        header: "Datos personales",
         accessorKey: "containsPii",
         cell: ({ row }) => <PiiBadge value={row.original.containsPii} />,
       },
       {
-        header: "Auth",
+        header: "Pide sesión",
         accessorKey: "requiresAuth",
         cell: ({ row }) => formatBoolean(row.original.requiresAuth),
       },
       {
-        header: "Testable",
+        header: "Se prueba aquí",
         accessorKey: "isTestableFromPortal",
         cell: ({ row }) => formatBoolean(row.original.isTestableFromPortal),
       },
       {
-        header: "Stress",
+        header: "Prueba de carga",
         accessorKey: "requiresStressTest",
         cell: ({ row }) => formatBoolean(row.original.requiresStressTest),
       },
       {
-        header: "Review",
+        header: "Revisión",
         accessorKey: "reviewStatus",
         cell: ({ row }) => (
           <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -176,14 +176,14 @@ function AuthorizedEndpointsPage() {
         actions={
           <ExportDownloadButton
             downloadUrl="/api/v1/systems/endpoints"
-            fileName="catalogo-de-endpoints"
+            fileName="catalogo-de-operaciones"
           />
         }
       />
       <FilterBar
         search={q}
-        searchPlaceholder="Buscar por ruta, módulo, propósito o método del controlador…"
-        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el código, la ruta, el nombre, el propósito, el módulo y el método del controlador."
+        searchPlaceholder="Buscar por ruta, módulo, propósito o nombre…"
+        searchTooltip="Busca en el servidor, sin distinguir mayúsculas, en el código, la ruta, el nombre, el propósito, el módulo y el nombre interno."
         onSearchChange={(value) => {
           setQ(value);
           setPage(1);
@@ -234,7 +234,7 @@ function AuthorizedEndpointsPage() {
           description={
             isAtlasApiError(endpoints.error)
               ? endpoints.error.message
-              : "No se pudo cargar endpoints."
+              : "No se pudo cargar el catálogo de operaciones."
           }
           requestId={
             isAtlasApiError(endpoints.error)

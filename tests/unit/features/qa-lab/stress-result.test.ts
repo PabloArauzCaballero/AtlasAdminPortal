@@ -171,7 +171,7 @@ describe("buildStressResult · agregación sin muestras", () => {
   it("sin muestras el umbral de error rate pasa (fijado)", () => {
     const result = buildFor([], { input: { maxErrorRate: 0.01 } });
     expect(result.thresholds[0]).toMatchObject({
-      name: "Error rate",
+      name: "Tasa de error",
       passed: true,
     });
   });
@@ -282,9 +282,9 @@ describe("buildStressResult · umbrales", () => {
       result.thresholds.map((item) => [item.name, item.passed]),
     );
     // p95 real = 95 ms, por encima de los 50 pactados.
-    expect(byName["p95 latency"]).toBe(false);
-    expect(byName["p99 latency"]).toBe(true);
-    expect(byName["Avg latency"]).toBe(true);
+    expect(byName["Latencia p95"]).toBe(false);
+    expect(byName["Latencia p99"]).toBe(true);
+    expect(byName["Latencia promedio"]).toBe(true);
   });
 
   it("el throughput mínimo se compara con >=, no con >", () => {
@@ -300,8 +300,8 @@ describe("buildStressResult · umbrales", () => {
       input: { maxErrorRate: 0.1, maxP95Ms: 100 },
     });
     expect(result.thresholds.map((item) => item.name)).toEqual([
-      "Error rate",
-      "p95 latency",
+      "Tasa de error",
+      "Latencia p95",
     ]);
   });
 });

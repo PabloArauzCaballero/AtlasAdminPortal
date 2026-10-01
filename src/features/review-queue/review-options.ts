@@ -7,9 +7,9 @@ export const typeOptions: Option[] = [
     description: "Muestra las seis secciones de la cola a la vez.",
   },
   {
-    label: "Endpoints",
+    label: "Operaciones",
     value: "endpoints",
-    description: "Rutas del sistema detectadas al escanear el código.",
+    description: "Operaciones del sistema detectadas al revisar el código.",
   },
   {
     label: "Tablas",

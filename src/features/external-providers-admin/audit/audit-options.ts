@@ -55,7 +55,7 @@ export const MODE_OPTIONS: Option[] = [
   {
     value: "mock_local",
     label: "Simulado local",
-    description: "Responde un simulador dentro del propio backend.",
+    description: "Responde un simulador dentro del propio servidor.",
   },
   {
     value: "mock_server",

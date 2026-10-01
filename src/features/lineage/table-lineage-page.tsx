@@ -100,7 +100,7 @@ function AuthorizedTableLineagePage({
         cell: ({ row }) => formatBoolean(row.original.requiresAuditLog),
       },
       {
-        header: "Review",
+        header: "Revisión",
         accessorKey: "reviewStatus",
         cell: ({ row }) => (
           <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -165,7 +165,7 @@ function AuthorizedTableLineagePage({
                   value: formatBoolean(entity.isAuditCritical),
                 },
                 { label: "Retención", value: entity.retentionPolicyCode },
-                { label: "Review", value: entity.reviewStatus },
+                { label: "Revisión", value: entity.reviewStatus },
                 {
                   label: "Operaciones relacionadas",
                   value: formatNumber(endpointImpacts.length),

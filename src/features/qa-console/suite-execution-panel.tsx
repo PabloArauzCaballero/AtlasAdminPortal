@@ -227,7 +227,7 @@ export function SuiteExecutionPanel({
 
         <ConfirmDialog
           open={confirmOpen}
-          title="Confirmar ejecucion QA"
+          title="Confirmar ejecución de pruebas"
           description={`Se ejecutará la suite en ${optionLabel(ENVIRONMENT_OPTIONS, environment)}${dryRun ? " en modo simulación, sin llamar al destino" : ""}. La acción queda registrada en auditoría y el servidor comprueba que el destino esté permitido antes de llamarlo.`}
           confirmText="Ejecutar"
           isLoading={runMutation.isPending}

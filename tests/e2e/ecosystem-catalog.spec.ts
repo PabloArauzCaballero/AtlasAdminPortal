@@ -97,7 +97,7 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
     for (const cabecera of [
       "Sistema",
       "Estado en vivo",
-      "Endpoints",
+      "Operaciones",
       "Tablas",
     ]) {
       await expect(

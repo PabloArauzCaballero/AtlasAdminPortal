@@ -151,7 +151,7 @@ export function PiiRegistryTab() {
         ),
       },
       {
-        header: "Auth",
+        header: "Pide sesión",
         accessorKey: "requiresAuth",
         cell: ({ row }) => formatBoolean(row.original.requiresAuth),
       },

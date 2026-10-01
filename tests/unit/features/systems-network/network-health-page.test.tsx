@@ -163,7 +163,7 @@ describe("Salud de la red", () => {
       [
         "Sistema",
         "Estado en vivo",
-        "Endpoints",
+        "Operaciones",
         "Tablas",
         "Catálogo",
         "Si falta",

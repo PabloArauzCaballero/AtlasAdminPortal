@@ -109,7 +109,7 @@ function evaluateThresholds(
     input.maxErrorRate === undefined
       ? null
       : {
-          name: "Error rate",
+          name: "Tasa de error",
           passed: errorRate <= input.maxErrorRate,
           expected: `<= ${(input.maxErrorRate * 100).toFixed(1)}%`,
           actual: `${(errorRate * 100).toFixed(1)}%`,
@@ -117,7 +117,7 @@ function evaluateThresholds(
     input.maxP95Ms === undefined
       ? null
       : {
-          name: "p95 latency",
+          name: "Latencia p95",
           passed: stats.p95 <= input.maxP95Ms,
           expected: `<= ${input.maxP95Ms} ms`,
           actual: `${stats.p95} ms`,
@@ -125,7 +125,7 @@ function evaluateThresholds(
     input.maxAvgMs === undefined
       ? null
       : {
-          name: "Avg latency",
+          name: "Latencia promedio",
           passed: stats.avg <= input.maxAvgMs,
           expected: `<= ${input.maxAvgMs} ms`,
           actual: `${stats.avg} ms`,
@@ -133,7 +133,7 @@ function evaluateThresholds(
     input.maxP99Ms === undefined
       ? null
       : {
-          name: "p99 latency",
+          name: "Latencia p99",
           passed: stats.p99 <= input.maxP99Ms,
           expected: `<= ${input.maxP99Ms} ms`,
           actual: `${stats.p99} ms`,

@@ -42,7 +42,7 @@ export function LearningCenterPage() {
   return (
     <PermissionGate permissions={PATHS_PERMISSIONS}>
       <PageHeader
-        eyebrow="QA Console"
+        eyebrow="Consola de pruebas"
         title="Aprender el laboratorio QA"
         description="Aprende QA LAB paso a paso con recorridos guiados sobre las pantallas reales, o consulta la guía de referencia: cómo probar la API como si fueras el negocio y qué barreras impiden romper producción."
         actions={
