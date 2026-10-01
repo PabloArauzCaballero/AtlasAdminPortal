@@ -56,6 +56,8 @@ export function EntryFormFields({
   bodyLabel,
   titleLabel,
   pieceIcon = false,
+  simple = false,
+  donde,
   ids,
 }: Readonly<{
   contentKey: string;
@@ -65,6 +67,10 @@ export function EntryFormFields({
   titleLabel: string;
   /** Esta superficie pinta un icono por pieza (recorrido y promesas del alta). */
   pieceIcon?: boolean;
+  /** Un texto suelto: sólo título (opcional) y texto. Sin subtítulo, lista ni botón, que ahí no existen. */
+  simple?: boolean;
+  /** Dónde sale esta pieza en la app, si se sabe (`metadata.donde`). */
+  donde?: string;
   ids: EntryFormIds;
 }>) {
   const orden = (valor: number) =>
@@ -75,6 +81,14 @@ export function EntryFormFields({
   return (
     <div className="flex flex-col gap-4">
       <Seccion titulo="Texto" ayuda="Lo primero que lee la persona en la app.">
+        {simple && donde ? (
+          <p
+            className="rounded-xl bg-atlas-accentSoft px-3 py-2 text-xs text-atlas-accent"
+            data-testid="copy-donde"
+          >
+            <span className="font-semibold">Dónde sale:</span> {donde}
+          </p>
+        ) : null}
         {pieceIcon ? (
           <Field
             label="Icono de la pieza"
@@ -100,16 +114,18 @@ export function EntryFormFields({
             data-testid={ids.title}
           />
         </Field>
-        <Field
-          label="Subtítulo"
-          tooltip="Línea corta bajo el título que resume el contenido en la app."
-        >
-          <Input
-            value={state.subtitle}
-            onChange={(event) => onChange({ subtitle: event.target.value })}
-            data-testid={ids.subtitle}
-          />
-        </Field>
+        {simple ? null : (
+          <Field
+            label="Subtítulo"
+            tooltip="Línea corta bajo el título que resume el contenido en la app."
+          >
+            <Input
+              value={state.subtitle}
+              onChange={(event) => onChange({ subtitle: event.target.value })}
+              data-testid={ids.subtitle}
+            />
+          </Field>
+        )}
         <Field
           label={bodyLabel}
           tooltip="Texto completo que la app muestra al abrir la pieza."
@@ -123,25 +139,29 @@ export function EntryFormFields({
         </Field>
       </Seccion>
 
-      <Seccion titulo="Lista de puntos">
-        <BulletsEditor
-          bullets={state.bullets}
-          contentKey={contentKey}
-          onChange={(actualizar) =>
-            onChange({ bullets: actualizar(state.bullets) })
-          }
-        />
-      </Seccion>
+      {simple ? null : (
+        <>
+          <Seccion titulo="Lista de puntos">
+            <BulletsEditor
+              bullets={state.bullets}
+              contentKey={contentKey}
+              onChange={(actualizar) =>
+                onChange({ bullets: actualizar(state.bullets) })
+              }
+            />
+          </Seccion>
 
-      <Seccion titulo="Botón">
-        <ActionEditor
-          contentKey={contentKey}
-          kind={state.actionKind}
-          label={state.actionLabel}
-          value={state.actionValue}
-          onChange={onChange}
-        />
-      </Seccion>
+          <Seccion titulo="Botón">
+            <ActionEditor
+              contentKey={contentKey}
+              kind={state.actionKind}
+              label={state.actionLabel}
+              value={state.actionValue}
+              onChange={onChange}
+            />
+          </Seccion>
+        </>
+      )}
 
       <Seccion titulo="Publicación">
         <div className="flex flex-wrap items-end gap-6">

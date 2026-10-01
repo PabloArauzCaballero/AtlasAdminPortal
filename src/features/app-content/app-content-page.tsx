@@ -82,6 +82,16 @@ export function AppContentPage() {
         .filter((entry) => entry.isActive)
         .map((entry) => ({
           contentKey: entry.contentKey,
+          meta: {
+            pantalla:
+              typeof entry.metadata?.pantalla === "string"
+                ? entry.metadata.pantalla
+                : undefined,
+            donde:
+              typeof entry.metadata?.donde === "string"
+                ? entry.metadata.donde
+                : undefined,
+          },
           icon:
             typeof entry.metadata?.icon === "string"
               ? entry.metadata.icon

@@ -58,6 +58,16 @@ export function EntryEditor({
   useEffect(() => {
     onDraftChange({
       contentKey: entry.contentKey,
+      meta: {
+        pantalla:
+          typeof entry.metadata?.pantalla === "string"
+            ? entry.metadata.pantalla
+            : undefined,
+        donde:
+          typeof entry.metadata?.donde === "string"
+            ? entry.metadata.donde
+            : undefined,
+      },
       icon: state.icon || undefined,
       title: state.title,
       subtitle: state.subtitle,
@@ -120,6 +130,12 @@ export function EntryEditor({
           bodyLabel={entry.surface === "faq" ? "Respuesta" : "Texto"}
           titleLabel={entry.surface === "faq" ? "Pregunta" : "Título"}
           pieceIcon={entry.surface === "tour" || entry.surface === "signup"}
+          simple={entry.surface === "copy"}
+          donde={
+            typeof entry.metadata?.donde === "string"
+              ? entry.metadata.donde
+              : undefined
+          }
           ids={{
             title: `title-${entry.contentKey}`,
             subtitle: `subtitle-${entry.contentKey}`,

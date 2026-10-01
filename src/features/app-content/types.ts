@@ -11,7 +11,8 @@ export type ContentSurface =
   | "tour"
   | "privacy"
   | "signup"
-  | "payments";
+  | "payments"
+  | "copy";
 
 export type ContentActionKind = "whatsapp" | "link" | "screen" | "tour";
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppIcon } from "./app-icons";
+import { CopyScreen } from "./phone-copy-screen";
 import { PrivacyScreen, SignupScreen, TourScreen } from "./phone-extra-screens";
 import { OnboardingScreen } from "./phone-onboarding";
 import { Piece, type PreviewDraft } from "./phone-preview";
@@ -38,6 +39,7 @@ export function PhoneScreen({
     !pieces[0].body.trim() &&
     pieces[0].bullets.every((bullet) => !bullet.text.trim());
   if (soloBorradorVacio) return <Piece piece={pieces[0]} isDraft />;
+  if (surface === "copy") return <CopyScreen pieces={pieces} />;
   if (surface === "tour") return <TourScreen pieces={pieces} />;
   if (surface === "privacy") return <PrivacyScreen pieces={pieces} />;
   if (surface === "signup") return <SignupScreen pieces={pieces} />;
