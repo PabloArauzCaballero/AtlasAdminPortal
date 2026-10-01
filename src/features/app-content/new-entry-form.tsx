@@ -108,6 +108,7 @@ export function NewEntryForm({
             label="Pantalla"
             tooltip="La pantalla de la app donde se verá esta pieza. Las pantallas sin piezas no tienen pestaña: se estrenan desde aquí."
           >
+            {/* sin-ayuda: el tooltip lo pinta el Field que lo envuelve */}
             <OptionSelect
               name="new-content-surface"
               testId="new-content-surface"
