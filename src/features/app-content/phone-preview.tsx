@@ -30,6 +30,57 @@ export type PreviewDraft = {
  * Sin borrador (nadie está editando) muestra lo ya publicado en la superficie, para que el celular
  * no quede vacío y sirva también para revisar de un vistazo.
  */
+const BORRADOR = "__borrador__";
+
+const enBlanco = (piece: PreviewDraft) =>
+  !piece.title.trim() &&
+  !piece.subtitle.trim() &&
+  !piece.body.trim() &&
+  piece.bullets.every((bullet) => !bullet.text.trim());
+
+/**
+ * La pantalla como la vería la persona CON el cambio puesto: lo publicado, con la pieza que se edita
+ * sustituida por lo que se escribe (o añadida al final si es nueva). Antes el celular enseñaba SOLO
+ * la pieza en edición, y una pregunta frecuente aparecía sola, sin su pantalla alrededor.
+ */
+function enContexto(
+  surface: ContentSurface,
+  entrada: PreviewDraft | null,
+  published: PreviewDraft[],
+) {
+  if (!entrada)
+    return {
+      pieces: published,
+      focusKey: undefined,
+      oculta: false,
+      sinTitulo: false,
+    };
+  // Una pieza nueva aún no tiene clave: se le da una provisional para poder enfocarla.
+  const draft = entrada.contentKey
+    ? entrada
+    : { ...entrada, contentKey: BORRADOR };
+  const hay = published.some((piece) => piece.contentKey === draft.contentKey);
+  const base = hay
+    ? published.map((piece) =>
+        piece.contentKey === draft.contentKey ? draft : piece,
+      )
+    : [...published, draft];
+  // Una pieza oculta no se pinta en la app: se quita del celular y se avisa.
+  const visibles = base.filter((piece) =>
+    piece === draft ? draft.isActive : true,
+  );
+  // Un borrador en blanco no pinta nada: solo cuenta cuando no hay otra cosa que enseñar.
+  const pieces = visibles.filter(
+    (piece) => piece !== draft || !enBlanco(draft),
+  );
+  return {
+    pieces: pieces.length > 0 ? pieces : [draft],
+    focusKey: draft.contentKey,
+    oculta: !draft.isActive && !enBlanco(draft),
+    sinTitulo: surface === "faq" && !draft.title.trim() && !enBlanco(draft),
+  };
+}
+
 export function PhonePreview({
   surface,
   surfaceLabel,
@@ -41,7 +92,11 @@ export function PhonePreview({
   draft: PreviewDraft | null;
   published: PreviewDraft[];
 }>) {
-  const pieces = draft ? [draft] : published;
+  const { pieces, focusKey, oculta, sinTitulo } = enContexto(
+    surface,
+    draft,
+    published,
+  );
   const { width, height, scale } = PHONE;
 
   return (
@@ -86,6 +141,31 @@ export function PhonePreview({
                 aria-hidden
                 className="absolute left-1/2 top-3 h-[26px] w-28 -translate-x-1/2 rounded-full bg-black"
               />
+              {oculta ? (
+                <p
+                  className="rounded-xl px-3 py-2 text-[13px] leading-[19px]"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    color: PHONE.text2,
+                  }}
+                  data-testid="phone-oculta"
+                >
+                  Oculta: el cliente no la verá.
+                </p>
+              ) : null}
+              {sinTitulo ? (
+                <p
+                  className="rounded-xl px-3 py-3 text-[13px] leading-[19px]"
+                  style={{
+                    background: "rgba(255,196,107,0.14)",
+                    color: "#FFC46B",
+                  }}
+                  data-testid="phone-faq-sin-titulo"
+                >
+                  Sin título la app no enseña la pregunta: escribe la pregunta
+                  en «Título».
+                </p>
+              ) : null}
               {pieces.length === 0 ? (
                 <p
                   className="pt-24 text-center text-[15px] leading-[23px]"
@@ -98,6 +178,7 @@ export function PhonePreview({
                   surface={surface}
                   pieces={pieces}
                   isDraft={draft !== null}
+                  focusKey={focusKey}
                 />
               )}
             </div>

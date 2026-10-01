@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { apiErrorText } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Field, Input, Textarea } from "@/shared/components/ui/input";
+import { Field, Input } from "@/shared/components/ui/input";
+import { EntryFormFields, type EntryFormState } from "./entry-form";
 import { useSaveAppContent } from "./hooks";
 import type { PreviewDraft } from "./phone-preview";
 import type { ContentSurface } from "./types";
@@ -12,13 +13,24 @@ import type { ContentSurface } from "./types";
 /** Lo que acepta el servidor como clave: la app busca por ella, así que sin espacios ni tildes. */
 const KEY_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
+const VACIO: EntryFormState = {
+  title: "",
+  subtitle: "",
+  body: "",
+  bullets: [],
+  actionKind: null,
+  actionLabel: "",
+  actionValue: "",
+  displayOrder: 100,
+  isActive: true,
+};
+
 /**
- * Publicar la PRIMERA pieza de una superficie.
+ * Publicar una pieza NUEVA en una superficie.
  *
- * La pantalla sólo sabía editar lo que ya existía, y en TEST las preguntas frecuentes, la ayuda y la
- * bienvenida estaban vacías: el estado vacío invitaba a «escribir aquí el primero» y no había dónde.
- * El servidor ya lo aceptaba (el PUT es crear o reemplazar por superficie + clave + idioma); faltaba
- * el formulario. Si la clave ya existe, el servidor la reemplaza: se avisa en el texto de ayuda.
+ * Ofrece lo mismo que editar (puntos con icono, botón, orden): antes crear solo admitía texto y la
+ * pieza había que reabrirla para completarla. El servidor ya aceptaba todo: el PUT es crear o
+ * reemplazar por superficie + clave + idioma. Si la clave ya existe, se reemplaza: se avisa en la ayuda.
  */
 export function NewEntryForm({
   surface,
@@ -31,31 +43,31 @@ export function NewEntryForm({
 }>) {
   const mutation = useSaveAppContent();
   const [contentKey, setContentKey] = useState("");
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [body, setBody] = useState("");
-  const [isActive, setIsActive] = useState(true);
+  const [state, setState] = useState<EntryFormState>(VACIO);
+  const cambiar = (cambios: Partial<EntryFormState>) =>
+    setState((actual) => ({ ...actual, ...cambios }));
+  const key = contentKey.trim();
 
   // El celular enseña lo que se escribe, sin esperar a guardar.
   useEffect(() => {
     onDraftChange({
-      title,
-      subtitle,
-      body,
-      bullets: [],
-      actionKind: null,
-      actionLabel: "",
-      isActive,
+      contentKey: key || undefined,
+      title: state.title,
+      subtitle: state.subtitle,
+      body: state.body,
+      bullets: state.bullets,
+      actionKind: state.actionKind,
+      actionLabel: state.actionLabel,
+      isActive: state.isActive,
     });
-  }, [title, subtitle, body, isActive, onDraftChange]);
+  }, [state, key, onDraftChange]);
   useEffect(() => () => onDraftChange(null), [onDraftChange]);
 
-  const key = contentKey.trim();
   const keyError =
     key.length > 0 && !KEY_PATTERN.test(key)
       ? "Usa minúsculas, números, punto, guion o guion bajo, sin espacios."
       : null;
-  const canSave = key.length > 0 && !keyError && title.trim().length > 0;
+  const canSave = key.length > 0 && !keyError && state.title.trim().length > 0;
 
   const save = () => {
     if (!canSave) return;
@@ -63,11 +75,17 @@ export function NewEntryForm({
       {
         surface,
         contentKey: key,
-        title: title.trim(),
-        subtitle: subtitle.trim() || null,
-        bodyMd: body.trim() || null,
-        bullets: [],
-        isActive,
+        title: state.title.trim(),
+        subtitle: state.subtitle.trim() || null,
+        bodyMd: state.body.trim() || null,
+        bullets: state.bullets.filter(
+          (bullet) => bullet.text.trim().length > 0,
+        ),
+        actionKind: state.actionKind,
+        actionLabel: state.actionKind ? state.actionLabel : null,
+        actionValue: state.actionKind ? state.actionValue : null,
+        displayOrder: state.displayOrder,
+        isActive: state.isActive,
       },
       { onSuccess: onClose },
     );
@@ -76,8 +94,8 @@ export function NewEntryForm({
   return (
     <Card testId="app-content-new">
       <CardContent>
-        <h3 className="text-base font-semibold text-atlas-text">Nueva pieza</h3>
-        <div className="mt-4 flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-atlas-text">Nueva pieza</h3>
+        <div className="mb-4 mt-3">
           <Field
             label="Clave"
             tooltip="Nombre interno con el que la app encuentra la pieza. Si ya existe una con esta clave, se reemplaza."
@@ -90,67 +108,47 @@ export function NewEntryForm({
               data-testid="new-content-key"
             />
           </Field>
-          <Field
-            label="Título / pregunta"
-            tooltip="Encabezado que ve el cliente en la app; en preguntas frecuentes, la pregunta tal cual."
+        </div>
+
+        <EntryFormFields
+          contentKey={key || "nueva"}
+          state={state}
+          onChange={cambiar}
+          bodyLabel={surface === "faq" ? "Respuesta" : "Texto"}
+          titleLabel={surface === "faq" ? "Pregunta" : "Título"}
+          ids={{
+            title: "new-content-title",
+            body: "new-content-body",
+          }}
+        />
+
+        {mutation.error ? (
+          <p role="alert" className="mt-3 text-xs font-medium text-red-600">
+            {apiErrorText(
+              mutation.error,
+              "No pudimos publicar. Revisa el texto e intenta otra vez.",
+            )}
+          </p>
+        ) : null}
+
+        <div className="sticky bottom-0 -mx-6 -mb-6 mt-4 flex items-center gap-3 rounded-b-2xl border-t border-atlas-border bg-white/95 px-6 py-3 backdrop-blur">
+          <Button
+            variant="primary"
+            onClick={save}
+            disabled={!canSave}
+            isLoading={mutation.isPending}
+            loadingText="Publicando…"
+            data-testid="new-content-save"
           >
-            <Input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              data-testid="new-content-title"
-            />
-          </Field>
-          <Field
-            label="Subtítulo"
-            tooltip="Línea corta bajo el título que resume el contenido en la app."
-          >
-            <Input
-              value={subtitle}
-              onChange={(event) => setSubtitle(event.target.value)}
-            />
-          </Field>
-          <Field
-            label="Respuesta"
-            tooltip="Texto completo que la app muestra al abrir la entrada."
-          >
-            <Textarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              rows={5}
-              data-testid="new-content-body"
-            />
-          </Field>
-          <label className="flex items-center gap-2 text-sm text-atlas-text">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(event) => setIsActive(event.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 accent-atlas-accent"
-            />
-            Visible en la app
-          </label>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={save}
-              disabled={!canSave}
-              isLoading={mutation.isPending}
-              loadingText="Publicando…"
-              data-testid="new-content-save"
-            >
-              Publicar
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Cancelar
-            </Button>
-          </div>
-          {mutation.error ? (
-            <p role="alert" className="text-xs font-medium text-red-600">
-              {apiErrorText(
-                mutation.error,
-                "No pudimos publicar. Revisa el texto e intenta otra vez.",
-              )}
-            </p>
+            Publicar
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          {!canSave ? (
+            <span className="ml-auto text-xs text-atlas-muted">
+              Falta la clave y el título para publicar
+            </span>
           ) : null}
         </div>
       </CardContent>

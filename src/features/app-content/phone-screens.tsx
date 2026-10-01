@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon } from "./app-icons";
 import { OnboardingScreen } from "./phone-onboarding";
 import { Piece, type PreviewDraft } from "./phone-preview";
@@ -22,10 +22,12 @@ export function PhoneScreen({
   surface,
   pieces,
   isDraft,
+  focusKey,
 }: Readonly<{
   surface: ContentSurface;
   pieces: PreviewDraft[];
   isDraft: boolean;
+  focusKey?: string;
 }>) {
   const soloBorradorVacio =
     isDraft &&
@@ -35,20 +37,10 @@ export function PhoneScreen({
     !pieces[0].body.trim() &&
     pieces[0].bullets.every((bullet) => !bullet.text.trim());
   if (soloBorradorVacio) return <Piece piece={pieces[0]} isDraft />;
-  if (surface === "faq" && isDraft && !pieces[0]?.title.trim()) {
-    return (
-      <p
-        className="rounded-xl px-3 py-3 text-[13px] leading-[19px]"
-        style={{ background: "rgba(255,196,107,0.14)", color: "#FFC46B" }}
-        data-testid="phone-faq-sin-titulo"
-      >
-        Sin título la app no enseña la pregunta: escribe la pregunta en
-        «Título».
-      </p>
-    );
-  }
   if (surface === "onboarding") {
-    return <OnboardingScreen pieces={pieces} isDraft={isDraft} />;
+    return (
+      <OnboardingScreen pieces={pieces} isDraft={isDraft} focusKey={focusKey} />
+    );
   }
   if (surface === "faq" || surface === "help") {
     return (
@@ -56,6 +48,7 @@ export function PhoneScreen({
         faq={surface === "faq" ? pieces : []}
         help={surface === "help" ? pieces : []}
         isDraft={isDraft}
+        focusKey={focusKey}
       />
     );
   }
@@ -75,11 +68,22 @@ function HelpScreen({
   faq,
   help,
   isDraft,
-}: Readonly<{ faq: PreviewDraft[]; help: PreviewDraft[]; isDraft: boolean }>) {
+  focusKey,
+}: Readonly<{
+  faq: PreviewDraft[];
+  help: PreviewDraft[];
+  isDraft: boolean;
+  focusKey?: string;
+}>) {
   // En la app una pregunta sin título no se pinta: sería una flecha suelta que abre un párrafo.
   const preguntas = faq.filter((piece) => piece.title.trim());
-  // Mientras se escribe, la pregunta se enseña ABIERTA: es lo que se está revisando.
-  const [abierta, setAbierta] = useState<number | null>(isDraft ? 0 : null);
+  // Mientras se escribe, la pregunta que se edita se enseña ABIERTA: es lo que se está revisando.
+  const [abierta, setAbierta] = useState<string | null>(
+    isDraft ? (focusKey ?? null) : null,
+  );
+  useEffect(() => {
+    if (isDraft && focusKey) setAbierta(focusKey);
+  }, [isDraft, focusKey]);
 
   return (
     <div className="flex flex-col gap-3" data-testid="phone-screen-help">
@@ -141,14 +145,15 @@ function HelpScreen({
           <AppCard>
             <ul className="divide-y divide-white/10" data-testid="phone-faq">
               {preguntas.map((piece, index) => {
-                const open = abierta === index;
+                const clave = piece.contentKey ?? `faq-${index}`;
+                const open = abierta === clave;
                 return (
                   <li key={`faq-${index}`} className="py-1">
                     <button
                       type="button"
                       className="flex w-full items-center justify-between gap-3 py-3 text-left text-[15px] font-bold leading-5"
                       aria-expanded={open}
-                      onClick={() => setAbierta(open ? null : index)}
+                      onClick={() => setAbierta(open ? null : clave)}
                     >
                       <span className="break-words">{piece.title}</span>
                       <span

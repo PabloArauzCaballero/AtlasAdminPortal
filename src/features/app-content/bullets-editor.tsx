@@ -1,18 +1,30 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Star, Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { Tooltip } from "@/shared/components/ui/tooltip";
 import { IconPicker } from "./icon-picker";
 import type { ContentBullet } from "./types";
-import { Tooltip } from "@/shared/components/ui/tooltip";
+
+type Cambiar = (
+  actualizar: (current: ContentBullet[]) => ContentBullet[],
+) => void;
+
+function mover(lista: ContentBullet[], desde: number, hasta: number) {
+  if (hasta < 0 || hasta >= lista.length) return lista;
+  const copia = [...lista];
+  const [punto] = copia.splice(desde, 1);
+  copia.splice(hasta, 0, punto);
+  return copia;
+}
 
 /**
- * Los puntos de la lista, editables uno a uno.
+ * Los puntos de la lista, como tarjetas: icono dibujado, texto a varias líneas y las acciones del
+ * punto a la derecha (destacar, subir, bajar, quitar).
  *
- * Vive aparte de la tarjeta porque es el único bloque del formulario con estado propio de
- * colección —añadir, borrar y reordenar— y mezclarlo con los seis campos planos hacía que la
- * tarjeta pasara del tope de tamaño del repositorio.
+ * Antes cada punto era una caja de una línea con un desplegable de nombres y una casilla diminuta:
+ * el texto de una idea completa no cabía, no se veía el icono y no se podía reordenar. Vive aparte
+ * del formulario porque es el único bloque con estado de colección.
  */
 export function BulletsEditor({
   bullets,
@@ -20,79 +32,117 @@ export function BulletsEditor({
   contentKey,
 }: Readonly<{
   bullets: ContentBullet[];
-  onChange: (actualizar: (current: ContentBullet[]) => ContentBullet[]) => void;
+  onChange: Cambiar;
   contentKey: string;
 }>) {
+  const cambiar = (index: number, cambios: Partial<ContentBullet>) =>
+    onChange((current) =>
+      current.map((item, position) =>
+        position === index ? { ...item, ...cambios } : item,
+      ),
+    );
+
   return (
-    <fieldset className="flex flex-col gap-2 rounded-xl border border-atlas-border bg-atlas-soft/60 p-3">
-      <legend className="px-1 text-sm font-medium text-atlas-text">
-        Puntos de la lista
-      </legend>
+    <section className="flex flex-col gap-3" aria-label="Puntos de la lista">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-xs font-medium text-atlas-text">
+          {bullets.length === 0
+            ? "Ningún punto"
+            : bullets.length === 1
+              ? "1 punto"
+              : `${bullets.length} puntos`}
+        </p>
+        <p className="text-xs text-atlas-muted">
+          Un icono y una idea por punto. El destacado se lee más fuerte.
+        </p>
+      </div>
+
       {bullets.length === 0 ? (
-        <p className="px-1 text-xs text-atlas-muted">
-          Sin puntos. La app no pintará ninguna lista en esta entrada.
+        <p className="rounded-xl border border-dashed border-atlas-border px-4 py-5 text-center text-sm text-atlas-muted">
+          Sin puntos: la app no pintará ninguna lista en esta pieza.
         </p>
       ) : null}
-      {bullets.map((bullet, index) => (
-        <div key={index} className="flex flex-wrap items-center gap-2">
-          <Input
-            value={bullet.text}
-            onChange={(event) =>
-              onChange((current) =>
-                current.map((item, position) =>
-                  position === index
-                    ? { ...item, text: event.target.value }
-                    : item,
-                ),
-              )
-            }
-            data-testid={`bullet-${contentKey}-${index}`}
-            className="h-10 min-w-48 flex-1"
-          />
-          <IconPicker
-            bullet={bullet}
-            testId={`icon-${contentKey}-${index}`}
-            onChange={(cambios) =>
-              onChange((current) =>
-                current.map((item, position) =>
-                  position === index ? { ...item, ...cambios } : item,
-                ),
-              )
-            }
-          />
-          <label className="flex shrink-0 items-center gap-1.5 text-xs text-atlas-text">
-            <input
-              type="checkbox"
-              checked={Boolean(bullet.emphasis)}
-              onChange={(event) =>
-                onChange((current) =>
-                  current.map((item, position) =>
-                    position === index
-                      ? { ...item, emphasis: event.target.checked }
-                      : item,
-                  ),
-                )
-              }
-              className="h-4 w-4 rounded border-slate-300 accent-atlas-accent"
+
+      <ul className="flex flex-col gap-2">
+        {bullets.map((bullet, index) => (
+          <li
+            key={index}
+            className="flex items-start gap-3 rounded-2xl border border-atlas-border bg-white p-3 shadow-sm"
+          >
+            <IconPicker
+              bullet={bullet}
+              testId={`icon-${contentKey}-${index}`}
+              onChange={(cambios) => cambiar(index, cambios)}
             />
-            destacar
-          </label>
-          <Tooltip text="Quita este punto de la lista. El cambio no se guarda hasta que confirmes la entrada.">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                onChange((current) =>
-                  current.filter((_, position) => position !== index),
-                )
-              }
-              aria-label={`Quitar el punto ${index + 1}`}
-              className="h-10 w-10 shrink-0 px-0 text-atlas-muted hover:text-red-600"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </Button>
-          </Tooltip>
-        </div>
-      ))}
+            <textarea
+              value={bullet.text}
+              rows={2}
+              placeholder="Escribe la idea de este punto"
+              aria-label={`Texto del punto ${index + 1}`}
+              onChange={(event) => cambiar(index, { text: event.target.value })}
+              data-testid={`bullet-${contentKey}-${index}`}
+              className="min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-atlas-border bg-white px-3 py-2 text-sm leading-5 text-atlas-text shadow-sm transition placeholder:text-atlas-muted focus-visible:border-atlas-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/30"
+            />
+            <div className="flex shrink-0 flex-col items-stretch gap-1">
+              <Tooltip text="Un punto destacado se lee en negrita y más claro en la app.">
+                <button
+                  type="button"
+                  aria-pressed={Boolean(bullet.emphasis)}
+                  onClick={() => cambiar(index, { emphasis: !bullet.emphasis })}
+                  className={`flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition ${
+                    bullet.emphasis
+                      ? "border-atlas-accent bg-atlas-accentSoft text-atlas-accent"
+                      : "border-atlas-border bg-white text-atlas-muted hover:text-atlas-text"
+                  }`}
+                >
+                  <Star
+                    className={`h-3.5 w-3.5 ${bullet.emphasis ? "fill-current" : ""}`}
+                    aria-hidden
+                  />
+                  Destacar
+                </button>
+              </Tooltip>
+              <div className="flex items-center justify-between gap-1">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() =>
+                    onChange((current) => mover(current, index, index - 1))
+                  }
+                  aria-label={`Subir el punto ${index + 1}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-atlas-border text-atlas-muted transition hover:text-atlas-text disabled:opacity-30"
+                >
+                  <ArrowUp className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  disabled={index === bullets.length - 1}
+                  onClick={() =>
+                    onChange((current) => mover(current, index, index + 1))
+                  }
+                  aria-label={`Bajar el punto ${index + 1}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-atlas-border text-atlas-muted transition hover:text-atlas-text disabled:opacity-30"
+                >
+                  <ArrowDown className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onChange((current) =>
+                      current.filter((_, position) => position !== index),
+                    )
+                  }
+                  aria-label={`Quitar el punto ${index + 1}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-atlas-border text-atlas-muted transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                </button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
       <Button
         variant="secondary"
         onClick={() =>
@@ -104,6 +154,6 @@ export function BulletsEditor({
         <Plus className="h-4 w-4" aria-hidden />
         Añadir punto
       </Button>
-    </fieldset>
+    </section>
   );
 }
