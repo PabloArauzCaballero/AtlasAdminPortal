@@ -1,7 +1,17 @@
 import type { PaginationMeta } from "@/shared/api/types";
 
 export type ContentSurface =
-  "onboarding" | "home" | "faq" | "help" | "legal" | "profile" | "credit";
+  | "onboarding"
+  | "home"
+  | "faq"
+  | "help"
+  | "legal"
+  | "profile"
+  | "credit"
+  | "tour"
+  | "privacy"
+  | "signup"
+  | "payments";
 
 export type ContentActionKind = "whatsapp" | "link" | "screen" | "tour";
 

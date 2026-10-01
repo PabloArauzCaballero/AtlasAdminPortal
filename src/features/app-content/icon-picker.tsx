@@ -20,10 +20,13 @@ export function IconPicker({
   bullet,
   onChange,
   testId,
+  allowUpload = true,
 }: Readonly<{
   bullet: ContentBullet;
   onChange: (cambios: Partial<ContentBullet>) => void;
   testId: string;
+  /** Un icono propio solo vale en los puntos de una lista; la pieza entera usa los de Atlas. */
+  allowUpload?: boolean;
 }>) {
   const root = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -158,17 +161,21 @@ export function IconPicker({
               );
             })}
           </div>
-          <button
-            type="button"
-            onClick={() => input.current?.click()}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-atlas-border px-3 py-2.5 text-sm font-medium text-atlas-text transition hover:border-atlas-accent hover:bg-atlas-soft"
-          >
-            <Upload className="h-4 w-4" aria-hidden />
-            Cargar el tuyo
-          </button>
-          <p className="mt-1.5 text-center text-[11px] text-atlas-muted">
-            PNG o WebP · se reduce a 96 px · máximo 32 KB
-          </p>
+          {allowUpload ? (
+            <>
+              <button
+                type="button"
+                onClick={() => input.current?.click()}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-atlas-border px-3 py-2.5 text-sm font-medium text-atlas-text transition hover:border-atlas-accent hover:bg-atlas-soft"
+              >
+                <Upload className="h-4 w-4" aria-hidden />
+                Cargar el tuyo
+              </button>
+              <p className="mt-1.5 text-center text-[11px] text-atlas-muted">
+                PNG o WebP · se reduce a 96 px · máximo 32 KB
+              </p>
+            </>
+          ) : null}
         </div>
       ) : null}
       {error ? (

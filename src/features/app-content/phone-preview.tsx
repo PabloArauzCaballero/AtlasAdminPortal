@@ -10,6 +10,8 @@ import type { ContentActionKind, ContentBullet, ContentSurface } from "./types";
 export type PreviewDraft = {
   /** La clave de la pieza: la Bienvenida distingue `eslogan` de los pasos por ella. */
   contentKey?: string;
+  /** Icono de la pieza (`metadata.icon`): el recorrido y las promesas del alta lo llevan. */
+  icon?: string;
   title: string;
   subtitle: string;
   body: string;

@@ -14,6 +14,7 @@ import type { ContentSurface } from "./types";
 const KEY_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
 const VACIO: EntryFormState = {
+  icon: "",
   title: "",
   subtitle: "",
   body: "",
@@ -52,6 +53,7 @@ export function NewEntryForm({
   useEffect(() => {
     onDraftChange({
       contentKey: key || undefined,
+      icon: state.icon || undefined,
       title: state.title,
       subtitle: state.subtitle,
       body: state.body,
@@ -84,6 +86,7 @@ export function NewEntryForm({
         actionKind: state.actionKind,
         actionLabel: state.actionKind ? state.actionLabel : null,
         actionValue: state.actionKind ? state.actionValue : null,
+        metadata: state.icon ? { icon: state.icon } : null,
         displayOrder: state.displayOrder,
         isActive: state.isActive,
       },
@@ -116,6 +119,7 @@ export function NewEntryForm({
           onChange={cambiar}
           bodyLabel={surface === "faq" ? "Respuesta" : "Texto"}
           titleLabel={surface === "faq" ? "Pregunta" : "Título"}
+          pieceIcon={surface === "tour" || surface === "signup"}
           ids={{
             title: "new-content-title",
             body: "new-content-body",
