@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { ClipboardCheck } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/shared/auth/auth-context";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -60,6 +60,63 @@ function AuthorizedFlowReviewPage() {
   const decidir = useReviewFlowMutation();
   // La ficha del flujo, para que quien decide vea lo que aprueba: la cola sólo enseña ruta y motivos.
   const [abierto, setAbierto] = useState<string | null>(null);
+  // Selección para decidir varios a la vez. Se guarda el flujo entero (no sólo el id) porque la
+  // decisión exige su `depsHash` del momento en que se marcó, el mismo que ya ve esta tabla.
+  const [seleccion, setSeleccion] = useState<Map<string, FlowReviewItem>>(
+    new Map(),
+  );
+  const [masivo, setMasivo] = useState<{
+    enCurso: boolean;
+    resultado: { ok: number; fallidos: FlowReviewItem[] } | null;
+  }>({ enCurso: false, resultado: null });
+  const items = useMemo(() => query.data?.items ?? [], [query.data]);
+  const seleccionEnPagina = items.filter((f) => seleccion.has(f.id)).length;
+  const alternarUno = useCallback(
+    (flujo: FlowReviewItem) =>
+      setSeleccion((prev) => {
+        const siguiente = new Map(prev);
+        if (siguiente.has(flujo.id)) siguiente.delete(flujo.id);
+        else siguiente.set(flujo.id, flujo);
+        return siguiente;
+      }),
+    [],
+  );
+  const alternarPagina = useCallback(
+    () =>
+      setSeleccion((prev) => {
+        const siguiente = new Map(prev);
+        const todosMarcados =
+          items.length > 0 && items.every((f) => siguiente.has(f.id));
+        for (const flujo of items) {
+          if (todosMarcados) siguiente.delete(flujo.id);
+          else siguiente.set(flujo.id, flujo);
+        }
+        return siguiente;
+      }),
+    [items],
+  );
+  // Uno por uno, nunca en una sola petición: cada decisión valida su propio `depsHash`, así que un
+  // 409 aislado (el código de ESE flujo cambió mientras se revisaba la cola) no debe tumbar al resto.
+  const decidirMasivo = async (reviewStatus: FlowReviewDecision["reviewStatus"]) => {
+    const flujos = [...seleccion.values()];
+    if (!flujos.length) return;
+    setMasivo({ enCurso: true, resultado: null });
+    const fallidos: FlowReviewItem[] = [];
+    let ok = 0;
+    for (const flujo of flujos) {
+      try {
+        await decidir.mutateAsync({
+          flowId: flujo.id,
+          body: { reviewStatus, depsHash: flujo.depsHash },
+        });
+        ok += 1;
+      } catch {
+        fallidos.push(flujo);
+      }
+    }
+    setMasivo({ enCurso: false, resultado: { ok, fallidos } });
+    setSeleccion(new Map(fallidos.map((f) => [f.id, f])));
+  };
   // Con la cola vacía el servidor dice `totalPages: 0`; bajar a la «página 0» pedía `page=0`, que el
   // servidor rechaza con 400. El suelo es la página 1.
   const totalPaginas = Math.max(1, query.data?.meta.totalPages ?? 1);
@@ -93,6 +150,29 @@ function AuthorizedFlowReviewPage() {
       </Button>
     );
     return [
+      {
+        header: () => (
+          <input
+            type="checkbox"
+            aria-label="Seleccionar todos los de esta página"
+            disabled={!puedeRevisar || items.length === 0}
+            checked={
+              items.length > 0 && items.every((f) => seleccion.has(f.id))
+            }
+            onChange={alternarPagina}
+          />
+        ),
+        id: "seleccion",
+        cell: ({ row }) => (
+          <input
+            type="checkbox"
+            aria-label={`Seleccionar ${row.original.path}`}
+            disabled={!puedeRevisar}
+            checked={seleccion.has(row.original.id)}
+            onChange={() => alternarUno(row.original)}
+          />
+        ),
+      },
       {
         header: "Riesgo",
         accessorKey: "risk",
@@ -169,7 +249,15 @@ function AuthorizedFlowReviewPage() {
         ),
       },
     ];
-  }, [decidir, puedeRevisar, setAbierto]);
+  }, [
+    decidir,
+    puedeRevisar,
+    setAbierto,
+    items,
+    seleccion,
+    alternarPagina,
+    alternarUno,
+  ]);
 
   return (
     <>
@@ -219,6 +307,50 @@ function AuthorizedFlowReviewPage() {
         <p className="mb-4 text-xs text-atlas-muted">
           Puedes ver la cola, pero decidir exige el permiso
           systems.flows.review.
+        </p>
+      ) : null}
+      {seleccion.size > 0 ? (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-atlas-border bg-atlas-surface p-3">
+          <span className="text-sm">
+            {seleccion.size} seleccionado{seleccion.size === 1 ? "" : "s"}
+            {seleccionEnPagina < seleccion.size
+              ? ` (${seleccionEnPagina} en esta página)`
+              : ""}
+          </span>
+          <Button
+            className="h-8 px-3 text-xs"
+            disabled={!puedeRevisar || masivo.enCurso}
+            onClick={() => void decidirMasivo("APPROVED")}
+          >
+            Aprobar seleccionados
+          </Button>
+          <Button
+            className="h-8 px-3 text-xs"
+            variant="danger"
+            disabled={!puedeRevisar || masivo.enCurso}
+            onClick={() => void decidirMasivo("REJECTED")}
+          >
+            Rechazar seleccionados
+          </Button>
+          <Button
+            className="h-8 px-3 text-xs"
+            disabled={masivo.enCurso}
+            onClick={() => setSeleccion(new Map())}
+          >
+            Limpiar selección
+          </Button>
+          {masivo.enCurso ? (
+            <span className="text-xs text-atlas-muted">Aplicando…</span>
+          ) : null}
+        </div>
+      ) : null}
+      {masivo.resultado ? (
+        <p className="mb-4 text-xs text-atlas-muted">
+          {masivo.resultado.ok} decisión{masivo.resultado.ok === 1 ? "" : "es"}{" "}
+          aplicada{masivo.resultado.ok === 1 ? "" : "s"}.
+          {masivo.resultado.fallidos.length
+            ? ` ${masivo.resultado.fallidos.length} quedaron marcados y sin aplicar (su código puede haber cambiado entre que se abrió la cola y se decidió) — siguen seleccionados, reintentá.`
+            : ""}
         </p>
       ) : null}
       {decidir.error ? (
