@@ -68,6 +68,9 @@ services:
       # Es decir: esto se arregla en el SERVIDOR (Settings -> Docker Cleanup -> desactivar el forzado,
       # dejando el umbral del 80%), no en este archivo.
       args:
+        # PLAT-03: el commit compilado. Sin este build-arg `/version` sale con commit `unknown` y el smoke de
+        # TEST lo rechaza. Coolify rellena SOURCE_COMMIT al construir; si no, se lee `.git/HEAD`.
+        SOURCE_COMMIT: '${SOURCE_COMMIT:-}'
         # La dirección que va a pedir el NAVEGADOR. Ver la nota de arriba: si cambias esto, hay
         # que reconstruir, no reiniciar. Relativa a propósito: mismo origen que el portal.
         NEXT_PUBLIC_API_BASE_URL: '/api/v1'
