@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, LifeBuoy, Phone } from "lucide-react";
+import { AppIcon } from "./app-icons";
+import { OnboardingScreen } from "./phone-onboarding";
 import { Piece, type PreviewDraft } from "./phone-preview";
+import { PHONE } from "./phone-theme";
+import { AppCard, BrandButton } from "./phone-ui";
 import type { ContentSurface } from "./types";
 
 /**
@@ -35,13 +38,17 @@ export function PhoneScreen({
   if (surface === "faq" && isDraft && !pieces[0]?.title.trim()) {
     return (
       <p
-        className="rounded bg-amber-50 px-2 py-2 text-xs leading-5 text-amber-900"
+        className="rounded-xl px-3 py-3 text-[13px] leading-[19px]"
+        style={{ background: "rgba(255,196,107,0.14)", color: "#FFC46B" }}
         data-testid="phone-faq-sin-titulo"
       >
         Sin título la app no enseña la pregunta: escribe la pregunta en
         «Título».
       </p>
     );
+  }
+  if (surface === "onboarding") {
+    return <OnboardingScreen pieces={pieces} isDraft={isDraft} />;
   }
   if (surface === "faq" || surface === "help") {
     return (
@@ -64,14 +71,6 @@ export function PhoneScreen({
   );
 }
 
-function AppCard({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-      {children}
-    </div>
-  );
-}
-
 function HelpScreen({
   faq,
   help,
@@ -85,35 +84,39 @@ function HelpScreen({
   return (
     <div className="flex flex-col gap-3" data-testid="phone-screen-help">
       <div>
-        <p className="text-base font-semibold leading-snug text-atlas-text">
+        <p className="text-[25px] font-black leading-[31px] tracking-tight">
           Ayuda y preguntas frecuentes
         </p>
-        <p className="text-xs text-atlas-muted">
+        <p
+          className="mt-1 text-[15px] font-medium leading-[23px]"
+          style={{ color: PHONE.text2 }}
+        >
           Lo que más nos preguntan, contestado en serio.
         </p>
       </div>
 
       <AppCard>
         <div className="flex items-start gap-2">
-          <LifeBuoy className="mt-0.5 h-4 w-4 text-atlas-accent" aria-hidden />
+          <AppIcon name="ayuda" size={22} tint={PHONE.brand400} />
           <div>
-            <p className="text-sm font-semibold text-atlas-text">
+            <p className="text-[17px] font-bold leading-[23px]">
               ¿Necesitas hablar con alguien?
             </p>
-            <p className="text-xs text-atlas-muted">
+            <p
+              className="text-[13px] font-medium leading-[19px]"
+              style={{ color: PHONE.text2 }}
+            >
               Te respondemos por chat y queda registrado en tu caso.
             </p>
           </div>
         </div>
-        <span className="mt-2 block rounded-full bg-atlas-accent px-4 py-2 text-center text-sm font-semibold text-white">
-          Ir a soporte
-        </span>
+        <BrandButton label="Ir a soporte" style={{ marginTop: 12 }} />
       </AppCard>
 
       {help.map((piece, index) => (
         <AppCard key={`help-${index}`}>
           <div className="flex items-start gap-2">
-            <Phone className="mt-0.5 h-4 w-4 text-atlas-accent" aria-hidden />
+            <AppIcon name="telefono" size={22} tint={PHONE.brand400} />
             <Piece
               piece={{ ...piece, title: piece.title || "Hablar con Atlas" }}
               isDraft={isDraft}
@@ -125,30 +128,35 @@ function HelpScreen({
       {preguntas.length > 0 ? (
         <>
           <div>
-            <p className="text-sm font-semibold text-atlas-text">
+            <p className="text-[17px] font-bold leading-[23px]">
               Preguntas frecuentes
             </p>
-            <p className="text-xs text-atlas-muted">
+            <p
+              className="text-[13px] font-medium leading-[19px]"
+              style={{ color: PHONE.text2 }}
+            >
               Toca una para ver la respuesta.
             </p>
           </div>
           <AppCard>
-            <ul className="divide-y divide-slate-100" data-testid="phone-faq">
+            <ul className="divide-y divide-white/10" data-testid="phone-faq">
               {preguntas.map((piece, index) => {
                 const open = abierta === index;
                 return (
                   <li key={`faq-${index}`} className="py-1">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-2 py-2 text-left text-sm font-medium text-atlas-text"
+                      className="flex w-full items-center justify-between gap-3 py-3 text-left text-[15px] font-bold leading-5"
                       aria-expanded={open}
                       onClick={() => setAbierta(open ? null : index)}
                     >
                       <span className="break-words">{piece.title}</span>
-                      <ChevronDown
-                        className={`h-4 w-4 shrink-0 text-atlas-muted transition-transform ${open ? "rotate-180" : ""}`}
+                      <span
                         aria-hidden
-                      />
+                        className={`shrink-0 transition-transform ${open ? "rotate-90" : ""}`}
+                      >
+                        <AppIcon name="adelante" size={18} tint={PHONE.text2} />
+                      </span>
                     </button>
                     {open ? (
                       <div className="pb-2">
@@ -191,9 +199,11 @@ function CardsScreen({
     >
       <div>
         {surface === "home" ? (
-          <p className="text-xs text-atlas-muted">Hola</p>
+          <p className="text-[13px] font-medium" style={{ color: PHONE.text2 }}>
+            Hola
+          </p>
         ) : null}
-        <p className="text-base font-semibold leading-snug text-atlas-text">
+        <p className="text-[25px] font-black leading-[31px] tracking-tight">
           {DONDE[surface]}
         </p>
       </div>

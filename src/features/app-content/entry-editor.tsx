@@ -36,6 +36,7 @@ export function EntryEditor({
 
   useEffect(() => {
     onDraftChange({
+      contentKey: entry.contentKey,
       title,
       subtitle,
       body,
@@ -52,6 +53,7 @@ export function EntryEditor({
     actionLabel,
     isActive,
     entry.actionKind,
+    entry.contentKey,
     onDraftChange,
   ]);
   useEffect(() => () => onDraftChange(null), [onDraftChange]);

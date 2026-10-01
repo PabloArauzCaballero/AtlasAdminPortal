@@ -75,6 +75,7 @@ export function AppContentPage() {
       (publishedContent.data?.items ?? [])
         .filter((entry) => entry.isActive)
         .map((entry) => ({
+          contentKey: entry.contentKey,
           title: entry.title ?? "",
           subtitle: entry.subtitle ?? "",
           body: entry.bodyMd ?? "",
