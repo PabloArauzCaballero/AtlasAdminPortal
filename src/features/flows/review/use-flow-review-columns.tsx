@@ -147,7 +147,15 @@ export function useFlowReviewColumns({
         ),
       },
     ];
-  }, [decidir, puedeRevisar, items, seleccion, alternarPagina, alternarUno, onVerFlujo]);
+  }, [
+    decidir,
+    puedeRevisar,
+    items,
+    seleccion,
+    alternarPagina,
+    alternarUno,
+    onVerFlujo,
+  ]);
 
   return { columns, decidir };
 }
