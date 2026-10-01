@@ -32,7 +32,15 @@ export function buildSchemaVersionColumns(): ColumnDef<SchemaVersion>[] {
     {
       header: "Tablas",
       accessorKey: "tablesCount",
-      cell: ({ row }) => formatNumber(row.original.tablesCount),
+      cell: ({ row }) => (
+        <Link
+          href={`/internal/schema/versions/${row.original._id}`}
+          className="text-atlas-accent underline"
+          aria-label={`Ver las ${formatNumber(row.original.tablesCount)} tablas de ${row.original.versionCode}`}
+        >
+          {formatNumber(row.original.tablesCount)}
+        </Link>
+      ),
     },
     {
       header: "Columnas",

@@ -15,6 +15,7 @@ import { formatDateTimeBO } from "@/shared/i18n/bolivia-format";
 import { useExpedientes } from "./hooks";
 import { formatearTamano } from "./node-columns";
 import type { Expediente, EstadoExpediente } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const TONO_DE_ESTADO: Record<
   EstadoExpediente,
@@ -102,7 +103,7 @@ function ExploradorAutorizado() {
   const [subjectType, setSubjectType] = useState("");
   const expedientes = useExpedientes({
     page,
-    pageSize: 25,
+    pageSize: usePageSize(25),
     q,
     estado,
     subjectType,

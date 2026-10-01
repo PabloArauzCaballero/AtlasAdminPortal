@@ -21,6 +21,7 @@ import {
 } from "./hooks";
 import { buildMyNotificationColumns } from "./my-notifications-columns";
 import { BellRing } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const MIS_ESTADOS = new Set([
   "pending",
@@ -48,7 +49,7 @@ export function MyNotificationsPage() {
 
   const notifications = useMyNotifications({
     page,
-    limit: 20,
+    limit: usePageSize(20),
     q: q.trim(),
     status,
     channel,

@@ -17,6 +17,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, formatNumber, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { cn } from "@/shared/lib/cn";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const typeOptions = ["startup", "append", "rotation"].map((value) => ({
   label: value,
@@ -37,7 +38,10 @@ export function MongoLogsSection() {
   const [type, setType] = useState("");
   const [live, setLive] = useState(true);
   const [view, setView] = useState<"terminal" | "table">("terminal");
-  const logs = useMongoLogs({ page, limit: 20, q, type }, { live });
+  const logs = useMongoLogs(
+    { page, limit: usePageSize(20), q, type },
+    { live },
+  );
   const upload = useLogFileUpload(() => setView("terminal"));
 
   const terminalLines = useMemo(() => {

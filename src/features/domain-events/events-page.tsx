@@ -20,6 +20,7 @@ import { buildDomainEventColumns } from "./event-columns";
 import { PublishEventDialog } from "./publish-event-dialog";
 import { useDomainEvents, useEventCatalog } from "./hooks";
 import { OUTBOX_EVENT_STATUSES } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const LIMITE = 20;
 
@@ -60,7 +61,7 @@ function AuthorizedDomainEventsPage() {
 
   const eventos = useDomainEvents({
     page,
-    limit: LIMITE,
+    limit: usePageSize(LIMITE),
     ...(status ? { status } : {}),
     ...(eventCode ? { eventCode } : {}),
     ...(busqueda.trim() ? { q: busqueda.trim() } : {}),

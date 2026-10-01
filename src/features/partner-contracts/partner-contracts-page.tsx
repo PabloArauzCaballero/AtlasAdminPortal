@@ -20,6 +20,7 @@ import { buildContractColumns } from "./contract-columns";
 import { useContractTemplates, useSetDefaultContractTemplate } from "./hooks";
 import type { PartnerContractTemplate } from "./types";
 import { DialogoPublicar } from "./partner-contracts-pieces";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -78,7 +79,7 @@ function AuthorizedPartnerContractsPage() {
 
   const plantillas = useContractTemplates({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q,
     status,
   });

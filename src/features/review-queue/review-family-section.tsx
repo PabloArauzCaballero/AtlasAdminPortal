@@ -11,6 +11,7 @@ import {
   type ReviewFamily,
 } from "./review-families";
 import { ReviewTableCard } from "./review-table-card";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export type ReviewFilters = {
   q: string;
@@ -36,7 +37,7 @@ export function ReviewFamilySection<T>({
   const query = useReviewQueue({
     type: family.type,
     page,
-    limit: REVIEW_PAGE_SIZE,
+    limit: usePageSize(REVIEW_PAGE_SIZE),
     reviewStatus: filters.reviewStatus,
     ...(filters.q.trim() ? { q: filters.q.trim() } : {}),
   });

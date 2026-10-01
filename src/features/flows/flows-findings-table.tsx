@@ -15,6 +15,7 @@ import {
   SYSTEM_OPTIONS,
 } from "./filter-options";
 import type { FlowFinding } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /** Hallazgos del análisis de Flujos, abiertos por defecto. */
 export function FlowsFindingsTable() {
@@ -25,7 +26,7 @@ export function FlowsFindingsTable() {
   const [systemCode, setSystemCode] = useState("");
   const findings = useFlowFindings({
     page,
-    limit: 20,
+    limit: usePageSize(20),
     q,
     kind,
     severity,

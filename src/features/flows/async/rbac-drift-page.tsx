@@ -19,6 +19,7 @@ import { driftAction, driftSentence } from "./rbac-drift-words";
 import type { RbacDriftItem, RbacDriftResponse } from "./types";
 import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 import { CLIENT_OPTIONS, labelFrom } from "../filter-options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 20;
 
@@ -142,7 +143,7 @@ function AuthorizedRbacDriftPage() {
     severity,
     clientCode,
     page,
-    limit: PAGE_SIZE,
+    limit: usePageSize(PAGE_SIZE),
   });
   const data = query.data;
   const summary = data?.summary;

@@ -21,6 +21,7 @@ import {
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * Pestaña «Datos personales» de Gobierno de datos (antes `/internal/governance/pii`, que redirige).
@@ -38,13 +39,13 @@ export function PiiRegistryTab() {
     personalData: "true",
     q,
     page: tablesPage,
-    limit: 20,
+    limit: usePageSize(20),
   });
   const endpoints = useEndpoints({
     personalData: "true",
     q,
     page: routesPage,
-    limit: 20,
+    limit: usePageSize(20),
   });
 
   const entityColumns = useMemo<ColumnDef<DataEntity>[]>(

@@ -24,6 +24,7 @@ import {
   type AuditFilterState,
 } from "./audit-filters";
 import { useActionLogFilterCatalog } from "./audit-hooks";
+import { usePageSize } from "@/shared/lib/page-size";
 
 /**
  * La auditoría SQL: la bitácora de acciones con los filtros que publica el servidor.
@@ -37,7 +38,7 @@ export function AuditSqlSection() {
   const [estado, setEstado] = useState<AuditFilterState>({});
   const catalogo = useActionLogFilterCatalog();
   const logs = useActionLogs(
-    consultaDeAuditoria(estado, page, TAMANO_POR_DEFECTO),
+    consultaDeAuditoria(estado, page, usePageSize(TAMANO_POR_DEFECTO)),
   );
 
   const columns = useMemo<ColumnDef<ActionLog>[]>(

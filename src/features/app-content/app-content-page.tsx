@@ -23,6 +23,7 @@ import { SurfaceTabs } from "./surface-tabs";
 import { PhonePreview, type PreviewDraft } from "./phone-preview";
 import { APP_CONTENT_MANAGE, SURFACES, surfaceOption } from "./surfaces";
 import type { AppContentEntry, ContentSurface } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -64,7 +65,7 @@ export function AppContentPage() {
   const [visibilidad, setVisibilidad] = useState<"true" | "false" | "">("");
   const content = useAppContent(surface, {
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q,
     active: visibilidad,
   });

@@ -17,6 +17,7 @@ import { FlowCatalogNotLoaded } from "../flow-catalog-not-loaded";
 import { useBulkReviewSelection } from "./use-bulk-review-selection";
 import { BulkReviewToolbar } from "./bulk-review-toolbar";
 import { useFlowReviewColumns } from "./use-flow-review-columns";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const ESTADOS: FlowReviewStatus[] = [
   "NEEDS_REVIEW",
@@ -49,7 +50,7 @@ function AuthorizedFlowReviewPage() {
   const query = useFlowReviewQueue({
     reviewStatus: estado,
     page,
-    limit: 20,
+    limit: usePageSize(20),
     ...(q.trim() ? { q: q.trim() } : {}),
   });
   // La ficha del flujo, para que quien decide vea lo que aprueba: la cola sólo enseña ruta y motivos.

@@ -21,6 +21,7 @@ import {
 } from "./hooks";
 import { MisConversaciones } from "./my-conversations";
 import { PRESENCIA_OPTIONS } from "./support-options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const POR_PAGINA = 20;
 
@@ -42,7 +43,7 @@ export function ChatsEnEspera() {
   const [page, setPage] = useState(1);
   const cola = useQueuedChannels({
     page,
-    limit: POR_PAGINA,
+    limit: usePageSize(POR_PAGINA),
     q: q.trim() || undefined,
     channelType: channelType || undefined,
   });

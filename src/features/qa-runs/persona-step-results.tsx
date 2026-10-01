@@ -13,6 +13,7 @@ import { PersonaStepsPanel } from "./persona-steps-panel";
 import { useQaRunPersonas } from "./run-hooks";
 import { errorProps, PERSONA_STATUS_LABEL } from "./run-status";
 import type { QaRunPersona } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const PAGE_SIZE = 25;
 
@@ -73,7 +74,7 @@ export function PersonaStepResults({
     runId,
     {
       page,
-      limit: PAGE_SIZE,
+      limit: usePageSize(PAGE_SIZE),
       status: status || undefined,
       q: q.trim() || undefined,
     },

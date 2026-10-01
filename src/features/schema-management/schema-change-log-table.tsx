@@ -11,6 +11,7 @@ import { ApproveChangeDialog } from "./approve-change-dialog";
 import { buildChangeLogColumns } from "./change-log-columns";
 import { useSchemaChangeLog } from "./hooks";
 import type { SchemaChangeLog } from "./types";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const statusOptions = [
   { label: "Pendiente", value: "pending" },
@@ -22,6 +23,7 @@ export function SchemaChangeLogTable({
   pageSize = 50,
 }: Readonly<{ pageSize?: number }>) {
   const [page, setPage] = useState(1);
+  const size = usePageSize(pageSize);
   const [approvalStatus, setApprovalStatus] = useState("");
   const [q, setQ] = useState("");
   const [deciding, setDeciding] = useState<SchemaChangeLog | null>(null);
@@ -29,8 +31,8 @@ export function SchemaChangeLogTable({
   const canApprove = hasPermission(SCHEMA_APPROVE_PERMISSION);
 
   const changeLog = useSchemaChangeLog({
-    limit: pageSize,
-    offset: (page - 1) * pageSize,
+    limit: size,
+    offset: (page - 1) * size,
     ...(approvalStatus ? { approvalStatus } : {}),
     // Vacío no viaja: el esquema del servidor es estricto y rechaza `q=`.
     ...(q.trim() ? { q: q.trim() } : {}),

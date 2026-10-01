@@ -26,6 +26,7 @@ import { formatBoolean, formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Route } from "lucide-react";
 import { reviewOptions, riskOptions } from "./endpoint-options";
+import { usePageSize } from "@/shared/lib/page-size";
 
 export function EndpointsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -51,7 +52,14 @@ function AuthorizedEndpointsPage() {
   // tres siempre, aunque alguno todavía no aporte ninguna ruta.
   const [block, setBlock] = useState(searchParams.get("block") ?? "");
   const blocks = usePlatformBlocks();
-  const query = { page, limit: 20, q, riskLevel, reviewStatus, block };
+  const query = {
+    page,
+    limit: usePageSize(20),
+    q,
+    riskLevel,
+    reviewStatus,
+    block,
+  };
   const endpoints = useEndpoints(query);
   const blockOptions = useMemo(
     () =>

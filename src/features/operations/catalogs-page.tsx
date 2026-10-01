@@ -25,6 +25,7 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import { formatNumber } from "@/shared/lib/format";
 import { buildCatalogColumns } from "./catalog-columns";
 import { Boxes } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 export function OperationCatalogsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
   // datos vivieran aquí, las queries saldrían en el render antes de que el
@@ -49,7 +50,13 @@ function AuthorizedOperationCatalogsPage() {
   const [creatingFor, setCreatingFor] = useState<string | null>(null);
   const [ingestingFor, setIngestingFor] = useState<ContextCatalog | null>(null);
   const router = useRouter();
-  const catalogs = useOperationCatalogs({ page, limit: 20, q, status, active });
+  const catalogs = useOperationCatalogs({
+    page,
+    limit: usePageSize(20),
+    q,
+    status,
+    active,
+  });
   const summary = catalogs.data?.summary;
   const items = catalogs.data?.items ?? [];
   const columns = useMemo(

@@ -23,6 +23,7 @@ import { TutorialLaunchButton } from "@/features/qa-tutorials/tutorial-launch-bu
 import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Gauge } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const statusOptions = STRESS_PROFILE_STATUS_OPTIONS;
 
@@ -43,8 +44,17 @@ function AuthorizedStressProfilesPage() {
   const [status, setStatus] = useState("");
   const [matrixPage, setMatrixPage] = useState(1);
   const [creating, setCreating] = useState(false);
-  const profiles = useStressProfiles({ page, limit: 20, q, status });
-  const matrix = useStressMatrix({ page: matrixPage, limit: 10, q });
+  const profiles = useStressProfiles({
+    page,
+    limit: usePageSize(20),
+    q,
+    status,
+  });
+  const matrix = useStressMatrix({
+    page: matrixPage,
+    limit: usePageSize(10),
+    q,
+  });
 
   const profileColumns = useMemo<ColumnDef<StressProfile>[]>(
     () => [

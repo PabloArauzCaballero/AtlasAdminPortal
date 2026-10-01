@@ -18,6 +18,7 @@ import { formatDateTime, formatNumber } from "@/shared/lib/format";
 import { optionLabel } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
+import { usePageSize } from "@/shared/lib/page-size";
 
 const statusOptions = RUN_STATUS_OPTIONS;
 
@@ -37,7 +38,13 @@ function AuthorizedTestRunsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [environment, setEnvironment] = useState("");
-  const runs = useTestRuns({ page, limit: 20, q, status, environment });
+  const runs = useTestRuns({
+    page,
+    limit: usePageSize(20),
+    q,
+    status,
+    environment,
+  });
 
   const columns = useMemo<ColumnDef<TestRun>[]>(
     () => [
