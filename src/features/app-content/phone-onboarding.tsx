@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon } from "./app-icons";
 import type { PreviewDraft } from "./phone-preview";
 import { ICONOS_PASO, PHONE } from "./phone-theme";
@@ -37,9 +37,10 @@ function AtlasMark({ size = 112 }: Readonly<{ size?: number }>) {
 }
 
 type Pagina =
-  | { tipo: "marca"; titulo: string; pie: string }
+  | { tipo: "marca"; clave: string; titulo: string; pie: string }
   | {
       tipo: "paso";
+      clave: string;
       titulo: string;
       cuerpo: string;
       icon: string;
@@ -59,6 +60,7 @@ function paginasDe(pieces: PreviewDraft[], isDraft: boolean): Pagina[] {
   if (marca || !isDraft) {
     paginas.push({
       tipo: "marca",
+      clave: "eslogan",
       titulo: marca?.subtitle.trim() || ESLOGAN,
       pie: marca?.body.trim() || ESLOGAN_PIE,
     });
@@ -74,6 +76,7 @@ function paginasDe(pieces: PreviewDraft[], isDraft: boolean): Pagina[] {
     );
     paginas.push({
       tipo: "paso",
+      clave: piece.contentKey ?? `paso-${index}`,
       titulo: piece.title,
       cuerpo,
       icon: conIcono?.icon ?? ICONOS_PASO[index] ?? "chispa",
@@ -86,9 +89,15 @@ function paginasDe(pieces: PreviewDraft[], isDraft: boolean): Pagina[] {
 export function OnboardingScreen({
   pieces,
   isDraft,
-}: Readonly<{ pieces: PreviewDraft[]; isDraft: boolean }>) {
+  focusKey,
+}: Readonly<{ pieces: PreviewDraft[]; isDraft: boolean; focusKey?: string }>) {
   const paginas = paginasDe(pieces, isDraft);
-  const [indice, setIndice] = useState(0);
+  const enfocada = paginas.findIndex((pagina) => pagina.clave === focusKey);
+  const [indice, setIndice] = useState(Math.max(0, enfocada));
+  // Al editar una pieza, el carrusel salta a su página: es la que se está revisando.
+  useEffect(() => {
+    if (isDraft && enfocada >= 0) setIndice(enfocada);
+  }, [isDraft, enfocada]);
 
   if (paginas.length === 0) {
     return (

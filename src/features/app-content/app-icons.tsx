@@ -6,7 +6,7 @@ import { ICONOS_RESTO } from "./app-icons-resto";
  *
  * Se copian y no se redibujan para que el celular del portal enseñe el icono QUE VERÁ la persona:
  * mismo trazo, misma rejilla de 24 y el mismo grosor compensado por tamaño. Si se añade un icono en
- * la app hay que añadirlo aquí (y a `ICON_OPTIONS`); uno desconocido pinta el de por defecto, igual
+ * la app hay que añadirlo aquí (y a `ICON_LABELS`); uno desconocido pinta el de por defecto, igual
  * que hace la app.
  */
 const GRID = 24;

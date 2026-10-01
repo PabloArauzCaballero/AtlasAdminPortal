@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiErrorText } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Field, Input, Textarea } from "@/shared/components/ui/input";
-import { BulletsEditor } from "./bullets-editor";
+import { EntryFormFields, type EntryFormState } from "./entry-form";
 import { useSaveAppContent } from "./hooks";
 import type { PreviewDraft } from "./phone-preview";
-import type { AppContentEntry, ContentBullet } from "./types";
+import type { AppContentEntry } from "./types";
+
+function estadoInicial(entry: AppContentEntry): EntryFormState {
+  return {
+    title: entry.title ?? "",
+    subtitle: entry.subtitle ?? "",
+    body: entry.bodyMd ?? "",
+    bullets: entry.bullets,
+    actionKind: entry.actionKind,
+    actionLabel: entry.actionLabel ?? "",
+    actionValue: entry.actionValue ?? "",
+    displayOrder: entry.displayOrder,
+    isActive: entry.isActive,
+  };
+}
 
 /**
  * El formulario para editar UNA pieza de contenido.
  *
  * La lista es una tabla (`entry-columns.tsx`); el formulario se abre encima de ella al pulsar
- * «Editar» en una fila. Sólo la pieza que se edita alimenta el celular, y al cerrarla lo suelta.
+ * «Editar» en una fila. El celular enseña la PANTALLA completa con esta pieza sustituida por lo que
+ * se escribe, y al cerrar la pieza vuelve a lo publicado. La barra de abajo queda fija: con una lista
+ * de puntos larga, «Guardar» se perdía al final del formulario.
  */
 export function EntryEditor({
   entry,
@@ -26,36 +41,24 @@ export function EntryEditor({
   onDraftChange: (draft: PreviewDraft | null) => void;
 }>) {
   const mutation = useSaveAppContent();
-  const [title, setTitle] = useState(entry.title ?? "");
-  const [subtitle, setSubtitle] = useState(entry.subtitle ?? "");
-  const [body, setBody] = useState(entry.bodyMd ?? "");
-  const [bullets, setBullets] = useState<ContentBullet[]>(entry.bullets);
-  const [actionLabel, setActionLabel] = useState(entry.actionLabel ?? "");
-  const [actionValue, setActionValue] = useState(entry.actionValue ?? "");
-  const [isActive, setIsActive] = useState(entry.isActive);
+  const inicial = useMemo(() => estadoInicial(entry), [entry]);
+  const [state, setState] = useState<EntryFormState>(inicial);
+  const cambiar = (cambios: Partial<EntryFormState>) =>
+    setState((actual) => ({ ...actual, ...cambios }));
+  const sucio = JSON.stringify(state) !== JSON.stringify(inicial);
 
   useEffect(() => {
     onDraftChange({
       contentKey: entry.contentKey,
-      title,
-      subtitle,
-      body,
-      bullets,
-      actionKind: entry.actionKind,
-      actionLabel,
-      isActive,
+      title: state.title,
+      subtitle: state.subtitle,
+      body: state.body,
+      bullets: state.bullets,
+      actionKind: state.actionKind,
+      actionLabel: state.actionLabel,
+      isActive: state.isActive,
     });
-  }, [
-    title,
-    subtitle,
-    body,
-    bullets,
-    actionLabel,
-    isActive,
-    entry.actionKind,
-    entry.contentKey,
-    onDraftChange,
-  ]);
+  }, [state, entry.contentKey, onDraftChange]);
   useEffect(() => () => onDraftChange(null), [onDraftChange]);
 
   const save = () => {
@@ -64,18 +67,20 @@ export function EntryEditor({
         surface: entry.surface,
         contentKey: entry.contentKey,
         locale: entry.locale,
-        title: title || null,
-        subtitle: subtitle || null,
-        bodyMd: body || null,
+        title: state.title || null,
+        subtitle: state.subtitle || null,
+        bodyMd: state.body || null,
         // Los puntos vacíos se descartan al guardar: una línea en blanco en la app se ve como un
         // bullet roto, y quien edita casi siempre la deja sin querer al añadir uno de más.
-        bullets: bullets.filter((bullet) => bullet.text.trim().length > 0),
+        bullets: state.bullets.filter(
+          (bullet) => bullet.text.trim().length > 0,
+        ),
         metadata: entry.metadata,
-        actionKind: entry.actionKind,
-        actionLabel: entry.actionKind ? actionLabel : null,
-        actionValue: entry.actionKind ? actionValue : null,
-        displayOrder: entry.displayOrder,
-        isActive,
+        actionKind: state.actionKind,
+        actionLabel: state.actionKind ? state.actionLabel : null,
+        actionValue: state.actionKind ? state.actionValue : null,
+        displayOrder: state.displayOrder,
+        isActive: state.isActive,
       },
       { onSuccess: onClose },
     );
@@ -84,120 +89,65 @@ export function EntryEditor({
   return (
     <Card testId={`app-content-${entry.contentKey}`}>
       <CardContent>
-        <div>
-          <h3 className="text-base font-semibold text-atlas-text">
-            Editando: {entry.title ?? entry.contentKey}
-          </h3>
-          <p className="mt-1 font-mono text-xs text-atlas-muted">
-            {entry.surface} · {entry.contentKey} · {entry.locale} · orden{" "}
-            {entry.displayOrder}
-          </p>
-        </div>
-        <div className="mt-4 flex flex-col gap-3">
-          <Field
-            tooltip="Encabezado que ve el cliente en la app; en preguntas frecuentes, la pregunta tal cual."
-            label="Título / pregunta"
-          >
-            <Input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              data-testid={`title-${entry.contentKey}`}
-            />
-          </Field>
-
-          <Field
-            tooltip="Línea corta bajo el título que resume el contenido en la app."
-            label="Subtítulo"
-          >
-            <Input
-              value={subtitle}
-              onChange={(event) => setSubtitle(event.target.value)}
-              data-testid={`subtitle-${entry.contentKey}`}
-            />
-          </Field>
-
-          <Field
-            tooltip="Texto completo que la app muestra al abrir la entrada."
-            label="Respuesta"
-          >
-            <Textarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              rows={5}
-              data-testid={`body-${entry.contentKey}`}
-            />
-          </Field>
-
-          <BulletsEditor
-            bullets={bullets}
-            onChange={setBullets}
-            contentKey={entry.contentKey}
-          />
-
-          {entry.actionKind ? (
-            <fieldset className="flex flex-col gap-2 rounded-xl border border-atlas-border bg-atlas-soft/60 p-3">
-              <legend className="px-1 text-sm font-medium text-atlas-text">
-                Botón ({entry.actionKind})
-              </legend>
-              <Input
-                value={actionLabel}
-                onChange={(event) => setActionLabel(event.target.value)}
-                placeholder="Texto del botón"
-                data-testid={`action-label-${entry.contentKey}`}
-              />
-              <Input
-                value={actionValue}
-                onChange={(event) => setActionValue(event.target.value)}
-                placeholder={
-                  entry.actionKind === "whatsapp"
-                    ? "Número local, sin prefijo de país"
-                    : "Destino"
-                }
-                data-testid={`action-value-${entry.contentKey}`}
-              />
-              {entry.actionKind === "whatsapp" ? (
-                <p className="text-xs text-atlas-muted">
-                  El prefijo de Bolivia lo añade el servidor. Escribe sólo el
-                  número.
-                </p>
-              ) : null}
-            </fieldset>
-          ) : null}
-
-          <label className="flex items-center gap-2 text-sm text-atlas-text">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(event) => setIsActive(event.target.checked)}
-              data-testid={`active-${entry.contentKey}`}
-              className="h-4 w-4 rounded border-slate-300 accent-atlas-accent"
-            />
-            Visible en la app
-          </label>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              onClick={save}
-              isLoading={mutation.isPending}
-              loadingText="Guardando…"
-              data-testid={`save-${entry.contentKey}`}
-            >
-              Guardar
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Cancelar
-            </Button>
-          </div>
-
-          {mutation.error ? (
-            <p role="alert" className="text-xs font-medium text-red-600">
-              {apiErrorText(
-                mutation.error,
-                "No pudimos guardar. Revisa el texto e intenta otra vez.",
-              )}
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-atlas-text">
+              {entry.title ?? entry.contentKey}
+            </h3>
+            <p className="mt-1 text-xs text-atlas-muted">
+              Editando una pieza de «{entry.surface}»
             </p>
-          ) : null}
+          </div>
+          <code className="rounded-lg bg-atlas-soft px-2 py-1 font-mono text-xs text-atlas-muted">
+            {entry.contentKey} · {entry.locale}
+          </code>
+        </div>
+
+        <EntryFormFields
+          contentKey={entry.contentKey}
+          state={state}
+          onChange={cambiar}
+          bodyLabel={entry.surface === "faq" ? "Respuesta" : "Texto"}
+          titleLabel={entry.surface === "faq" ? "Pregunta" : "Título"}
+          ids={{
+            title: `title-${entry.contentKey}`,
+            subtitle: `subtitle-${entry.contentKey}`,
+            body: `body-${entry.contentKey}`,
+          }}
+        />
+
+        {mutation.error ? (
+          <p role="alert" className="mt-3 text-xs font-medium text-red-600">
+            {apiErrorText(
+              mutation.error,
+              "No pudimos guardar. Revisa el texto e intenta otra vez.",
+            )}
+          </p>
+        ) : null}
+
+        <div className="sticky bottom-0 -mx-6 -mb-6 mt-4 flex items-center gap-3 rounded-b-2xl border-t border-atlas-border bg-white/95 px-6 py-3 backdrop-blur">
+          <Button
+            variant="primary"
+            onClick={save}
+            isLoading={mutation.isPending}
+            loadingText="Guardando…"
+            data-testid={`save-${entry.contentKey}`}
+          >
+            Guardar
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          {sucio ? (
+            <span className="ml-auto flex items-center gap-1.5 text-xs font-medium text-amber-700">
+              <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden />
+              Cambios sin guardar
+            </span>
+          ) : (
+            <span className="ml-auto text-xs text-atlas-muted">
+              Sin cambios
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
