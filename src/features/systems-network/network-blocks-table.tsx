@@ -99,7 +99,7 @@ const COLUMNS: ColumnDef<NetworkBlockHealth>[] = [
     ),
   },
   {
-    header: "Endpoints",
+    header: "Operaciones",
     id: "endpoints",
     accessorFn: (block) => block.catalog.endpoints,
     cell: ({ row }) => (

@@ -38,7 +38,7 @@ const COLUMNS: ColumnDef<TrafficLatencyRoute>[] = [
     ),
   },
   {
-    header: "Requests",
+    header: "Peticiones",
     accessorKey: "totalRequests",
     cell: ({ row }) => formatNumber(row.original.totalRequests),
   },
@@ -53,7 +53,7 @@ const COLUMNS: ColumnDef<TrafficLatencyRoute>[] = [
     cell: ({ row }) => `${formatNumber(row.original.p95LatencyMs)} ms`,
   },
   {
-    header: "Error rate",
+    header: "Tasa de error",
     accessorKey: "errorRate",
     cell: ({ row }) => (
       <Badge tone={row.original.errorRate > 0.02 ? "critical" : "success"}>

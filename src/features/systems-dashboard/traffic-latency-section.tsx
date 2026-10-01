@@ -79,7 +79,7 @@ export function TrafficLatencySection() {
           <>
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryTile
-                label="Requests"
+                label="Peticiones"
                 value={formatNumber(report.data.summary.totalRequests)}
               />
               <SummaryTile
@@ -91,7 +91,7 @@ export function TrafficLatencySection() {
                 value={`${formatNumber(report.data.summary.p95LatencyMs)} ms`}
               />
               <SummaryTile
-                label="Error rate"
+                label="Tasa de error"
                 value={`${(report.data.summary.errorRate * 100).toFixed(1)}%`}
               />
             </div>

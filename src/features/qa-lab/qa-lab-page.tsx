@@ -57,7 +57,7 @@ function AuthorizedQaLabPage({
   return (
     <>
       <PageHeader
-        eyebrow="QA Console"
+        eyebrow="Consola de pruebas"
         title="Laboratorio de testing"
         description="Prueba una operación suelta —si responde bien y cuánta carga aguanta—, encadena varias en un recorrido que reproduce un flujo real de negocio, o mira el árbol de decisión del recorrido estándar. Las pruebas sueltas corren en tu navegador y no se guardan: descarga el registro si necesitas conservarlas."
         actions={

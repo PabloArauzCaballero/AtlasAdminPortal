@@ -88,7 +88,7 @@ function AuthorizedDataEntityDetailPage({
           {activeTab === "Columnas" ? (
             <ColumnCatalogSection columns={columns} />
           ) : null}
-          {activeTab === "Endpoints" ? (
+          {activeTab === "Operaciones" ? (
             <RelatedEndpointsSection
               isLoading={tableImpact.isLoading}
               error={tableImpact.error}

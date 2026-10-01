@@ -48,7 +48,7 @@ export function buildDataImpactColumns(
       cell: ({ row }) => <RiskBadge value={row.original.impactLevel} />,
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -110,7 +110,7 @@ export function buildFieldImpactColumns(
       cell: ({ row }) => formatBoolean(row.original.isSensitive),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />
@@ -175,7 +175,7 @@ export function buildToolColumns(
       cell: ({ row }) => formatBoolean(row.original.isRequired),
     },
     {
-      header: "Review",
+      header: "Revisión",
       accessorKey: "reviewStatus",
       cell: ({ row }) => (
         <ReviewStatusBadge value={row.original.reviewStatus} />

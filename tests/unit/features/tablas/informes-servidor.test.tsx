@@ -295,10 +295,10 @@ describe("Tráfico y latencia · las rutas en tabla del servidor", () => {
     expect(cabeceras()).toEqual([
       "Método",
       "Ruta",
-      "Requests",
+      "Peticiones",
       "Latencia prom.",
       "p95",
-      "Error rate",
+      "Tasa de error",
       "Última vez",
     ]);
     await filtrarPor(/^Método/, "POST");

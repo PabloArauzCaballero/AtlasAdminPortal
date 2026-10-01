@@ -32,7 +32,7 @@ test.describe("cobertura del generador de datos de prueba", () => {
       (path) =>
         path.includes("/customer-onboarding/") && path.endsWith("/profile"),
     );
-    await page.getByPlaceholder(/endpointId/i).fill(endpointId);
+    await page.getByPlaceholder(/número de operación/i).fill(endpointId);
     await page.getByRole("button", { name: /cargar operación/i }).click();
     await settled(page);
 

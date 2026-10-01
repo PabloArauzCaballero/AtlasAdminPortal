@@ -14,6 +14,7 @@ import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { formatDateTime } from "@/shared/lib/format";
 import { useAuth } from "@/shared/auth/auth-context";
+import { roleLabel } from "@/features/processes/labels";
 import { useFlow } from "./hooks";
 import type { FlowDetail } from "./types";
 import {
@@ -99,13 +100,6 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
   return (
     <>
       <dl className="space-y-1">
-        <Row label="Ruta">
-          <span className="inline-flex items-center gap-2 font-mono text-xs">
-            <MethodBadge method={flow.httpMethod} />
-            {flow.path}
-            <CopyButton value={`${flow.httpMethod} ${flow.path}`} />
-          </span>
-        </Row>
         <Row label="Diagrama">
           <span className="flex flex-wrap gap-3 text-xs">
             <Link
@@ -137,10 +131,10 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
         <Row label="Tipo">{kindLabel(flow.kind)}</Row>
         <Row label="Autorización">{authorizationLabel(flow)}</Row>
         <Row label="Roles">
-          <Chips values={flow.roles} empty="Ninguno declarado" />
-        </Row>
-        <Row label="Permisos internos">
-          <Chips values={flow.internalPermissions} empty="Ninguno" />
+          <Chips
+            values={flow.roles.map((role) => roleLabel(role))}
+            empty="Ninguno declarado"
+          />
         </Row>
         <Row label="Quién la llama">
           <Chips
@@ -200,6 +194,16 @@ function FlowDetailBody({ flow }: Readonly<{ flow: FlowDetail }>) {
           Para quien tenga que tocar el código de esta operación.
         </p>
         <dl className="space-y-1">
+          <Row label="Ruta">
+            <span className="inline-flex items-center gap-2 font-mono text-xs">
+              <MethodBadge method={flow.httpMethod} />
+              {flow.path}
+              <CopyButton value={`${flow.httpMethod} ${flow.path}`} />
+            </span>
+          </Row>
+          <Row label="Permisos internos">
+            <Chips values={flow.internalPermissions} empty="Ninguno" />
+          </Row>
           <Row label="Identificador">
             <span className="font-mono text-xs">{flow.id}</span> ·{" "}
             <span className="font-mono text-xs">{flow.slug}</span>
