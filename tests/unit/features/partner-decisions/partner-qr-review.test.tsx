@@ -378,7 +378,10 @@ describe("PartnerQrDialog — revocar un QR activo", () => {
     const onClose = vi.fn();
     renderWithProviders(
       <AuthProvider>
-        <PartnerQrDialog qr={{ ...PENDIENTE, status: "active" }} onClose={onClose} />
+        <PartnerQrDialog
+          qr={{ ...PENDIENTE, status: "active" }}
+          onClose={onClose}
+        />
       </AuthProvider>,
     );
     return onClose;

@@ -20,7 +20,9 @@ describe("etiquetas del expediente de comercio", () => {
     expect(onboardingStatusLabel("approved")).toBe("Aprobado");
     expect(decisionOutcomeLabel("REVISION_MANUAL")).toBe("Revisión manual");
     expect(decisionOutcomeLabel("APROBADO")).toBe("Aprobado");
-    expect(qrStatusLabel("pending_review")).toBe("Pendiente de activar (anterior al 2026-10-02)");
+    expect(qrStatusLabel("pending_review")).toBe(
+      "Pendiente de activar (anterior al 2026-10-02)",
+    );
     expect(networkStatusLabel("retired")).toBe("Retirado");
     expect(qrKindLabel("bank")).toBe("QR bancario (cobro)");
     expect(decisionReasonLabel("DECISION_MANUAL_PORTAL")).toBe(
