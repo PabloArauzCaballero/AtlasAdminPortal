@@ -341,7 +341,9 @@ describe("PartnerFileDrawer — lo que falla se dice, y en palabras", () => {
     expect(within(sucursales).getByText("Casa matriz")).toBeInTheDocument();
     expect(within(qr).getByText("Casa matriz")).toBeInTheDocument();
     expect(within(qr).getByText("****1234")).toBeInTheDocument();
-    expect(within(qr).getByText("Pendiente de revisión")).toBeInTheDocument();
+    expect(
+      within(qr).getByText("Pendiente de activar (anterior al 2026-10-02)"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Expediente completo")).toBeNull();
   });
 });

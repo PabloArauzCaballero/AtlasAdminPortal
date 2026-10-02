@@ -92,8 +92,12 @@ export function useReviewPartnerQrMutation() {
         approved: input.approved,
         ...(input.note ? { note: input.note } : {}),
       }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QR_PENDIENTES });
+    onSuccess: async (_resultado, input) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QR_PENDIENTES }),
+        // La revocación se hace desde la ficha del comercio: su lista de QR tiene que refrescarse.
+        queryClient.invalidateQueries({ queryKey: [...RAIZ, input.partnerId] }),
+      ]);
     },
   });
 }

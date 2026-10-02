@@ -41,6 +41,11 @@ export function PartnerQrDialog({
   );
   const nombre = nombreDelComercio(qr);
   const tipo = qrKindLabel(qr.qrKind);
+  /*
+   * Desde el 2026-10-02 el QR nace activo al confirmarlo el comercio. Un QR ACTIVO sólo admite
+   * REVOCACIÓN (con nota); «aprobar» queda para los que quedaron en `pending_review` antes.
+   */
+  const activo = qr.status === "active";
 
   return (
     <DialogShell
@@ -51,12 +56,12 @@ export function PartnerQrDialog({
       panelClassName="max-h-full w-full max-w-xl animate-scale-in overflow-y-auto rounded-xl border border-atlas-border bg-white p-5 shadow-card"
     >
       <h2 id={titleId} className="text-base font-semibold text-atlas-text">
-        Revisar {tipo} de {nombre}
+        {activo ? "Revocar" : "Revisar"} {tipo} de {nombre}
       </h2>
       <p className="mt-1 text-sm text-atlas-muted">
-        Este código dice a qué cuenta transfieren los clientes del comercio.
-        Hasta que se aprueba, la app del cliente no lo enseña. Rechazar exige
-        una nota: es lo único que le dice al comercio qué corregir.
+        {activo
+          ? "Este código es el que ven HOY los clientes del comercio al pagar. Revocarlo lo retira en el acto y el comercio se queda sin QR vigente hasta subir otro; la nota es lo que leerá para entender por qué."
+          : "Este código dice a qué cuenta transfieren los clientes del comercio. Quedó pendiente antes del 2 de octubre de 2026: activarlo lo enseña en la app; rechazarlo exige una nota, que es lo único que le dice al comercio qué corregir."}
       </p>
 
       <div className="my-4 flex justify-center rounded-lg border border-dashed border-slate-200 bg-atlas-soft p-3">
@@ -96,9 +101,13 @@ export function PartnerQrDialog({
       {puedeRevisar ? (
         <div className="space-y-2">
           <Field
-            tooltip="Explicación que lee el comercio; obligatoria si rechazas su QR."
+            tooltip="Explicación que lee el comercio; obligatoria si rechazas o revocas su QR."
             label="Nota para el comercio"
-            hint="Obligatoria para rechazar: es lo que el comercio lee para corregir."
+            hint={
+              activo
+                ? "Obligatoria: es lo que el comercio lee para entender la revocación."
+                : "Obligatoria para rechazar: es lo que el comercio lee para corregir."
+            }
           >
             <Textarea
               rows={2}
@@ -107,15 +116,17 @@ export function PartnerQrDialog({
             />
           </Field>
           <div className="flex flex-wrap gap-2">
-            <Button variant="primary" onClick={() => setPendiente("aprobar")}>
-              Aprobar QR
-            </Button>
+            {activo ? null : (
+              <Button variant="primary" onClick={() => setPendiente("aprobar")}>
+                Activar QR
+              </Button>
+            )}
             <Button
               variant="danger"
               disabled={nota.trim().length < 3}
               onClick={() => setPendiente("rechazar")}
             >
-              Rechazar QR
+              {activo ? "Revocar QR" : "Rechazar QR"}
             </Button>
             <Button variant="ghost" onClick={onClose}>
               Cerrar sin decidir
@@ -133,7 +144,7 @@ export function PartnerQrDialog({
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-atlas-muted">
-            Tu usuario no puede aprobar ni rechazar QR de cobro: lo hace el
+            Tu usuario no puede activar ni revocar QR de cobro: lo hace el
             equipo de Operaciones de comercios.
           </p>
           <Button variant="ghost" onClick={onClose}>
@@ -144,13 +155,23 @@ export function PartnerQrDialog({
 
       <ConfirmDialog
         open={pendiente !== null}
-        title={pendiente === "aprobar" ? "Aprobar el QR" : "Rechazar el QR"}
+        title={
+          pendiente === "aprobar"
+            ? "Activar el QR"
+            : activo
+              ? "Revocar el QR"
+              : "Rechazar el QR"
+        }
         description={
           pendiente === "aprobar"
             ? "Desde ahora los clientes de este comercio verán este código al pagar. Si había otro activo, queda archivado."
-            : "El comercio verá la nota y tendrá que subir otra imagen."
+            : activo
+              ? "Los clientes dejan de ver este código AHORA. El comercio verá la nota y tendrá que subir otro QR para volver a cobrar."
+              : "El comercio verá la nota y tendrá que subir otra imagen."
         }
-        confirmText={pendiente === "aprobar" ? "Aprobar" : "Rechazar"}
+        confirmText={
+          pendiente === "aprobar" ? "Activar" : activo ? "Revocar" : "Rechazar"
+        }
         isLoading={revisar.isPending}
         onCancel={() => setPendiente(null)}
         onConfirm={() => {

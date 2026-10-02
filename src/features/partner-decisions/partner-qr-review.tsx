@@ -53,18 +53,19 @@ export function PartnerQrReviewQueue() {
   return (
     <Card className="p-5">
       <h2 className="mb-1 text-base font-semibold text-atlas-text">
-        QR de cobro esperando revisión
+        QR de cobro pendientes de activar
       </h2>
       <p className="mb-4 text-sm text-atlas-muted">
-        Cada fila es el código con el que un comercio pide que le transfieran.
-        Hasta que se aprueba, la app del cliente no lo enseña. «Revisar» abre la
-        imagen y las decisiones; rechazar exige una nota: es lo único que le
-        dice al comercio qué corregir.
+        Desde el 2 de octubre de 2026 el QR de cobro lo confirma el propio
+        comercio y queda activo en el acto: Atlas ya no lo aprueba antes. Aquí
+        sólo quedan los subidos antes de ese día, que siguen esperando que
+        alguien los active o los rechace. Revocar un QR activo se hace desde la
+        ficha del comercio, en «QR de cobro».
       </p>
       {resumen ? (
         <section className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <MetricCard
-            label="QR esperando"
+            label="QR pendientes de activar"
             value={formatNumber(resumen.total)}
           />
           <MetricCard
@@ -127,13 +128,13 @@ export function PartnerQrReviewQueue() {
           onPageChange={setPage}
           emptyTitle={
             filtrando
-              ? "Ningún QR esperando revisión coincide con la búsqueda."
-              : "No hay QR esperando revisión."
+              ? "Ningún QR pendiente de activar coincide con la búsqueda."
+              : "No hay QR pendientes de activar."
           }
           emptyDescription={
             filtrando
               ? "Cambia o borra el texto y el filtro."
-              : "Cuando un comercio suba o cambie su QR de cobro, aparecerá aquí."
+              : "Los QR nuevos quedan activos al confirmarlos el comercio; aquí sólo aparecerían los anteriores al 2 de octubre de 2026."
           }
         />
       ) : null}
