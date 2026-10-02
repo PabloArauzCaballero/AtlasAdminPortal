@@ -14,6 +14,8 @@ import {
 
 const { PartnerQrReviewQueue } =
   await import("@/features/partner-decisions/partner-qr-review");
+const { PartnerQrDialog } =
+  await import("@/features/partner-decisions/partner-qr-dialog");
 const { API_BASE, server } = await import("../../../helpers/mock-server");
 const { renderWithProviders } =
   await import("../../../helpers/render-with-providers");
@@ -136,9 +138,9 @@ describe("PartnerQrReviewQueue — tabla homogénea", () => {
     render();
 
     await waitFor(() => expect(screen.getByText("CPA")).toBeInTheDocument());
-    expect(screen.getByText("QR esperando").parentElement).toHaveTextContent(
-      "23",
-    );
+    expect(
+      screen.getByText("QR pendientes de activar").parentElement,
+    ).toHaveTextContent("23");
     expect(screen.getByText("Del negocio").parentElement).toHaveTextContent(
       "20",
     );
@@ -239,10 +241,10 @@ describe("PartnerQrReviewQueue — tabla homogénea", () => {
     });
     expect(
       await screen.findByText(
-        "Ningún QR esperando revisión coincide con la búsqueda.",
+        "Ningún QR pendiente de activar coincide con la búsqueda.",
       ),
     ).toBeInTheDocument();
-    expect(screen.queryByText("No hay QR esperando revisión.")).toBeNull();
+    expect(screen.queryByText("No hay QR pendientes de activar.")).toBeNull();
   });
 
   it("sin nada en la cola dice que no hay QR esperando", async () => {
@@ -259,7 +261,7 @@ describe("PartnerQrReviewQueue — tabla homogénea", () => {
     );
     render();
     expect(
-      await screen.findByText("No hay QR esperando revisión."),
+      await screen.findByText("No hay QR pendientes de activar."),
     ).toBeInTheDocument();
   });
 
@@ -300,7 +302,7 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona (diálogo «Revi
       ).toHaveAttribute("src", expect.stringContaining("blob:qr")),
     );
     expect(
-      within(dialogo).getByRole("button", { name: "Aprobar QR" }),
+      within(dialogo).getByRole("button", { name: "Activar QR" }),
     ).toBeInTheDocument();
   });
 
@@ -326,9 +328,9 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona (diálogo «Revi
     const dialogo = await abrirRevision();
 
     fireEvent.click(
-      within(dialogo).getByRole("button", { name: "Aprobar QR" }),
+      within(dialogo).getByRole("button", { name: "Activar QR" }),
     );
-    fireEvent.click(await screen.findByRole("button", { name: "Aprobar" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Activar" }));
 
     await waitFor(() => expect(cuerpos).toEqual([{ approved: true }]));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -354,7 +356,7 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona (diálogo «Revi
     const dialogo = await abrirRevision();
 
     expect(
-      within(dialogo).queryByRole("button", { name: "Aprobar QR" }),
+      within(dialogo).queryByRole("button", { name: "Activar QR" }),
     ).toBeNull();
     expect(
       within(dialogo).getByText(
@@ -362,5 +364,73 @@ describe("PartnerQrReviewQueue — el QR lo aprueba una persona (diálogo «Revi
       ),
     ).toBeInTheDocument();
     expect(document.body.textContent).not.toContain("partner.qr.review");
+  });
+});
+
+/*
+ * Desde el 2026-10-02 el QR nace activo al confirmarlo el comercio (Pablo: «el QR lo confirma el
+ * negocio, no Atlas»). Lo que queda en manos de Atlas es RETIRAR un QR activo, con nota, desde la
+ * ficha del comercio: el diálogo es el mismo, pero sobre un activo no ofrece «Activar».
+ */
+describe("PartnerQrDialog — revocar un QR activo", () => {
+  function renderActivo(permissions: string[] = ["partner.qr.review"]) {
+    setStoredInternalSession(makeSession({ user: makeUser({ permissions }) }));
+    const onClose = vi.fn();
+    renderWithProviders(
+      <AuthProvider>
+        <PartnerQrDialog qr={{ ...PENDIENTE, status: "active" }} onClose={onClose} />
+      </AuthProvider>,
+    );
+    return onClose;
+  }
+
+  it("sobre un QR activo sólo ofrece revocar, y exige la nota", async () => {
+    renderActivo();
+    const dialogo = await screen.findByRole("dialog");
+    expect(
+      within(dialogo).queryByRole("button", { name: "Activar QR" }),
+    ).toBeNull();
+    expect(
+      within(dialogo).getByRole("button", { name: "Revocar QR" }),
+    ).toBeDisabled();
+    expect(
+      within(dialogo).getByText(/ven HOY los clientes del comercio/),
+    ).toBeInTheDocument();
+  });
+
+  it("revocar manda approved:false con la nota a la ruta de revisión y cierra", async () => {
+    const cuerpos: unknown[] = [];
+    server.use(
+      http.post(
+        `${API_BASE}/operations/partners/7/qr-codes/4/review`,
+        async ({ request }) => {
+          cuerpos.push(await request.json());
+          return HttpResponse.json({
+            data: {
+              qrId: "4",
+              status: "rejected",
+              verifiedAt: "2026-10-02T00:00:00.000Z",
+              reviewNote: "La cuenta no es del comercio",
+            },
+          });
+        },
+      ),
+    );
+    const onClose = renderActivo();
+    const dialogo = await screen.findByRole("dialog");
+    fireEvent.change(within(dialogo).getByRole("textbox"), {
+      target: { value: "La cuenta no es del comercio" },
+    });
+    fireEvent.click(
+      within(dialogo).getByRole("button", { name: "Revocar QR" }),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Revocar" }));
+
+    await waitFor(() =>
+      expect(cuerpos).toEqual([
+        { approved: false, note: "La cuenta no es del comercio" },
+      ]),
+    );
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 });

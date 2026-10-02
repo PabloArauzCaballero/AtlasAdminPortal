@@ -1,10 +1,15 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+import { useAuth } from "@/shared/auth/auth-context";
 import { SectionTable } from "@/shared/components/data-table/section-table";
+import { Button } from "@/shared/components/ui/button";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { networkStatusLabel, qrKindLabel, qrStatusLabel } from "./labels";
+import { PartnerQrDialog } from "./partner-qr-dialog";
 import { PartnerStatusBadge } from "./partner-status-badge";
+import type { PartnerQrPending } from "./types";
 
 type Fila = Record<string, unknown>;
 
@@ -34,7 +39,11 @@ function estadoCelda(
  */
 export function PartnerNetworkLists({
   estado,
-}: Readonly<{ estado: Record<string, unknown> }>) {
+  partnerId,
+}: Readonly<{ estado: Record<string, unknown>; partnerId: string }>) {
+  const { hasPermission } = useAuth();
+  const puedeRevocar = hasPermission("partner.qr.review");
+  const [revocando, setRevocando] = useState<PartnerQrPending | null>(null);
   const sucursales = filas(estado.branches);
   const qrs = filas(estado.qrCodes);
   const terminales = filas(estado.posTerminals);
@@ -82,6 +91,24 @@ export function PartnerNetworkLists({
       header: "Estado",
       accessorFn: (q) => qrStatusLabel(texto(q.status)),
       cell: ({ row }) => estadoCelda(texto(row.original.status), qrStatusLabel),
+    },
+    /*
+     * Desde el 2026-10-02 el QR nace activo al confirmarlo el comercio: Atlas ya no lo aprueba
+     * antes, pero sí puede RETIRARLO si detecta que la cuenta no es del comercio. Es la única
+     * puerta que queda, y vive aquí, en la ficha, porque la cola de pendientes ya no lo trae.
+     */
+    {
+      header: "Acciones",
+      accessorFn: () => "",
+      cell: ({ row }) =>
+        puedeRevocar && texto(row.original.status) === "active" ? (
+          <Button
+            variant="danger"
+            onClick={() => setRevocando(comoQrDeCola(row.original, partnerId))}
+          >
+            Revocar
+          </Button>
+        ) : null,
     },
   ];
   const columnasTerminales: ColumnDef<Fila>[] = [
@@ -134,6 +161,9 @@ export function PartnerNetworkLists({
         emptyTitle="No ha subido ningún QR."
         emptyDescription="Cuando el comercio suba un QR de cobro aparecerá aquí."
       />
+      {revocando ? (
+        <PartnerQrDialog qr={revocando} onClose={() => setRevocando(null)} />
+      ) : null}
       <SectionTable
         title="Terminales de venta"
         data={terminales}
@@ -148,4 +178,22 @@ export function PartnerNetworkLists({
       />
     </div>
   );
+}
+
+/** La fila del estado del comercio, con la forma que espera el diálogo de revisión (la de la cola). */
+function comoQrDeCola(fila: Fila, partnerId: string): PartnerQrPending {
+  return {
+    qrId: String(fila.qrId ?? ""),
+    partnerId,
+    qrKind: texto(fila.qrKind) ?? "bank",
+    branchId: texto(fila.branchId),
+    fingerprint: texto(fila.fingerprint) ?? "—",
+    contentType: texto(fila.contentType) ?? "",
+    sizeBytes: typeof fila.sizeBytes === "number" ? fila.sizeBytes : 0,
+    bankInstitutionCode: texto(fila.bankInstitutionCode),
+    accountNumberMasked: texto(fila.accountNumberMasked),
+    status: texto(fila.status) ?? "active",
+    createdAt: texto(fila.createdAt) ?? "",
+    partner: null,
+  };
 }

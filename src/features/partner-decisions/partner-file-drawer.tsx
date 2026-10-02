@@ -209,7 +209,10 @@ export function PartnerFileDrawer({
               </p>
             ) : null}
 
-            <PartnerNetworkLists estado={estado.data} />
+            <PartnerNetworkLists
+              estado={estado.data}
+              partnerId={expediente.partnerId}
+            />
 
             <details>
               <summary className="cursor-pointer text-sm font-semibold text-atlas-text">

@@ -32,10 +32,14 @@ export const DECISION_REASON_LABELS: Record<string, string> = {
 };
 
 /** `partner_qr_codes.status`. */
+/*
+ * Desde el 2026-10-02 el QR nace activo al confirmarlo el comercio (Pablo: «el QR lo confirma el
+ * negocio, no Atlas»). `pending_review` sólo lo tienen los subidos antes; `rejected` es una revocación.
+ */
 export const QR_STATUS_LABELS: Record<string, string> = {
-  pending_review: "Pendiente de revisión",
+  pending_review: "Pendiente de activar (anterior al 2026-10-02)",
   active: "Activo",
-  rejected: "Rechazado",
+  rejected: "Revocado",
   replaced: "Reemplazado",
   archived: "Archivado",
 };
