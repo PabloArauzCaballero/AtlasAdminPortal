@@ -28,6 +28,7 @@ import type {
   TrafficLatencyTimeseries,
   ActiveArtifactReport,
   FederationOutcome,
+  HostStatusReport,
   NetworkHealth,
   PlatformBlock,
 } from "./types";
@@ -63,6 +64,10 @@ export function listBlocks() {
 
 export function getNetworkHealth() {
   return apiRequest<NetworkHealth>("/systems/health/network");
+}
+
+export function getHostStatus() {
+  return apiRequest<HostStatusReport>("/systems/monitor/host");
 }
 
 export function federateBlocks() {

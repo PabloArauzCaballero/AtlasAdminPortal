@@ -31,13 +31,22 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const { useNetworkHealth, useFederateBlocksMutation } = vi.hoisted(() => ({
-  useNetworkHealth: vi.fn(),
-  useFederateBlocksMutation: vi.fn(),
-}));
+const { useNetworkHealth, useFederateBlocksMutation, useHostStatus } =
+  vi.hoisted(() => ({
+    useNetworkHealth: vi.fn(),
+    useFederateBlocksMutation: vi.fn(),
+    // La sección «Servidor de TEST» tiene su propia prueba: aquí sólo hace falta que no estorbe.
+    useHostStatus: vi.fn(() => ({
+      data: { available: false },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    })),
+  }));
 vi.mock("@/features/systems/hooks", () => ({
   useNetworkHealth,
   useFederateBlocksMutation,
+  useHostStatus,
 }));
 
 import { NetworkHealthPage } from "@/features/systems-network/network-health-page";
