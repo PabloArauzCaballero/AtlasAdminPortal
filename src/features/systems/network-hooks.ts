@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   federateBlocks,
+  getHostStatus,
   getNetworkHealth,
   listActiveDecisionArtifacts,
   listBlocks,
@@ -30,6 +31,20 @@ export function useNetworkHealth() {
   return useQuery({
     queryKey: queryKeys.networkHealth,
     queryFn: getNetworkHealth,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/**
+ * Servidor de TEST (memoria, disco, carga, apps con su respaldo). Lo manda el informador cada 5 min y el
+ * backend lo guarda 15; se pregunta cada 30 s, igual que el resto de la pantalla, para que una instantánea
+ * que deja de llegar se vea como caducada y no como un dato congelado.
+ */
+export function useHostStatus() {
+  return useQuery({
+    queryKey: queryKeys.hostStatus,
+    queryFn: getHostStatus,
     refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   });

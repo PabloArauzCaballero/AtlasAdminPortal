@@ -4,6 +4,7 @@ export const queryKeys = {
   toolsHealth: ["systems", "tools-health"] as const,
   platformBlocks: ["systems", "blocks"] as const,
   networkHealth: ["systems", "network-health"] as const,
+  hostStatus: ["systems", "host-status"] as const,
   decisionArtifacts: ["systems", "decision-engine-artifacts"] as const,
   endpoints: (params: unknown) => ["systems", "endpoints", params] as const,
   endpoint: (endpointId: string) =>

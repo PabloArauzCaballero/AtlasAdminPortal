@@ -49,6 +49,7 @@ export { useEndpointsByIds } from "./endpoint-reference-hooks";
 export {
   usePlatformBlocks,
   useNetworkHealth,
+  useHostStatus,
   useFederateBlocksMutation,
   useActiveDecisionArtifacts,
 } from "./network-hooks";

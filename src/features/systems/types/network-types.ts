@@ -112,3 +112,47 @@ export type ActiveArtifactReport = {
   truncated?: boolean;
   deploymentsTotal?: number | null;
 };
+
+/** Semáforo del informador del servidor (mismos valores que `systems-monitor.rules` del backend). */
+export type MonitorStatus = "ok" | "warn" | "bad" | "unknown";
+
+export type HostAppState = {
+  name: string;
+  /** `healthy | unhealthy | starting | none | ausente`. */
+  principal: string;
+  /** Salud del respaldo, o `null` si la app no tiene respaldo. */
+  respaldo: string | null;
+  memoryPct: number | null;
+};
+
+/** Instantánea del servidor de TEST que manda el informador cada 5 min. */
+export type HostSnapshot = {
+  capturedAt: string;
+  ramAvailableMb: number;
+  ramTotalMb: number;
+  swapFreeMb: number;
+  swapTotalMb: number;
+  load1: number;
+  load15: number;
+  cores: number;
+  diskPct: number;
+  buildCacheGb: number;
+  backupAgeHours: number | null;
+  apps: HostAppState[];
+};
+
+export type HostStatusReport =
+  | { available: false }
+  | {
+      available: true;
+      ageMinutes: number;
+      snapshot: HostSnapshot;
+      status: {
+        ram: MonitorStatus;
+        disk: MonitorStatus;
+        load: MonitorStatus;
+        backup: MonitorStatus;
+        stale: boolean;
+        overall: MonitorStatus;
+      };
+    };
