@@ -42,6 +42,14 @@ export type PrivacyRequest = {
   overdue: boolean;
   /** Días que faltan (positivo) o que lleva vencida (negativo); `null` si ya está cerrada. */
   daysToDue: number | null;
+  /** Lo que la persona escribió al pedir (antes de 2026-10-04 no se guardaba: `null` en las viejas). */
+  description?: string | null;
+  /** Qué dato quiere corregir (vocabulario cerrado del backend); `null` en un borrado. */
+  rectificationField?: string | null;
+  /** Si trae un valor propuesto. El valor sólo llega en el detalle, descifrado y con su lectura auditada. */
+  hasProposedValue?: boolean;
+  /** Cuándo confirmó el PIN antes de pedir (lo comprueba el servidor). `null` = no lo confirmó. */
+  pinVerifiedAt?: string | null;
 };
 
 export type PrivacyRequestList = {
@@ -62,6 +70,8 @@ export type PrivacyRequestHistoryEntry = {
 };
 
 export type PrivacyRequestDetail = PrivacyRequest & {
+  /** El valor correcto que propone la persona, descifrado. Verlo deja constancia en la auditoría. */
+  proposedValue?: string | null;
   allowedTransitions: PrivacyRequestStatus[];
   history: PrivacyRequestHistoryEntry[];
 };

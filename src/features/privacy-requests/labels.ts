@@ -126,3 +126,39 @@ export const TRANSITION_COPY: Record<
 };
 
 export const MIN_REASON_LENGTH = 10;
+
+/**
+ * Los campos que una persona puede pedir corregir, en palabras del equipo. Mismas claves que `RECTIFICATION_FIELDS` del
+ * backend. Una clave nueva que el portal no conozca se enseña tal cual (mejor que esconderla).
+ */
+export const RECTIFICATION_FIELD_LABELS: Record<string, string> = {
+  address: "Dirección",
+  zone: "Zona o barrio",
+  city: "Ciudad",
+  address_reference: "Referencia del domicilio",
+  occupation: "Ocupación",
+  employer: "Dónde trabaja",
+  declared_income: "Ingreso mensual declarado",
+  first_name: "Nombres",
+  last_name: "Apellidos",
+  birth_date: "Fecha de nacimiento",
+  document_number: "Número de carnet",
+  phone: "Teléfono",
+  email: "Correo",
+  other: "Otro dato",
+};
+
+export function rectificationFieldLabel(
+  field: string | null | undefined,
+): string {
+  if (!field) return "No lo indicó";
+  return RECTIFICATION_FIELD_LABELS[field] ?? field;
+}
+
+/** Cambiar estos exige revisar el documento del cliente (diligencia debida, DS 4904). */
+export const IDENTITY_RECTIFICATION_FIELDS = new Set([
+  "first_name",
+  "last_name",
+  "birth_date",
+  "document_number",
+]);
