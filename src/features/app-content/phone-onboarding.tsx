@@ -1,14 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppIcon } from "./app-icons";
 import type { PreviewDraft } from "./phone-preview";
+import {
+  Ilustracion,
+  ilustracionDe,
+  type NombreIlustracion,
+} from "./phone-ilustraciones";
 import { ICONOS_PASO, PHONE } from "./phone-theme";
 import { BrandButton } from "./phone-ui";
 
 /** `eslogan` de la app (`bienvenida.tsx`): lo que dice la primera página, por defecto. */
 const ESLOGAN = "Tu primer crédito no debería depender de un banco.";
 const ESLOGAN_PIE = "Crédito para comprar en los comercios de Santa Cruz.";
+
+/**
+ * El primer paso de fábrica (`PASOS_POR_DEFECTO[0]` en `features/bienvenida-pasos.ts` de la app). La app lo
+ * antepone SIEMPRE si el contenido no trae la pieza `que-es-atlas`: quien abre la app por primera vez lee primero
+ * qué es Atlas y cómo funciona. La vista previa hace lo mismo, o mostraría una Bienvenida distinta de la real.
+ */
+const CLAVE_QUE_ES_ATLAS = "que-es-atlas";
+const QUE_ES_ATLAS = {
+  titulo: "Qué es Atlas",
+  cuerpo:
+    "Atlas te da crédito para comprar en los comercios de tu barrio, sin que un banco decida por ti. Pagas después, en cuotas mensuales, y cada pago a tiempo te acerca a más límite.",
+} as const;
 
 /** La «A» de la marca (`LETRA_A` de `ui/brand.tsx`), caras de luz y de sombra incluidas. */
 function AtlasMark({ size = 112 }: Readonly<{ size?: number }>) {
@@ -45,6 +61,7 @@ type Pagina =
       cuerpo: string;
       icon: string;
       image?: string | null;
+      ilustracion: NombreIlustracion;
     };
 
 /**
@@ -81,9 +98,31 @@ function paginasDe(pieces: PreviewDraft[], isDraft: boolean): Pagina[] {
       cuerpo,
       icon: conIcono?.icon ?? ICONOS_PASO[index] ?? "chispa",
       image: conIcono?.iconImage,
+      ilustracion: ilustracionDe(piece.contentKey ?? "", index),
     });
   });
-  return paginas;
+  return conQueEsAtlas(paginas, isDraft);
+}
+
+/**
+ * «Qué es Atlas» primero entre los pasos, como en la app: si la pieza existe va la primera aunque se haya
+ * publicado después; si no, se antepone la de fábrica. Sólo cuando hay algo que enseñar: una pieza en blanco
+ * sigue mostrando el aviso «Completa el título y el texto», no una Bienvenida con un solo paso inventado.
+ */
+function conQueEsAtlas(paginas: Pagina[], isDraft: boolean): Pagina[] {
+  const pasos = paginas.filter((pagina) => pagina.tipo === "paso");
+  if (pasos.length === 0 && isDraft) return paginas;
+  const existente = pasos.find((pagina) => pagina.clave === CLAVE_QUE_ES_ATLAS);
+  const primero: Pagina = existente ?? {
+    tipo: "paso",
+    clave: CLAVE_QUE_ES_ATLAS,
+    titulo: QUE_ES_ATLAS.titulo,
+    cuerpo: QUE_ES_ATLAS.cuerpo,
+    icon: "chispa",
+    ilustracion: "que-es-atlas",
+  };
+  const marca = paginas.filter((pagina) => pagina.tipo === "marca");
+  return [...marca, primero, ...pasos.filter((pagina) => pagina !== existente)];
 }
 
 export function OnboardingScreen({
@@ -144,25 +183,8 @@ export function OnboardingScreen({
           </>
         ) : (
           <>
-            <span
-              aria-hidden
-              className="flex h-24 w-24 items-center justify-center rounded-full"
-              style={{
-                background: "rgba(43,224,168,0.12)",
-                border: "1px solid rgba(43,224,168,0.28)",
-              }}
-            >
-              {actual.image ? (
-                // eslint-disable-next-line @next/next/no-img-element -- data URI de 96 px
-                <img
-                  src={actual.image}
-                  alt=""
-                  className="h-10 w-10 object-contain"
-                />
-              ) : (
-                <AppIcon name={actual.icon} size={40} tint={PHONE.brand400} />
-              )}
-            </span>
+            {/* La ilustración de la app, no un icono en un círculo: es lo que verá la persona. */}
+            <Ilustracion nombre={actual.ilustracion} ancho={280} />
             <p className="mt-2 text-[32px] font-black leading-[38px] tracking-tight">
               {actual.titulo}
             </p>
