@@ -14,6 +14,7 @@ import { CREDIT_OPERATIONS_ROLE_LIST } from "@/shared/auth/portal-roles";
 import { formatAmount, formatDateTime } from "@/shared/lib/format";
 import { AcceptanceBadge, ApplicationStatusBadge } from "./credit-badges";
 import { creditErrorMessage } from "./credit-rules";
+import { CustomerCardTierPanel } from "./card-tier-panel";
 import { CustomerCreditLine } from "./customer-credit-line";
 import { useCustomerCreditApplications } from "./hooks";
 import type { CustomerCreditApplication } from "./types";
@@ -108,6 +109,7 @@ export function CustomerCreditSection({
         {allowed ? (
           <div className="space-y-6">
             <CustomerCreditLine customerId={customerId} canOperate />
+            <CustomerCardTierPanel customerId={customerId} />
             <CustomerApplications customerId={customerId} />
           </div>
         ) : (

@@ -146,6 +146,8 @@ export const queryKeys = {
     ["credit", "application", applicationId] as const,
   customerCreditLine: (customerId: string) =>
     ["credit", "customer-line", customerId] as const,
+  customerCardTier: (customerId: string) =>
+    ["credit", "customer-card-tier", customerId] as const,
   customerCreditApplications: (customerId: string) =>
     ["credit", "customer-applications", customerId] as const,
   pendingContactVerification: [
