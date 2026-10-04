@@ -8,6 +8,7 @@ import { cn } from "@/shared/lib/cn";
 import { typeLabel } from "./labels";
 import { DuePill, PrivacyStatusBadge } from "./privacy-request-badges";
 import type { PrivacyRequest } from "./types";
+import { EngineDecisionBadge } from "./privacy-request-engine";
 
 export const privacyRequestHref = (requestId: string) =>
   `/internal/governance/privacy-requests/${encodeURIComponent(requestId)}`;
@@ -77,6 +78,12 @@ export function buildPrivacyRequestColumns(): ColumnDef<PrivacyRequest>[] {
           {row.original.handledByName ?? "Sin asignar"}
         </span>
       ),
+    },
+    {
+      // La opinión del Motor (en sombra). Vacía si no opinó: la columna no estorba mientras no está encendido.
+      id: "engine",
+      header: "Motor",
+      cell: ({ row }) => <EngineDecisionBadge engine={row.original.engine} />,
     },
     {
       id: "actions",

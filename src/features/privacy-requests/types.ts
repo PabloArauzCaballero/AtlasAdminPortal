@@ -50,6 +50,26 @@ export type PrivacyRequest = {
   hasProposedValue?: boolean;
   /** Cuándo confirmó el PIN antes de pedir (lo comprueba el servidor). `null` = no lo confirmó. */
   pinVerifiedAt?: string | null;
+  /** Lo que opinó el Motor (fase en sombra). `null` = nunca se le preguntó. */
+  engine?: PrivacyEngineOpinion | null;
+};
+
+/** La opinión del Motor sobre una solicitud. Con intentos y sin `decision`, el Motor no contestó: `lastError` dice por qué. */
+export type PrivacyEngineOpinion = {
+  mode: "shadow" | "enforce" | string | null;
+  decision: "ACEPTAR" | "RECHAZAR" | "REVISION_HUMANA" | string | null;
+  reasonCode: string | null;
+  action: string | null;
+  riskSignals: number | null;
+  reevaluateCredit: boolean | null;
+  /** Los hechos que se le mandaron: booleanos, contadores y códigos, nada personal. */
+  inputs: Record<string, unknown> | null;
+  executionId: string | null;
+  artifactCode: string | null;
+  artifactVersionId: string | null;
+  decidedAt: string | null;
+  attempts: number;
+  lastError: string | null;
 };
 
 export type PrivacyRequestList = {
