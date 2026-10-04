@@ -15,6 +15,7 @@ import { formatDateTime, safeText } from "@/shared/lib/format";
 import { usePrivacyRequest, usePrivacyTransitionMutation } from "./hooks";
 import { TRANSITION_COPY, typeLabel } from "./labels";
 import { DuePill, PrivacyStatusBadge } from "./privacy-request-badges";
+import { PrivacyRequestContent } from "./privacy-request-content";
 import { PrivacyRequestHistory } from "./privacy-request-history";
 import {
   PRIVACY_MANAGE_PERMISSION,
@@ -122,6 +123,7 @@ function AuthorizedDetail({ requestId }: Readonly<{ requestId: string }>) {
               },
             ]}
           />
+          <PrivacyRequestContent solicitud={solicitud} />
           <PrivacyRequestHistory history={solicitud.history} />
         </div>
       ) : null}
