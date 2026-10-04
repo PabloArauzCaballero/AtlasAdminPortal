@@ -74,11 +74,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # SHA fijo: el E2E mide siempre el mismo código backend que pasó revisión.
+      # d3d5b7da = AtlasBackend #166 (trae GET /systems/monitor/host, que usa «Servidor de TEST»).
       - name: Obtener AtlasBackend para el stack QA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: PabloArauzCaballero/AtlasBackend
-          ref: 4508ac862661e4fdee047e48dc4fba5d29b43eb4
+          ref: d3d5b7da94fadf65f3511d65627ea624b814d2df
           path: qa-backend
           persist-credentials: false
 
