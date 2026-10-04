@@ -28,7 +28,16 @@ const STATIC_ROUTES: Route[] = [
   { path: "/internal/systems/tools", heading: /herramientas|tools/i },
   // «Salud herramientas» es la pestaña Salud de Herramientas; su ruta vieja redirige ahí.
   { path: "/internal/systems/tools?tab=salud", heading: /herramientas/i },
-  { path: "/internal/systems/network-health", heading: /red|network/i },
+  {
+    path: "/internal/systems/network-health",
+    heading: /red|network/i,
+    /*
+     * «Servidor de TEST» pide GET /systems/monitor/host, que el backend fijado en e2e.yml aún no tiene
+     * (llega con AtlasBackend #166). Contra un backend sin la ruta la sección explica «sin lectura del
+     * servidor» y el 404 es esperado. Retirar este ignore al subir el pin de e2e.yml a un commit >= d3d5b7da.
+     */
+    ignore: [/systems\/monitor\/host/],
+  },
   {
     path: "/internal/systems/decision-engine/artifacts",
     heading: /artefactos/i,

@@ -12,6 +12,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { BusinessContextNote } from "@/shared/components/layout/business-context-note";
 import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
+import { HostStatusSection } from "./host-status-section";
 import { NetworkBlocksTable } from "./network-blocks-table";
 import {
   blockDisplayName,
@@ -156,6 +157,8 @@ function AuthorizedNetworkHealthPage() {
       ) : null}
 
       {report ? <NetworkBlocksTable blocks={blocks} /> : null}
+
+      <HostStatusSection />
     </>
   );
 }
