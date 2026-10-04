@@ -66,7 +66,10 @@ const MAX_CONTROLS = 30;
 /** Ruido que NO es una avería del portal (ver el comentario junto a la comprobación). */
 // `consoleErrors` trae la URL completa (…/api/v1/internal/assist/…) y `failedRequests` sólo la ruta
 // ("404 /internal/assist/…"): el patrón cubre las dos formas.
-const ERRORES_ESPERADOS = /logs\/mongo|503|429|404[^\n]*\/internal\/assist\//;
+// `404 … /systems/monitor/host`: la sección «Servidor de TEST» de Salud de la red pide una ruta que el backend
+// fijado en e2e.yml aún no tiene (AtlasBackend #166). Retirar al subir ese pin a un commit >= d3d5b7da.
+const ERRORES_ESPERADOS =
+  /logs\/mongo|503|429|404[^\n]*\/internal\/assist\/|404[^\n]*\/systems\/monitor\/host/;
 
 /**
  * Cierra el diálogo que un control haya abierto. Primero Escape (el patrón de todos los modales
