@@ -16,7 +16,7 @@ vi.mock("@/shared/api/client", () => ({
   },
 }));
 
-import { getHostStatus } from "@/features/systems/services";
+import { getHostStatus } from "@/features/systems/host-status-service";
 
 const errorHttp = (status: number) =>
   new AtlasApiError({ status, code: "X", message: "x", requestId: "r" });

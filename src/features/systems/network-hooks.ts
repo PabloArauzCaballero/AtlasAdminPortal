@@ -4,11 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   federateBlocks,
-  getHostStatus,
   getNetworkHealth,
   listActiveDecisionArtifacts,
   listBlocks,
 } from "./services";
+import { getHostStatus } from "./host-status-service";
 
 /**
  * Los bloques del ecosistema. Se cachean largo a propósito: la lista es de tres elementos y sus
