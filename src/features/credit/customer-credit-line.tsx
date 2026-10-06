@@ -118,7 +118,7 @@ function CreditLineGrid({ line }: Readonly<{ line: CreditLine }>) {
           value: formatAmount(line.maxAffordableInstallment),
         },
         {
-          label: "Puntaje ATLAS",
+          label: "Índice de crédito del motor (0-1000)",
           value: `${safeText(line.scoring)} · ${line.scoringBand.label}`,
         },
         { label: "Tramo de riesgo", value: line.riskBand },

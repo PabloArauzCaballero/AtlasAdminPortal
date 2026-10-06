@@ -16,6 +16,7 @@ import { AcceptanceBadge, ApplicationStatusBadge } from "./credit-badges";
 import { creditErrorMessage } from "./credit-rules";
 import { CustomerCardTierPanel } from "./card-tier-panel";
 import { CustomerCreditLine } from "./customer-credit-line";
+import { CustomerPayerScores } from "./payer-scores";
 import { useCustomerCreditApplications } from "./hooks";
 import type { CustomerCreditApplication } from "./types";
 
@@ -109,6 +110,7 @@ export function CustomerCreditSection({
         {allowed ? (
           <div className="space-y-6">
             <CustomerCreditLine customerId={customerId} canOperate />
+            <CustomerPayerScores customerId={customerId} />
             <CustomerCardTierPanel customerId={customerId} />
             <CustomerApplications customerId={customerId} />
           </div>
