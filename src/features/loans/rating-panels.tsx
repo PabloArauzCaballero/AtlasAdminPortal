@@ -91,7 +91,7 @@ export function CustomerRatingCard({
   return (
     <Card className="p-5">
       <Cabecera
-        titulo="Calificación del cliente"
+        titulo="Categoría de riesgo del cliente (por mora)"
         grade={data?.grade}
         gradeLabel={data?.gradeLabel}
       />
