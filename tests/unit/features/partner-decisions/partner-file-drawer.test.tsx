@@ -129,7 +129,7 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     expect(document.body.textContent).not.toContain("partner.kyb.request");
   });
 
-  it("sin caso del Motor la decisión manual sigue disponible: es la degradación", async () => {
+  it("sin caso del Motor tampoco se aprueba ni se rechaza aquí: sólo se pide la verificación", async () => {
     server.use(
       http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
         HttpResponse.json(
@@ -147,11 +147,18 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
 
     renderCajon();
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Aprobar" }),
-      ).toBeInTheDocument(),
-    );
+    // Pablo (2026-10-07): la decisión del expediente se toma en el Motor, no en el portal. Una salida manual fue justo la que se
+    // usó cuando el Motor falló al enviar, y el expediente se aprobó sin ejecución ni caso.
+    expect(
+      await screen.findByRole("button", {
+        name: /pedir la verificación al motor/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Aprobar" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Rechazar" })).toBeNull();
+    expect(
+      screen.getByText(/cola de Revisión manual del Motor/),
+    ).toBeInTheDocument();
     expect(screen.getByText("Decidió el Motor")).toBeInTheDocument();
   });
 
@@ -167,7 +174,10 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     await waitFor(() =>
       expect(screen.getByText(/Sin veredicto del Motor/)).toBeInTheDocument(),
     );
-    expect(screen.getByRole("button", { name: "Aprobar" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Aprobar" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /pedir la verificación al motor/i }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -196,60 +206,6 @@ describe("PartnerFileDrawer — lo que falla se dice, y en palabras", () => {
     expect(screen.queryByText("REVISION_MANUAL")).toBeNull();
   });
 
-  it("un 409 al decidir deja el diálogo abierto y dice por qué", async () => {
-    const user = userEvent.setup();
-    server.use(
-      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
-        HttpResponse.json(estadoCon(SIN_CASO)),
-      ),
-      http.post(`${API_BASE}/operations/partners/10/decision`, () =>
-        HttpResponse.json(
-          {
-            error: {
-              code: "CONFLICT",
-              message:
-                "PARTNER_NOT_UNDER_REVIEW: el expediente está en approved.",
-            },
-          },
-          { status: 409 },
-        ),
-      ),
-    );
-    renderCajon();
-    await user.click(await screen.findByRole("button", { name: "Aprobar" }));
-    const dialogo = await screen.findByRole("dialog", {
-      name: "Aprobar el expediente",
-    });
-    await user.click(within(dialogo).getByRole("button", { name: "Aprobar" }));
-
-    await waitFor(() =>
-      expect(
-        within(dialogo).getByText(/ya no está en revisión/),
-      ).toBeInTheDocument(),
-    );
-    expect(
-      screen.getByRole("dialog", { name: "Aprobar el expediente" }),
-    ).toBeInTheDocument();
-    expect(document.body.textContent).not.toContain("PARTNER_NOT_UNDER_REVIEW");
-  });
-
-  it("el texto de aprobar no promete que los QR se aprueben", async () => {
-    const user = userEvent.setup();
-    server.use(
-      http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
-        HttpResponse.json(estadoCon(SIN_CASO)),
-      ),
-    );
-    renderCajon();
-    await user.click(await screen.findByRole("button", { name: "Aprobar" }));
-    const dialogo = await screen.findByRole("dialog", {
-      name: "Aprobar el expediente",
-    });
-    expect(
-      within(dialogo).getByText(/Sus QR de cobro no cambian/),
-    ).toBeInTheDocument();
-  });
-
   it("sin `partner.kyb.request` tampoco ofrece «Pedir la verificación al Motor»", async () => {
     server.use(
       http.get(`${API_BASE}/partner-onboarding/10/status`, () =>
@@ -257,7 +213,7 @@ describe("PartnerFileDrawer — lo que falla se dice, y en palabras", () => {
       ),
     );
     renderCajon([]);
-    await screen.findByRole("button", { name: "Aprobar" });
+    await screen.findByText(/no puede pedir la verificación al Motor/);
     expect(
       screen.queryByRole("button", { name: /pedir la verificación al motor/i }),
     ).toBeNull();
