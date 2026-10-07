@@ -1,22 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { useAuth } from "@/shared/auth/auth-context";
 import { DrawerPanel } from "@/shared/components/ui/drawer-panel";
 import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
-import { Button } from "@/shared/components/ui/button";
-import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Field, Textarea } from "@/shared/components/ui/input";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import {
-  useDecidePartnerMutation,
   usePartnerStatus,
   useRequestKybReviewMutation,
 } from "./hooks";
-import { onboardingStatusLabel, partnerActionErrorMessage } from "./labels";
+import { onboardingStatusLabel } from "./labels";
 import { PartnerDecisionProvenanceCard } from "./partner-decision-provenance";
 import { PartnerFolderLink } from "./partner-folder-link";
 import { PedirVerificacion } from "./partner-kyb-request";
@@ -40,20 +35,17 @@ import type { PartnerDecisionProvenance, PartnerQueueItem } from "./types";
  * La verificación la resuelve el Motor con `PARTNER_KYB_REVIEW` al enviarse el expediente. Cuando
  * su desenlace exige criterio humano abre SU caso, y este cajón enseña cuál y enlaza a él: dos
  * bandejas para el mismo expediente producen dos veredictos y gana el que alguien mire primero.
- * El formulario de aprobar/rechazar sólo aparece cuando no hay caso —una decisión automática del
- * Motor, o el Motor caído al enviar—, que es la degradación para la que existe.
+ * Aprobar o rechazar un expediente NO se hace desde esta consola (Pablo, 2026-10-07: «debe salir en el Decision Engine la
+ * habilidad de aceptar los expedientes de un partner; lo de dar credenciales está bien del portal admin, pero lo otro no»).
+ * Antes había una salida manual cuando el Motor no abría caso, y eso fue justo lo que se usó cuando el Motor falló al
+ * enviar: el expediente se aprobó por aquí, sin ejecución ni caso, fuera del gobierno del Motor. Ahora sin caso sólo
+ * se puede PEDIR la verificación; la decisión la toma una persona en la cola MERCHANT_KYB y el expediente se actualiza solo.
  */
 export function PartnerFileDrawer({
   expediente,
   onClose,
 }: Readonly<{ expediente: PartnerQueueItem; onClose: () => void }>) {
-  const [motivo, setMotivo] = useState("");
-  const [pendiente, setPendiente] = useState<"aprobar" | "rechazar" | null>(
-    null,
-  );
-
   const estado = usePartnerStatus(expediente.partnerId);
-  const decidir = useDecidePartnerMutation(expediente.partnerId);
   const reevaluar = useRequestKybReviewMutation(expediente.partnerId);
   // `POST :partnerId/kyb-review` exige `partner.kyb.request` (OPERATIONS_MANAGER / SUPER_ADMIN):
   // el botón sólo se ofrece a quien el backend va a dejar pasar.
@@ -63,13 +55,6 @@ export function PartnerFileDrawer({
     // El error se pinta desde `reevaluar.error`; aquí sólo se evita la promesa rechazada suelta.
     reevaluar.mutateAsync(undefined).catch(() => undefined);
   };
-  const errorDeDecision = decidir.error
-    ? partnerActionErrorMessage(
-        decidir.error,
-        "No se pudo registrar la decisión.",
-      )
-    : null;
-
   const perfil = (estado.data?.profile ?? estado.data ?? {}) as Record<
     string,
     unknown
@@ -157,9 +142,11 @@ export function PartnerFileDrawer({
             {enRevision && !delegadoAlMotor ? (
               <div className="space-y-3">
                 <p className="text-sm text-atlas-muted">
-                  El Motor no abrió caso para este expediente, así que la
-                  decisión manual es la única que hay. Pedir la verificación de
-                  nuevo es preferible cuando el Motor estaba caído al enviarlo.
+                  El Motor todavía no abrió caso para este expediente. Aquí no
+                  se aprueba ni se rechaza: la decisión la toma una persona en
+                  la cola de Revisión manual del Motor. Si se envió con el
+                  Motor caído, pide la verificación de nuevo; en pocos minutos
+                  el caso aparece en la cola «MERCHANT_KYB».
                 </p>
                 <PedirVerificacion
                   texto="Pedir la verificación al Motor"
@@ -168,38 +155,6 @@ export function PartnerFileDrawer({
                   error={reevaluar.error}
                   onPedir={pedirVerificacion}
                 />
-                <Field
-                  tooltip="Lo que el comercio debe corregir; lo lee tal cual en su portal."
-                  label="Motivo del rechazo"
-                  hint="Obligatorio para rechazar; el comercio lo verá y es lo que le dice qué corregir."
-                >
-                  <Textarea
-                    rows={3}
-                    value={motivo}
-                    onChange={(evento) => setMotivo(evento.target.value)}
-                  />
-                </Field>
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      decidir.reset();
-                      setPendiente("aprobar");
-                    }}
-                  >
-                    Aprobar
-                  </Button>
-                  <Button
-                    variant="danger"
-                    disabled={motivo.trim().length < 3}
-                    onClick={() => {
-                      decidir.reset();
-                      setPendiente("rechazar");
-                    }}
-                  >
-                    Rechazar
-                  </Button>
-                </div>
               </div>
             ) : null}
 
@@ -227,42 +182,6 @@ export function PartnerFileDrawer({
           </div>
         ) : null}
       </DrawerPanel>
-
-      <ConfirmDialog
-        open={pendiente !== null}
-        title={
-          pendiente === "aprobar"
-            ? "Aprobar el expediente"
-            : "Rechazar el expediente"
-        }
-        description={`${
-          pendiente === "aprobar"
-            ? "El comercio queda verificado y la decisión queda con tu usuario y su fecha. Sus QR de cobro no cambian: cada uno sigue esperando su propia revisión en la cola de QR."
-            : "El comercio queda rechazado con el motivo escrito. Podrá corregir y volver a enviar."
-        }${errorDeDecision ? ` · No se registró: ${errorDeDecision}` : ""}`}
-        confirmText={pendiente === "aprobar" ? "Aprobar" : "Rechazar"}
-        isLoading={decidir.isPending}
-        onCancel={() => {
-          decidir.reset();
-          setPendiente(null);
-        }}
-        onConfirm={() => {
-          const aprobado = pendiente === "aprobar";
-          // En error el diálogo SIGUE abierto y dice por qué: cerrarlo mudo dejaba creer que se
-          // había decidido. Sólo el éxito cierra el diálogo y el cajón.
-          decidir
-            .mutateAsync(
-              aprobado
-                ? { approved: true }
-                : { approved: false, rejectionReason: motivo.trim() },
-            )
-            .then(() => {
-              setPendiente(null);
-              onClose();
-            })
-            .catch(() => undefined);
-        }}
-      />
     </>
   );
 }
