@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
+import { navItemHrefs, resolveNavItem } from "./nav-access";
 import { navGroups, navItems, type InternalNavItem } from "./nav-config";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 
@@ -15,6 +16,11 @@ function isActivePath(pathname: string, href: string) {
     pathname === href ||
     (href !== "/internal" && pathname.startsWith(`${href}/`))
   );
+}
+
+/** Una entrada con pestañas queda activa en cualquiera de sus pantallas hermanas. */
+function isItemActive(pathname: string, item: InternalNavItem) {
+  return navItemHrefs(item).some((href) => isActivePath(pathname, href));
 }
 
 function NavLink({
@@ -76,11 +82,12 @@ export function AppSidebar({
       navGroups
         .map((group) => ({
           ...group,
-          items: group.items.filter(
-            (item) =>
-              hasAnyPermission(item.permissions) &&
-              hasAnyRole(item.roles ?? []),
-          ),
+          // Una entrada con pestañas sale si se puede ver alguna, y lleva a la primera visible.
+          items: group.items
+            .map((item) =>
+              resolveNavItem(item, { hasAnyPermission, hasAnyRole }),
+            )
+            .filter((item): item is InternalNavItem => item !== null),
         }))
         .filter((group) => group.items.length > 0),
     [hasAnyPermission, hasAnyRole],
@@ -88,7 +95,7 @@ export function AppSidebar({
 
   const isGroupOpen = (label: string, items: InternalNavItem[]) => {
     if (label in openGroups) return openGroups[label];
-    return items.some((item) => isActivePath(pathname, item.href));
+    return items.some((item) => isItemActive(pathname, item));
   };
 
   const visibleItems = navItems.filter(
@@ -205,7 +212,7 @@ export function AppSidebar({
                       <NavLink
                         key={item.href}
                         item={item}
-                        active={isActivePath(pathname, item.href)}
+                        active={isItemActive(pathname, item)}
                         indent
                       />
                     ))}

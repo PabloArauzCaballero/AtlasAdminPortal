@@ -8,6 +8,12 @@ export type InternalNavItem = {
   permissions: string[];
   /** Roles internos (INTERNAL_ROLE_CODES) requeridos para ver el ítem. Vacío u omitido = sin restricción de rol. */
   roles?: string[];
+  /**
+   * Pantallas hermanas que comparten esta entrada. El menú enseña UNA línea y cada pantalla pinta
+   * arriba la fila de pestañas (`SectionTabs`). Cada pestaña conserva su ruta y su propio permiso:
+   * la entrada sale si se puede ver alguna, y lleva a la primera que se puede ver.
+   */
+  tabs?: InternalNavItem[];
 };
 
 export type InternalNavGroup = {

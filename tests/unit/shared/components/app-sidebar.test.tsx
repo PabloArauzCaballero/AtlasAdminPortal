@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/shared/auth/auth-context";
@@ -94,59 +94,81 @@ describe("AppSidebar · filtrado por permisos", () => {
   });
 });
 
-describe("AppSidebar · las dos colas del comercio piden lo que el backend exige", () => {
-  it("«Usuarios de comercio» sólo con merchant.users.read", () => {
-    // Con `permissions: []` salía para todo el mundo y `GET /merchant/users/provisioning-requests`
-    // respondía 403 a quien no lo tenía.
-    renderSidebar({ permissions: [], roles: ["internal_operator"] });
-    expect(verEnlace("Usuarios de comercio")).toBe(false);
+function destinoDe(nombre: string) {
+  return screen.queryByRole("link", { name: nombre })?.getAttribute("href");
+}
 
-    renderSidebar({
-      permissions: ["merchant.users.read"],
-      roles: ["internal_operator"],
-    });
-    expect(verEnlace("Usuarios de comercio")).toBe(true);
+describe("AppSidebar · una entrada fusionada sale por sus pestañas", () => {
+  it("«Comercios» no sale si no se puede ver ni expedientes ni usuarios", () => {
+    // Con `permissions: []` «Usuarios de comercio» salía para todo el mundo y
+    // `GET /merchant/users/provisioning-requests` respondía 403 a quien no lo tenía.
+    renderSidebar({ permissions: [], roles: ["compliance_analyst"] });
+    expect(verEnlace("Comercios")).toBe(false);
   });
 
-  it("«Expedientes de comercio» sólo con los roles de PartnerOperationsController", () => {
-    renderSidebar({ permissions: [], roles: ["compliance_analyst"] });
-    expect(verEnlace("Expedientes de comercio")).toBe(false);
+  it("«Comercios» lleva a la primera pestaña que la sesión puede abrir", () => {
+    // Sin el rol de PartnerOperationsController pero con el permiso de usuarios: entra por ahí,
+    // no por un «sin acceso» de expedientes.
+    renderSidebar({
+      permissions: ["merchant.users.read"],
+      roles: ["compliance_analyst"],
+    });
+    expect(destinoDe("Comercios")).toBe("/internal/merchant-users");
+    cleanup();
 
     renderSidebar({ permissions: [], roles: ["risk_analyst"] });
-    expect(verEnlace("Expedientes de comercio")).toBe(true);
+    expect(destinoDe("Comercios")).toBe("/internal/operations/partners");
+  });
+
+  it("las pantallas fusionadas ya no tienen línea propia en el menú", () => {
+    renderSidebar({
+      permissions: ["merchant.users.read"],
+      roles: ["admin"],
+    });
+    for (const retirada of [
+      "Usuarios de comercio",
+      "Expedientes de comercio",
+      "Agentes de soporte",
+      "Base de conocimiento",
+      "Contactos sin verificar",
+      "Avisos de pago",
+      "Campañas",
+    ]) {
+      expect(verEnlace(retirada)).toBe(false);
+    }
+  });
+
+  it("la entrada queda activa en cualquiera de sus pantallas hermanas", () => {
+    renderSidebar({
+      permissions: [],
+      roles: ["admin"],
+      pathname: "/internal/support/agents",
+    });
+    // El grupo se abre solo porque una de sus entradas está activa.
+    expect(screen.getByRole("button", { name: "Operaciones" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
   });
 });
 
 describe("AppSidebar · filtrado por rol", () => {
-  it("un ítem restringido por rol no se ve sin ese rol, aunque no pida permisos", () => {
-    // "Agentes de soporte" tiene permissions: [] pero roles de admin. Si el
-    // filtro mirara solo permisos, se colaría para cualquier autenticado.
-    renderSidebar({ permissions: [], roles: ["operator"] });
-
-    expect(verEnlace("Agentes de soporte")).toBe(false);
-  });
-
-  it("con el rol exigido, el ítem aparece", () => {
-    renderSidebar({ permissions: [], roles: ["admin"] });
-
-    expect(verEnlace("Agentes de soporte")).toBe(true);
-  });
-
   it("un ítem sin roles declarados no exige rol alguno", () => {
     renderSidebar({ permissions: [], roles: [] });
 
-    // «Cola de trabajo» ya declara los roles de OperationsController; «Soporte» sigue sin roles.
-    expect(verEnlace("Soporte")).toBe(true);
+    // La pestaña «Casos» de Soporte no declara roles: la entrada sale para cualquiera.
+    expect(destinoDe("Soporte")).toBe("/internal/support");
   });
-});
 
-describe("AppSidebar · soporte", () => {
-  it("«Base de conocimiento» está en el menú real (antes sólo existía en la copia del asistente) y respeta sus roles", () => {
-    renderSidebar({ permissions: [], roles: ["risk_analyst"] });
-    expect(verEnlace("Base de conocimiento")).toBe(true);
+  it("un ítem restringido por rol no se ve sin ese rol, aunque no pida permisos", () => {
+    // «Productos de crédito» tiene permissions: [] pero roles de CreditOperationsController. Si el
+    // filtro mirara solo permisos, se colaría para cualquier autenticado.
+    renderSidebar({ permissions: [], roles: ["operator"] });
+    expect(verEnlace("Productos de crédito")).toBe(false);
+    cleanup();
 
-    renderSidebar({ permissions: [], roles: ["fraud_analyst"] });
-    expect(verEnlace("Base de conocimiento")).toBe(false);
+    renderSidebar({ permissions: [], roles: ["admin"] });
+    expect(verEnlace("Productos de crédito")).toBe(true);
   });
 });
 

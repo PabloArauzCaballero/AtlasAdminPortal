@@ -62,10 +62,13 @@ describe("assistScreenFor · la sección con su nombre del menú", () => {
     ["/internal/operations/work-queue", "Operaciones › Cola de trabajo"],
     ["/internal/support", "Operaciones › Soporte"],
     ["/internal/support/cases/5001", "Operaciones › Soporte › Casos"],
-    ["/internal/support/knowledge", "Operaciones › Base de conocimiento"],
+    [
+      "/internal/support/knowledge",
+      "Operaciones › Soporte › Base de conocimiento",
+    ],
     [
       "/internal/operations/pending-contacts",
-      "Operaciones › Contactos sin verificar",
+      "Operaciones › Cola de trabajo › Contactos sin verificar",
     ],
     [
       "/internal/operations/credit/applications/from-case",

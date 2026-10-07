@@ -10,6 +10,7 @@ import {
   GitBranch,
   GraduationCap,
   ShieldCheck,
+  Table2,
   TestTube2,
 } from "lucide-react";
 import {
@@ -187,6 +188,15 @@ export const navGroupsPrimary: InternalNavGroup[] = [
         href: "/internal/reports",
         icon: BarChart3,
         permissions: ["reporting.read"],
+      },
+      {
+        label: "Vistas del negocio",
+        href: "/internal/views",
+        icon: Table2,
+        // Llegó de «Operaciones» (2026-10-07): son consultas, no pendientes. El backend gatea por
+        // @Roles (diez roles internos, incluido readonly_auditor), sin permiso granular.
+        permissions: [],
+        roles: INTERNAL_PORTAL_ROLE_LIST,
       },
       {
         label: "Preparación de salida",

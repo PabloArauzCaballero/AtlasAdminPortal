@@ -7,6 +7,7 @@ import { ambientVariantFor } from "@/shared/ambient/ambient-routes";
 import { useNavDrawer } from "@/shared/hooks/use-nav-drawer";
 import { AppSidebar } from "./internal-shell/app-sidebar";
 import { AppTopbar } from "./internal-shell/app-topbar";
+import { SectionTabs } from "./internal-shell/section-tabs";
 import { ViewExplainer } from "./view-explainer";
 import { AssistFab } from "@/features/assist/assist-fab";
 
@@ -44,6 +45,7 @@ export function AppShell({
           key={pathname}
           className="animate-fade-in px-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-5 sm:px-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pt-6 lg:px-6"
         >
+          <SectionTabs />
           <ViewExplainer />
           {children}
         </main>
