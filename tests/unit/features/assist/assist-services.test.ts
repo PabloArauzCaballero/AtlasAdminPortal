@@ -78,9 +78,9 @@ describe("assistScreenFor · la sección con su nombre del menú", () => {
       "/internal/operations/customers/9001/investigation-summary",
       "Operaciones › Clientes › Investigación",
     ],
-    ["/internal/qa/lab", "QA › Laboratorio QA"],
-    ["/internal/procesos/P-06", "Procesos"],
-    ["/internal/settings/profile", "Administración › Perfil"],
+    ["/internal/qa/lab", "QA y reportes › Laboratorio QA"],
+    ["/internal/procesos/P-06", "Operaciones › Procesos"],
+    ["/internal/settings/profile", "Mi cuenta › Perfil"],
   ])("%s → %s", (ruta, esperado) => {
     expect(assistScreenFor(ruta)).toBe(esperado);
   });

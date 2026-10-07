@@ -139,13 +139,27 @@ test.describe("Ecosistema — catálogo, endpoints, red y artefactos", () => {
 
     // «Panel de control» se fusionó con Inicio: el menú se recorre desde ahí.
     await page.goto("/internal");
-    await abrirGrupoDelMenu(page, "Sistemas");
+    // «Artefactos del motor» es pestaña de «Motor de decisiones» (Gobierno). La entrada lleva a
+    // la primera pestaña que la sesión puede abrir; si ya es ésta, no hay nada más que pulsar.
+    await abrirGrupoDelMenu(page, "Gobierno");
     await clickAndNavigate(
       page,
-      page.getByRole("link", { name: "Artefactos del motor" }),
-      /\/internal\/systems\/decision-engine\/artifacts/,
-      "la pestaña «Artefactos del motor» no abrió tras el clic",
+      page
+        .getByRole("complementary", { name: "Navegación principal" })
+        .getByRole("link", { name: "Motor de decisiones", exact: true }),
+      /\/internal\/(settings\/decision-artifacts|systems\/decision-engine\/artifacts)/,
+      "la entrada «Motor de decisiones» no abrió tras el clic",
     );
+    if (!/decision-engine\/artifacts/.test(page.url())) {
+      await clickAndNavigate(
+        page,
+        page
+          .getByRole("navigation", { name: "Motor de decisiones" })
+          .getByRole("link", { name: "Artefactos del motor" }),
+        /\/internal\/systems\/decision-engine\/artifacts/,
+        "la pestaña «Artefactos del motor» no abrió tras el clic",
+      );
+    }
   });
 });
 

@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   Stamp,
   Store,
+  Workflow,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
 import { paymentClaimsNavTab } from "./nav-items-payment-claims";
@@ -25,7 +26,7 @@ import {
 } from "@/shared/auth/portal-roles";
 
 /**
- * El grupo «Operaciones»: siete entradas, lo que se abre cada día.
+ * El grupo «Operaciones»: ocho entradas, lo que se abre cada día.
  *
  * Eran dieciséis (2026-10-07). Se fusionó lo que es el mismo objeto visto desde otro ángulo o
  * varias colas de pendientes del mismo equipo: cada fusión es UNA entrada con pestañas (`tabs`),
@@ -163,6 +164,15 @@ export const navGroupOperations: InternalNavGroup = {
           roles: CAMPAIGN_READ_ROLE_LIST,
         },
       ],
+    },
+    {
+      // Los procesos del negocio —el alta de un cliente, el crédito, el cobro—. Era un grupo de
+      // una sola entrada; lo abre gente de operaciones, y por eso vive aquí y no en «Sistemas».
+      // El permiso es el que exige `internal/processes` en el backend.
+      label: "Procesos",
+      href: "/internal/procesos",
+      icon: Workflow,
+      permissions: ["workflows.read"],
     },
     // «Alertas» se quitó (2026-09-29): era la misma tabla que «Issues de calidad» (Gobierno y
     // calidad), con un «Reconocer» sin motivo. `/internal/alerts` redirige a la bandeja.

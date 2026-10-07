@@ -143,14 +143,17 @@ test.describe("Guía QA Lab — verificación real en navegador", () => {
     expect(clip).toContain("{{customerId}}");
   });
 
-  // La guía es una pestaña de «Aprender el laboratorio QA», que vive en el menú QA junto al lab.
+  // La guía es una pestaña de «Aprender el laboratorio QA», que es a su vez la pestaña «Aprender a
+  // usarlo» de la entrada «Laboratorio QA» del menú: se llega desde la fila de pestañas del lab.
   test("el menú QA lleva del lab a la guía", async ({ page }) => {
     await page.goto(url("/internal/qa/lab"), { waitUntil: "domcontentloaded" });
     await clickAndNavigate(
       page,
-      page.getByRole("link", { name: "Aprender el laboratorio QA" }).first(),
+      page
+        .getByRole("navigation", { name: "Laboratorio QA" })
+        .getByRole("link", { name: "Aprender a usarlo" }),
       /\/internal\/qa\/aprender$/,
-      "Aprender el laboratorio QA no abrió tras el clic en el menú QA",
+      "«Aprender a usarlo» no abrió tras el clic en la fila de pestañas del lab",
     );
     await page.getByRole("button", { name: "Guía de referencia" }).click();
     await expect(page).toHaveURL(/\/internal\/qa\/aprender\?tab=guia$/);
