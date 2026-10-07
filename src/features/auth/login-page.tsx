@@ -16,6 +16,7 @@ import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input } from "@/shared/components/ui/input";
+import { PasswordInput } from "@/shared/components/ui/password-input";
 import { ErrorState } from "@/shared/components/ui/states";
 
 const loginSchema = z.object({
@@ -205,9 +206,8 @@ export function LoginPage() {
                   label="Contraseña"
                   error={errors.password?.message}
                 >
-                  <Input
+                  <PasswordInput
                     {...register("password")}
-                    type="password"
                     autoComplete="current-password"
                   />
                 </Field>

@@ -15,6 +15,8 @@ import {
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input } from "@/shared/components/ui/input";
+import { PasswordInput } from "@/shared/components/ui/password-input";
+import { PinInput } from "@/shared/components/ui/pin-input";
 import { ErrorState } from "@/shared/components/ui/states";
 
 /**
@@ -191,12 +193,7 @@ export function RecoverAccessPage() {
                 label="Código del correo"
                 error={confirmar.formState.errors.code?.message}
               >
-                <Input
-                  {...confirmar.register("code")}
-                  inputMode="numeric"
-                  maxLength={6}
-                  autoComplete="one-time-code"
-                />
+                <PinInput {...confirmar.register("code")} />
               </Field>
               <Field
                 tooltip="Tu contraseña nueva del portal interno; distingue mayúsculas."
@@ -204,9 +201,8 @@ export function RecoverAccessPage() {
                 error={confirmar.formState.errors.newPassword?.message}
                 hint="Al menos 10 caracteres. Nadie de soporte te la pedirá."
               >
-                <Input
+                <PasswordInput
                   {...confirmar.register("newPassword")}
-                  type="password"
                   autoComplete="new-password"
                 />
               </Field>

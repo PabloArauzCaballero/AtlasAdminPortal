@@ -13,7 +13,9 @@ import {
 import type { PinChallenge } from "@/shared/auth/types";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Field, Input } from "@/shared/components/ui/input";
+import { Field } from "@/shared/components/ui/input";
+import { PasswordInput } from "@/shared/components/ui/password-input";
+import { PinInput } from "@/shared/components/ui/pin-input";
 import { SectionHeader } from "@/shared/components/layout/page-header";
 import { ErrorState } from "@/shared/components/ui/states";
 
@@ -126,12 +128,7 @@ export function PasswordChangeCard() {
                 label="Código del correo"
                 error={confirmForm.formState.errors.code?.message}
               >
-                <Input
-                  {...confirmForm.register("code")}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                />
+                <PinInput {...confirmForm.register("code")} />
               </Field>
               <Field
                 tooltip="La contraseña que usarás desde ahora: mínimo 10 caracteres, con letra y número o símbolo."
@@ -139,9 +136,8 @@ export function PasswordChangeCard() {
                 error={confirmForm.formState.errors.newPassword?.message}
                 hint="Mínimo 10 caracteres, con al menos una letra y un número o símbolo."
               >
-                <Input
+                <PasswordInput
                   {...confirmForm.register("newPassword")}
-                  type="password"
                   autoComplete="new-password"
                 />
               </Field>
@@ -150,9 +146,8 @@ export function PasswordChangeCard() {
                 label="Repite la contraseña nueva"
                 error={confirmForm.formState.errors.repeatPassword?.message}
               >
-                <Input
+                <PasswordInput
                   {...confirmForm.register("repeatPassword")}
-                  type="password"
                   autoComplete="new-password"
                 />
               </Field>
@@ -186,9 +181,8 @@ export function PasswordChangeCard() {
                 label="Contraseña actual"
                 error={requestForm.formState.errors.currentPassword?.message}
               >
-                <Input
+                <PasswordInput
                   {...requestForm.register("currentPassword")}
-                  type="password"
                   autoComplete="current-password"
                 />
               </Field>
