@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
-import { Field, Input } from "@/shared/components/ui/input";
+import { Field } from "@/shared/components/ui/input";
+import { PinInput } from "@/shared/components/ui/pin-input";
 import { ErrorState } from "@/shared/components/ui/states";
 
 const pinSchema = z.object({
@@ -89,12 +90,7 @@ export function LoginPinForm({
           label="Código de verificación"
           error={errors.pin?.message}
         >
-          <Input
-            {...register("pin")}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-          />
+          <PinInput {...register("pin")} />
         </Field>
         <Button
           className="w-full"
