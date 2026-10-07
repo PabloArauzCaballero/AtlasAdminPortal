@@ -150,11 +150,15 @@ describe("PartnerFileDrawer — quién decidió manda sobre qué se ofrece", () 
     // Pablo (2026-10-07): la decisión del expediente se toma en el Motor, no en el portal. Una salida manual fue justo la que se
     // usó cuando el Motor falló al enviar, y el expediente se aprobó sin ejecución ni caso.
     expect(
-      await screen.findByRole("button", { name: /pedir la verificación al motor/i }),
+      await screen.findByRole("button", {
+        name: /pedir la verificación al motor/i,
+      }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Aprobar" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Rechazar" })).toBeNull();
-    expect(screen.getByText(/cola de Revisión manual del Motor/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/cola de Revisión manual del Motor/),
+    ).toBeInTheDocument();
     expect(screen.getByText("Decidió el Motor")).toBeInTheDocument();
   });
 

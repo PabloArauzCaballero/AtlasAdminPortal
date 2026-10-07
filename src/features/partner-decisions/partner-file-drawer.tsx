@@ -7,10 +7,7 @@ import { JsonViewer } from "@/shared/components/ui/json-viewer";
 import { KeyValueGrid } from "@/shared/components/data-display/key-value";
 import { ErrorState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { formatDateTime, safeText } from "@/shared/lib/format";
-import {
-  usePartnerStatus,
-  useRequestKybReviewMutation,
-} from "./hooks";
+import { usePartnerStatus, useRequestKybReviewMutation } from "./hooks";
 import { onboardingStatusLabel } from "./labels";
 import { PartnerDecisionProvenanceCard } from "./partner-decision-provenance";
 import { PartnerFolderLink } from "./partner-folder-link";
@@ -144,9 +141,9 @@ export function PartnerFileDrawer({
                 <p className="text-sm text-atlas-muted">
                   El Motor todavía no abrió caso para este expediente. Aquí no
                   se aprueba ni se rechaza: la decisión la toma una persona en
-                  la cola de Revisión manual del Motor. Si se envió con el
-                  Motor caído, pide la verificación de nuevo; en pocos minutos
-                  el caso aparece en la cola «MERCHANT_KYB».
+                  la cola de Revisión manual del Motor. Si se envió con el Motor
+                  caído, pide la verificación de nuevo; en pocos minutos el caso
+                  aparece en la cola «MERCHANT_KYB».
                 </p>
                 <PedirVerificacion
                   texto="Pedir la verificación al Motor"
