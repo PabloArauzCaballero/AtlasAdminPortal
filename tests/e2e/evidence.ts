@@ -121,10 +121,56 @@ export class PageHealth {
     };
   }
 
+  /**
+   * Las imágenes que el navegador intentó pintar y no pudo.
+   *
+   * Una imagen rota no siempre deja rastro en la red ni en la consola: un blob con el tipo
+   * equivocado, un archivo truncado o una respuesta 200 que no es una imagen se «cargan» bien y
+   * en pantalla sólo queda el texto alternativo. Lo único que lo delata es que, ya terminada, no
+   * tiene dimensiones. Se espera a que las pendientes terminen (con tope) antes de mirar; una
+   * imagen diferida que sigue sin pedirse no está rota, está fuera de pantalla. Los SVG sin tamaño
+   * propio pueden medir 0 legítimamente y se dejan fuera.
+   */
+  async brokenImages(): Promise<string[]> {
+    return this.page.evaluate(async () => {
+      const imagenes = Array.from(document.images).filter(
+        (img) => img.currentSrc || img.src,
+      );
+      await Promise.all(
+        imagenes.map((img) =>
+          img.complete
+            ? null
+            : new Promise((resolve) => {
+                img.addEventListener("load", resolve, { once: true });
+                img.addEventListener("error", resolve, { once: true });
+                setTimeout(resolve, 5_000);
+              }),
+        ),
+      );
+      const esSvg = (src: string) =>
+        /\.svg(\?|#|$)|^data:image\/svg/i.test(src);
+      return imagenes
+        .filter(
+          (img) =>
+            img.complete &&
+            img.naturalWidth === 0 &&
+            !esSvg(img.currentSrc || img.src),
+        )
+        .map(
+          (img) =>
+            `${img.alt || "(sin alt)"} — ${(img.currentSrc || img.src).slice(0, 80)}`,
+        );
+    });
+  }
+
   async expectHealthy(...ignore: RegExp[]): Promise<void> {
     const remaining = this.ignoring(...ignore);
     expect(remaining.requests, "peticiones fallidas").toEqual([]);
     expect(remaining.console, "errores de consola").toEqual([]);
+    expect(
+      await this.brokenImages(),
+      "imágenes que no se pudieron pintar",
+    ).toEqual([]);
     await expect(
       this.page.getByText("Acceso restringido", { exact: false }),
     ).toHaveCount(0);
