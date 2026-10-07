@@ -45,7 +45,7 @@ describe("AppSidebar · Motor de decisiones", () => {
     renderSidebar(["governance.policies.read"], ["compliance_analyst"]);
     expect(verEnlace("Motor de decisiones")).toBe(false);
     // Testigo positivo: el mismo permiso sí le abre sus pantallas de gobierno.
-    expect(verEnlace("Políticas gobierno")).toBe(true);
+    expect(verEnlace("Políticas")).toBe(true);
   });
 });
 

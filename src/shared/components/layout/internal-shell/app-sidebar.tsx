@@ -8,6 +8,7 @@ import { useAuth } from "@/shared/auth/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { navItemHrefs, resolveNavItem } from "./nav-access";
+import { accountNavItem } from "./nav-account";
 import { navGroups, navItems, type InternalNavItem } from "./nav-config";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 
@@ -223,7 +224,13 @@ export function AppSidebar({
           })}
         </nav>
         <div className="shrink-0 border-t border-white/10 bg-black/20 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
-          <div className="mb-3 flex min-w-0 items-center gap-2">
+          {/* El nombre es la puerta a «Mi cuenta» (perfil y seguridad de la sesión): lo que es de uno
+              se busca en uno, no en una lista de administración. */}
+          <Link
+            href={accountNavItem.href}
+            aria-label={`Mi cuenta: ${user?.fullName ?? "Usuario interno"}`}
+            className="atlas-press -mx-2 mb-3 flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60"
+          >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-atlas-accent to-atlas-primary text-xs font-semibold text-white">
               {(user?.fullName ?? "U").slice(0, 1).toUpperCase()}
             </div>
@@ -233,7 +240,7 @@ export function AppSidebar({
               </p>
               <p className="truncate text-xs text-slate-300">{user?.email}</p>
             </div>
-          </div>
+          </Link>
           <Button
             className="w-full justify-start border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
             variant="ghost"

@@ -43,6 +43,10 @@ function verEnlace(nombre: string) {
   return screen.queryAllByRole("link", { name: nombre }).length > 0;
 }
 
+function destinoDe(nombre: string) {
+  return screen.queryByRole("link", { name: nombre })?.getAttribute("href");
+}
+
 function verGrupo(nombre: string) {
   return screen.queryByRole("button", { name: nombre }) !== null;
 }
@@ -51,13 +55,13 @@ describe("AppSidebar · filtrado por permisos", () => {
   it("oculta un ítem cuyo permiso el usuario no tiene", () => {
     renderSidebar({ permissions: ["audit.events.read"] });
 
-    expect(verEnlace("Usuarios internos")).toBe(false);
+    expect(verEnlace("Usuarios y accesos")).toBe(false);
   });
 
   it("muestra el ítem en cuanto el permiso está concedido", () => {
     renderSidebar({ permissions: ["internal.users.read"] });
 
-    expect(verEnlace("Usuarios internos")).toBe(true);
+    expect(verEnlace("Usuarios y accesos")).toBe(true);
   });
 
   it("un permiso solo abre su propio ítem, no los vecinos del grupo", () => {
@@ -83,8 +87,8 @@ describe("AppSidebar · filtrado por permisos", () => {
     // ítems desaparecerían del menú para todo el mundo.
     renderSidebar({ permissions: [] });
 
-    expect(verEnlace("Perfil")).toBe(true);
-    expect(verEnlace("Seguridad sesión")).toBe(true);
+    // «Esquema» agrupa dos pestañas sin permiso declarado: sale para cualquiera.
+    expect(destinoDe("Esquema")).toBe("/internal/schema/versions");
   });
 
   it("los ítems raíz (Inicio) se ven siempre", () => {
@@ -93,10 +97,6 @@ describe("AppSidebar · filtrado por permisos", () => {
     expect(verEnlace("Inicio")).toBe(true);
   });
 });
-
-function destinoDe(nombre: string) {
-  return screen.queryByRole("link", { name: nombre })?.getAttribute("href");
-}
 
 describe("AppSidebar · una entrada fusionada sale por sus pestañas", () => {
   it("«Comercios» no sale si no se puede ver ni expedientes ni usuarios", () => {
@@ -190,16 +190,16 @@ describe("AppSidebar · grupos", () => {
     renderSidebar({ permissions: ["internal.roles.read"] });
 
     expect(verGrupo("Administración")).toBe(true);
-    expect(verEnlace("Roles internos")).toBe(true);
-    expect(verEnlace("Permisos internos")).toBe(false);
-    expect(verEnlace("Actualizar inventario")).toBe(false);
+    // Sólo puede abrir «Roles»: la entrada lleva ahí, no a «Usuarios».
+    expect(destinoDe("Usuarios y accesos")).toBe("/internal/settings/roles");
+    expect(verEnlace("Registro del sistema")).toBe(false);
   });
 
-  it("Procesos es un grupo propio, visible sólo con workflows.read", () => {
+  it("Procesos vive en Operaciones, visible sólo con workflows.read", () => {
     renderSidebar({ permissions: ["workflows.read"] });
 
-    expect(verGrupo("Procesos")).toBe(true);
-    expect(verEnlace("Procesos")).toBe(true);
+    expect(verGrupo("Procesos")).toBe(false);
+    expect(destinoDe("Procesos")).toBe("/internal/procesos");
     // No cuelga de Systems Ops: quien sólo lee procesos no ve ese grupo.
     expect(verGrupo("Sistemas")).toBe(false);
   });
@@ -224,26 +224,31 @@ describe("AppSidebar · grupos", () => {
       "Revisión de flujos",
     ])
       expect(verEnlace(retirado), retirado).toBe(false);
-    for (const nuevo of [
-      "Mapa de rutas",
+    // Las cinco vistas del mapa son una entrada; la revisión del catálogo es pestaña de «Catálogo
+    // de datos» y, con sólo ese permiso, la entrada lleva a ella.
+    for (const retirado of [
       "Revisión del catálogo",
       "Revisión de análisis de flujos",
-      "Herramientas",
+      "Trabajo pendiente",
+      "Deriva de permisos",
     ])
+      expect(verEnlace(retirado), retirado).toBe(false);
+    for (const nuevo of ["Mapa de rutas", "Herramientas"])
       expect(verEnlace(nuevo), nuevo).toBe(true);
+    expect(destinoDe("Catálogo de datos")).toBe("/internal/review-queue");
   });
 
-  it("sin workflows.read el grupo Procesos no aparece", () => {
+  it("sin workflows.read la entrada Procesos no aparece", () => {
     renderSidebar({ permissions: ["systems.flows.read"] });
 
-    expect(verGrupo("Procesos")).toBe(false);
+    expect(verEnlace("Procesos")).toBe(false);
   });
 
   it("el grupo se puede plegar y desplegar desde su cabecera", async () => {
     const user = userEvent.setup();
     renderSidebar({ permissions: ["audit.events.read"] });
     const cabecera = screen.getByRole("button", {
-      name: "Seguridad y auditoría",
+      name: "Administración",
     });
 
     await user.click(cabecera);
@@ -261,7 +266,7 @@ describe("AppSidebar · grupos", () => {
     const user = userEvent.setup();
     renderSidebar({ permissions: ["audit.events.read"] });
     const cabecera = screen.getByRole("button", {
-      name: "Seguridad y auditoría",
+      name: "Administración",
     });
     expect(cabecera).toHaveAttribute("aria-expanded", "false");
 
@@ -279,7 +284,7 @@ describe("AppSidebar · grupos", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: "Seguridad y auditoría" }),
+      screen.getByRole("button", { name: "Administración" }),
     ).toHaveAttribute("aria-expanded", "true");
   });
 });
@@ -315,11 +320,17 @@ describe("AppSidebar · enlaces y sesión", () => {
 
 describe("AppSidebar · fusiones WP2 (2026-09-29)", () => {
   it("«Definiciones del motor» sale con el permiso de su pantalla, no con el del glosario", () => {
+    // Es pestaña de «Dominios y glosario»: con sólo su permiso, la entrada lleva a ella.
     renderSidebar({ permissions: ["operations.definitions.read"], roles: [] });
-    expect(verEnlace("Definiciones del motor")).toBe(true);
+    expect(destinoDe("Dominios y glosario")).toBe(
+      "/internal/business-metadata/definitions",
+    );
+    cleanup();
 
     renderSidebar({ permissions: ["businessMetadata.read"], roles: [] });
-    expect(verEnlace("Definiciones del motor")).toBe(false);
+    expect(destinoDe("Dominios y glosario")).toBe(
+      "/internal/business-metadata/domains",
+    );
   });
 
   it("ya no hay «Alertas» ni «Formularios»: son la bandeja de calidad y Versiones de esquema", () => {
@@ -329,6 +340,6 @@ describe("AppSidebar · fusiones WP2 (2026-09-29)", () => {
     });
     expect(verEnlace("Alertas")).toBe(false);
     expect(verEnlace("Formularios")).toBe(false);
-    expect(verEnlace("Incidencias de calidad")).toBe(true);
+    expect(destinoDe("Calidad de datos")).toBe("/internal/data-quality/issues");
   });
 });

@@ -1,14 +1,13 @@
 import {
   Activity,
   BadgeCheck,
-  Boxes,
   ClipboardCheck,
   Hourglass,
   ListChecks,
   Network,
   Radio,
   ShieldAlert,
-  SlidersHorizontal,
+  Settings,
   Waypoints,
   Wrench,
 } from "lucide-react";
@@ -27,6 +26,11 @@ import {
  * grupos son estables, así que lo que se mueve es lo que se mueve.
  */
 /*
+ * Fusiones del 2026-10-07: las cinco vistas del mapa de rutas son una entrada con pestañas;
+ * «Artefactos del motor» es pestaña de «Motor de decisiones» (Gobierno) y «Revisión del catálogo»
+ * de «Catálogo de datos» (Datos). «Herramientas» y «Salud de la red» NO se fusionan: Herramientas
+ * ya tiene dentro su propia pestaña «Salud», que es otra cosa.
+ *
  * Fusiones del 2026-09-29 (auditoría de duplicados del menú): «Panel de control» vive ahora en
  * Inicio, «Salud herramientas» es la pestaña Salud de Herramientas y «Procesos de negocio» es la
  * pestaña «Pasos y flujos» de cada proceso. Sus rutas viejas redirigen; aquí ya no tienen ítem.
@@ -42,34 +46,43 @@ export const systemsOpsGroup: InternalNavGroup = {
       permissions: ["systems.endpoints.read"],
     },
     {
+      // Las cinco cuelgan de `/internal/flows` y piden el mismo permiso: son vistas del mismo mapa.
       label: "Mapa de rutas",
       href: "/internal/flows",
       icon: Waypoints,
-      permissions: ["systems.flows.read"],
-    },
-    {
-      label: "Trabajo pendiente",
-      href: "/internal/flows/pending-work",
-      icon: Hourglass,
-      permissions: ["systems.flows.read"],
-    },
-    {
-      label: "Deriva de permisos",
-      href: "/internal/flows/rbac-drift",
-      icon: ShieldAlert,
-      permissions: ["systems.flows.read"],
-    },
-    {
-      label: "Revisión de análisis de flujos",
-      href: "/internal/flows/review",
-      icon: ClipboardCheck,
-      permissions: ["systems.flows.read"],
-    },
-    {
-      label: "Compuerta de documentación",
-      href: "/internal/flows/gate",
-      icon: BadgeCheck,
-      permissions: ["systems.flows.read"],
+      permissions: [],
+      tabs: [
+        {
+          label: "Mapa",
+          href: "/internal/flows",
+          icon: Waypoints,
+          permissions: ["systems.flows.read"],
+        },
+        {
+          label: "Trabajo pendiente",
+          href: "/internal/flows/pending-work",
+          icon: Hourglass,
+          permissions: ["systems.flows.read"],
+        },
+        {
+          label: "Deriva de permisos",
+          href: "/internal/flows/rbac-drift",
+          icon: ShieldAlert,
+          permissions: ["systems.flows.read"],
+        },
+        {
+          label: "Revisión de análisis",
+          href: "/internal/flows/review",
+          icon: ClipboardCheck,
+          permissions: ["systems.flows.read"],
+        },
+        {
+          label: "Compuerta de documentación",
+          href: "/internal/flows/gate",
+          icon: BadgeCheck,
+          permissions: ["systems.flows.read"],
+        },
+      ],
     },
     {
       label: "Herramientas",
@@ -117,16 +130,14 @@ export const systemsOpsGroup: InternalNavGroup = {
       ],
     },
     {
-      label: "Artefactos del motor",
-      href: "/internal/systems/decision-engine/artifacts",
-      icon: Boxes,
-      permissions: ["systems.decisionEngine.artifacts.read"],
-    },
-    {
-      label: "Revisión del catálogo",
-      href: "/internal/review-queue",
-      icon: SlidersHorizontal,
-      permissions: ["systems.reviewQueue.read"],
+      label: "Actualizar inventario",
+      href: "/internal/settings/catalog-sync",
+      icon: Settings,
+      permissions: [
+        "systems.endpoints.discover",
+        "systems.endpoints.catalogSeedRefresh",
+        "systems.tools.inferRequirements",
+      ],
     },
   ],
 };

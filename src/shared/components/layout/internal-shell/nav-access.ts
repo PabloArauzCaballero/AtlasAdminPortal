@@ -1,4 +1,5 @@
 import type { InternalNavItem } from "./nav-config";
+import { accountNavItem } from "./nav-account";
 import { navGroups } from "./nav-groups";
 
 /** Lo que el menú necesita saber de la sesión; lo da `useAuth()`. */
@@ -44,10 +45,8 @@ export function navItemHrefs(item: InternalNavItem): string[] {
 /** La entrada con pestañas a la que pertenece EXACTAMENTE esta ruta; un detalle no lleva fila. */
 export function tabbedItemFor(pathname: string): InternalNavItem | null {
   const ruta = pathname.replace(/\/+$/, "");
-  for (const group of navGroups) {
-    for (const item of group.items) {
-      if (item.tabs?.some((tab) => tab.href === ruta)) return item;
-    }
-  }
-  return null;
+  const items = [...navGroups.flatMap((group) => group.items), accountNavItem];
+  return (
+    items.find((item) => item.tabs?.some((tab) => tab.href === ruta)) ?? null
+  );
 }

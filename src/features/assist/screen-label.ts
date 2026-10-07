@@ -1,4 +1,5 @@
 import { breadcrumbLabels } from "@/shared/components/layout/internal-shell/breadcrumb-labels";
+import { accountNavItem } from "@/shared/components/layout/internal-shell/nav-account";
 import {
   navGroups,
   navItems,
@@ -61,7 +62,12 @@ function entradas(): Entrada[] {
         : [{ href: item.href, label }];
     }),
   );
-  return [...sueltos, ...agrupados, ...SIN_ITEM_EN_MENU];
+  // «Mi cuenta» no está en el menú: se abre desde el nombre, al pie de la barra.
+  const cuenta = (accountNavItem.tabs ?? []).map((tab) => ({
+    href: tab.href,
+    label: `${accountNavItem.label} › ${tab.label}`,
+  }));
+  return [...sueltos, ...agrupados, ...cuenta, ...SIN_ITEM_EN_MENU];
 }
 
 const ENTRADAS = entradas();
