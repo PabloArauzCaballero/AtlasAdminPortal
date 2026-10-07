@@ -4,13 +4,19 @@ import {
   Boxes,
   ClipboardCheck,
   Hourglass,
+  ListChecks,
   Network,
+  Radio,
   ShieldAlert,
   SlidersHorizontal,
   Waypoints,
   Wrench,
 } from "lucide-react";
 import type { InternalNavGroup } from "./nav-config";
+import {
+  INTERNAL_PORTAL_ROLE_LIST,
+  RUNTIME_JOB_ROLE_LIST,
+} from "@/shared/auth/portal-roles";
 
 /**
  * El grupo de Systems Ops, aparte del resto de la navegación.
@@ -77,6 +83,38 @@ export const systemsOpsGroup: InternalNavGroup = {
       href: "/internal/systems/network-health",
       icon: Network,
       permissions: ["systems.network.read"],
+    },
+    {
+      // Lo que el sistema hizo solo. Llegó de «Operaciones» (2026-10-07): no es trabajo del operador.
+      label: "Actividad del sistema",
+      href: "/internal/events",
+      icon: Radio,
+      permissions: [],
+      tabs: [
+        {
+          label: "Eventos de dominio",
+          href: "/internal/events",
+          icon: Radio,
+          // El backend gatea por @Roles y no hay permiso granular.
+          permissions: [],
+          roles: INTERNAL_PORTAL_ROLE_LIST,
+        },
+        {
+          label: "Procesos automáticos",
+          href: "/internal/jobs",
+          icon: ListChecks,
+          // El backend gatea por @Roles: con `internal.jobs.read` —que no existe en
+          // /internal/permissions— no salía en el menú de NADIE. Quien sólo puede disparar jobs
+          // (`system`) también entra, y la página le enseña sólo «Ejecutar ahora».
+          permissions: [],
+          roles: [
+            ...new Set([
+              ...INTERNAL_PORTAL_ROLE_LIST,
+              ...RUNTIME_JOB_ROLE_LIST,
+            ]),
+          ],
+        },
+      ],
     },
     {
       label: "Artefactos del motor",

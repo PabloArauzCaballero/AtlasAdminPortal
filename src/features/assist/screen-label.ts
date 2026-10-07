@@ -46,13 +46,20 @@ function entradas(): Entrada[] {
     label: item.label,
   }));
   const agrupados = navGroups.flatMap((grupo) =>
-    grupo.items.map((item) => ({
-      href: item.href,
-      label:
+    grupo.items.flatMap((item) => {
+      const label =
         grupo.label === item.label
           ? item.label
-          : `${grupo.label} › ${item.label}`,
-    })),
+          : `${grupo.label} › ${item.label}`;
+      // Una entrada fusionada se nombra por la pestaña en la que está la persona; la pestaña de
+      // entrada es la sección misma y no repite nombre.
+      return item.tabs
+        ? item.tabs.map((tab) => ({
+            href: tab.href,
+            label: tab.href === item.href ? label : `${label} › ${tab.label}`,
+          }))
+        : [{ href: item.href, label }];
+    }),
   );
   return [...sueltos, ...agrupados, ...SIN_ITEM_EN_MENU];
 }
