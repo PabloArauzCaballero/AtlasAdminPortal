@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search } from "lucide-react";
+import { GraduationCap, Menu, Search } from "lucide-react";
 import Link from "next/link";
 import { Breadcrumbs } from "./breadcrumbs";
 import { GlobalSearchBox } from "./global-search-box";
@@ -11,11 +11,17 @@ import {
   getServiceOriginLabel,
 } from "@/shared/lib/runtime-environment";
 import { Tooltip } from "@/shared/components/ui/tooltip";
+import { useAuth } from "@/shared/auth/auth-context";
+import { UserMenu } from "./user-menu";
+
+/** Los mismos permisos que pide la pantalla «Aprender»: sin ellos, el birrete llevaría a un «sin acceso». */
+const TUTORIALES_PERMISOS = ["systems.endpoints.read", "systems.qa.read"];
 
 export function AppTopbar({
   onMenu,
   menuOpen,
 }: Readonly<{ onMenu: () => void; menuOpen: boolean }>) {
+  const { hasAnyPermission } = useAuth();
   return (
     <header className="atlas-glass atlas-safe-top sticky top-0 z-20 border-b border-atlas-border shadow-sm">
       <div className="flex h-16 items-center justify-between gap-2 px-3 sm:gap-4 lg:px-6">
@@ -66,7 +72,19 @@ export function AppTopbar({
               <Search className="h-5 w-5" />
             </Link>
           </Tooltip>
+          {hasAnyPermission(TUTORIALES_PERMISOS) ? (
+            <Tooltip text="Tutoriales: recorridos guiados sobre las pantallas reales y la guía de referencia.">
+              <Link
+                href="/internal/qa/aprender"
+                aria-label="Tutoriales"
+                className="atlas-press atlas-tap flex h-10 w-10 items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
+              >
+                <GraduationCap className="h-5 w-5" />
+              </Link>
+            </Tooltip>
+          ) : null}
           <NotificationBell />
+          <UserMenu />
         </div>
       </div>
     </header>

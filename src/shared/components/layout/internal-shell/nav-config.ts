@@ -22,6 +22,11 @@ export type InternalNavGroup = {
   items: InternalNavItem[];
 };
 
+/**
+ * Pantallas raíz que ya NO son renglones del menú lateral: a «Inicio» se llega tocando el logo y a
+ * «Mis notificaciones» por la campana de la barra superior. Siguen aquí porque de esta lista salen
+ * sus nombres (el asistente dice «estás en Inicio»), no porque la barra las pinte.
+ */
 export const navItems: InternalNavItem[] = [
   {
     label: "Inicio",
