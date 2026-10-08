@@ -10,6 +10,8 @@ import { LearningPaths } from "./learning-paths-tab";
 import { PermissionGate } from "@/shared/auth/permission-gate";
 import { useAuth } from "@/shared/auth/auth-context";
 
+/** Archivo estático de `public/guias/`. */
+const GUIA_PDF = "/guias/ATLAS-Guia-del-laboratorio-QA.pdf";
 const PATHS_TAB = "Recorridos";
 const GUIDE_TAB = "Guía de referencia";
 /** `?tab=guia` es el destino de la ruta vieja «Guía QA Lab». */
@@ -46,9 +48,15 @@ export function LearningCenterPage() {
         title="Aprender el laboratorio QA"
         description="Aprende QA LAB paso a paso con recorridos guiados sobre las pantallas reales, o consulta la guía de referencia: cómo probar la API como si fueras el negocio y qué barreras impiden romper producción."
         actions={
-          <Link href="/internal/qa/lab">
-            <Button variant="primary">Abrir el lab</Button>
-          </Link>
+          <>
+            {/* La guía completa en PDF: los mismos recorridos con la captura de cada pantalla. */}
+            <a href={GUIA_PDF} download="ATLAS-Guia-del-laboratorio-QA.pdf">
+              <Button variant="secondary">Descargar la guía en PDF</Button>
+            </a>
+            <Link href="/internal/qa/lab">
+              <Button variant="primary">Abrir el lab</Button>
+            </Link>
+          </>
         }
       />
       <DetailTabs
