@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, LogOut, X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/shared/auth/auth-context";
-import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 import { navItemHrefs, resolveNavItem } from "./nav-access";
-import { accountNavItem } from "./nav-account";
-import { navGroups, navItems, type InternalNavItem } from "./nav-config";
+import { navGroups, type InternalNavItem } from "./nav-config";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 
 function isActivePath(pathname: string, href: string) {
@@ -75,7 +73,7 @@ export function AppSidebar({
   onClose = () => {},
 }: Readonly<AppSidebarProps>) {
   const pathname = usePathname();
-  const { user, hasAnyPermission, hasAnyRole, logout } = useAuth();
+  const { hasAnyPermission, hasAnyRole } = useAuth();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const groups = useMemo(
@@ -98,11 +96,6 @@ export function AppSidebar({
     if (label in openGroups) return openGroups[label];
     return items.some((item) => isItemActive(pathname, item));
   };
-
-  const visibleItems = navItems.filter(
-    (item) =>
-      hasAnyPermission(item.permissions) && hasAnyRole(item.roles ?? []),
-  );
 
   return (
     <>
@@ -143,13 +136,27 @@ export function AppSidebar({
         )}
       >
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-atlas-accent to-atlas-primary text-sm font-bold text-white shadow-glow">
-            A
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold leading-4 text-white">ATLAS</p>
-            <p className="text-xs text-slate-300">Portal interno</p>
-          </div>
+          {/*
+           * La marca ES el botón de Inicio. «Inicio» ocupaba el primer renglón del menú para decir lo
+           * que el logo ya dice en cualquier sitio web: tocarlo lleva a la portada.
+           */}
+          <Link
+            href="/internal"
+            aria-label="ATLAS · Ir al inicio"
+            className="atlas-press -ml-2 flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-atlas-accent to-atlas-primary text-sm font-bold text-white shadow-glow">
+              A
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold leading-4 text-white">
+                ATLAS
+              </span>
+              <span className="block text-xs text-slate-300">
+                Portal interno
+              </span>
+            </span>
+          </Link>
           {/* El cierre explícito va sólo en móvil: en escritorio la barra no se cierra. */}
           <Tooltip text="Cierra el menú lateral. En pantallas anchas la navegación se queda siempre visible.">
             <button
@@ -163,14 +170,6 @@ export function AppSidebar({
           </Tooltip>
         </div>
         <nav className="atlas-scrollbar flex-1 space-y-1 overflow-auto px-3 py-4">
-          {visibleItems.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={isActivePath(pathname, item.href)}
-            />
-          ))}
-
           {groups.map((group) => {
             const GroupIcon = group.icon;
             const open = isGroupOpen(group.label, group.items);
@@ -223,33 +222,6 @@ export function AppSidebar({
             );
           })}
         </nav>
-        <div className="shrink-0 border-t border-white/10 bg-black/20 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
-          {/* El nombre es la puerta a «Mi cuenta» (perfil y seguridad de la sesión): lo que es de uno
-              se busca en uno, no en una lista de administración. */}
-          <Link
-            href={accountNavItem.href}
-            aria-label={`Mi cuenta: ${user?.fullName ?? "Usuario interno"}`}
-            className="atlas-press -mx-2 mb-3 flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300/60"
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-atlas-accent to-atlas-primary text-xs font-semibold text-white">
-              {(user?.fullName ?? "U").slice(0, 1).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">
-                {user?.fullName ?? "Usuario interno"}
-              </p>
-              <p className="truncate text-xs text-slate-300">{user?.email}</p>
-            </div>
-          </Link>
-          <Button
-            className="w-full justify-start border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
-            variant="ghost"
-            onClick={() => void logout()}
-          >
-            <LogOut className="h-4 w-4" />
-            Cerrar sesión
-          </Button>
-        </div>
       </aside>
     </>
   );

@@ -91,10 +91,12 @@ describe("AppSidebar · filtrado por permisos", () => {
     expect(destinoDe("Esquema")).toBe("/internal/schema/versions");
   });
 
-  it("los ítems raíz (Inicio) se ven siempre", () => {
+  it("el logo es el enlace a Inicio; Inicio y Mis notificaciones ya no son renglones del menú", () => {
     renderSidebar({ permissions: [] });
 
-    expect(verEnlace("Inicio")).toBe(true);
+    expect(destinoDe("ATLAS · Ir al inicio")).toBe("/internal");
+    expect(verEnlace("Inicio")).toBe(false);
+    expect(verEnlace("Mis notificaciones")).toBe(false);
   });
 });
 
@@ -298,23 +300,11 @@ describe("AppSidebar · enlaces y sesión", () => {
     ).toHaveAttribute("href", "/internal/audit");
   });
 
-  it("identifica al usuario de la sesión", () => {
+  it("el usuario y la salida ya no viven al pie de la barra: están en la barra superior", () => {
     renderSidebar({ permissions: [] });
 
-    expect(screen.getByText("Usuario De Prueba")).toBeInTheDocument();
-    expect(screen.getByText("user@example.invalid")).toBeInTheDocument();
-  });
-
-  it("cerrar sesión revoca el refresh token en el backend", async () => {
-    const user = userEvent.setup();
-    renderSidebar({ permissions: [] });
-
-    await user.click(screen.getByRole("button", { name: /Cerrar sesión/ }));
-
-    expect(logoutInternal).toHaveBeenCalled();
-    expect(
-      window.sessionStorage.getItem("atlas_internal_session_v3"),
-    ).toBeNull();
+    expect(screen.queryByText("Usuario De Prueba")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Cerrar sesión/ })).toBeNull();
   });
 });
 
