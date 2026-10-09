@@ -1,11 +1,11 @@
 # Configuración de escaneo de secretos para AtlasAdminPortal.
-# CI ejecuta:  gitleaks detect --no-git --source . --redact --config .gitleaks.toml
+# CI ejecuta:  gitleaks detect --source . --log-opts=HEAD --redact --config .gitleaks.toml
+# (historial completo, checkout con fetch-depth: 0).
 #
-# NOTA DE HISTORIAL: la credencial de prueba que estuvo en .env.example sigue
-# presente en el historial de git (commits previos). Este escaneo (--no-git) cubre
-# el árbol de trabajo actual. La limpieza del historial (git filter-repo) y la
-# rotación real de la credencial son acciones manuales pendientes documentadas en
-# docs/audits/baseline-2026-07-15.md.
+# NOTA DE HISTORIAL: la credencial que estuvo en .env.example sigue presente en el
+# historial de git. Su hallazgo está en .gitleaksignore (por huella exacta) para que el
+# escaneo detecte fugas NUEVAS; la rotación real de la credencial la hace Pablo y sigue
+# pendiente (docs/audits/baseline-2026-07-15.md).
 
 title = "ATLAS Admin Portal - gitleaks"
 
