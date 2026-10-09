@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, ExternalLink, TriangleAlert } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { CopyButton } from "@/shared/components/ui/copy-button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
+import { BloqueDeTexto } from "./bloque-de-texto";
+import { VistaDeContactos } from "./contactos-preview";
 import { explicarError } from "./errores";
-import { useContactos, useContenido } from "./hooks";
+import { useContenido } from "./hooks";
 import { esAbrible, esTexto } from "./tipo-de-archivo";
 import type { Nodo } from "./types";
 
@@ -26,7 +27,6 @@ export function VistaPreviaDeNodo({
   // El nodo de contactos no tiene bytes: se compone desde la base al abrirlo.
   const esContactos = nodo.clase === "contactos";
   const contenido = useContenido(expedienteId, esContactos ? null : nodo);
-  const contactos = useContactos(expedienteId, esContactos);
 
   if (nodo.tipo === "carpeta") {
     return (
@@ -46,27 +46,7 @@ export function VistaPreviaDeNodo({
     );
   }
 
-  if (esContactos) {
-    if (contactos.isLoading) return <LoadingSkeleton rows={4} />;
-    if (contactos.error)
-      return <EmptyState title="No se pudieron traer los contactos." />;
-    const json = JSON.stringify(contactos.data, null, 2);
-    return (
-      <div className="space-y-2">
-        {contactos.data?.enmascarado ? (
-          <p className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-            <TriangleAlert
-              className="mt-0.5 h-3.5 w-3.5 shrink-0"
-              aria-hidden
-            />
-            Teléfonos y nombres van enmascarados. Verlos completos exige el
-            permiso de revelado y deja constancia de quién lo pidió y por qué.
-          </p>
-        ) : null}
-        <BloqueDeTexto texto={json} />
-      </div>
-    );
-  }
+  if (esContactos) return <VistaDeContactos expedienteId={expedienteId} />;
 
   if (contenido.isLoading) return <LoadingSkeleton rows={4} />;
   if (contenido.error) {
@@ -170,15 +150,4 @@ function VistaDeTexto({ blob }: Readonly<{ blob: Blob | null }>) {
 
   if (texto === null) return <LoadingSkeleton rows={4} />;
   return <BloqueDeTexto texto={texto} />;
-}
-
-function BloqueDeTexto({ texto }: Readonly<{ texto: string }>) {
-  return (
-    <div className="relative">
-      <CopyButton value={texto} className="absolute right-2 top-2" />
-      <pre className="max-h-[28rem] select-text overflow-auto rounded bg-slate-50 p-3 pr-10 text-xs text-slate-700">
-        {texto}
-      </pre>
-    </div>
-  );
 }

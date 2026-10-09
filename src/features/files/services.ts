@@ -199,16 +199,25 @@ export async function listarActividad(
   return aPaginaDelPortal<Actividad>(respuesta, query);
 }
 
-export function obtenerContactos(
-  expedienteId: string,
-  revelar = false,
-  motivo?: string,
-) {
+/** Los contactos del expediente, ENMASCARADOS. Para verlos completos está `revelarContactos`. */
+export function obtenerContactos(expedienteId: string) {
   return apiRequest<Contactos>(
     `/expedientes/${encodeURIComponent(expedienteId)}/contactos`,
-    {
-      query: revelar ? { revelar: "true", motivo } : {},
-    },
+  );
+}
+
+/**
+ * Los contactos SIN enmascarar (ADM-10).
+ *
+ * Es un POST y el motivo va en el CUERPO: antes era `GET ?revelar=true&motivo=…`, y el motivo —que
+ * suele nombrar a la persona o al caso— quedaba escrito en los logs de acceso de cada proxy por el
+ * que pasaba la URL. Responde el mismo JSON que el GET; `403 EXPEDIENTE_REVELAR_NO_PERMITIDO` sin
+ * el permiso y `400 EXPEDIENTE_MOTIVO_REQUERIDO` con un motivo corto.
+ */
+export function revelarContactos(expedienteId: string, motivo: string) {
+  return apiRequest<Contactos>(
+    `/expedientes/${encodeURIComponent(expedienteId)}/contactos/revelar`,
+    { method: "POST", body: { motivo } },
   );
 }
 
