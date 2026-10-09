@@ -42,6 +42,9 @@ services:
     # arrancar, no al construir. Si el mock no está en `atlas_vps` con ese alias, el Lab lo dice.
     environment:
       QA_FAKERS_ORIGIN: '${QA_FAKERS_ORIGIN:-http://external-providers-mock:4010}'
+      # Destinos EXACTOS del reenvío `/almacen/subida`; sin lista responde 503 (ver el mismo
+      # bloque en `docker-compose.coolify.yml`, que es el que sirve TEST y DEV).
+      ALMACEN_HOSTS_PERMITIDOS: '${ALMACEN_HOSTS_PERMITIDOS:-minio.161.97.85.216.sslip.io}'
     ports:
       - '5273:5273'
     networks:

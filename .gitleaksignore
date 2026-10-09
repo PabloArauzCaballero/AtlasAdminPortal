@@ -1,0 +1,30 @@
+# Hallazgos de gitleaks YA CONOCIDOS en el historial de git (auditoría de seguridad 2026-10-09, ADM-03).
+#
+# Este archivo NO declara que estos valores sean seguros. Existe para que el escaneo del historial
+# completo en CI (`.github/workflows/ci.yml`, job `secrets`) pase hoy y se ponga en ROJO ante
+# cualquier fuga NUEVA. Cada línea es una huella `commit:archivo:regla:línea`: sólo silencia ese
+# hallazgo exacto en ese commit, no la regla ni el archivo.
+#
+# Comprobado con gitleaks 8.21.2 (la versión que fija CI) y `--redact`: con este archivo, 0
+# hallazgos; sin él, 9.
+
+# --- Credenciales REALES filtradas, PENDIENTES DE ROTAR POR PABLO (2026-10-09) ---
+# Usuario y contraseña de la cuenta interna de Pablo en el primer commit (`.env.example`). El mismo
+# archivo sigue igual en instantáneas posteriores (p. ej. be42868) hasta que 1a6f2e8 lo retira;
+# gitleaks lee diferencias, así que sólo lo reporta en el commit que lo introdujo. Rotarla es lo
+# que lo arregla; borrar estas líneas sin rotar no protege nada. Seguimiento:
+# `docs/audits/baseline-2026-07-15.md` (Pendientes, punto 1).
+b28974452b04a7b7f48000f62d4354f93fdf3078:.env.example:atlas-env-plaintext-credential:13
+b28974452b04a7b7f48000f62d4354f93fdf3078:.env.example:atlas-env-plaintext-credential:14
+
+# --- Falsos positivos históricos: valores de PRUEBA ---
+# Fichas de pruebas unitarias y del smoke del broker que se añadieron sin la marca en línea; el
+# árbol actual ya las lleva con `// gitleaks:allow (valor de prueba, no es un secreto)`. La de
+# `field-help-catalog.ts` es la clave de una entrada del catálogo de ayudas (archivo ya retirado).
+5c05d4aca310197d7494138a92ed951912fbe34c:src/features/qa-tutorials/field-help-catalog.ts:generic-api-key:71
+8b03c1cb8374068baa911229af43cb82b9b489c0:atlas-auth-broker-worker/scripts/e2e-smoke.mjs:generic-api-key:333
+8b03c1cb8374068baa911229af43cb82b9b489c0:atlas-auth-broker-worker/test/redacting-logger.test.ts:generic-api-key:31
+92f127b8fd367bb2c1a50f6b04f8e2c42dbafe4d:tests/unit/shared/auth/auth-service.test.ts:generic-api-key:104
+92f127b8fd367bb2c1a50f6b04f8e2c42dbafe4d:tests/unit/shared/auth/auth-service.test.ts:generic-api-key:237
+92f127b8fd367bb2c1a50f6b04f8e2c42dbafe4d:tests/unit/shared/auth/auth-service.test.ts:generic-api-key:248
+92f127b8fd367bb2c1a50f6b04f8e2c42dbafe4d:tests/unit/shared/auth/auth-service.test.ts:generic-api-key:264

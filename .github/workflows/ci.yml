@@ -103,14 +103,21 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
 
   # ---------------------------------------------------------------
-  # Seguridad: escaneo de secretos. Sin `yarn install` a propósito,
-  # así el scan no recorre node_modules y termina en segundos.
+  # Seguridad: escaneo de secretos sobre el HISTORIAL de git, no sólo el árbol.
+  #
+  # Con `--no-git` sólo se miraba el árbol de trabajo, y una credencial borrada en un commit
+  # posterior seguía publicada en el historial sin que nada avisara (ADM-03, auditoría
+  # 2026-10-09). Ahora se recorre cada commit alcanzable desde HEAD (`fetch-depth: 0`). Los
+  # hallazgos ya conocidos están en `.gitleaksignore`, por huella exacta y comentados: el gate
+  # es para fugas NUEVAS. Sin `yarn install` a propósito: el scan no ve node_modules.
   # ---------------------------------------------------------------
   secrets:
     name: Escaneo de secretos (gitleaks)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Instalar gitleaks
         env:
@@ -120,8 +127,11 @@ jobs:
           tar -xzf gitleaks.tar.gz gitleaks
           chmod +x gitleaks
 
-      - name: Detectar secretos en el árbol de trabajo
-        run: ./gitleaks detect --no-git --source . --redact --config .gitleaks.toml
+      # `--log-opts=HEAD`: la historia completa de lo que se va a fusionar o desplegar, y no
+      # `--all`, que metería las ramas ajenas que trae `fetch-depth: 0`. `.gitleaksignore` se lee
+      # solo desde la raíz de `--source`.
+      - name: Detectar secretos en todo el historial de git
+        run: ./gitleaks detect --source . --log-opts=HEAD --redact --config .gitleaks.toml
 
   # ---------------------------------------------------------------
   # Auditoría de dependencias (high+). Bloqueante.

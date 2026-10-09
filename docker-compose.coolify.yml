@@ -116,6 +116,14 @@ services:
       # Sin él cae a `http://127.0.0.1:4010`, que dentro del contenedor no es nadie, y el Lab dice
       # «El generador de datos de prueba no responde» en vez de inventar datos.
       QA_FAKERS_ORIGIN: 'http://external-providers-mock:4010'
+      # Destinos EXACTOS (`host` o `host:puerto`, separados por comas) a los que el reenvío
+      # `/almacen/subida` puede mandar una subida firmada (`src/app/almacen/subida/destino.ts`).
+      # Sin lista, en producción responde 503: falla CERRADO (ADM-01, auditoría 2026-10-09).
+      # Este compose sirve TEST (Contabo) y DEV (H310); cada uno firma contra su almacén público,
+      # `STORAGE_S3_PUBLIC_ENDPOINT` del backend: TEST `http://minio.161.97.85.216.sslip.io` y DEV
+      # `https://pablo-h310.taila8f993.ts.net` (comprobado 2026-10-09). Si cambia ese endpoint,
+      # cambia esto o las subidas del expediente darán 403.
+      ALMACEN_HOSTS_PERMITIDOS: '${ALMACEN_HOSTS_PERMITIDOS:-minio.161.97.85.216.sslip.io,pablo-h310.taila8f993.ts.net}'
       APP_COMMIT_SHA: '${SOURCE_COMMIT:-}'
       APP_VERSION: '0.1.0'
     # ------------------------------------------------------------------------------------------
