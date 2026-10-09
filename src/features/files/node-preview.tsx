@@ -7,7 +7,7 @@ import { CopyButton } from "@/shared/components/ui/copy-button";
 import { EmptyState, LoadingSkeleton } from "@/shared/components/ui/states";
 import { explicarError } from "./errores";
 import { useContactos, useContenido } from "./hooks";
-import { esTexto } from "./tipo-de-archivo";
+import { esAbrible, esTexto } from "./tipo-de-archivo";
 import type { Nodo } from "./types";
 
 /**
@@ -87,10 +87,13 @@ export function VistaPreviaDeNodo({
   const url = contenido.data.url;
   // Ya viene normalizado de `useContenido`, que es también quien rotuló el blob con él.
   const tipo = contenido.data.contentType;
+  // Sólo PDF e imágenes rasterizadas se pintan o se abren aparte (ADM-05): un HTML o un SVG que
+  // subió un cliente, abierto como `blob:` en una pestaña, se ejecutaría en el origen del portal.
+  const abrible = esAbrible(tipo);
 
   return (
     <div className="space-y-3">
-      {tipo.startsWith("image/") ? (
+      {abrible && tipo.startsWith("image/") ? (
         /*
          * `<img>` y no `next/image` a propósito: el origen es un `blob:` local que ya vino
          * autenticado. El optimizador de Next necesita una URL que su servidor pueda volver a
@@ -103,7 +106,7 @@ export function VistaPreviaDeNodo({
           alt={nodo.nombre}
           className="max-h-[28rem] w-full rounded border border-slate-200 object-contain"
         />
-      ) : tipo.includes("pdf") ? (
+      ) : abrible ? (
         <iframe
           src={url}
           title={nodo.nombre}
@@ -125,17 +128,20 @@ export function VistaPreviaDeNodo({
         {/*
          * Abrir en una pestaña aparte es la salida cuando el visor incrustado no da la talla —un
          * PDF de cien páginas dentro de un panel de 28rem—. El enlace apunta al mismo blob local,
-         * así que no hay una segunda descarga ni una URL que sobreviva a la sesión.
+         * así que no hay una segunda descarga ni una URL que sobreviva a la sesión. Sólo para PDF e
+         * imágenes: cualquier otro tipo se descarga (el blob ya va rotulado para eso).
          */}
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-3 py-1.5 text-sm text-atlas-text hover:bg-atlas-soft"
-        >
-          <ExternalLink className="h-4 w-4" aria-hidden />
-          Abrir en otra pestaña
-        </a>
+        {abrible ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-atlas-border px-3 py-1.5 text-sm text-atlas-text hover:bg-atlas-soft"
+          >
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            Abrir en otra pestaña
+          </a>
+        ) : null}
       </div>
     </div>
   );

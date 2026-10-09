@@ -29,7 +29,6 @@ import { INTERNAL_STORAGE_STATE, motivoParaSaltar } from "./internal-session";
  * El proyecto setup ya entró con el PIN recibido por el buzón webhook. Esta suite
  * reutiliza ese estado de sesión para no repetir la autenticación en cada tutorial.
  */
-const USER_ID = process.env.E2E_USER_ID ?? "1";
 const EVIDENCIA =
   process.env.E2E_EVIDENCIA_DIR ?? "../_evidencia-tutoriales-2026-09-15";
 
@@ -337,8 +336,8 @@ async function performAction(p: Page, tutorialId: string, stepId: string) {
 /** Deja el tutorial en «no iniciado» en el backend y en la caché local. */
 async function resetProgress(p: Page, tutorial: TutorialDefinition) {
   const response = await p.request.put("/api/qa-tutorials/progress", {
+    // Sin `userId`: el servidor lo toma de la sesión (la cookie del contexto viaja con `p.request`).
     data: {
-      userId: USER_ID,
       progress: {
         tutorialId: tutorial.id,
         version: tutorial.version,

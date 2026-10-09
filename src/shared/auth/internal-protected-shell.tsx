@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppShell } from "@/shared/components/layout/app-shell";
 import { useAuth } from "./auth-context";
+import { IdleLogoutGuard } from "./idle-logout-guard";
 import { sanitizeInternalReturnTo } from "./return-to";
 import { SessionUnavailable } from "./session-unavailable";
 import { FullPageLoader } from "@/shared/components/ui/states";
@@ -86,7 +87,12 @@ export function InternalProtectedShell({
     return <SessionUnavailable error={unavailable} onRetry={retry} />;
   }
   if (!isHydrated || !session) return <FullPageLoader />;
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell>
+      <IdleLogoutGuard />
+      {children}
+    </AppShell>
+  );
 }
 
 function redirectToLogin(

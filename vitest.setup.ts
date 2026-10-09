@@ -10,6 +10,13 @@ import { afterEach, vi } from "vitest";
  */
 configure({ asyncUtilTimeout: 5_000 });
 
+/*
+ * El QA Lab falla cerrado: sin un ambiente de pruebas declarado queda en sólo lectura (ver
+ * `defaultQaEnvironment`). Las pruebas corren, por definición, en uno; la que quiera otro lo pone
+ * con `vi.stubEnv` y `unstubAllEnvs` la devuelve a éste.
+ */
+process.env.NEXT_PUBLIC_ATLAS_ENVIRONMENT ??= "test";
+
 /**
  * Node 22 expone un `localStorage` experimental propio que queda en `undefined`
  * si no se arranca con `--localstorage-file`, y pisa al de jsdom (sessionStorage

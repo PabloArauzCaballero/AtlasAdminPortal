@@ -4,9 +4,12 @@ const STORAGE_KEY = "atlas.recentSearches";
 const MAX_ENTRIES = 8;
 
 /**
- * The only file allowed to touch localStorage directly (see
- * scripts/check-source-boundaries.mjs) — every other module must go through
- * this wrapper so browser-storage usage stays auditable in one place.
+ * Historial de búsquedas recientes en `localStorage`.
+ *
+ * No es el único archivo que toca el almacenamiento del navegador: la lista cerrada de los que
+ * pueden hacerlo vive en `scripts/check-source-boundaries.mjs` (hoy, además de éste, la sesión,
+ * las filas por página y el progreso de los tutoriales). Cualquier otro módulo que lo necesite
+ * pasa por uno de ellos o se añade a esa lista con su motivo, para que el uso siga auditable.
  */
 export function getRecentSearches(): string[] {
   if (typeof window === "undefined") return [];

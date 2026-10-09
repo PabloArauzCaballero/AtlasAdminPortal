@@ -14,3 +14,10 @@ node_modules
 test-results
 playwright-report
 *.log
+# Secretos locales (ADM-11, auditoría 2026-10-09). Con `COPY . .` en la etapa de construcción, un
+# `.env.local` del anfitrión acababa en la caché del builder y podía colarse en `standalone`. Las
+# `NEXT_PUBLIC_*` llegan como build-args (`ARG` en `Dockerfile` y `Dockerfile.dev`); las de servidor,
+# como variables de ejecución. La plantilla sí viaja: no lleva valores.
+.env
+.env.*
+!.env.example

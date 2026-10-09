@@ -12,12 +12,35 @@ RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
   yarn install --frozen-lockfile
 
 FROM base AS builder
+# Las `NEXT_PUBLIC_*` se incrustan en el paquete del navegador AL CONSTRUIR, no al arrancar: cambiar
+# una después no tiene ningún efecto. Llegan como build-args (`docker build --build-arg ...`), igual
+# que en `Dockerfile.dev`. Antes se contaba con que el desplegador copiara su `.env.local` dentro del
+# contexto, y eso metía en la caché del builder también los secretos de servidor de ese archivo:
+# `.dockerignore` ya excluye `.env*` (ADM-11, auditoría 2026-10-09).
+#
+# `NEXT_PUBLIC_ATLAS_ENVIRONMENT` vale `production` por defecto a propósito: un build de esta imagen
+# sin el argumento deja el QA Lab en sólo lectura (falla cerrado), nunca en modo de pruebas.
+ARG NEXT_PUBLIC_API_BASE_URL=/api/v1
+ARG NEXT_PUBLIC_ATLAS_ENVIRONMENT=production
+ARG NEXT_PUBLIC_INTERNAL_APP_NAME="ATLAS Internal Platform"
+ARG NEXT_PUBLIC_DEFAULT_TENANT_ID=1
+ARG NEXT_PUBLIC_API_TIMEOUT_MS=20000
+ARG NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=cookie
+ARG NEXT_PUBLIC_INTERNAL_CSRF_HEADER_NAME=""
+ARG NEXT_PUBLIC_DECISION_ENGINE_URL=""
+# El destino de `rewrites()`: `output: 'standalone'` lo serializa en `server.js` al construir.
+ARG INTERNAL_API_ORIGIN=http://127.0.0.1:3005
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
+    NEXT_PUBLIC_ATLAS_ENVIRONMENT=$NEXT_PUBLIC_ATLAS_ENVIRONMENT \
+    NEXT_PUBLIC_INTERNAL_APP_NAME=$NEXT_PUBLIC_INTERNAL_APP_NAME \
+    NEXT_PUBLIC_DEFAULT_TENANT_ID=$NEXT_PUBLIC_DEFAULT_TENANT_ID \
+    NEXT_PUBLIC_API_TIMEOUT_MS=$NEXT_PUBLIC_API_TIMEOUT_MS \
+    NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=$NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE \
+    NEXT_PUBLIC_INTERNAL_CSRF_HEADER_NAME=$NEXT_PUBLIC_INTERNAL_CSRF_HEADER_NAME \
+    NEXT_PUBLIC_DECISION_ENGINE_URL=$NEXT_PUBLIC_DECISION_ENGINE_URL \
+    INTERNAL_API_ORIGIN=$INTERNAL_API_ORIGIN
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-# Las `NEXT_PUBLIC_*` se incrustan en el paquete del navegador AL CONSTRUIR, no al arrancar: cambiar
-# una después no tiene ningún efecto. Por eso el desplegador copia el `.env.local` de la máquina
-# dentro del contexto de construcción — sin él, el portal se construiría contra los valores por
-# defecto y el tester llamaría a un origen que no es el suyo.
 # PLAT-03: la identidad del artefacto se escribe AQUÍ, dentro de la imagen, y `/version` la lee de este
 # archivo. `SOURCE_COMMIT` (build-arg de Coolify) manda; si llega vacío se lee `.git/HEAD` del contexto
 # (el .dockerignore lo deja pasar). Sin ninguno queda `commit: null`: no se inventa, y el smoke lo rechaza.

@@ -1,6 +1,3 @@
-const SAFE_EXTERNAL_PROTOCOLS = new Set(["https:"]);
-const LOCALHOST_NAMES = new Set(["localhost", "127.0.0.1", "::1"]);
-
 const SPACE_CODE_POINT = 0x20;
 const DELETE_CODE_POINT = 0x7f;
 
@@ -23,9 +20,11 @@ function hasControlCharacters(value: string): boolean {
  *
  * No basta con `startsWith("/")`: `//evil.com` y `/\evil.com` empiezan por `/`
  * y los navegadores los resuelven como URL protocol-relative, es decir, una
- * redirección abierta a otro host. Tampoco se delega en `isSafeExternalUrl`,
- * que aceptaría cualquier origen https: un resultado de búsqueda interno no
- * tiene por qué navegar fuera del portal.
+ * redirección abierta a otro host. Un resultado de búsqueda interno no tiene por
+ * qué navegar fuera del portal, así que aquí no hay validador de URL externas:
+ * el que existía (`isSafeExternalUrl`) no lo usaba nadie y aceptaba cualquier
+ * origen https; se borró (ADM-15, auditoría 2026-10-09) para que nadie lo
+ * reutilizara creyéndolo una lista de destinos permitidos.
  *
  * No usa `window`: se llama al normalizar la respuesta, también fuera del DOM.
  */
@@ -33,26 +32,4 @@ export function isSafeInternalPath(value: string): boolean {
   if (typeof value !== "string" || !value.startsWith("/")) return false;
   if (value.startsWith("//") || value.startsWith("/\\")) return false;
   return !hasControlCharacters(value);
-}
-
-/**
- * `URL.hostname` devuelve las direcciones IPv6 entre corchetes (`[::1]`), así
- * que la entrada `::1` de la allowlist nunca casaría contra el valor crudo. Se
- * quitan aquí para que el set siga escrito con nombres de host legibles.
- */
-function bareHostname(parsed: URL): string {
-  return parsed.hostname.replace(/^\[(.*)\]$/, "$1");
-}
-
-export function isSafeExternalUrl(value: string): boolean {
-  try {
-    const parsed = new URL(value, window.location.origin);
-    if (parsed.origin === window.location.origin) return true;
-    if (SAFE_EXTERNAL_PROTOCOLS.has(parsed.protocol)) return true;
-    return (
-      parsed.protocol === "http:" && LOCALHOST_NAMES.has(bareHostname(parsed))
-    );
-  } catch {
-    return false;
-  }
 }

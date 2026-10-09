@@ -12,6 +12,7 @@ import { useAuth } from "@/shared/auth/auth-context";
 import { isPinChallenge } from "@/shared/auth/types";
 import type { PinChallenge } from "@/shared/auth/types";
 import { LoginPinForm } from "./login-pin-form";
+import { LogoutNotice } from "./logout-notice";
 import { sanitizeInternalReturnTo } from "@/shared/auth/return-to";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/components/ui/button";
@@ -166,6 +167,7 @@ export function LoginPage() {
                 </p>
               </div>
 
+              <LogoutNotice />
               {errors.root?.message ? (
                 <div className="mb-4">
                   <ErrorState

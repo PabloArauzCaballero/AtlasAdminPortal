@@ -12,8 +12,12 @@ import { isAtlasApiError } from "@/shared/api/errors";
 import {
   clearStoredInternalSession,
   getStoredInternalSession,
+  markLoggedOutHere,
+  setLogoutNotice,
   setStoredInternalSession,
+  wasLoggedOutHere,
 } from "./session-storage";
+import { revokeOnServer, type LogoutReason } from "./logout-on-server";
 import { subscribeToSessionChanges } from "./session-events";
 import { normalizeInternalSession } from "./auth-normalizers";
 import {
@@ -43,7 +47,11 @@ type AuthContextValue = {
    */
   login: (input: LoginInput) => Promise<LoginOutcome>;
   verifyLoginPin: (challengeToken: string, pin: string) => Promise<void>;
-  logout: () => Promise<void>;
+  /**
+   * Cierra la sesión: lo local SIEMPRE, y el servidor con reintentos. Devuelve si el backend
+   * confirmó el cierre; si no, el login lo avisa (ADM-06).
+   */
+  logout: (reason?: LogoutReason) => Promise<{ serverConfirmed: boolean }>;
   refreshProfile: () => Promise<InternalSession | null>;
   restoreSessionFromServer: () => Promise<InternalSession | null>;
   hasPermission: (permission: string) => boolean;
@@ -93,18 +101,28 @@ export function AuthProvider({
     [setAndStoreSession],
   );
 
-  const logout = useCallback(async () => {
-    const refreshToken = session?.refreshToken;
-    clearStoredInternalSession();
-    setSession(null);
-    try {
-      await logoutInternal(refreshToken);
-    } catch {
-      // Logout local siempre debe completarse. No se imprimen tokens ni payloads sensibles.
-    }
-  }, [session?.refreshToken]);
+  const logout = useCallback(
+    async (reason: LogoutReason = "user") => {
+      const refreshToken = session?.refreshToken;
+      // Lo local primero y pase lo que pase: la pantalla deja de mostrar datos aunque la red falle.
+      // La marca impide que el shell recupere la sesión de la cookie si el servidor no la revocó.
+      markLoggedOutHere();
+      clearStoredInternalSession();
+      setSession(null);
+      setLogoutNotice({ reason, serverConfirmed: true });
+      const serverConfirmed = await revokeOnServer(() =>
+        logoutInternal(refreshToken),
+      );
+      // Antes el fallo se tragaba y se daba la sesión por cerrada. Ahora el login lo dice.
+      if (!serverConfirmed) setLogoutNotice({ reason, serverConfirmed });
+      return { serverConfirmed };
+    },
+    [session?.refreshToken],
+  );
 
   const restoreSessionFromServer = useCallback(async () => {
+    // Esta pestaña cerró sesión: se vuelve a entrar por el login, no por la cookie que quedó.
+    if (wasLoggedOutHere()) return null;
     setIsRefreshingProfile(true);
     try {
       const profile = await getInternalMe();

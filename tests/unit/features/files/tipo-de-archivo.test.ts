@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   conTipo,
+  esAbrible,
   esTexto,
+  TIPO_DESCARGA,
+  tipoDelBlob,
   tipoEfectivo,
 } from "@/features/files/tipo-de-archivo";
 
@@ -75,5 +78,37 @@ describe("esTexto", () => {
     expect(esTexto("application/xml")).toBe(true);
     expect(esTexto("application/pdf")).toBe(false);
     expect(esTexto("image/jpeg")).toBe(false);
+  });
+});
+
+/*
+ * ADM-05: el tipo lo decide quien SUBE el archivo (un cliente o un comercio). Sólo PDF e imágenes
+ * rasterizadas se pintan o se abren en otra pestaña; todo lo demás se rotula para descargarse.
+ */
+describe("esAbrible y tipoDelBlob", () => {
+  it.each([
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "Image/PNG; charset=binary",
+  ])("«%s» se puede abrir", (tipo) => {
+    expect(esAbrible(tipo)).toBe(true);
+    expect(tipoDelBlob(tipo)).toBe(tipo.split(";")[0]!.trim().toLowerCase());
+  });
+
+  it.each([
+    "text/html",
+    "image/svg+xml",
+    "application/xml",
+    "text/xml",
+    "application/xhtml+xml",
+    "application/javascript",
+    "application/json",
+    "text/plain",
+    "",
+  ])("«%s» nunca se rotula con su tipo: se descarga", (tipo) => {
+    expect(esAbrible(tipo)).toBe(false);
+    expect(tipoDelBlob(tipo)).toBe(TIPO_DESCARGA);
   });
 });

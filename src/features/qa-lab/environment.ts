@@ -21,15 +21,36 @@ export function getQaEnvironmentBaseUrl(environment: QaEnvironment): string {
 }
 
 /**
+ * Valores de `NEXT_PUBLIC_ATLAS_ENVIRONMENT` que declaran un ambiente DE PRUEBAS. Lista cerrada:
+ * `development`, `test` y `qa`, más los dos que ya usan los despliegues de este repo y que no se
+ * pueden renombrar sin reconstruir todo — `local` (`.env.example`) y `vps-testing` (DEV y TEST en
+ * Coolify, `Dockerfile.dev`)—. Se comparan normalizados (`trim().toLowerCase()`).
+ */
+export const TESTING_DEPLOYMENTS: ReadonlySet<string> = new Set([
+  "development",
+  "test",
+  "qa",
+  "local",
+  "vps-testing",
+]);
+
+/**
  * El ambiente de la prueba sale del despliegue, no de un selector: en un portal desplegado sólo hay
  * una API, y elegir «STAGING» o «LOCAL» a mano sólo servía para apuntar a un host que no existe.
- * En producción las pruebas quedan en sólo lectura.
+ *
+ * FALLA CERRADO (ADM-08, auditoría 2026-10-09): antes sólo el literal exacto `production` dejaba el
+ * QA Lab en sólo lectura, y `prod`, `PROD-BO`, `Production ` o una variable vacía lo abrían a
+ * mutaciones y carga. Ahora es al revés: sólo un ambiente de pruebas DECLARADO (lista de arriba)
+ * permite mutar; cualquier otro valor, también el vacío, queda en sólo lectura.
+ *
+ * Es una barrera de la interfaz, no un control de seguridad: el navegador de quien opera la puede
+ * saltar. La garantía de que en producción no se muta desde el QA Lab tiene que darla el backend.
  */
 export function defaultQaEnvironment(): QaEnvironment {
   const deployment = (process.env.NEXT_PUBLIC_ATLAS_ENVIRONMENT ?? "")
     .trim()
     .toLowerCase();
-  return deployment === "production" ? "PRODUCTION_READONLY" : "LOCAL";
+  return TESTING_DEPLOYMENTS.has(deployment) ? "LOCAL" : "PRODUCTION_READONLY";
 }
 
 /** ¿El destino es producción? Producción sólo admite previsualizar. */

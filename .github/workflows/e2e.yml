@@ -58,6 +58,8 @@ jobs:
       CORS_ORIGINS: http://localhost:5273
       INTERNAL_FRONTEND_ORIGIN: http://localhost:5273
       NEXT_PUBLIC_API_BASE_URL: http://localhost:3005/api/v1
+      # El QA Lab falla cerrado (sólo lectura) con cualquier ambiente que no se declare de pruebas.
+      NEXT_PUBLIC_ATLAS_ENVIRONMENT: test
       DECISION_ENGINE_HEALTH_BASE_URL: http://localhost:8791
       ERP_BACKEND_BASE_URL: http://localhost:8791
       NOTIFICATION_EMAIL_PROVIDER: webhook
