@@ -71,6 +71,8 @@ const MENSAJE_DE_CODIGO: Record<string, string> = {
     "No se puede conceder un nivel superior al tuyo.",
   EXPEDIENTE_MOTIVO_REQUERIDO:
     "Falta el motivo: escribe al menos ocho caracteres.",
+  EXPEDIENTE_REVELAR_NO_PERMITIDO:
+    "No tienes el permiso para ver los contactos completos (expedientes.pii.revelar). Pídelo a quien administra los usuarios internos; reintentar no lo cambia.",
   EXPEDIENTE_CONCESION_NO_ENCONTRADA: "Ese acceso ya no existe.",
   EXPEDIENTE_CONCESION_YA_REVOCADA: "Ese acceso ya se había quitado.",
   EXPEDIENTE_ULTIMA_ADMINISTRACION:
