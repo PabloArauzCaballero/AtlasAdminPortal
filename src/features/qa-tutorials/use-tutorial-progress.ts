@@ -26,7 +26,7 @@ export function useTutorialProgress() {
     initialData: () => readProgressCache(userId),
     queryFn: async () => {
       const local = readProgressCache(userId);
-      const remote = await fetchRemoteProgress(userId).catch(() => []);
+      const remote = await fetchRemoteProgress().catch(() => []);
       const items = mergeProgress(local, remote);
       writeProgressCache(userId, items);
       return items;
@@ -34,8 +34,7 @@ export function useTutorialProgress() {
   });
 
   const mutation = useMutation({
-    mutationFn: (progress: TutorialProgress) =>
-      saveRemoteProgress(userId, progress),
+    mutationFn: (progress: TutorialProgress) => saveRemoteProgress(progress),
     onMutate: (progress) => {
       // Optimista: reflejamos el avance ya, sin esperar al servidor.
       const previous =

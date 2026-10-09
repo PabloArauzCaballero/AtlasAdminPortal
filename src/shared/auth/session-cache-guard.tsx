@@ -6,6 +6,7 @@ import { subscribeToSessionChanges } from "./session-events";
 import {
   clearStoredInternalSession,
   getStoredInternalSession,
+  markLoggedOutHere,
 } from "./session-storage";
 
 const SESSION_CHANNEL = "atlas_internal_session";
@@ -60,6 +61,9 @@ export function SessionCacheGuard() {
         // listener de arriba ya habrá corrido cuando se libere el flag.
         applyingRemote = true;
         try {
+          // Como en la pestaña que cerró: sin la marca, el shell de ésta recuperaría la sesión
+          // desde la cookie si el backend no llegó a revocarla (ADM-06).
+          markLoggedOutHere();
           clearStoredInternalSession();
         } finally {
           applyingRemote = false;

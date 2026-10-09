@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/shared/components/ui/input";
 import { IDENTITY_DECISIONS } from "./decision-options";
+import { VistaDeDocumento } from "./evidence-document-view";
 import {
   EmptyState,
   ErrorState,
@@ -12,25 +13,12 @@ import {
 } from "@/shared/components/ui/states";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { engineExecutionUrl } from "@/shared/decision-engine/engine-links";
-import { formatDateTime, safeText } from "@/shared/lib/format";
-import {
-  useDecideIdentityMutation,
-  useEvidenceDocuments,
-  useEvidenceDocumentContent,
-} from "./hooks";
-import type { EvidenceDocument } from "./types";
+import { safeText } from "@/shared/lib/format";
+import { useDecideIdentityMutation, useEvidenceDocuments } from "./hooks";
 import {
   DEFAULT_IDENTITY_REASON,
-  documentContentErrorText,
   identityDecisionErrorText,
 } from "./identity-review-rules";
-
-const ROTULOS: Record<string, string> = {
-  identity_front: "Carnet · frente",
-  identity_back: "Carnet · dorso",
-  selfie: "Selfie",
-  bank_statement: "Extracto bancario",
-};
 
 /**
  * Las imágenes de identidad del cliente y la decisión sobre ellas, en la misma pantalla.
@@ -225,67 +213,5 @@ export function IdentityEvidencePanel({
         </Button>
       </form>
     </section>
-  );
-}
-
-function VistaDeDocumento({
-  customerId,
-  documento,
-}: Readonly<{ customerId: string; documento: EvidenceDocument }>) {
-  const contenido = useEvidenceDocumentContent(
-    customerId,
-    documento.documentId,
-  );
-  const [url, setUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!contenido.data) {
-      setUrl(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(contenido.data.blob);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [contenido.data]);
-
-  const esImagen = (documento.mimeType ?? "").startsWith("image/");
-  return (
-    <figure className="rounded-lg border border-slate-200 p-2 dark:border-slate-800">
-      <figcaption className="text-xs font-medium text-slate-700 dark:text-slate-300">
-        {ROTULOS[documento.documentType] ?? documento.documentType}
-      </figcaption>
-      <div className="mt-2 flex min-h-32 items-center justify-center overflow-hidden rounded bg-slate-50 dark:bg-slate-900">
-        {contenido.isLoading ? <LoadingSkeleton rows={1} /> : null}
-        {contenido.error ? (
-          <span className="p-2 text-xs text-rose-700">
-            {documentContentErrorText(contenido.error)}
-          </span>
-        ) : null}
-        {url && esImagen ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt={ROTULOS[documento.documentType] ?? documento.documentType}
-            className="max-h-64 w-auto"
-          />
-        ) : null}
-        {url && !esImagen ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs underline"
-          >
-            Abrir documento
-          </a>
-        ) : null}
-      </div>
-      <p className="mt-1 text-[11px] text-slate-500">
-        {formatDateTime(documento.uploadedAt)} ·{" "}
-        {documento.sha256
-          ? `sha256 ${documento.sha256.slice(0, 12)}…`
-          : "sin hash"}
-      </p>
-    </figure>
   );
 }

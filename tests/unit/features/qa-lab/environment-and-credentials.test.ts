@@ -77,6 +77,42 @@ describe("base relativa del portal (`/api/v1`)", () => {
     expect(defaultQaEnvironment()).toBe("PRODUCTION_READONLY");
     expect(isProductionTarget(defaultQaEnvironment())).toBe(true);
   });
+
+  it.each([
+    "development",
+    "test",
+    "qa",
+    "local",
+    "vps-testing",
+    "  QA ",
+    "Vps-Testing",
+  ])("«%s» es un ambiente de pruebas declarado: se puede mutar", (value) => {
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", value);
+    expect(defaultQaEnvironment()).toBe("LOCAL");
+  });
+
+  it.each([
+    "",
+    "   ",
+    "prod",
+    "PROD-BO",
+    "Production ",
+    "staging",
+    "produccion",
+    "tests",
+  ])(
+    "«%s» no está declarado de pruebas: falla cerrado en sólo lectura",
+    (value) => {
+      vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", value);
+      expect(defaultQaEnvironment()).toBe("PRODUCTION_READONLY");
+      expect(isProductionTarget(defaultQaEnvironment())).toBe(true);
+    },
+  );
+
+  it("sin la variable también falla cerrado", () => {
+    vi.stubEnv("NEXT_PUBLIC_ATLAS_ENVIRONMENT", undefined);
+    expect(defaultQaEnvironment()).toBe("PRODUCTION_READONLY");
+  });
 });
 
 describe("credenciales del navegador según la credencial elegida", () => {

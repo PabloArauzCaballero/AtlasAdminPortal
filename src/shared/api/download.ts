@@ -19,10 +19,12 @@ export type ArchivoDescargado = {
  * ## Por qué hace falta y por qué no vale `apiRequest`
  *
  * `apiRequest` sólo entiende JSON: descarta el cuerpo binario al parsearlo. Y la alternativa
- * ingenua —apuntar un `<img src="/api/v1/…">` o un `<a href download>`— tampoco sirve: cargar un
- * medio o seguir un enlace son navegaciones del navegador, y ahí NO viaja el `Authorization`, que
- * esta aplicación guarda en memoria y no en una cookie. El backend responde 401 y lo que se ve es
- * el icono de imagen rota o un archivo que por dentro es un error.
+ * ingenua —apuntar un `<img src="/api/v1/…">` o un `<a href download>`— tampoco sirve. En el modo
+ * por defecto (`cookie`) la sesión SÍ va en una cookie `HttpOnly`, pero la petición tiene que
+ * llevar además la cabecera del tenant y, en el modo `session`/`auto` con token Bearer, el
+ * `Authorization`, y ni un medio ni un enlace pueden mandar cabeceras. Sin ellas el backend
+ * responde 400 o 401 y lo que se ve es el icono de imagen rota o un archivo que por dentro es un
+ * error.
  *
  * Pidiéndolo aquí la credencial va puesta, la renovación de sesión vale igual que en cualquier otra
  * llamada, y un error del servidor llega como error —con su código— en vez de descargarse como si

@@ -71,3 +71,45 @@ export function conTipo(blob: Blob, tipo: string): Blob {
   if (!tipo || blob.type === tipo) return blob;
   return new Blob([blob], { type: tipo });
 }
+
+/**
+ * Los únicos tipos que el portal pinta o abre en una pestaña (ADM-05, auditoría 2026-10-09).
+ *
+ * El tipo de un archivo del expediente lo decide QUIEN LO SUBIÓ —el `Content-Type` del PUT
+ * prefirmado, o la extensión del nombre—, y quien sube es un cliente o un comercio. Abrir en una
+ * pestaña un `blob:` rotulado `text/html` o `image/svg+xml` es pintar un documento suyo en el
+ * ORIGEN del portal, con la sesión de un empleado al lado. Por eso la lista es cerrada y pequeña:
+ * PDF e imágenes rasterizadas, que no ejecutan nada. Todo lo demás —HTML, SVG, XML, JS, o un tipo
+ * que no conocemos— se rotula `application/octet-stream`: el navegador lo DESCARGA, no lo pinta.
+ */
+const TIPOS_ABRIBLES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+  "image/avif",
+]);
+
+export const TIPO_DESCARGA = "application/octet-stream";
+
+/** El tipo sin parámetros ni mayúsculas: `Image/PNG; charset=x` → `image/png`. */
+function sinParametros(tipo: string): string {
+  return (tipo.split(";")[0] ?? "").trim().toLowerCase();
+}
+
+/** ¿Se puede pintar en el portal o abrir en otra pestaña sin riesgo? */
+export function esAbrible(tipo: string): boolean {
+  return TIPOS_ABRIBLES.has(sinParametros(tipo));
+}
+
+/**
+ * El tipo con el que se ROTULA el blob: el de la lista si lo es, y si no, uno que obliga a
+ * descargar. Quien elige el visor sigue mirando el tipo efectivo (un JSON se lee como texto desde
+ * los bytes), pero el blob que podría acabar en una pestaña nunca lleva un tipo activo.
+ */
+export function tipoDelBlob(tipo: string): string {
+  return esAbrible(tipo) ? sinParametros(tipo) : TIPO_DESCARGA;
+}

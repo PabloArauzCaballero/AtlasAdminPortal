@@ -5,14 +5,14 @@
 # `NEXT_PUBLIC_*`.
 #
 # Next las INCRUSTA EN EL PAQUETE DEL NAVEGADOR AL CONSTRUIR, no al arrancar. Cambiar una después
-# no tiene ningún efecto — ni reiniciando el contenedor, ni pasándola por `environment:`. La imagen
-# de producción resuelve esto copiando el `.env.local` de la máquina dentro del contexto de
-# construcción, que en un VPS no existe: se clona el repositorio limpio. Con el `.env.local` ausente
-# el portal se construiría contra los valores por defecto —`http://localhost:53005`— y el navegador
-# del tester llamaría a SU propio equipo en vez de al VPS. El portal cargaría perfectamente y el
-# login fallaría con un error de red que no menciona ninguna URL.
+# no tiene ningún efecto — ni reiniciando el contenedor, ni pasándola por `environment:`. En un VPS
+# se clona el repositorio limpio, sin `.env.local` (y `.dockerignore` excluye `.env*` desde el
+# 2026-10-09, ADM-11): sin los `ARG` el portal se construiría contra los valores por defecto
+# —`http://localhost:53005`— y el navegador del tester llamaría a SU propio equipo en vez de al VPS.
+# El portal cargaría perfectamente y el login fallaría con un error de red que no menciona ninguna URL.
 #
-# Por eso aquí entran como `ARG`, y el compose del VPS los rellena con su dominio o su IP.
+# Por eso aquí entran como `ARG` (igual que en `Dockerfile`), y el compose del VPS los rellena con
+# su dominio o su IP.
 #
 # Construcción:
 #   docker build -f Dockerfile.dev \
@@ -77,8 +77,8 @@ ARG NEXT_PUBLIC_INTERNAL_AUTH_STORAGE_MODE=cookie
 # construir queda escrito ahí y definirlo al arrancar no cambia nada. Se comprueba con
 # `grep -o '127.0.0.1:3005' server.js` dentro del contenedor — si aparece, se horneó el default.
 ARG INTERNAL_API_ORIGIN=http://127.0.0.1:3005
-# Una variable REAL de entorno gana sobre `.env.local`, así que estas mandan aunque el contexto de
-# construcción llegue con un `.env.local` de otra máquina.
+# Una variable REAL de entorno gana sobre `.env.local`, así que estas mandan aunque alguien construya
+# a mano desde un árbol con `.env.local` (que `.dockerignore` ya deja fuera del contexto).
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_ATLAS_ENVIRONMENT=$NEXT_PUBLIC_ATLAS_ENVIRONMENT \
     NEXT_PUBLIC_INTERNAL_APP_NAME=$NEXT_PUBLIC_INTERNAL_APP_NAME \

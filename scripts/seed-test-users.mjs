@@ -12,6 +12,11 @@
  * Uso:
  *   node scripts/seed-test-users.mjs --apply
  *     (sin --apply corre en modo dry-run: solo imprime qué haría)
+ *   --credentials-file <ruta>  dónde escribir las contraseñas temporales (por defecto, un archivo
+ *                              nuevo en el directorio temporal del sistema). Se crea con permisos
+ *                              600 y sin sobrescribir uno existente.
+ *   --print-passwords          además, mostrarlas en la consola. Sólo a mano y en una terminal
+ *                              propia: la consola de un CI o de una sesión compartida las guarda.
  *
  * Variables de entorno:
  *   ATLAS_API_BASE_URL   default http://localhost:3005/api/v1
@@ -20,9 +25,19 @@
  *   ATLAS_ADMIN_PASSWORD contraseña de ese admin
  *
  * Este script solo debe correr contra ambientes LOCAL/DEV/QA, nunca contra
- * producción. Las contraseñas temporales generadas se imprimen una sola vez
- * en la salida de consola; no se guardan en ningún archivo del repo.
+ * producción.
+ *
+ * Contraseñas temporales (ADM-13, auditoría 2026-10-09): se generan con el generador
+ * criptográfico de Node (`crypto.randomInt`), no con `Math.random`, que es predecible. Y NO se
+ * imprimen por defecto: van a un archivo con permisos 600 fuera del repo, que quien corre el
+ * script entrega por un canal seguro y borra. Todas las cuentas quedan con `mustChangePassword`,
+ * así que la contraseña sólo sirve para el primer acceso.
  */
+
+import { randomInt } from "node:crypto";
+import { appendFileSync, closeSync, openSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 const API_BASE_URL =
   process.env.ATLAS_API_BASE_URL ?? "http://localhost:3005/api/v1";
@@ -30,6 +45,15 @@ const TENANT_ID = process.env.ATLAS_TENANT_ID ?? "1";
 const ADMIN_EMAIL = process.env.ATLAS_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ATLAS_ADMIN_PASSWORD;
 const APPLY = process.argv.includes("--apply");
+const PRINT_PASSWORDS = process.argv.includes("--print-passwords");
+const CREDENTIALS_FILE =
+  argValue("--credentials-file") ??
+  path.join(tmpdir(), `atlas-seed-test-users-${Date.now()}.txt`);
+
+function argValue(flag) {
+  const index = process.argv.indexOf(flag);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
 
 // Perfiles de negocio pedidos para pruebas de integración con el ERP.
 // "roleKeyword" se busca (case-insensitive) contra name/code de roles reales;
@@ -143,17 +167,34 @@ async function main() {
     }
 
     const result = await createUser(accessToken, profile, email, matchedRole);
+    // Se escribe en cuanto existe: si el siguiente usuario falla, la contraseña del que ya se
+    // creó no se pierde (y no hay que resetearla a mano).
+    saveCredential(result);
     created.push(result);
   }
 
   if (APPLY && created.length > 0) {
     console.log(
-      "\nUsuarios creados (contraseñas temporales, mostradas una sola vez):",
+      `\n${created.length} usuario(s) creados. Contraseñas temporales en ${CREDENTIALS_FILE} ` +
+        "(permisos 600): entrégalas por un canal seguro y borra el archivo.",
     );
-    for (const entry of created) {
-      console.log(`- ${entry.email}: ${entry.temporaryPassword}`);
+    if (PRINT_PASSWORDS) {
+      for (const entry of created) {
+        console.log(`- ${entry.email}: ${entry.temporaryPassword}`);
+      }
     }
   }
+}
+
+let credentialsFd = null;
+
+/** Añade una línea al archivo de credenciales; la primera vez lo crea con 600 y sin pisar nada. */
+function saveCredential({ email, temporaryPassword }) {
+  if (credentialsFd === null) {
+    credentialsFd = openSync(CREDENTIALS_FILE, "wx", 0o600);
+    process.on("exit", () => closeSync(credentialsFd));
+  }
+  appendFileSync(credentialsFd, `${email}\t${temporaryPassword}\n`);
 }
 
 async function login() {
@@ -217,7 +258,9 @@ function generateTemporaryPassword(length = 20) {
     "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
   let out = "";
   for (let i = 0; i < length; i += 1) {
-    out += charset[Math.floor(Math.random() * charset.length)];
+    // `randomInt` es uniforme y criptográfico: sin el sesgo del módulo ni la previsibilidad de
+    // `Math.random`.
+    out += charset[randomInt(charset.length)];
   }
   return out;
 }

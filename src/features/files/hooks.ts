@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { queryKeys } from "@/shared/api/query-keys";
 import { explicarError } from "./errores";
 import * as api from "./services";
-import { conTipo, tipoEfectivo } from "./tipo-de-archivo";
+import { conTipo, tipoDelBlob, tipoEfectivo } from "./tipo-de-archivo";
 import type { Nivel, Nodo } from "./types";
 
 /**
@@ -92,12 +92,12 @@ export function useNodos(
  * liberado y quedaba una imagen rota. Ése era el «a veces carga y a veces no»: no dependía del
  * archivo ni de la red, dependía de si era la primera vez.
  *
- * Revocar sigue siendo obligatorio: sin eso, cada documento abierto deja su blob en memoria hasta
- * recargar la pestaña, y en una sesión de revisión eso son decenas de megas de imágenes de
- * carnets que ya nadie mira.
+ * Revocar sigue siendo obligatorio: si no, cada documento abierto deja su blob en memoria hasta
+ * recargar, y en una revisión son decenas de megas de carnets que ya nadie mira.
  *
  * El tipo se normaliza AQUÍ, al recibir los bytes, y no en el visor: el visor elige el elemento,
- * pero quien decide si el navegador pinta el PDF es el tipo del blob (ver `conTipo`).
+ * pero quien decide si el navegador pinta el PDF es el tipo del blob (ver `conTipo`), y
+ * `tipoDelBlob` le niega todo tipo activo: ese blob puede acabar en otra pestaña (ADM-05).
  */
 export function useContenido(expedienteId: string, nodo: Nodo | null) {
   const query = useQuery({
@@ -105,7 +105,8 @@ export function useContenido(expedienteId: string, nodo: Nodo | null) {
     queryFn: async () => {
       const archivo = await api.descargarNodo(expedienteId, nodo!);
       const contentType = tipoEfectivo(archivo.contentType, nodo!);
-      return { blob: conTipo(archivo.blob, contentType), contentType };
+      const blob = conTipo(archivo.blob, tipoDelBlob(contentType));
+      return { blob, contentType };
     },
     enabled:
       Boolean(expedienteId) &&
