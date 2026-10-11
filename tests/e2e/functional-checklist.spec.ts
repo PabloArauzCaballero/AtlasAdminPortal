@@ -15,8 +15,8 @@ import {
  *  - admin  (SUPER_ADMIN)            -> E2E_EMAIL / E2E_PASSWORD
  *  - acotado (RISK_ANALYST, 3 perms) -> E2E_LOW_EMAIL / E2E_LOW_PASSWORD
  */
-const ADMIN_EMAIL =
-  process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "pablo@atlas.internal";
+// Sin correo por defecto (auditoría 2026-10-09): la cuenta va siempre por entorno.
+const ADMIN_EMAIL = process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "";
 const ADMIN_PASSWORD =
   process.env.E2E_PASSWORD ?? process.env.TEST_PASSWORD ?? "";
 const LOW_EMAIL = process.env.E2E_LOW_EMAIL ?? "risk.ops@atlas.test";
@@ -82,8 +82,8 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("Checklist funcional con backend real", () => {
   test.skip(
-    !ADMIN_PASSWORD,
-    "Define E2E_PASSWORD (y E2E_BASE_URL) para el checklist contra el backend real.",
+    !ADMIN_EMAIL || !ADMIN_PASSWORD,
+    "Define E2E_EMAIL, E2E_PASSWORD (y E2E_BASE_URL) para el checklist contra el backend real.",
   );
 
   test("login inválido muestra un error humano (y request ID si el backend lo da)", async ({

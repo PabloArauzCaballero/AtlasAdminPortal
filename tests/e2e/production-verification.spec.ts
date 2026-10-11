@@ -11,8 +11,8 @@ import { loginAsInternalUser } from "./internal-session";
  *   R11 — smoke de flujos críticos (login, navegación, permisos, logout)
  * Credenciales por env var para no hardcodear secretos.
  */
-const EMAIL =
-  process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "pablo@atlas.internal";
+// Sin correo por defecto (auditoría 2026-10-09): la cuenta va siempre por entorno.
+const EMAIL = process.env.E2E_EMAIL ?? process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.E2E_PASSWORD ?? process.env.TEST_PASSWORD ?? "";
 const TENANT = process.env.E2E_TENANT ?? "1";
 const HAS_QA_LOGIN = Boolean(
@@ -78,8 +78,8 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("Producción — verificación real con backend", () => {
   test.skip(
-    !PASSWORD,
-    "Define E2E_PASSWORD (y E2E_BASE_URL) para verificar contra el backend real.",
+    !EMAIL || !PASSWORD,
+    "Define E2E_EMAIL, E2E_PASSWORD (y E2E_BASE_URL) para verificar contra el backend real.",
   );
 
   test("login exitoso y redirección fuera de /login", async ({ page }) => {
