@@ -29,7 +29,7 @@
     "docker:build": "docker build -t atlas-auth-broker-worker:local ."
   },
   "dependencies": {
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.7",
     "zod": "^4.6.5"
   },
   "devDependencies": {
