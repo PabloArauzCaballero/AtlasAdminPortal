@@ -17,6 +17,16 @@ configure({ asyncUtilTimeout: 5_000 });
  */
 process.env.NEXT_PUBLIC_ATLAS_ENVIRONMENT ??= "test";
 
+/*
+ * jsdom 30 ya no implementa `URL.createObjectURL`, y el de Node revienta con un `Blob` de jsdom
+ * ("reading '_buffer'"). Las pruebas que miran el enlace de descarga sólo necesitan una URL
+ * `blob:`; la que quiera inspeccionar el Blob lo vuelve a stubear.
+ */
+if (typeof URL !== "undefined") {
+  URL.createObjectURL = () => "blob:atlas-test";
+  URL.revokeObjectURL = () => undefined;
+}
+
 /**
  * Node 22 expone un `localStorage` experimental propio que queda en `undefined`
  * si no se arranca con `--localstorage-file`, y pisa al de jsdom (sessionStorage
