@@ -20,10 +20,10 @@
 
 **CA:** Dado el checkout actual, cuando se sigue el flujo, entonces se distingue regla de coordinación. **DoD:** rutas y símbolos reales registrados abajo. **Estado:** HECHO
 
-| ID | Microtarea | CA (binario) | DoD (comando de verificación) | Estado |
-|---|---|---|---|---|
-| H1.S1.M1 | Localizar entrada y propietario | Ambas rutas existen y se identificó la regla | `test -f 'src/features/consent-documents/consent-documents-page.tsx' && test -f 'src/features/consent-documents/hooks.ts'` → salida 0 | HECHO |
-| H1.S1.M2 | Fijar referencia | El chequeo dirigido termina con salida 0 | `npm test -- tests/unit/features/legal-consent-documents.test.ts` → 1 suite; 7/7 pruebas pasan; no cubren la mutación remota | HECHO |
+| ID       | Microtarea                      | CA (binario)                                 | DoD (comando de verificación)                                                                                                         | Estado |
+| -------- | ------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| H1.S1.M1 | Localizar entrada y propietario | Ambas rutas existen y se identificó la regla | `test -f 'src/features/consent-documents/consent-documents-page.tsx' && test -f 'src/features/consent-documents/hooks.ts'` → salida 0 | HECHO  |
+| H1.S1.M2 | Fijar referencia                | El chequeo dirigido termina con salida 0     | `npm test -- tests/unit/features/legal-consent-documents.test.ts` → 1 suite; 7/7 pruebas pasan; no cubren la mutación remota          | HECHO  |
 
 **Regla observada:** Publicar y editar son intenciones distintas; la lista se invalida solo tras éxito.
 
@@ -37,15 +37,15 @@
 
 **CA:** La condición límite tiene resultado esperado documentado. **DoD:** prueba dirigida y revisión del contrato vigente. **Estado:** HECHO
 
-| ID | Microtarea | CA (binario) | DoD (comando de verificación) | Estado |
-|---|---|---|---|---|
-| H2.S1.M1 | Probar rechazo al editar el texto | El editor conserva el borrador y la versión publicada no cambia | `npm test -- tests/unit/features/consent-documents-page.test.tsx` → salida 0 | HECHO |
-| H2.S1.M2 | Probar edición confirmada | El editor se cierra y la lista se refresca tras respuesta exitosa | mismo comando → salida 0 | HECHO |
+| ID       | Microtarea                        | CA (binario)                                                      | DoD (comando de verificación)                                                | Estado |
+| -------- | --------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------ |
+| H2.S1.M1 | Probar rechazo al editar el texto | El editor conserva el borrador y la versión publicada no cambia   | `npm test -- tests/unit/features/consent-documents-page.test.tsx` → salida 0 | HECHO  |
+| H2.S1.M2 | Probar edición confirmada         | El editor se cierra y la lista se refresca tras respuesta exitosa | mismo comando → salida 0                                                     | HECHO  |
 
 ## Riesgos y bloqueos previstos
 
-| Riesgo | Impacto | Mitigación |
-|---|---|---|
+| Riesgo                                                          | Impacto                    | Mitigación                                                       |
+| --------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------- |
 | Documento legal: no inventar política de vigencia ni reemplazo. | Resultado o contrato falso | Confirmar con código, contrato y prueba antes de editar producto |
 
 ## Decisión de diseño
