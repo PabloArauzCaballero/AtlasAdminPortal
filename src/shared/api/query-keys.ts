@@ -74,6 +74,7 @@ export const queryKeys = {
     ["systems", "stress-matrix", params] as const,
   stressRuns: (params: unknown) => ["systems", "stress-runs", params] as const,
   internalUsers: (params: unknown) => ["internal-users", params] as const,
+  internalSessions: (params: unknown) => ["internal-sessions", params] as const,
   internalUser: (internalUserId: string) =>
     ["internal-users", internalUserId] as const,
   internalRoles: (params: unknown) => ["internal-roles", params] as const,

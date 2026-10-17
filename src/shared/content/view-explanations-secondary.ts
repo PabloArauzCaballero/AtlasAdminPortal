@@ -136,6 +136,12 @@ export const secondaryModuleExplanations: ModuleExplanation[] = [
         business:
           "Altas, bajas y cambios del equipo con permisos correctos desde el día uno.",
       },
+      "/internal/settings/sessions": {
+        systems:
+          "Sesiones abiertas del personal en los portales: última renovación, vencimiento, IP y dispositivo, y el cierre de todas las de una persona con motivo auditado.",
+        business:
+          "Saber quién del equipo está dentro ahora y echar al instante a quien deja la empresa o pierde su equipo.",
+      },
       "/internal/settings/roles": {
         systems: "Roles internos y su mapa de permisos granulares.",
         business:
