@@ -111,7 +111,6 @@ export function RevokeSessionsDialog({
           error={errors.reason?.message}
         >
           <Input
-            autoFocus
             placeholder="Ej: Reportó el portátil extraviado"
             {...register("reason")}
           />
