@@ -1,5 +1,6 @@
 import {
   DatabaseZap,
+  MonitorSmartphone,
   Plug,
   Settings,
   ShieldAlert,
@@ -66,7 +67,7 @@ export const navGroupsSecondary: InternalNavGroup[] = [
     icon: Settings,
     items: [
       {
-        // Las tres se tocan juntas: a quién se le da qué.
+        // Se tocan juntas: a quién se le da qué, y quién lo está usando.
         label: "Usuarios y accesos",
         href: "/internal/settings/users",
         icon: Users,
@@ -77,6 +78,13 @@ export const navGroupsSecondary: InternalNavGroup[] = [
             href: "/internal/settings/users",
             icon: Users,
             permissions: ["internal.users.read"],
+          },
+          {
+            // Quién de ellos tiene sesión abierta ahora, y cerrarla al instante.
+            label: "Sesiones",
+            href: "/internal/settings/sessions",
+            icon: MonitorSmartphone,
+            permissions: ["internal.sessions.read"],
           },
           {
             label: "Roles",
