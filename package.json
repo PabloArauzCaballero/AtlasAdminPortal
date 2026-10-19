@@ -63,7 +63,7 @@
     "msw": "^2.15.0",
     "postcss": "^8.5.29",
     "prettier": "^3.9.10",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.2",
     "vitest": "^4.1.11"
   },
