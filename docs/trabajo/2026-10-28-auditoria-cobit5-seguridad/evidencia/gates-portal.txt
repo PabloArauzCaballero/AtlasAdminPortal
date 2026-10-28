@@ -1,0 +1,76 @@
+$ yarn max-lines
+OK: ningún archivo TS/TSX en src supera 300 líneas.
+exit=0
+$ yarn source-boundaries
+OK: límites de arquitectura de frontend respetados.
+exit=0
+$ yarn field-help
+check-field-help: 354 campos dicen qué poner y 375 opciones qué significan.
+exit=0
+$ yarn format:check
+Checking formatting...
+[warn] docs/trabajo/2026-10-28-auditoria-cobit5-seguridad/PLAN.md
+[warn] Code style issues found in the above file. Run Prettier with --write to fix.
+exit=1
+$ yarn type-check
+exit=0
+$ yarn lint
+
+/home/user/AtlasAdminPortal/src/features/app-content/entry-editor.tsx
+  80:6  warning  React Hook useEffect has missing dependencies: 'entry.metadata.donde' and 'entry.metadata.pantalla'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/user/AtlasAdminPortal/tests/e2e/audit-and-roles.spec.ts
+  6:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/auth.setup.ts
+  22:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/button-sweep.spec.ts
+  97:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/ecosystem-catalog.spec.ts
+  18:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/flows.evidencia.spec.ts
+  114:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/functional-checklist.spec.ts
+   84:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+  163:5  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+  183:5  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/messaging.spec.ts
+  35:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/portal-sweep.spec.ts
+  124:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/production-verification.spec.ts
+  80:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/qa-guide-verification.spec.ts
+  35:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/qa-journey-campaign.spec.ts
+  15:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+  35:5  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/qa-lab-coverage.spec.ts
+  18:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/qa-lab.spec.ts
+  15:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/qa-tutorials-verification.spec.ts
+  55:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+/home/user/AtlasAdminPortal/tests/e2e/schema-catalog.spec.ts
+  15:3  warning  Unexpected use of the `.skip()` annotation  playwright/no-skipped-test
+
+✖ 19 problems (0 errors, 19 warnings)
+
+exit=0
+$ yarn format:check (re-ejecutado tras prettier --write del PLAN.md)
+Checking formatting...
+All matched files use Prettier code style!
+exit=0

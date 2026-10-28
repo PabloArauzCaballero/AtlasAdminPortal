@@ -55,7 +55,7 @@ export function redactedHeaders(
   return Object.fromEntries(
     Object.entries(headers).map(([key, value]) => [
       key,
-      isSensitiveHeader(key) ? redactValue(value) : value,
+      isSensitiveHeader(key) ? redactValue() : value,
     ]),
   );
 }
@@ -175,8 +175,11 @@ function isSensitiveHeader(key: string): boolean {
   return SENSITIVE_HEADER_NAMES.some((item) => normalized.includes(item));
 }
 
-function redactValue(value: string): string {
-  if (!value) return "[redacted]";
-  if (value.length <= 8) return "[redacted]";
-  return `${value.slice(0, 4)}...[redacted]...${value.slice(-4)}`;
+/**
+ * Una cabecera sensible nunca enseña ni un carácter de su valor. Antes quedaban los cuatro primeros
+ * y los cuatro últimos: en una clave de 9 a 16 caracteres eso es la mayor parte del secreto, y el
+ * resultado acaba en el historial, en las exportaciones y en el registro del laboratorio.
+ */
+function redactValue(): string {
+  return "[redacted]";
 }

@@ -67,6 +67,9 @@ export class AuthorizationCodeClient {
         headers,
         body: form.toString(),
         signal: controller.signal,
+        // Un 3xx no se sigue: el cuerpo lleva el `code` y el `code_verifier`, y las cabeceras el
+        // secreto de cliente; no deben reenviarse a un destino que el operador no declaró.
+        redirect: 'error',
       });
     } catch {
       throw new AuthBrokerError(

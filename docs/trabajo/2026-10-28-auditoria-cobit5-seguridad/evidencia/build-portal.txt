@@ -1,0 +1,168 @@
+   ▲ Next.js 15.5.28
+   - Experiments (use with caution):
+     · cpus: 1
+     · staticGenerationMaxConcurrency: 1
+     · staticGenerationMinPagesPerWorker: 1
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 72s
+   Linting and checking validity of types ...
+
+./src/features/app-content/entry-editor.tsx
+80:6  Warning: React Hook useEffect has missing dependencies: 'entry.metadata.donde' and 'entry.metadata.pantalla'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/3) ...
+ ✓ Generating static pages (3/3)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                               Size  First Load JS
+┌ ƒ /                                                                    199 B         103 kB
+├ ○ /_not-found                                                          199 B         103 kB
+├ ƒ /almacen/subida                                                      199 B         103 kB
+├ ƒ /api/qa-fakers/[...path]                                             199 B         103 kB
+├ ƒ /api/qa-tutorials/progress                                           199 B         103 kB
+├ ƒ /internal                                                          7.15 kB         177 kB
+├ ƒ /internal/alerts                                                     199 B         103 kB
+├ ƒ /internal/audit                                                    10.8 kB         175 kB
+├ ƒ /internal/audit/request/[requestId]                                4.25 kB         165 kB
+├ ƒ /internal/business-metadata/definitions                            5.07 kB         163 kB
+├ ƒ /internal/business-metadata/definitions/package                    1.75 kB         176 kB
+├ ƒ /internal/business-metadata/domains                                6.92 kB         174 kB
+├ ƒ /internal/business-metadata/glossary                                 199 B         103 kB
+├ ƒ /internal/business-metadata/glossary/[termId]                      6.73 kB         158 kB
+├ ƒ /internal/data-catalog/tables                                      6.36 kB         171 kB
+├ ƒ /internal/data-catalog/tables/[entityId]                           11.1 kB         175 kB
+├ ƒ /internal/data-catalog/tables/[entityId]/metadata                  7.16 kB         153 kB
+├ ƒ /internal/data-quality/issues                                      6.37 kB         205 kB
+├ ƒ /internal/data-quality/rules                                       5.54 kB         164 kB
+├ ƒ /internal/data-quality/rules/[ruleId]                              9.06 kB         137 kB
+├ ƒ /internal/events                                                    7.6 kB         163 kB
+├ ƒ /internal/exports                                                    199 B         103 kB
+├ ƒ /internal/exports/[exportId]                                         199 B         103 kB
+├ ƒ /internal/external-data                                            7.03 kB         144 kB
+├ ƒ /internal/external-providers                                       21.8 kB         187 kB
+├ ƒ /internal/external-providers/audits                                12.1 kB         174 kB
+├ ƒ /internal/external-providers/requests                                10 kB         169 kB
+├ ƒ /internal/files                                                    9.37 kB         170 kB
+├ ƒ /internal/files/[expedienteId]                                     16.6 kB         184 kB
+├ ƒ /internal/files/cliente/[customerId]                               4.11 kB         138 kB
+├ ƒ /internal/flows                                                    6.76 kB         176 kB
+├ ƒ /internal/flows/business                                             199 B         103 kB
+├ ƒ /internal/flows/gate                                               5.81 kB         163 kB
+├ ƒ /internal/flows/graph                                              66.3 kB         217 kB
+├ ƒ /internal/flows/pending-work                                       3.81 kB         166 kB
+├ ƒ /internal/flows/rbac-drift                                         4.83 kB         170 kB
+├ ƒ /internal/flows/review                                             6.15 kB         175 kB
+├ ƒ /internal/forms                                                      199 B         103 kB
+├ ƒ /internal/governance                                               5.07 kB         172 kB
+├ ƒ /internal/governance/pii                                             199 B         103 kB
+├ ƒ /internal/governance/policies                                      5.91 kB         160 kB
+├ ƒ /internal/governance/policies/[policyId]                           1.83 kB         162 kB
+├ ƒ /internal/governance/policies/[policyId]/configure                 2.39 kB         139 kB
+├ ƒ /internal/governance/policies/package                              1.78 kB         176 kB
+├ ƒ /internal/governance/privacy-requests                                192 B         167 kB
+├ ƒ /internal/governance/privacy-requests/[requestId]                  4.21 kB         171 kB
+├ ƒ /internal/jobs                                                      9.1 kB         215 kB
+├ ƒ /internal/jobs/[jobId]                                             4.28 kB         141 kB
+├ ƒ /internal/lineage                                                  14.3 kB         182 kB
+├ ƒ /internal/lineage/impact                                             199 B         103 kB
+├ ƒ /internal/lineage/nodes/[nodeId]                                    7.3 kB         162 kB
+├ ƒ /internal/lineage/official                                           199 B         103 kB
+├ ƒ /internal/lineage/table/[schemaName]/[tableName]                   4.87 kB         169 kB
+├ ƒ /internal/login                                                    7.26 kB         175 kB
+├ ƒ /internal/merchant-users                                           9.73 kB         165 kB
+├ ƒ /internal/my-notifications                                         4.49 kB         162 kB
+├ ƒ /internal/notifications                                            15.6 kB         213 kB
+├ ƒ /internal/notifications/campaigns                                  5.38 kB         168 kB
+├ ƒ /internal/notifications/campaigns/[campaignId]                     9.56 kB         172 kB
+├ ƒ /internal/operations/catalogs                                      10.7 kB         218 kB
+├ ƒ /internal/operations/catalogs/[catalogCode]/versions/[versionId]   7.11 kB         214 kB
+├ ƒ /internal/operations/credit/applications/[applicationId]           7.04 kB         215 kB
+├ ƒ /internal/operations/credit/applications/from-case                 5.33 kB         139 kB
+├ ƒ /internal/operations/credit/products                               5.64 kB         211 kB
+├ ƒ /internal/operations/customers/[customerId]/audit                  7.35 kB         162 kB
+├ ƒ /internal/operations/customers/[customerId]/investigation-summary  21.1 kB         246 kB
+├ ƒ /internal/operations/fraud-cases                                     199 B         103 kB
+├ ƒ /internal/operations/loans                                         7.45 kB         171 kB
+├ ƒ /internal/operations/loans/[loanId]                                9.54 kB         218 kB
+├ ƒ /internal/operations/manual-review-cases                             199 B         103 kB
+├ ƒ /internal/operations/partners                                      20.1 kB         179 kB
+├ ƒ /internal/operations/payment-claims                                5.46 kB         162 kB
+├ ƒ /internal/operations/pending-contacts                              8.49 kB         165 kB
+├ ƒ /internal/operations/portfolio                                     13.5 kB         169 kB
+├ ƒ /internal/operations/risk-assessments/[riskAssessmentRunId]        11.8 kB         166 kB
+├ ƒ /internal/operations/runtime-jobs                                    199 B         103 kB
+├ ƒ /internal/operations/sessions/[sessionId]/investigation-summary    11.4 kB         172 kB
+├ ƒ /internal/operations/work-queue                                    12.3 kB         220 kB
+├ ƒ /internal/procesos                                                 11.1 kB         166 kB
+├ ƒ /internal/procesos/[code]                                          10.6 kB         179 kB
+├ ƒ /internal/procesos/[code]/instancias                                 199 B         103 kB
+├ ƒ /internal/qa/aprender                                              19.6 kB         196 kB
+├ ƒ /internal/qa/guia                                                    199 B         103 kB
+├ ƒ /internal/qa/lab                                                   49.9 kB         278 kB
+├ ƒ /internal/qa/runs                                                   5.2 kB         192 kB
+├ ƒ /internal/qa/runs/[runId]                                          5.22 kB         188 kB
+├ ƒ /internal/qa/stress                                                3.73 kB         238 kB
+├ ƒ /internal/qa/stress/[profileId]                                    9.49 kB         203 kB
+├ ƒ /internal/qa/stress/runs                                           7.78 kB         169 kB
+├ ƒ /internal/qa/suites                                                6.73 kB         238 kB
+├ ƒ /internal/qa/suites/[suiteId]                                      8.55 kB         244 kB
+├ ƒ /internal/recuperar-acceso                                         5.44 kB         174 kB
+├ ƒ /internal/release-readiness                                        6.95 kB         166 kB
+├ ƒ /internal/reports                                                  2.43 kB         164 kB
+├ ƒ /internal/reports/[reportId]                                       3.84 kB         162 kB
+├ ƒ /internal/reports/readiness                                          199 B         103 kB
+├ ƒ /internal/review-queue                                             9.31 kB         174 kB
+├ ƒ /internal/risk-policy/current                                      5.62 kB         164 kB
+├ ƒ /internal/risk-policy/ruleset-versions/new                          3.9 kB         127 kB
+├ ƒ /internal/schema/change-log                                        3.59 kB         164 kB
+├ ƒ /internal/schema/tables/[tableId]                                  6.35 kB         144 kB
+├ ƒ /internal/schema/versions                                          8.05 kB         215 kB
+├ ƒ /internal/schema/versions/[versionId]                              4.62 kB         168 kB
+├ ƒ /internal/search                                                   7.83 kB         162 kB
+├ ƒ /internal/security/session                                          6.4 kB         149 kB
+├ ƒ /internal/settings/app-content                                     25.6 kB         179 kB
+├ ƒ /internal/settings/catalog-sync                                     7.2 kB         150 kB
+├ ƒ /internal/settings/consent-documents                               6.47 kB         160 kB
+├ ƒ /internal/settings/decision-artifacts                              4.02 kB         161 kB
+├ ƒ /internal/settings/decision-artifacts/[decisionType]               5.61 kB         162 kB
+├ ƒ /internal/settings/notification-policies                           7.55 kB         161 kB
+├ ƒ /internal/settings/partner-contracts                               7.67 kB         163 kB
+├ ƒ /internal/settings/permissions                                     1.51 kB         161 kB
+├ ƒ /internal/settings/profile                                         8.13 kB         173 kB
+├ ƒ /internal/settings/roles                                           1.44 kB         161 kB
+├ ƒ /internal/settings/sessions                                        8.62 kB         205 kB
+├ ƒ /internal/settings/users                                            3.8 kB         166 kB
+├ ƒ /internal/settings/users/[internalUserId]                           9.1 kB         190 kB
+├ ƒ /internal/settings/users/new                                       4.58 kB         188 kB
+├ ƒ /internal/support                                                  10.5 kB         178 kB
+├ ƒ /internal/support/agents                                           5.76 kB         171 kB
+├ ƒ /internal/support/cases/[caseId]                                   12.2 kB         159 kB
+├ ƒ /internal/support/knowledge                                        12.6 kB         168 kB
+├ ƒ /internal/systems/dashboard                                          199 B         103 kB
+├ ƒ /internal/systems/decision-engine/artifacts                        6.21 kB         167 kB
+├ ƒ /internal/systems/endpoints                                        6.19 kB         170 kB
+├ ƒ /internal/systems/endpoints/[endpointId]                           6.14 kB         212 kB
+├ ƒ /internal/systems/network-health                                   10.6 kB         175 kB
+├ ƒ /internal/systems/tools                                             3.1 kB         173 kB
+├ ƒ /internal/systems/tools/[toolId]                                   6.91 kB         144 kB
+├ ƒ /internal/systems/tools/health                                       199 B         103 kB
+├ ƒ /internal/views                                                    5.71 kB         159 kB
+├ ƒ /legal                                                               168 B         106 kB
+├ ƒ /legal/[documentCode]                                                199 B         103 kB
+└ ƒ /version                                                             199 B         103 kB
++ First Load JS shared by all                                           103 kB
+  ├ chunks/1255-60d8dc7c8c9309a1.js                                    46.3 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                                54.2 kB
+  └ other shared chunks (total)                                        2.01 kB
+
+
+ƒ Middleware                                                           34.6 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+build exit=0

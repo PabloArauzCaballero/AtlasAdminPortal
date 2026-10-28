@@ -1,0 +1,8 @@
+│ high          │ Zod can exhaust memory while validating oversized            │
+│ Patched in    │ >=4.6.6                                                      │
+│ low           │ deepmerge mergeObject() allows prototype poisoning of        │
+│ Patched in    │ No patch available                                           │
+│ low           │ deepmerge mergeObject() allows prototype poisoning of        │
+│ Patched in    │ No patch available                                           │
+3 vulnerabilities found - Packages audited: 460
+Severity: 2 Low | 1 High

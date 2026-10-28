@@ -259,6 +259,9 @@ async function run() {
       AUTH_BROKER_MASTER_KEY_BASE64: MASTER_KEY,
       AUTH_BROKER_SEED_SECRETS_FROM_ENV: 'true',
       AUTH_BROKER_SEGIP_TOKEN_ENDPOINT: `${IDP_ORIGIN}/segip/oauth2/token`,
+      // El emisor local es HTTP: se relaja el transporte estricto con la variable documentada
+      // (rechazada si NODE_ENV=production). Sin ella el broker se niega a arrancar.
+      AUTH_BROKER_STRICT_TRANSPORT: 'false',
       AUTH_BROKER_SECRET__PROVIDER_SEGIP__CLIENT_ID: SEGIP_CLIENT_ID,
       AUTH_BROKER_SECRET__PROVIDER_SEGIP__CLIENT_SECRET: SEGIP_CLIENT_SECRET,
       AUTH_BROKER_SECRET__IDP_CORPORATE_OIDC__CLIENT_SECRET: OIDC_CLIENT_SECRET,

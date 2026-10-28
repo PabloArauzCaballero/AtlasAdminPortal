@@ -1,0 +1,3 @@
+yarn audit v1.22.22
+0 vulnerabilities found - Packages audited: 133
+Done in 0.86s.

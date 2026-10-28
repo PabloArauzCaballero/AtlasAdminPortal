@@ -1,0 +1,50 @@
+│ Patched in    │ >=4.1.12                                                     │
+│ Path          │ vitest > @vitest/mocker                                      │
+│ Patched in    │ >=4.1.12                                                     │
+│ Path          │ vitest > @vitest/mocker                                      │
+│ critical      │ Next.js: Unauthenticated Remote Code Execution in Image      │
+│ Patched in    │ >=15.5.28                                                    │
+│ Path          │ next                                                         │
+│ high          │ Next.js: Denial of Service in App Router using Server        │
+│ Patched in    │ >=15.5.28                                                    │
+│ Path          │ next                                                         │
+│ Patched in    │ >=8.1.6                                                      │
+│ Path          │ vitest > vite                                                │
+│ Patched in    │ >=8.1.6                                                      │
+│ Path          │ vitest > vite                                                │
+│ high          │ launch-editor: `fs.existsSync()` existence check can be      │
+│ Patched in    │ >=8.1.6                                                      │
+│ Path          │ vitest > vite                                                │
+│ Patched in    │ >=8.1.6                                                      │
+│ Path          │ vitest > vite                                                │
+│ Patched in    │ >=8.1.6                                                      │
+│ Path          │ vitest > vite                                                │
+│ high          │ Zod can exhaust memory while validating oversized            │
+│ Patched in    │ >=4.6.6                                                      │
+│ Path          │ zod                                                          │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to Denial of Service via unhandled error   │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to cache poisoning and cross-user          │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to TLS certificate validation bypass via   │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to Denial of Service via TLS 1.2           │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ Patched in    │ >=7.30.1                                                     │
+│ Path          │ jsdom > undici                                               │
+│ Patched in    │ >=6.1.5                                                      │
+│ Path          │ tailwindcss > postcss-selector-parser                        │
+│ Patched in    │ >=6.1.5                                                      │
+│ Path          │ tailwindcss > postcss-nested > postcss-selector-parser       │
+20 vulnerabilities found - Packages audited: 677
+Severity: 1 Low | 11 Moderate | 7 High | 1 Critical

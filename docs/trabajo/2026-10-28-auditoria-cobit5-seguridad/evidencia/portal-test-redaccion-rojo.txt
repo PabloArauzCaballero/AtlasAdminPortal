@@ -1,0 +1,10 @@
+ ❯ tests/unit/features/qa-lab/qa-safety-redaction.test.ts (3 tests | 3 failed) 20ms
+     × correcto: las cabeceras sensibles salen sin su valor y las demás intactas 10ms
+     × límite: valores vacíos, de un carácter, de 8 y de 9 caracteres no revelan nada 2ms
+     × inválido: ningún fragmento del secreto sobrevive en la salida serializada 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/unit/features/qa-lab/qa-safety-redaction.test.ts > redactedHeaders · una cabecera sensible no enseña ningún fragmento > correcto: las cabeceras sensibles salen sin su valor y las demás intactas
+ FAIL  tests/unit/features/qa-lab/qa-safety-redaction.test.ts > redactedHeaders · una cabecera sensible no enseña ningún fragmento > límite: valores vacíos, de un carácter, de 8 y de 9 caracteres no revelan nada
+ FAIL  tests/unit/features/qa-lab/qa-safety-redaction.test.ts > redactedHeaders · una cabecera sensible no enseña ningún fragmento > inválido: ningún fragmento del secreto sobrevive en la salida serializada
+ Test Files  1 failed (1)
+      Tests  3 failed (3)

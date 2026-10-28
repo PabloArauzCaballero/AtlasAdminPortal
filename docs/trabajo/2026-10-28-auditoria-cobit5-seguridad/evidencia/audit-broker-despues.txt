@@ -1,0 +1,6 @@
+│ low           │ deepmerge mergeObject() allows prototype poisoning of        │
+│ Package       │ deepmerge                                                    │
+│ low           │ deepmerge mergeObject() allows prototype poisoning of        │
+│ Package       │ deepmerge                                                    │
+2 vulnerabilities found - Packages audited: 460
+Severity: 2 Low

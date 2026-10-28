@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/user/AtlasAdminPortal
+
+ Test Files  351 passed (351)
+      Tests  3299 passed (3299)
+   Start at  06:04:02
+   Duration  783.80s (transform 34.18s, setup 230.69s, import 216.09s, tests 723.00s, environment 964.54s)
+
+test exit=0

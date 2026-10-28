@@ -214,6 +214,9 @@ export class IdTokenVerifier {
         method: 'GET',
         headers: { accept: 'application/json' },
         signal: controller.signal,
+        // Las claves públicas salen sólo del `jwksUri` declarado: un 3xx podría sustituirlas por las
+        // de otro origen y con ellas validar un `id_token` falso.
+        redirect: 'error',
       });
       if (!response.ok) throw new Error(`jwks ${response.status}`);
       const parsed = jwksSchema.safeParse(await response.json());

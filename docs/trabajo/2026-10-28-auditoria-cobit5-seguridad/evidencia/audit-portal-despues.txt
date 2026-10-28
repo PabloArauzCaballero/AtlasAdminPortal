@@ -1,0 +1,53 @@
+│ moderate      │ Vitest: Code injection via unauthenticated manual mock       │
+│ Package       │ @vitest/mocker                                               │
+│ Path          │ vitest > @vitest/mocker                                      │
+│ moderate      │ Vitest: Windows backslash traversal bypasses the             │
+│ Package       │ @vitest/mocker                                               │
+│ Path          │ vitest > @vitest/mocker                                      │
+│ moderate      │ launch-editor: escapeCmdArgs() omits % escaping on Windows   │
+│ Package       │ vite                                                         │
+│ Path          │ vitest > vite                                                │
+│ moderate      │ launch-editor: Editor CLI flag misinterpretation causing     │
+│ Package       │ vite                                                         │
+│ Path          │ vitest > vite                                                │
+│ high          │ launch-editor: `fs.existsSync()` existence check can be      │
+│ Package       │ vite                                                         │
+│ Path          │ vitest > vite                                                │
+│ low           │ Vite: Cross origin script execution through Vite custom      │
+│ Package       │ vite                                                         │
+│ Path          │ vitest > vite                                                │
+│ moderate      │ Vite: Files outside `server.fs.allow` could be served when   │
+│ Package       │ vite                                                         │
+│ Path          │ vitest > vite                                                │
+│ moderate      │ undici vulnerable to Denial of Service via unbounded memory  │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ moderate      │ undici vulnerable to Subresource Integrity bypass via        │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to Denial of Service via unhandled error   │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to cache poisoning and cross-user          │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to TLS certificate validation bypass via   │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ high          │ undici vulnerable to Denial of Service via TLS 1.2           │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ moderate      │ undici WebSocket client vulnerable to Denial of Service via  │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ moderate      │ undici vulnerable to Denial of Service via unhandled         │
+│ Package       │ undici                                                       │
+│ Path          │ jsdom > undici                                               │
+│ moderate      │ PostCSS: Quadratic complexity in flat selector parsing       │
+│ Package       │ postcss-selector-parser                                      │
+│ Path          │ tailwindcss > postcss-selector-parser                        │
+│ moderate      │ PostCSS: Quadratic complexity in flat selector parsing       │
+│ Package       │ postcss-selector-parser                                      │
+│ Path          │ tailwindcss > postcss-nested > postcss-selector-parser       │
+17 vulnerabilities found - Packages audited: 677
+Severity: 1 Low | 11 Moderate | 5 High

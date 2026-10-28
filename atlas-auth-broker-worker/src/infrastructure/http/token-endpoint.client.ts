@@ -134,6 +134,9 @@ export class TokenEndpointClient {
         headers: buildHeaders(request),
         body: encodeForm(request).toString(),
         signal: controller.signal,
+        // Un 3xx no se sigue: el cuerpo (aserción firmada) y las cabeceras de la credencial no deben
+        // reenviarse a un destino que el operador no declaró.
+        redirect: 'error',
       });
     } catch {
       // El detalle del error de red puede incluir la URL con parámetros; se descarta a propósito.

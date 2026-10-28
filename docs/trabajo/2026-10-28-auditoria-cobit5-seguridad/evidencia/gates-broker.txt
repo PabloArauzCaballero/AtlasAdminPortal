@@ -1,0 +1,77 @@
+$ yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+exit=0
+$ yarn lint
+exit=0
+$ yarn typecheck
+exit=0
+$ yarn test
+
+Test Suites: 8 passed, 8 total
+Tests:       105 passed, 105 total
+Snapshots:   0 total
+Time:        2.901 s, estimated 5 s
+Ran all test suites.
+exit=0
+$ yarn build
+exit=0
+$ yarn smoke:e2e
+Prueba end-to-end del atlas-auth-broker-worker
+
+  IdP/proveedor : http://127.0.0.1:4310
+  Broker        : http://127.0.0.1:4311
+
+1. Frontera de autenticación del propio broker
+  ✓ rechaza una llamada sin token de servicio
+  ✓ rechaza un token de servicio incorrecto
+  ✓ responde readiness con el driver de vault cifrado
+
+2. Autenticación saliente contra el proveedor (OAuth2 real)
+  ✓ autoriza la llamada a SEGIP
+  ✓ devuelve el token emitido por el proveedor en la cabecera Authorization
+  ✓ el proveedor emitió exactamente un token
+  ✓ reutiliza el token cacheado en vez de volver a pedirlo
+  ✓ la credencial figura como ACTIVE
+  ✓ el token figura como VALID
+  ✓ publica una huella de la credencial
+  ✓ el estado publicable NO contiene el secreto
+
+3. Rotación de la credencial
+  ✓ rota la credencial
+  ✓ devuelve la huella nueva, no el material
+  ✓ tras rotar pide un token nuevo con el secreto nuevo
+  ✓ el proveedor no rechazó ninguna credencial
+
+4. Revocación
+  ✓ revoca la credencial
+  ✓ tras revocar se niega a autorizar
+
+5. Inicio de sesión de un usuario real por OIDC
+  ✓ inicia la autorización
+  ✓ usa PKCE S256
+  ✓ no filtra el code_verifier
+  ✓ el IdP acepta la petición de autorización y muestra el login
+  ✓ el IdP rechaza una contraseña incorrecta
+  ✓ el usuario se autentica y el IdP redirige con el código
+  ✓ el state devuelto es el que emitió el broker
+  ✓ completa el inicio de sesión
+  ✓ identifica al usuario real
+  ✓ devuelve su correo verificado
+  ✓ devuelve su nombre
+  ✓ lo sitúa en el ámbito de SSO interno
+
+6. Defensas del flujo entrante
+  ✓ un replay del mismo state es rechazado
+  ✓ un state desconocido es rechazado
+  ✓ un IdP de SSO interno no puede usarse en el ámbito social
+
+7. Los secretos no aparecen en el log del worker
+  ✓ el log no contiene el secreto original de SEGIP
+  ✓ el log no contiene el secreto rotado
+  ✓ el log no contiene el secreto OIDC
+  ✓ el log no contiene la contraseña del usuario
+  ✓ el log no contiene el token de servicio
+
+37/37 comprobaciones superadas.
+exit=0

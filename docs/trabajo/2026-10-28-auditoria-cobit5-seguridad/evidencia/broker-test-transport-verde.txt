@@ -1,0 +1,5 @@
+Test Suites: 1 passed, 1 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        6.78 s, estimated 12 s
+Ran all test suites matching test/transport-security.test.ts.

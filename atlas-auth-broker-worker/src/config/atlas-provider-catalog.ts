@@ -33,13 +33,45 @@ const CATALOG: readonly CatalogEntry[] = [
   { providerCode: 'DIGITAL_TRUST_GENERIC', authMethod: 'api_key', scopes: [] },
 ];
 
-/** Endpoint de token por proveedor, si el operador lo configuró. */
+export type ProviderCatalogOptions = {
+  /**
+   * Admite endpoints de token por `http://`. Sólo para un emisor local de pruebas: la configuración
+   * (`strictTransport`) ya garantiza que nunca llega en `true` con `NODE_ENV=production`.
+   */
+  readonly allowInsecureTransport?: boolean;
+};
+
+/**
+ * Endpoint de token por proveedor, si el operador lo configuró.
+ *
+ * Por ese endpoint viajan el `client_secret` (Basic) o la aserción firmada de la credencial, así que
+ * un `http://` los deja en claro en la red. Se rechaza al arrancar —igual que los endpoints de los
+ * IdP en `identity-provider-catalog.ts`— en vez de descubrirlo en una captura de tráfico.
+ */
 function tokenEndpointFor(
   providerCode: string,
   environment: NodeJS.ProcessEnv,
+  options: ProviderCatalogOptions,
 ): string | undefined {
-  const raw = environment[`AUTH_BROKER_${providerCode}_TOKEN_ENDPOINT`];
-  return typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : undefined;
+  const variable = `AUTH_BROKER_${providerCode}_TOKEN_ENDPOINT`;
+  const raw = environment[variable];
+  if (typeof raw !== 'string' || raw.trim() === '') return undefined;
+
+  const endpoint = raw.trim();
+  let protocol: string;
+  try {
+    protocol = new URL(endpoint).protocol;
+  } catch {
+    throw new Error(`${variable} no es una URL válida.`);
+  }
+  const allowed = protocol === 'https:' || (protocol === 'http:' && options.allowInsecureTransport);
+  if (!allowed) {
+    throw new Error(
+      `${variable} debe usar HTTPS: por ese endpoint viajan las credenciales del proveedor. ` +
+        'Sólo un emisor local de pruebas puede usar HTTP, con AUTH_BROKER_STRICT_TRANSPORT=false y fuera de producción.',
+    );
+  }
+  return endpoint;
 }
 
 /**
@@ -52,9 +84,10 @@ function tokenEndpointFor(
 export function buildAtlasProviderCatalog(
   nowIso: string,
   environment: NodeJS.ProcessEnv = process.env,
+  options: ProviderCatalogOptions = {},
 ): readonly ProviderCredential[] {
   return CATALOG.map((entry) => {
-    const tokenEndpoint = tokenEndpointFor(entry.providerCode, environment);
+    const tokenEndpoint = tokenEndpointFor(entry.providerCode, environment, options);
     return {
       providerCode: entry.providerCode,
       authMethod: entry.authMethod,

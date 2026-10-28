@@ -146,7 +146,9 @@ export function composeAuthBroker(overrides: CompositionOverrides = {}): Compose
 
   const vault = buildVault(config, overrides);
   const credentials = new InMemoryCredentialRegistry(
-    buildAtlasProviderCatalog(new Date(clock.now()).toISOString(), environment),
+    buildAtlasProviderCatalog(new Date(clock.now()).toISOString(), environment, {
+      allowInsecureTransport: !config.strictTransport,
+    }),
   );
   const identityProviders = new InMemoryIdentityProviderRegistry(
     loadIdentityProviderCatalog(environment),

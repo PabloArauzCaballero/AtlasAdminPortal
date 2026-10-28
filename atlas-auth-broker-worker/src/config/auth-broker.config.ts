@@ -47,6 +47,12 @@ export const authBrokerConfigSchema = z
     authorizationTtlSeconds: z.number().int().min(30).max(3_600).default(600),
 
     isProduction: z.boolean().default(false),
+
+    /**
+     * Exige HTTPS en los endpoints de token de los proveedores salientes. Por defecto activo; sólo
+     * se relaja (`AUTH_BROKER_STRICT_TRANSPORT=false`) para un emisor local de pruebas.
+     */
+    strictTransport: z.boolean().default(true),
   })
   .superRefine((config, context) => {
     if (config.rotationWarningDays >= config.credentialMaxAgeDays) {
@@ -66,6 +72,16 @@ export const authBrokerConfigSchema = z
         path: ['vaultDriver'],
         message:
           'En producción el driver del vault no puede ser `env`: los secretos de proveedor quedarían en variables de entorno en claro. Use AUTH_BROKER_VAULT_DRIVER=kms.',
+      });
+    }
+    // Relajar el transporte seguro enviaría el secreto de cliente o la aserción en claro por la red.
+    // En producción no hay motivo legítimo, así que el proceso se niega a arrancar.
+    if (config.isProduction && !config.strictTransport) {
+      context.addIssue({
+        code: 'custom',
+        path: ['strictTransport'],
+        message:
+          'En producción AUTH_BROKER_STRICT_TRANSPORT no puede ser `false`: los endpoints de token de los proveedores deben usar HTTPS.',
       });
     }
     if (config.vaultDriver === 'kms' && !config.masterKeyBase64) {
@@ -125,5 +141,6 @@ export function loadAuthBrokerConfig(
     tokenMaxRetries: parsed.AUTH_BROKER_TOKEN_MAX_RETRIES,
     authorizationTtlSeconds: parsed.AUTH_BROKER_AUTHORIZATION_TTL_SECONDS,
     isProduction: parsed.NODE_ENV === 'production',
+    strictTransport: parsed.AUTH_BROKER_STRICT_TRANSPORT,
   });
 }

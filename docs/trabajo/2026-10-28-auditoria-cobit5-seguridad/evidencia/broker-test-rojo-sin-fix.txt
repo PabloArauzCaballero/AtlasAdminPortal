@@ -1,0 +1,33 @@
+FAIL test/transport-security.test.ts
+  ● Test suite failed to run
+
+    [96mtest/transport-security.test.ts[0m:[93m59[0m:[93m9[0m - [91merror[0m[90m TS2554: [0mExpected 1-2 arguments, but got 3.
+
+    [7m59[0m         { allowInsecureTransport: true },
+    [7m  [0m [91m        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    [96mtest/transport-security.test.ts[0m:[93m71[0m:[93m7[0m - [91merror[0m[90m TS2554: [0mExpected 1-2 arguments, but got 3.
+
+    [7m71[0m       { allowInsecureTransport: true },
+    [7m  [0m [91m      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    [96mtest/transport-security.test.ts[0m:[93m87[0m:[93m19[0m - [91merror[0m[90m TS2339: [0mProperty 'strictTransport' does not exist on type '{ port: number; shutdownTimeoutSeconds: number; serviceToken: string; vaultDriver: "env" | "kms"; seedSecretsFromEnv: boolean; credentialMaxAgeDays: number; rotationWarningDays: number; ... 5 more ...; masterKeyBase64?: string | undefined; }'.
+
+    [7m87[0m     expect(config.strictTransport).toBe(true);
+    [7m  [0m [91m                  ~~~~~~~~~~~~~~~[0m
+    [96mtest/transport-security.test.ts[0m:[93m96[0m:[93m19[0m - [91merror[0m[90m TS2339: [0mProperty 'strictTransport' does not exist on type '{ port: number; shutdownTimeoutSeconds: number; serviceToken: string; vaultDriver: "env" | "kms"; seedSecretsFromEnv: boolean; credentialMaxAgeDays: number; rotationWarningDays: number; ... 5 more ...; masterKeyBase64?: string | undefined; }'.
+
+    [7m96[0m     expect(config.strictTransport).toBe(false);
+    [7m  [0m [91m                  ~~~~~~~~~~~~~~~[0m
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        4.787 s
+Ran all test suites matching test/transport-security.test.ts.
+    Expected: "error"
+    Received: undefined
+    Received promise resolved instead of rejected
+    Expected: "error"
+    Received: undefined
+    Expected: "error"
+    Received: undefined
+Tests:       4 failed, 10 passed, 14 total
