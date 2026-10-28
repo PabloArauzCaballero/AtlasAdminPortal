@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, Menu, Search } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { Breadcrumbs } from "./breadcrumbs";
 import { GlobalSearchBox } from "./global-search-box";
@@ -17,30 +17,16 @@ import { UserMenu } from "./user-menu";
 /** Los mismos permisos que pide la pantalla «Aprender»: sin ellos, el birrete llevaría a un «sin acceso». */
 const TUTORIALES_PERMISOS = ["systems.endpoints.read", "systems.qa.read"];
 
-export function AppTopbar({
-  onMenu,
-  menuOpen,
-}: Readonly<{ onMenu: () => void; menuOpen: boolean }>) {
+export function AppTopbar() {
   const { hasAnyPermission } = useAuth();
   return (
     <header className="atlas-glass atlas-safe-top sticky top-0 z-20 border-b border-atlas-border shadow-sm">
       <div className="flex h-16 items-center justify-between gap-2 px-3 sm:gap-4 lg:px-6">
         {/*
-         * La hamburguesa es la corrección de fondo de esta barra: por debajo de 1024 px la barra
-         * lateral estaba oculta y no había ninguna otra forma de navegar el portal.
+         * Sin hamburguesa: por debajo de 1024 px la barra inferior (`MobileBottomNav`) lleva «Más»,
+         * que abre el MISMO cajón. Dos controles para lo mismo gastaban un hueco de 40 px que el
+         * título y el ambiente necesitaban (en 375 px se truncaban a «Ambient…»).
          */}
-        <Tooltip text="Abre el menú lateral con todas las secciones del portal.">
-          <button
-            type="button"
-            onClick={onMenu}
-            aria-label="Abrir navegación"
-            aria-controls="atlas-nav"
-            aria-expanded={menuOpen}
-            className="atlas-press atlas-tap -ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-atlas-text hover:bg-atlas-soft lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        </Tooltip>
         <div className="min-w-0 flex-1">
           <Breadcrumbs />
           {/* El origen del servicio se retira en pantallas estrechas: es la mitad menos urgente de
@@ -61,29 +47,22 @@ export function AppTopbar({
           <div className="hidden w-full max-w-sm items-center gap-2 md:flex">
             <GlobalSearchBox />
           </div>
-          {/* La caja de búsqueda no cabe en móvil, pero la búsqueda sí tiene que estar: el icono
-              lleva a la misma pantalla en vez de dejar el hueco. */}
-          <Tooltip text="Busca en todo el portal: clientes, casos, tablas del catálogo y pantallas.">
-            <Link
-              href="/internal/search"
-              aria-label="Buscar"
-              className="atlas-press atlas-tap flex h-10 w-10 items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text md:hidden"
-            >
-              <Search className="h-5 w-5" />
-            </Link>
-          </Tooltip>
+          {/* La lupa de móvil se fue a la barra inferior («Buscar»): lleva a la misma pantalla. */}
           {hasAnyPermission(TUTORIALES_PERMISOS) ? (
             <Tooltip text="Tutoriales: recorridos guiados sobre las pantallas reales y la guía de referencia.">
               <Link
                 href="/internal/qa/aprender"
                 aria-label="Tutoriales"
-                className="atlas-press atlas-tap flex h-10 w-10 items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
+                className="atlas-press atlas-tap hidden h-10 w-10 md:flex items-center justify-center rounded-full text-atlas-muted hover:bg-atlas-soft hover:text-atlas-text"
               >
                 <GraduationCap className="h-5 w-5" />
               </Link>
             </Tooltip>
           ) : null}
-          <NotificationBell />
+          {/* En móvil las notificaciones son «Avisos» de la barra inferior, con su contador. */}
+          <div className="hidden md:block">
+            <NotificationBell />
+          </div>
           <UserMenu />
         </div>
       </div>

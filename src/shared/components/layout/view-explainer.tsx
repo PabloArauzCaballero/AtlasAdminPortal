@@ -49,7 +49,12 @@ export function ViewExplainer() {
             <span className="font-semibold text-atlas-muted">
               {resolved.module.module}
             </span>{" "}
-            — qué es este módulo y esta vista (para qué sirve y cómo funciona)
+            {/* En 375 px la frase larga se cortaba a media palabra («…esta vis…»): en móvil va la
+                corta, entera, y desde `sm` la completa. */}
+            <span className="sm:hidden">— qué es esta vista</span>
+            <span className="hidden sm:inline">
+              — qué es este módulo y esta vista (para qué sirve y cómo funciona)
+            </span>
           </span>
         </span>
         <ChevronDown

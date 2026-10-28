@@ -95,6 +95,81 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 
+/*
+ * Tabla apilada en móvil (`DataTable`, clase `atlas-stack`, sólo por debajo de 768 px).
+ *
+ * En 375 px una tabla de cinco columnas enseñaba dos y media: la acción de la fila (la última
+ * columna) quedaba fuera de pantalla sin ninguna pista de que hubiera que desplazar. Aquí cada fila
+ * pasa a ser una tarjeta «ETIQUETA / valor». El DOM sigue siendo una tabla —el botón de copiar, las
+ * pruebas y los lectores de pantalla leen lo mismo—; sólo cambia cómo se pinta. La etiqueta sale del
+ * `data-label` que `DataTable` pone en cada celda a partir de su cabecera.
+ *
+ * La cabecera se oculta VISUALMENTE (no con `display: none`) para que siga existiendo para los
+ * lectores de pantalla. Como `display: block` quita la semántica de tabla en algunos navegadores,
+ * `DataTable` repite los roles ARIA explícitos cuando esta clase está activa.
+ */
+@media (max-width: 767.98px) {
+  .atlas-table-scroll.atlas-stack-region {
+    max-height: none;
+    overflow: visible;
+  }
+  table.atlas-stack {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+  .atlas-stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .atlas-stack tbody,
+  .atlas-stack tr {
+    display: block;
+  }
+  .atlas-stack tbody tr {
+    padding: 0.75rem 1rem;
+  }
+  .atlas-stack td {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, 34%) minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: start;
+    /* Las insignias y botones toman su ancho, no el de la columna. */
+    justify-items: start;
+    padding: 0.3125rem 0;
+    word-break: break-word;
+  }
+  .atlas-stack td::before {
+    content: attr(data-label);
+    padding-top: 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: theme("colors.atlas.muted");
+  }
+  /* Una celda sin cabecera es una acción: ocupa la fila entera, sin etiqueta. */
+  .atlas-stack td[data-label=""] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-stack td[data-label=""]::before {
+    display: none;
+  }
+  .atlas-stack td:empty {
+    display: none;
+  }
+  /* La columna anclada a la derecha ya no se desplaza: pierde el ancla y su sombra. */
+  .atlas-stack td.sticky {
+    position: static;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
 /* --- Superficies de vidrio (glassmorphism) reutilizables --- */
 .glass {
   background: rgba(255, 255, 255, 0.72);

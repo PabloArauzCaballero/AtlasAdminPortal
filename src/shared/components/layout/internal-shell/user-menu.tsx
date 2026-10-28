@@ -25,7 +25,7 @@ export function UserMenu() {
       <Link
         href={accountNavItem.href}
         aria-label={`Mi cuenta: ${nombre}`}
-        className="atlas-press flex min-w-0 items-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors hover:bg-atlas-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-primary/40 lg:pr-3"
+        className="atlas-press atlas-tap flex min-w-0 items-center justify-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors hover:bg-atlas-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-primary/40 lg:pr-3"
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-atlas-accent to-atlas-primary text-xs font-semibold text-white">
           {nombre.slice(0, 1).toUpperCase()}

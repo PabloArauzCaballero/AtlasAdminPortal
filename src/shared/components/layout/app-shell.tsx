@@ -7,6 +7,7 @@ import { ambientVariantFor } from "@/shared/ambient/ambient-routes";
 import { useNavDrawer } from "@/shared/hooks/use-nav-drawer";
 import { AppSidebar } from "./internal-shell/app-sidebar";
 import { AppTopbar } from "./internal-shell/app-topbar";
+import { MobileBottomNav } from "./internal-shell/mobile-bottom-nav";
 import { SectionTabs } from "./internal-shell/section-tabs";
 import { ViewExplainer } from "./view-explainer";
 import { AssistFab } from "@/features/assist/assist-fab";
@@ -37,19 +38,22 @@ export function AppShell({
       <AmbientBackground variant={ambiente} />
       <AppSidebar open={menuOpen} onClose={closeMenu} />
       <div className="relative lg:pl-[268px]">
-        <AppTopbar onMenu={() => setMenuOpen(true)} menuOpen={menuOpen} />
+        <AppTopbar />
         {/* key={pathname} remonta el contenido en cada navegación para que toda
             vista entre con la misma transición de fade/slide. El relleno inferior deja sitio al
             botón del asistente: sin él tapaba la última acción de la página (la paginación). */}
         <main
           key={pathname}
-          className="animate-fade-in px-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-5 sm:px-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pt-6 lg:px-6"
+          className="animate-fade-in px-3 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] pt-5 sm:px-4 sm:pt-6 lg:px-6 lg:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]"
         >
           <SectionTabs />
           <ViewExplainer />
           {children}
         </main>
       </div>
+      {/* Barra inferior del móvil (`<lg`): «Más» abre el cajón, cuyo estado vive aquí. El relleno de
+          `main` (8 rem) deja sitio a la barra (3,5 rem) y al botón del asistente que va sobre ella. */}
+      <MobileBottomNav onMore={() => setMenuOpen(true)} moreOpen={menuOpen} />
       {/* Fuera del `main`: éste se remonta en cada navegación y la conversación se perdería. */}
       <AssistFab />
     </div>
