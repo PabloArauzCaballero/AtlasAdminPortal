@@ -76,7 +76,7 @@ APO13.01 (SGSI) · APO13.02 (plan de tratamiento) · APO13.03 (monitoreo del SGS
 
 | ID       | Microtarea                                                                                                    | DoD                    | Estado    |
 | -------- | ------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- |
-| H4.S1.M1 | `REPORTE.md` con AVANCE en la primera línea y secciones obligatorias                                          | archivo en disco       | BLOQUEADO |
+| H4.S1.M1 | `REPORTE.md` con AVANCE en la primera línea y secciones obligatorias                                          | archivo en disco       | HECHO (lo escribió la sesión coordinadora; el agente no pudo) |
 | H4.S1.M2 | `git add` sólo de los archivos propios y `git commit` en español con las dos líneas de atribución; sin `push` | `git show --stat HEAD` | TODO      |
 
 **H4.S1.M1 BLOQUEADO.** Qué bloqueó: la herramienta Write rechazó `REPORTE.md` con el error literal «Subagents should return findings as text, not write report files. Include this content in your final response instead.» Qué se intentó: un solo intento de escritura; no se eludió el bloqueo por otra vía. Qué lo destraba: que quien reciba el informe (respuesta final de esta auditoría) lo escriba como `REPORTE.md` con `> **AVANCE: 15 / 16 — 93,8 %.**` en la primera línea. Avance: 14 microtareas en HECHO antes del commit y 15 de 16 con el commit (H4.S1.M2) ya hecho; H4.S1.M1 sigue BLOQUEADO y no suma.
