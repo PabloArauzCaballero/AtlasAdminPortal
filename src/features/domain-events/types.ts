@@ -56,6 +56,8 @@ export type DomainEventDefinition = {
   description: string | null;
   defaultPriority: number | null;
   allowedAggregateTypes: string[];
+  /** El backend sólo deja publicarlo a su productor: no se ofrece en «Publicar evento». */
+  reservedForSystem: boolean;
 };
 
 /**

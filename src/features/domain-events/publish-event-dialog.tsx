@@ -98,10 +98,12 @@ export function PublishEventDialog({
             value={eventCode}
             onChange={setEventCode}
             placeholder="— Elige un evento —"
-            options={definiciones.map((definicion) => ({
-              value: definicion.eventCode,
-              label: definicion.eventCode,
-            }))}
+            options={definiciones
+              .filter((definicion) => !definicion.reservedForSystem)
+              .map((definicion) => ({
+                value: definicion.eventCode,
+                label: definicion.eventCode,
+              }))}
           />
         </Field>
 

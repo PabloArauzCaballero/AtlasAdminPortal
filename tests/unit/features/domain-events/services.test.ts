@@ -70,7 +70,21 @@ describe("normalizeEventCatalog", () => {
         description: "Alta",
         defaultPriority: 10,
         allowedAggregateTypes: ["customer"],
+        reservedForSystem: false,
       },
+    ]);
+  });
+
+  it("reservedForSystem sólo es true si el backend lo manda true; sin el campo es false", () => {
+    const definiciones = normalizeEventCatalog([
+      { code: "a.reservado", reservedForSystem: true },
+      { code: "b.libre", reservedForSystem: false },
+      { code: "c.viejo" },
+    ]);
+    expect(definiciones.map((d) => d.reservedForSystem)).toEqual([
+      true,
+      false,
+      false,
     ]);
   });
 

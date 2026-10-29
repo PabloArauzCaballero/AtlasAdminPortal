@@ -14,21 +14,28 @@ export function Breadcrumbs() {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1 text-[0.6875rem] text-atlas-muted"
+      className="flex min-w-0 flex-nowrap items-center gap-1 overflow-hidden whitespace-nowrap text-[0.6875rem] text-atlas-muted"
     >
       <Link
         href="/internal"
-        className="transition-colors duration-150 hover:text-atlas-text"
+        className="shrink-0 transition-colors duration-150 hover:text-atlas-text"
       >
         Inicio
       </Link>
       {segments.map((segment, index) => (
-        <span key={`${segment}-${index}`} className="flex items-center gap-1">
+        <span
+          key={`${segment}-${index}`}
+          className={
+            index === segments.length - 1
+              ? "flex min-w-0 items-center gap-1"
+              : "hidden items-center gap-1 sm:flex"
+          }
+        >
           <ChevronRight className="h-3 w-3 text-slate-400" aria-hidden />
           <span
             className={
               index === segments.length - 1
-                ? "font-semibold text-atlas-text"
+                ? "truncate font-semibold text-atlas-text"
                 : ""
             }
           >

@@ -113,6 +113,7 @@ export function normalizeEventCatalog(
         allowedAggregateTypes: Array.isArray(record.allowedAggregateTypes)
           ? (record.allowedAggregateTypes as string[])
           : [],
+        reservedForSystem: record.reservedForSystem === true,
       } satisfies DomainEventDefinition;
     })
     .filter((entry): entry is DomainEventDefinition => entry !== null);
