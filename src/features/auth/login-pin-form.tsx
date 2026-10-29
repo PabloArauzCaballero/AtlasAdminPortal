@@ -59,7 +59,10 @@ export function LoginPinForm({
         });
         return;
       }
-      setError("root", { message: "No se pudo verificar el código." });
+      setError("root", {
+        message:
+          "No se pudo verificar el código. Revisa tu conexión e inténtalo de nuevo.",
+      });
     }
   });
 
@@ -71,7 +74,9 @@ export function LoginPinForm({
         </h1>
         <p className="mt-1 text-sm text-atlas-muted">
           Enviamos un código de 6 dígitos al correo de tu cuenta. Vence en{" "}
-          {expiresInMinutes} minutos y sólo puede usarse una vez.
+          {expiresInMinutes} minutos y sólo puede usarse una vez. Si no llega,
+          revisa la carpeta de correo no deseado o pulsa «Usar otra cuenta» para
+          volver a empezar.
         </p>
       </div>
 

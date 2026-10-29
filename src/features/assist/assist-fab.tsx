@@ -47,7 +47,7 @@ export function AssistFab() {
             aria-haspopup="dialog"
             aria-expanded={open}
             data-testid="assist-fab"
-            className="atlas-press fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-4 z-[25] flex h-12 items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-3.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/60 focus-visible:ring-offset-2 sm:right-6"
+            className="atlas-press fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-4 z-[25] lg:bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] flex h-12 items-center gap-2 rounded-full border border-slate-900 bg-slate-900 px-3.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-atlas-accent/60 focus-visible:ring-offset-2 sm:right-6"
           >
             <Sparkles className="h-5 w-5" aria-hidden="true" />
             <span className="hidden sm:inline">Asistente</span>

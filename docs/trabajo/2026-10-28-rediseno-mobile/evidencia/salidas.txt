@@ -1,0 +1,40 @@
+# Salidas literales de las verificaciones de H1 (AdminPortal). Entorno: Node 22.22.0, yarn 1.22.22
+# Backend SIMULADO con rutas de Playwright (sesión sintética "Persona QA Sintética", correos @example.test).
+
+$ curl -s localhost:5274/internal/login | grep -oE '<meta name="(viewport|theme-color)"[^>]*>|<link rel="manifest"[^>]*>'
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes"/>
+<meta name="theme-color" content="#f5f5f7"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+
+$ curl -s -w "\nHTTP %{http_code}\n" localhost:5274/manifest.webmanifest
+{"name":"ATLAS Portal Interno","short_name":"ATLAS", ... "display":"standalone", ... "icons":[...3 iconos...]}
+HTTP 200
+
+$ yarn -s type-check ; echo $?
+0
+
+$ npx vitest run tests/unit/shared/components/mobile-bottom-nav.test.tsx tests/unit/shared/components/app-sidebar.test.tsx tests/unit/shared/components/user-menu.test.tsx tests/unit/shared/auth
+ Test Files  16 passed (16)
+      Tests  236 passed (236)
+
+$ node shoot-drawer.js   (375x812, isMobile, hasTouch)
+{"headerControls":3,"navHeight":57,"overflowX":false,"under44":[["Inicio",36,29]]}
+console errors 0 []
+# "Inicio" = enlace de las migas de pan (36x29): cumple WCAG 2.5.8 AA (24 px), no el 44 px de AAA.
+
+$ node shoot-table.js   (pantalla /internal/my-notifications con 5 filas sintéticas)
+ANTES   m375 {"pageOverflowX":false,"tableScrollsX":true}   -> la acción "Marcar como leída" fuera de pantalla
+DESPUÉS m375 {"pageOverflowX":false,"tableScrollsX":false}  -> todas las columnas y la acción visibles
+DESPUÉS t768 / d1280  tableScrollsX:true (sin cambio: la tabla normal se conserva)
+consoleErrors 0 en los tres viewports
+
+$ yarn -s validate ; echo $?
+0     (0 errores, 19 avisos: los mismos 19 de antes, todos `.skip()` de specs E2E ya existentes)
+
+$ yarn -s test   (suite completa, DESPUÉS de extraer copy-table-button.tsx)
+ Test Files  354 passed (354)
+      Tests  3321 passed (3321)
+
+$ npx vitest run tests/unit/shared/components   (después de extraer copy-table-button.tsx, para que data-table.tsx cumpla max-lines 300)
+ Test Files  36 passed (36)
+      Tests  426 passed (426)

@@ -19,6 +19,7 @@ import { optionLabel } from "@/shared/lib/options";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { FlaskConical } from "lucide-react";
 import { usePageSize } from "@/shared/lib/page-size";
+import { emptyTexts } from "@/shared/lib/empty-texts";
 
 const statusOptions = RUN_STATUS_OPTIONS;
 
@@ -180,6 +181,15 @@ function AuthorizedTestRunsPage() {
             columns={columns}
             meta={runs.data.meta}
             onPageChange={setPage}
+            {...emptyTexts({
+              filtered: Boolean(q || status || environment),
+              noMatchTitle: "Ninguna corrida coincide con los filtros.",
+              empty: {
+                title: "Todavía no hay corridas de suites QA.",
+                description:
+                  "Cada ejecución de una suite aparecerá aquí con su ambiente, su duración y si pasó.",
+              },
+            })}
           />
         </div>
       ) : null}

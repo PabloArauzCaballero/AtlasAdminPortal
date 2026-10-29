@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -27,6 +27,22 @@ export const metadata: Metadata = {
     ],
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
+};
+
+/**
+ * `viewport-fit=cover` es lo que hace que los `env(safe-area-inset-*)` del portal valgan algo:
+ * sin él, un iPhone con muesca devuelve 0 y la barra inferior y las cabeceras no respetan el
+ * recorte. Va junto al `padding` seguro que ya llevan `atlas-safe-top` y `AppShell`.
+ *
+ * El zoom queda habilitado (sin `maximumScale`): bloquearlo incumple WCAG 1.4.4. El color de la
+ * barra del sistema es el del lienzo (`atlas-bg`), para que la app instalada no tenga franja.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#f5f5f7",
 };
 
 export default function RootLayout({

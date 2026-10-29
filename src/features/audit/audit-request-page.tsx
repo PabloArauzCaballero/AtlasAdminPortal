@@ -151,7 +151,14 @@ function AuthorizedAuditRequestPage({
           />
         </div>
       ) : null}
-      {logs.data ? <DataTable data={logs.data} columns={columns} /> : null}
+      {logs.data ? (
+        <DataTable
+          data={logs.data}
+          columns={columns}
+          emptyTitle="No hay registros para esta solicitud."
+          emptyDescription="Comprueba que el código de referencia esté completo: un código cortado al copiarlo no encuentra nada."
+        />
+      ) : null}
     </>
   );
 }

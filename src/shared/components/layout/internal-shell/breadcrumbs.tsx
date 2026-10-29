@@ -18,7 +18,8 @@ export function Breadcrumbs() {
     >
       <Link
         href="/internal"
-        className="transition-colors duration-150 hover:text-atlas-text"
+        // El relleno con margen negativo agranda el área táctil (WCAG 2.5.8, 24 px) sin mover la miga.
+        className="-mx-1 -my-1.5 px-1 py-1.5 transition-colors duration-150 hover:text-atlas-text"
       >
         Inicio
       </Link>

@@ -26,6 +26,7 @@ import { formatBoolean } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Database } from "lucide-react";
 import { usePageSize } from "@/shared/lib/page-size";
+import { emptyTexts } from "@/shared/lib/empty-texts";
 
 const reviewOptions = [
   { label: "Auto detectado", value: "AUTO_DETECTED" },
@@ -239,6 +240,15 @@ function AuthorizedDataEntitiesPage() {
           columns={columns}
           meta={entities.data.meta}
           onPageChange={setPage}
+          {...emptyTexts({
+            filtered: Boolean(q || reviewStatus || block),
+            noMatchTitle: "Ninguna tabla coincide con tu búsqueda.",
+            empty: {
+              title: "El catálogo todavía no tiene tablas registradas.",
+              description:
+                "Aquí aparecerán las tablas de los tres bloques de Atlas (núcleo, motor de decisión y ERP) cuando se registren.",
+            },
+          })}
         />
       ) : null}
     </>

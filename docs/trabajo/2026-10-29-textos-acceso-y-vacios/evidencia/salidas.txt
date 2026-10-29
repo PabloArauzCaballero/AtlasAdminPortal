@@ -1,0 +1,7 @@
+$ yarn -s validate ; echo $?     -> 0   (0 errores, 19 avisos: los mismos 19 previos, `.skip()` de specs E2E ya existentes)
+$ yarn -s test                   -> Test Files 356 passed (356) · Tests 3328 passed (3328)
+                                    (incluye 7 nuevas: tests/unit/features/auth/login-copy.test.tsx y tests/unit/shared/lib/empty-texts.test.ts)
+# Arnés 375x812 sobre /internal/qa/runs, backend SIMULADO (lista vacía, sesión sintética)
+SIN FILTROS: Todavía no hay corridas de suites QA.
+CON FILTROS: Ninguna corrida coincide con los filtros. | p: Quita o cambia los filtros de arriba para ver más registros.
+consoleErrors 0

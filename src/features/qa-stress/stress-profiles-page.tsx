@@ -24,6 +24,7 @@ import { formatBoolean, formatNumber } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Gauge } from "lucide-react";
 import { usePageSize } from "@/shared/lib/page-size";
+import { matrizVacia, perfilesVacios } from "./stress-empty-texts";
 
 const statusOptions = STRESS_PROFILE_STATUS_OPTIONS;
 
@@ -239,6 +240,7 @@ function AuthorizedStressProfilesPage() {
           columns={profileColumns}
           meta={profiles.data.meta}
           onPageChange={setPage}
+          {...perfilesVacios(Boolean(q || status))}
         />
       ) : null}
       <Card className="mt-6">
@@ -272,6 +274,7 @@ function AuthorizedStressProfilesPage() {
               columns={matrixColumns}
               meta={matrix.data.meta}
               onPageChange={setMatrixPage}
+              {...matrizVacia(Boolean(q))}
             />
           ) : null}
         </CardContent>
