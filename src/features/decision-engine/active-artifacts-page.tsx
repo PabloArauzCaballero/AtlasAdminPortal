@@ -16,6 +16,7 @@ import { BusinessContextNote } from "@/shared/components/layout/business-context
 import { formatDateTime, safeText } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { TrafficSplit } from "./traffic-split";
+import { emptyTexts } from "@/shared/lib/empty-texts";
 
 export function ActiveArtifactsPage() {
   // El gate envuelve a un componente aparte a propósito: si los hooks de
@@ -266,7 +267,21 @@ function AuthorizedActiveArtifactsPage() {
           onRetry={() => void artifacts.refetch()}
         />
       ) : null}
-      {report ? <DataTable data={filtered} columns={columns} /> : null}
+      {report ? (
+        <DataTable
+          data={filtered}
+          columns={columns}
+          {...emptyTexts({
+            filtered: Boolean(q || environment),
+            noMatchTitle: "Ningún artefacto coincide con tu búsqueda.",
+            empty: {
+              title: "El motor no tiene artefactos publicados.",
+              description:
+                "Aquí aparecerán los artefactos en cuanto se publique y active una versión en algún ambiente.",
+            },
+          })}
+        />
+      ) : null}
     </>
   );
 }

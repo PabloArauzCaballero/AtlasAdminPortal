@@ -75,7 +75,10 @@ export function LoginPage() {
         });
         return;
       }
-      setError("root", { message: "No se pudo iniciar sesión." });
+      setError("root", {
+        message:
+          "No se pudo iniciar sesión. Revisa tu conexión e inténtalo de nuevo.",
+      });
     }
   });
 
@@ -185,7 +188,7 @@ export function LoginPage() {
                   tooltip="Identificador de la organización a la que pertenece tu cuenta interna."
                   label="Organización"
                   error={errors.tenantId?.message}
-                  hint="Usa el código de organización de tu ambiente interno."
+                  hint="Es el código de tu organización en ATLAS. Si no lo conoces, pídelo a quien administra tu acceso."
                 >
                   <Input
                     {...register("tenantId")}

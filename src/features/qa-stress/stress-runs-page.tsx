@@ -21,6 +21,7 @@ import { formatDateTime } from "@/shared/lib/format";
 import { isAtlasApiError } from "@/shared/api/errors";
 import { Waves } from "lucide-react";
 import { usePageSize } from "@/shared/lib/page-size";
+import { emptyTexts } from "@/shared/lib/empty-texts";
 
 const statusOptions = STRESS_RUN_STATUS_OPTIONS;
 const environmentOptions = ENVIRONMENT_OPTIONS;
@@ -169,6 +170,15 @@ function AuthorizedStressRunsPage() {
           columns={columns}
           meta={runs.data.meta}
           onPageChange={setPage}
+          {...emptyTexts({
+            filtered: Boolean(q || status || environment),
+            noMatchTitle: "Ninguna corrida de carga coincide con los filtros.",
+            empty: {
+              title: "Todavía no hay corridas de carga.",
+              description:
+                "Las corridas se encolan desde un perfil de carga y quedan aquí con las cabeceras sensibles tapadas.",
+            },
+          })}
         />
       ) : null}
       <DrawerPanel

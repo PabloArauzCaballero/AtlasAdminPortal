@@ -48,7 +48,7 @@ export function DataTable<T>({
   meta,
   onPageChange,
   emptyTitle = "No hay registros para mostrar.",
-  emptyDescription = "Aún no hay configuración registrada para este apartado.",
+  emptyDescription = "Cuando haya registros en esta vista, aparecerán aquí.",
   fit = false,
   stack,
 }: Readonly<{

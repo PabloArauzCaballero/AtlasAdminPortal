@@ -150,7 +150,12 @@ function AuthorizedTestRunDetailPage({ runId }: Readonly<{ runId: string }>) {
             </Card>
             <section data-tutorial-id="qa-run-steps">
               <SectionHeader title="Pasos ejecutados" />
-              <DataTable data={run.data.steps} columns={columns} />
+              <DataTable
+                data={run.data.steps}
+                columns={columns}
+                emptyTitle="Esta corrida todavía no registró pasos."
+                emptyDescription="Si está en cola o acaba de arrancar, los pasos aparecerán a medida que se ejecuten."
+              />
             </section>
           </div>
         </>

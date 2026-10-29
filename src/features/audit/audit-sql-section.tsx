@@ -25,6 +25,7 @@ import {
 } from "./audit-filters";
 import { useActionLogFilterCatalog } from "./audit-hooks";
 import { usePageSize } from "@/shared/lib/page-size";
+import { emptyTexts } from "@/shared/lib/empty-texts";
 
 /**
  * La auditoría SQL: la bitácora de acciones con los filtros que publica el servidor.
@@ -159,6 +160,16 @@ export function AuditSqlSection() {
           columns={columns}
           meta={logs.data.meta}
           onPageChange={setPage}
+          {...emptyTexts({
+            filtered: Object.values(estado).some(Boolean),
+            noMatchTitle:
+              "Ningún registro de auditoría coincide con los filtros.",
+            empty: {
+              title: "Todavía no hay acciones auditadas.",
+              description:
+                "Cada acción que se audita queda en esta bitácora, con su fecha y su código de referencia.",
+            },
+          })}
         />
       ) : null}
     </>
