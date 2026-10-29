@@ -30,3 +30,14 @@
 | ID       | Microtarea                                                           | CA (binario)                                  | DoD                              | Estado |
 | -------- | -------------------------------------------------------------------- | --------------------------------------------- | -------------------------------- | ------ |
 | H2.S1.M1 | Miga sin salto de línea; en móvil solo «Inicio» y el último segmento | sin `flex-wrap`; intermedios `hidden sm:flex` | `yarn vitest run tests/unit/app` | HECHO  |
+
+## H3 — OBS-30: QA Lab manda operaciones de otro backend a «API de este portal» y da 404
+
+**CA:** Dada una operación cuyo servicio dueño no es AtlasBackend (p. ej. el ERP), cuando la ruta base es «API de este portal», entonces el laboratorio avisa antes de enviar de qué servicio es y que la petición dará 404; con una dirección manual, el simulador de proveedores o una operación de AtlasBackend, no aparece el aviso.
+**DoD:** `yarn vitest run tests/unit/features/qa-lab/destination-notice.test.ts` + `yarn type-check` + `yarn lint` + `yarn format:check` + `yarn max-lines` + clic real en `/internal/qa/lab`.
+**Estado:** HECHO
+
+| ID       | Microtarea                                                | CA (binario)                                | DoD                                            | Estado |
+| -------- | --------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------- | ------ |
+| H3.S1.M1 | `avisoDeDestino(endpoint, baseRouteKey)` puro y su prueba | devuelve texto sólo en el caso de desajuste | `yarn vitest run …/destination-notice.test.ts` | HECHO  |
+| H3.S1.M2 | Aviso visible en la tarjeta de prueba funcional           | se ve en la operación #1078 del ERP         | clic real con captura                          | HECHO  |

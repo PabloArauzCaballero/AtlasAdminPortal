@@ -21,6 +21,7 @@ import {
   normalizeQaBaseRouteKey,
   QA_BASE_ROUTE_OPTIONS,
 } from "./base-routes";
+import { DestinationNotice } from "./destination-notice";
 import { defaultQaEnvironment, isProductionTarget } from "./environment";
 import { useQaTestData } from "./fakers/use-fakers";
 import { isMockEndpointId } from "./mock-provider-endpoints";
@@ -102,6 +103,10 @@ export function EndpointTestCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <EndpointSafetyHints endpoint={endpoint} />
+        <DestinationNotice
+          endpoint={endpoint}
+          baseRouteKey={form.baseRouteKey}
+        />
         {/*
           El generador va ARRIBA del todo, antes de la configuración: llenar la entrada es el primer
           paso de la prueba, y tenerlo al final —después de treinta campos de host, timeouts y
